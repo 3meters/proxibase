@@ -1,0 +1,29 @@
+/*
+* App config file
+*/
+
+module.exports = {
+
+    name: "play",
+
+    env: "dev",
+
+    mdb: {
+        host: "localhost", 
+        port: 27017,
+        database: "play",
+        options: {
+          auto_reconnect: true,
+          poolSize: 3
+        }
+    },
+
+    web: {
+        port: 8043,
+        ssl: {
+            keyFilePath: "./keys/dev/dev.pem",
+            certFilePath: "./keys/dev/dev.crt"
+        }
+    }
+
+}
