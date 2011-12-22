@@ -1,0 +1,23 @@
+{
+  "name": "proxibase",
+  "private": true,
+  "description": "Proxibase service",
+  "version": "0.4.1",
+  "author": "George Snelling <george@3meters.com>",
+  "contributors": [ 
+    { "name": "George Snelling", "email": "george@3meters.com" }, 
+    { "name": "Jay Massena", "email": "jay@3meters.com" },
+    { "name": "Dave Stearns", "email": "dave@3meters.com" }
+  ],
+  "dependencies": {
+    "express": ">= 2.5.2",
+    "mongoose": ">= 2.4.2",
+    "mhash": ">= 0.1.4",
+    "ejs": ">= 0.6.0"
+  },
+  "keywords": ["proxibase", "3meters", "aircandi"],
+  "repository": "git://github.com:georgesnelling/proxibase",
+  "main": "main",
+  "engines": { "node": ">= 0.6.4" }
+}
+
