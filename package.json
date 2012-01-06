@@ -10,13 +10,14 @@
     { "name": "Dave Stearns", "email": "dave@3meters.com" }
   ],
   "dependencies": {
-    "express": ">= 2.5.2",
-    "mongoose": ">= 2.4.2",
+    "express": "*",
+    "mongoose": "*",
     "underscore": "*",
-    "mhash": ">= 0.1.4",
-    "ejs": ">= 0.6.0",
-    "jade": ">= 0.17.0",
-    "stylus": ">= 0.20.0"
+    "path": "*",
+    "mhash": "*",
+    "ejs": "*",
+    "jade": "*",
+    "stylus": "*"
   },
   "keywords": ["proxibase", "3meters", "aircandi"],
   "repository": "git://github.com:georgesnelling/proxibase",
