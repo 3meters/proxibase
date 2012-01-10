@@ -4,6 +4,7 @@
 
 module.exports = {
   name: "proxibase",
+  host: "localhost",
   port: 8043,
   env: "development",     // overrides NODE_ENV environment variable
   ssl: {
