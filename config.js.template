@@ -3,7 +3,8 @@
 */
 
 module.exports = {
-  name: "proxibase",
+  name: "Proxibase",
+  namespace: "com.proxibase.api",
   host: "localhost",
   port: 8043,
   env: "development",     // overrides NODE_ENV environment variable
