@@ -1,4 +1,4 @@
 config.js
 node_modules
 .monitor
-appCrashed.js
+crash.js

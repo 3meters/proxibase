@@ -3,19 +3,34 @@ Proxibase is the backing service for 3meters aircandi and related services
 
 Web: [https://www.proxibase.com](https://www.proxibase.com)
 
-API: [https://api.proxibase.com](https://api.proxibase.com)
+API: [https://service.proxibase.com](https://service.proxibase.com)
 
+## /_info
+    returns table information for the rest API
+
+## /_do
+    returns a list of custom web methods
+
+## GET
 For each table
 
     GET /tableName
 
-returns the first 1000 records
+returns up to 1000 records unsorted
 
-To post data to a table
-----
+    GET /tableName/:id1,id2
+
+note the initial colon. returns records by _id
+
+### GET Query Parameters
+    lookups (default false)
+returns each document with its lookup fields fully populated
+
+
+## POST
 1. set req.headers.content-type to 'application-json'
 2. make sure req.body is parsable json
-3. enclose the new records data in a data element, e.g: 
+3. enclose new data in a data element, e.g: 
 
     req.body = {
       "data": {
@@ -24,9 +39,16 @@ To post data to a table
       }
     }
 
-Ids
------
-Every record in the system has a an _id field that is unique per server instance.  The server generates these on each record insert.  It has this form, with dates and times represented in UTC: 
+## DELETE
+    DELETE /tablename/:id1,id2
+deletes those records
+
+    DELETE /tablename/:*
+deletes all records in the table
+
+
+### _id fields
+Every proxibase record has a an immutable _id field that is unique within proxiabse.  The proxiabse server generates these on each record insert, or the client may supply one on insert. _id fields have this form, with dates and times represented in UTC: 
 
     tabl.yymmdd.scnds.mil.randm
 
@@ -34,18 +56,9 @@ meaning
 
     tableId.dateSince2000.secondsSinceMidnight.milliseconds.randomNumber
 
-To refer to a specific record
---------
+
+### To refer to a specific record
 To address a record put ":" plus the recordId in the url, eg
 
     https://api.proxibase.com/students/:<studentid>
-
-Supported Verbs
-----------
-
-    GET /table
-    GET /table/:_id,_id,... 
-    POST /table/  body = '"data": { }'  // insert
-    POST /table/:_id  body = '"data": { }' // update NYI 
-    DELETE /table/:_id,_id,...
 
