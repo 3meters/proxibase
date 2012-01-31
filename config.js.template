@@ -10,7 +10,8 @@ module.exports = {
   env: "development",     // overrides NODE_ENV environment variable
   ssl: {
     keyFilePath: "./keys/dev/dev.pem",
-    certFilePath: "./keys/dev/dev.crt"
+    certFilePath: "./keys/dev/dev.crt",
+    caFilePath: null
   },
   mdb: {
     host: "localhost",
