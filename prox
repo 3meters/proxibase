@@ -1,2 +1,2 @@
 #! /bin/sh
-nodemon >/var/log/prox.log 2>&1 &
+nohup nodemon >/var/log/prox.log 2>&1 &
