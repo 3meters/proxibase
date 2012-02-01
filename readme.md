@@ -6,7 +6,7 @@ Web: [https://www.proxibase.com](https://www.proxibase.com)
 API: [https://service.proxibase.com](https://service.proxibase.com)
 
 ## /_info
-    returns table information for the rest API
+    returns table information for the rest API: Jayma was here
 
 ## /_do
     returns a list of custom web methods
