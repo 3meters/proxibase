@@ -33,16 +33,16 @@ Returns records with the specified _ids. Note the initial colon.
 GET query parameters are ordinary: The paramter chain begins with a ? and is delimited by &.  Unrecognized paramters are ignored.
 
     ?__jsonfind={"firstname":"John","lastname":{"$in":["Smith","Jones"]},"age":{"$lt":5}}
-Returns all records in the table using mongodbs advanced [query syntax](http://www.mongodb.org/display/DOCS/Advanced+Queries).  The value of the parameter must be in JSON format. The rest of the url need not be JSON.
+Returns the records in the table found using mongodb's [advanced query syntax](http://www.mongodb.org/display/DOCS/Advanced+Queries). The value of __jsonfind must be parsable JSON. The rest of the url need not.
 
     ?__fields=_id,name,created
-Returns only the fields specified. Default is to return all fields. _id is always returned. 
+Returns only the fields specified. _id is always returned. 
 
     ?__limit=30
-Returns only the first 30 records.  Default and max is 1000.
+Returns only the first 30 records. Max 1000.
 
     ?__lookups=true 
-Returns each document with its lookup fields fully populated. Ignored if __fields is set. Default is false.
+Returns each document with its lookup fields fully populated. Ignored if __fields is set. Default false.
 
 
 ### POST Rules
