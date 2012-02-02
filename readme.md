@@ -5,13 +5,10 @@ Web: [https://www.proxibase.com](https://www.proxibase.com)
 
 API: [https://service.proxibase.com](https://service.proxibase.com)
 
-### GET /_info
-Returns table information for the rest API
-
-### Get /_do
-Returns a list of custom web methods
 
 ## REST API
+[https://service.proxibase.com/_info](https://service.proxibase.com/_info)
+Returns the proxibase tables
 
 ### _id fields
 Every proxibase record has a an immutable _id field that is unique within proxiabse.  The proxiabse server generates these on each record insert, or the client may supply one on insert. _id fields have this form, with dates and times represented in UTC: 
@@ -44,10 +41,10 @@ Returns only the fields specified. Default is to return all fields. _id is alway
 Returns only the first 30 records.  Default and max is 1000.
 
     ?__lookups=true 
-Returns each document with its lookup fields fully populated. Ignored if __fields is set. Default is false;
+Returns each document with its lookup fields fully populated. Ignored if __fields is set. Default is false.
 
 
-### POST rules
+### POST Rules
 1. Set req.headers.content-type to 'application-json'
 2. Make sure req.body is parsable json
 3. Enclose new data in a data element, e.g: 
@@ -72,18 +69,19 @@ Deletes those records.
 Deletes all records in the table.
 
 ## Custom Web Methods
+[https://service.proxibase.com/_do](https://service.proxibase.com/_do)
 
-### GET /_do
-Lists web methods.
+Lists the web methods.
 
 ### POST /_do
 Executes a method specified the request body. The body must be in JSON format and have these elements:  
+
     {
       "name": "methodName",
       "params": {}
     } 
 
-If methodName exists the system will call methodName(params);
+The system will call methodName(params).
 
 ## Etc
 * [Building a Proxibase Server from scratch](wiki/ServerSetup)
