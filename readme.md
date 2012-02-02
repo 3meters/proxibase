@@ -7,7 +7,9 @@ API: [https://service.proxibase.com](https://service.proxibase.com)
 
 
 ## REST API
-[https://service.proxibase.com/_info](https://service.proxibase.com/_info) Returns schema information
+[https://service.proxibase.com/_info](https://service.proxibase.com/_info)
+
+Returns schema information
 
 ### _id fields
 Every proxibase record has a an immutable _id field that is unique within proxiabse. _ids have this form, with dates and times represented in UTC: 
@@ -73,7 +75,7 @@ Deletes all records in the table.
 Lists the web methods.
 
 ### POST /_do
-Executes a method specified the request body. The body must be in JSON format and have these elements:  
+Executes a method specified in the request body. The body must be in JSON format and have these elements:  
 
     {
       "name": "methodName",
