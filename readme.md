@@ -7,12 +7,10 @@ API: [https://service.proxibase.com](https://service.proxibase.com)
 
 
 ## REST API
-[https://service.proxibase.com/_info](https://service.proxibase.com/_info)
-
-Returns the proxibase tables
+[https://service.proxibase.com/_info](https://service.proxibase.com/_info) Returns schema information
 
 ### _id fields
-Every proxibase record has a an immutable _id field that is unique within proxiabse.  The proxiabse server generates these on each record insert, or the client may supply one on insert. _id fields have this form, with dates and times represented in UTC: 
+Every proxibase record has a an immutable _id field that is unique within proxiabse. _ids have this form, with dates and times represented in UTC: 
 
     tabl.yymmdd.scnds.mil.randm
 
@@ -58,7 +56,7 @@ Returns each document with its lookup fields fully populated. Ignored if __field
     }
 
 ### POST /tablename
-Inserts req.body.data into the tablename table.  If you supply a value for _id it will be used.  If you not, one will be generated for you. Currently only one record can be inserted at a time.
+Inserts req.body.data into the tablename table.  If a value for _id is specified it will be used, otherwise the server will generate a value for _id.  Only one record may be inserted per request.
 
 ### POST /tablename/:id1
 Updates the record with _id = <id1> in tablename.  Fields not inlucded in req.body.data will not be modified.
