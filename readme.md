@@ -8,6 +8,7 @@ API: [https://service.proxibase.com](https://service.proxibase.com)
 
 ## REST API
 [https://service.proxibase.com/_info](https://service.proxibase.com/_info)
+
 Returns the proxibase tables
 
 ### _id fields
@@ -84,4 +85,4 @@ Executes a method specified the request body. The body must be in JSON format an
 The system will call methodName(params).
 
 ## Etc
-* [Building a Proxibase Server from scratch](wiki/ServerSetup)
+* [Building a Proxibase Server from scratch](proxibase/wiki/ServerSetup)
