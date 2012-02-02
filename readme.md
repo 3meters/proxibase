@@ -61,7 +61,7 @@ Returns each document with its lookup fields fully populated. Ignored if __field
 Inserts req.body.data into the tablename table.  If a value for _id is specified it will be used, otherwise the server will generate a value for _id.  Only one record may be inserted per request.
 
 ### POST /tablename/:id1
-Updates the record with _id = <id1> in tablename.  Fields not inlucded in req.body.data will not be modified.
+Updates the record with _id = id1 in tablename.  Fields not inlucded in req.body.data will not be modified.
 
 ### DELETE /tablename/:id1,id2
 Deletes those records.
