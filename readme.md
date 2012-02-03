@@ -7,7 +7,7 @@ API: [https://service.proxibase.com](https://service.proxibase.com)
 
 
 ## REST API
-[https://service.proxibase.com/_info](https://service.proxibase.com/_info)
+[https://service.proxibase.com/__info](https://service.proxibase.com/__info)
 
 Returns schema information
 
@@ -20,7 +20,7 @@ meaning
 
     tableId.dateSince2000.secondsSinceMidnight.milliseconds.randomNumber
 
-### GET /tableName/_info
+### GET /tableName/__info
 Returns information about the table's schema.
 
 ### GET /tableName
@@ -32,8 +32,8 @@ Returns records with the specified _ids. Note the initial colon.
 ### GET parameters
 GET query parameters are ordinary: The paramter chain begins with a ? and is delimited by &.  Unrecognized paramters are ignored.
 
-    ?__jsonfind={"firstname":"John","lastname":{"$in":["Smith","Jones"]},"age":{"$lt":5}}
-Returns the records in the table found using mongodb's [advanced query syntax](http://www.mongodb.org/display/DOCS/Advanced+Queries). The value of __jsonfind must be parsable JSON. The rest of the url need not.
+    ?__find={"firstname":"John","lastname":{"$in":["Smith","Jones"]},"age":{"$lt":5}}
+Returns the records in the table found using mongodb's [advanced query syntax](http://www.mongodb.org/display/DOCS/Advanced+Queries). The value of __find must be parsable JSON. The rest of the url need not.
 
     ?__fields=_id,name,created
 Returns only the fields specified. _id is always returned. 
@@ -41,7 +41,7 @@ Returns only the fields specified. _id is always returned.
     ?__limit=30
 Returns only the first 30 records. Max 1000.
 
-    ?__lookups=true 
+    ?__lookups=true
 Returns each document with its lookup fields fully populated. Ignored if __fields is set. Default false.
 
 
@@ -70,19 +70,34 @@ Deletes those records.
 Deletes all records in the table.
 
 ## Custom Web Methods
-[https://service.proxibase.com/_do](https://service.proxibase.com/_do)
+[https://service.proxibase.com/__do](https://service.proxibase.com/__do)
 
-Lists the web methods.
+Lists the web methods. POST to /__do/methodName executes a method passing in the full request and response objects. The request body must be in JSON format. 
 
-### POST /_do
-Executes a method specified in the request body. The body must be in JSON format and have these elements:  
+### POST /__do/echo
+Returns request.body
+
+### POST /__do/find
+Expects request.body to contain {table: "tableName", query: {}} where the members of the query map are the same as for GET /table, eg
+
+    POST /__do/find
+
+with request.body:
 
     {
-      "name": "methodName",
-      "params": {}
-    } 
+      "table": "users",
+      "query": {
+        "__fields": "name",
+        "__find": {
+          "name": "Jay"
+        } 
+      }
+    }
 
-The system will call methodName(params).
+is identical to calling
+
+    GET /users?__fields=name&__find={"name":"Jay"}
+
 
 ## Etc
 * [Building a Proxibase Server from scratch](proxibase/wiki/ServerSetup)
