@@ -7,7 +7,8 @@ module.exports = {
   namespace: "com.proxibase.api",
   host: "localhost",
   port: 8043,
-  env: "development",     // overrides NODE_ENV environment variable
+  env: "dev", // dev|prod
+  notify: "admin@3meters.com",
   ssl: {
     keyFilePath: "./keys/dev/dev.pem",
     certFilePath: "./keys/dev/dev.crt",

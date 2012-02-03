@@ -14,7 +14,7 @@ Returns schema information
 ### _id fields
 Every proxibase record has a an immutable _id field that is unique within proxiabse. _ids have this form, with dates and times represented in UTC: 
 
-    tabl.yymmdd.scnds.mil.randm
+    tabl.yymmdd.scnds.mil.random
 
 meaning
 
@@ -46,7 +46,7 @@ Returns each document with its lookup fields fully populated. Ignored if __field
 
 
 ### POST Rules
-1. Set req.headers.content-type to 'application-json'
+1. Set req.headers.content-type to 'application/json'
 2. Make sure req.body is parsable json
 3. Enclose new data in a data element, e.g: 
 

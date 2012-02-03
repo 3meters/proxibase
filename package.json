@@ -2,7 +2,7 @@
   "name": "proxibase",
   "private": true,
   "description": "Proxibase service",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "author": "George Snelling <george@3meters.com>",
   "contributors": [ 
     { "name": "George Snelling", "email": "george@3meters.com" }, 
@@ -10,9 +10,10 @@
     { "name": "Dave Stearns", "email": "dave@3meters.com" }
   ],
   "dependencies": {
-    "express": ">= 2.5.2",
-    "mongoose": ">= 2.4.2",
+    "express": "*",
+    "mongoose": "*",
     "underscore": "*",
+    "nodemailer": "*",
     "ejs": "*",
     "jade": "*",
     "stylus": "*"
