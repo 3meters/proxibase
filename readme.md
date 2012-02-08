@@ -29,6 +29,9 @@ Returns the table's first 1000 records unsorted.
 ### GET /tableName/:id1,id2
 Returns records with the specified _ids. Note the initial colon.
 
+### GET /tablename/[:id1,id2,.../]childTable1,childTable2|*
+Returns all records specified with subdocuments for each child table specified. The wildcard * returns all child documents.  All fields from child documents are returned.  The query limit is applied both to the main document array and to each of its child arrays. Filters only apply to the main document, not to the documents children.
+
 ### GET parameters
 GET query parameters are ordinary: The paramter chain begins with a ? and is delimited by &.  Unrecognized paramters are ignored.
 
