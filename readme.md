@@ -101,6 +101,15 @@ is identical to calling
 
     GET /users?__fields=name&__find={"name":"Jay"}
 
+### POST /__do/getEntitiesForBeacons
+
+with request.body
+
+    {
+      "beacons": ['macId1', 'macId2']
+    }
+
+returns all entites dropped for beacons
 
 ## Etc
 * [Building a Proxibase Server from scratch](proxibase/wiki/ServerSetup)
