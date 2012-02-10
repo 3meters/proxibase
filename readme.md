@@ -6,9 +6,9 @@ Web: https://www.proxibase.com
 API: https://api.proxibase.com
 
 ## REST API
-[https://api.proxibase.com/__info](https://api.proxibase.com/__info)
+https://api.proxibase.com/__info
 
-Returns schema information
+Returns table schema information
 
 ### _id fields
 Every proxibase record has a an immutable _id field that is unique within proxiabse. _ids have this form, with dates and times represented in UTC: 
@@ -32,10 +32,10 @@ Returns records with the specified ids. Note the initial __ids:
 Returns records with the specified names. Note the initial __names:
 
 ### GET /tablename/[__ids:...|__names:.../]childTable1,childTable2|*
-Returns all records specified with subdocuments for each child table specified. The wildcard * returns all child documents.  All fields from child documents are returned.  The query limit is applied both to the main document array and to each of its child arrays. Filters only apply to the main document, not to the documents children.
+Returns all records specified with subdocuments for each child table specified. The wildcard * returns all child documents.  All fields from child documents are returned.  The query limit is applied both to the main document array and to each of its child arrays. Filters only apply to the main document, not to the document's children.
 
 ### GET parameters
-GET query parameters are ordinary: The paramter chain begins with a ? and is delimited by &.  Unrecognized paramters are ignored.
+Place GET query parameters at the end of the URL beginning with a ?.  They are delimited by &.
 
     ?__find={"firstname":"John","lastname":{"$in":["Smith","Jones"]},"age":{"$lt":5}}
 Returns the records in the table found using mongodb's [advanced query syntax](http://www.mongodb.org/display/DOCS/Advanced+Queries). The value of __find must be parsable JSON. The rest of the url need not.
