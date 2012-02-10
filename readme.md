@@ -6,7 +6,7 @@ Web: https://www.proxibase.com
 API: https://api.proxibase.com
 
 ## REST API
-[https://service.proxibase.com/__info](https://service.proxibase.com/__info)
+[https://api.proxibase.com/__info](https://api.proxibase.com/__info)
 
 Returns schema information
 
@@ -25,10 +25,13 @@ Returns information about the table's schema.
 ### GET /tableName
 Returns the table's first 1000 records unsorted.
 
-### GET /tableName/:id1,id2
-Returns records with the specified _ids. Note the initial colon.
+### GET /tableName/__ids:id1,id2
+Returns records with the specified ids. Note the initial __ids:
 
-### GET /tablename/[:id1,id2,.../]childTable1,childTable2|*
+### GET /tableName/__names:name1,name2
+Returns records with the specified names. Note the initial __names:
+
+### GET /tablename/[__ids:...|__names:.../]childTable1,childTable2|*
 Returns all records specified with subdocuments for each child table specified. The wildcard * returns all child documents.  All fields from child documents are returned.  The query limit is applied both to the main document array and to each of its child arrays. Filters only apply to the main document, not to the documents children.
 
 ### GET parameters
@@ -44,7 +47,7 @@ Returns only the fields specified. _id is always returned.
 Returns only the first 30 records. Max 1000.
 
     ?__lookups=true
-Returns each document with its lookup fields fully populated. Ignored if __fields is set. Default false.
+Returns each document with its lookup fields fully populated. Default false.
 
 
 ### POST Rules
@@ -52,7 +55,7 @@ Returns each document with its lookup fields fully populated. Ignored if __field
 2. Make sure req.body is parsable json
 3. Enclose new data in a data element, e.g: 
 
-    req.body = {
+    request.body = {
       "data": {
         "field1": "foo",
         "field2": "bar" 
@@ -62,18 +65,18 @@ Returns each document with its lookup fields fully populated. Ignored if __field
 ### POST /tablename
 Inserts req.body.data into the tablename table.  If a value for _id is specified it will be used, otherwise the server will generate a value for _id.  Only one record may be inserted per request.
 
-### POST /tablename/:id1
-Updates the record with _id = id1 in tablename.  Fields not inlucded in req.body.data will not be modified.
+### POST /tablename/__ids:id1
+Updates the record with _id = id1 in tablename.  Fields not inlucded in request.body.data will not be modified.
 
-### DELETE /tablename/:id1,id2
+### DELETE /tablename/__ids:id1,id2
 Deletes those records.
 
-### DELETE /tablename/:*
+### DELETE /tablename/__ids:*
 Deletes all records in the table.
 
 <a name="webmethods"></a>
 ## Custom Web Methods
-[https://service.proxibase.com/__do](https://service.proxibase.com/__do)
+[https://api.proxibase.com/__do](https://api.proxibase.com/__do)
 
 Lists the web methods. POST to /__do/methodName executes a method passing in the full request and response objects. The request body must be in JSON format. 
 
@@ -81,23 +84,20 @@ Lists the web methods. POST to /__do/methodName executes a method passing in the
 Returns request.body
 
 ### POST /__do/find
-Is a way to do a GET on any table in the system, but with the added convenience of putting the paramters in the request body rather than on the query string. find expects request.body to contain:
+Is a way to do a GET on any table in the system, but with the added convenience of putting the paramters in the request body rather than on the query string. find expects request.body to contain JSON of this form:
 
     {
       "table": "tableName",
       "ids": ["_id1", "_id2"],
       "names": ["name1", "name2"],
-      "query": {
-        "__fields": "name",
-        "__find": {
-          "field1": "Jay"
-        },
-        "__limit": 1-1000,
-        "__lookups": true
-      }
+      "fields": ["field1","field2"],
+      "find": {"name":"name1"},
+      "children": ["childTable1","childTable2"],
+      "lookups": true,
+      "limit": 25
     }
 
-The table property is required.  All others are optional. query is an object. The value of the query.__find property is passed through to mongodb unmodified, so it can be used to specify any clauses that mongodb supports, including sorting, offset, etc.  See mongodb's [advanced query syntax](http://www.mongodb.org/display/DOCS/Advanced+Queries) for details. This may present a security problem, so will likely be removed once the public query syntax becomes more full-featured.
+The table property is required.  All others are optional. The value of the find property is passed through to mongodb unmodified, so it can be used to specify any clauses that mongodb supports, including sorting, offset, etc.  See mongodb's [advanced query syntax](http://www.mongodb.org/display/DOCS/Advanced+Queries) for details. This may present a security problem, so will likely be removed once the public query syntax becomes more full-featured.
 
 ### POST /__do/getEntitiesForBeacons
 
