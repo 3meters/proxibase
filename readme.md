@@ -1,10 +1,9 @@
 # Proxibase
 Proxibase is the backing service for 3meters aircandi and related services
 
-Web: [https://www.proxibase.com](https://www.proxibase.com)
+Web: https://www.proxibase.com
 
-API: [https://service.proxibase.com](https://service.proxibase.com)
-
+API: https://api.proxibase.com
 
 ## REST API
 [https://service.proxibase.com/__info](https://service.proxibase.com/__info)
@@ -72,6 +71,7 @@ Deletes those records.
 ### DELETE /tablename/:*
 Deletes all records in the table.
 
+<a name="webmethods"></a>
 ## Custom Web Methods
 [https://service.proxibase.com/__do](https://service.proxibase.com/__do)
 
@@ -81,35 +81,33 @@ Lists the web methods. POST to /__do/methodName executes a method passing in the
 Returns request.body
 
 ### POST /__do/find
-Expects request.body to contain {table: "tableName", query: {}} where the members of the query map are the same as for GET /table, eg
-
-    POST /__do/find
-
-with request.body:
+Is a way to do a GET on any table in the system, but with the added convenience of putting the paramters in the request body rather than on the query string. find expects request.body to contain:
 
     {
-      "table": "users",
+      "table": "tableName",
+      "ids": ["_id1", "_id2"],
+      "names": ["name1", "name2"],
       "query": {
         "__fields": "name",
         "__find": {
-          "name": "Jay"
-        } 
+          "field1": "Jay"
+        },
+        "__limit": 1-1000,
+        "__lookups": true
       }
     }
 
-is identical to calling
-
-    GET /users?__fields=name&__find={"name":"Jay"}
+The table property is required.  All others are optional. query is an object. The value of the query.__find property is passed through to mongodb unmodified, so it can be used to specify any clauses that mongodb supports, including sorting, offset, etc.  See mongodb's [advanced query syntax](http://www.mongodb.org/display/DOCS/Advanced+Queries) for details. This may present a security problem, so will likely be removed once the public query syntax becomes more full-featured.
 
 ### POST /__do/getEntitiesForBeacons
 
 with request.body
 
     {
-      "beacons": ['macId1', 'macId2']
+      "beacons": ["macId1", "macId2"]
     }
 
-returns all entites dropped for beacons
+returns all entites dropped for the specified beacons
 
 ## Etc
 * [Building a Proxibase Server from scratch](proxibase/wiki/ServerSetup)
