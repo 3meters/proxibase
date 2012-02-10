@@ -4,11 +4,10 @@
 
 module.exports = {
   name: "Proxibase",
-  namespace: "com.proxibase.api",
   host: "localhost",
   port: 8043,
   env: "dev", // dev|prod
-  notify: "admin@3meters.com",
+  notify: "pager@3meters.com.deleteme",
   ssl: {
     keyFilePath: "./keys/dev/dev.pem",
     certFilePath: "./keys/dev/dev.crt",
@@ -19,6 +18,7 @@ module.exports = {
     port: 27017,
     database: "prox",
     options: {
+      strict: true,
       auto_reconnect: true,
       poolSize: 3
     }
