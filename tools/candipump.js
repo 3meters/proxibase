@@ -11,8 +11,8 @@ var proxModels = {
 
 var candiModels = {
   0: "User",  // 5
-  1: "BeaconSet",  // 2
-  2: "Comment", // 21 
+  1: "BeaconSets",  // 2
+  2: "Comments", // 21 
   3: "Documents", // 1
   4: "Beacons", // 6
   5: "Entities", // 76
