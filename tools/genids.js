@@ -1,5 +1,9 @@
 
-function genId(schemaId, timeUTC) {
+var assert = require('assert');
+
+module.exports = function(schemaId, timeUTC, oldId) {
+
+  // var timeUTC = getTimeUTC();
 
   assert(parseInt(schemaId) >= 0 && timeUTC, "Invalid call to genId");
 
@@ -31,6 +35,7 @@ function genId(schemaId, timeUTC) {
 
   var millisecs = pad((nowUTC.getMilliseconds()), 3);
   var rand = pad((Math.floor(Math.random() * 1000000)), 6)
+  if (oldId) rand = pad(oldId, 6);
 
   var id = [schema, dateUTC, secondsUTC, millisecs, rand].join('.');
   // log('_id', id);
@@ -41,5 +46,5 @@ function genId(schemaId, timeUTC) {
 var getTimeUTC = function() {
   var now = new Date();
   var nowUTC = new Date(now.getTime() - (now.getTimezoneOffset() * 60000));
-  return nowUTC.getTime();
+  return nowUTC.getTime()
 }
