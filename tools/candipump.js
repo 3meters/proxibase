@@ -144,39 +144,39 @@ function splitCandi(cb) {
     // if (c.Creator != 1001 && c.Creator != 1002) console.log(c.Creator + ' ' + id);
 
     // shared fields
-    e._id = candi[i]._id; d._entity = c._id; delete c._id; delete c.Id;
-    e.modifier = e.creator = e.owner = d.creator = d.modifier = d.owner = id; delete c.Creator; delete c.Modifier
-    e.createdDate = d.createdDate = c.CreatedDate * 1000; delete c.CreatedDate;
-    e.modifiedDate = d.modifiedDate = c.ModifiedDate * 1000; delete c.ModifiedDate;
+    e._id = candi[i]._id; d._entity = c._id;
+    e.modifier = e.creator = e.owner = d.creator = d.modifier = d.owner = id;
+    e.createdDate = d.createdDate = c.CreatedDate * 1000;
+    e.modifiedDate = d.modifiedDate = c.ModifiedDate * 1000;
 
     // entitity fields
-    e._parent = c._parent; delete c._parent; delete c.Parent;
-    e.type = c.Type; delete c.Type;
-    e.name = c.Label;
-    e.title = c.Title; delete c.Title;
-    e.label = c.Label; delete c.Label;
-    e.subtitle = c.Subtitle; delete c.Subtitle;
-    e.description = c.Description; delete c.Description;
-    e.imageUri = c.ImageUri; delete c.ImageUri;
-    e.imagePreviewUri = c.ImagePreviewUri; delete c.ImagePreviewUri;
-    e.linkUri = c.LinkUri; delete c.LinkUri;
-    e.linkZoom = c.LinkZoom; delete c.LinkZoom;
-    e.linkJavascriptEnabled = c.LinkJavascriptEnabled; delete c.LinkJavascriptEnabled;
-    e.signalFence = c.SignalFence;  delete c.SignalFence;
-    e.visibility = c.Visibility; delete c.Visibility;
-    e.enabled = c.Enabled; delete c.Enabled;
-    e.locked = c.Locked; delete c.Locked;
+    if (c._parent) e._parent = c._parent;
+    e.type = c.Type;
+    if (c.Label) e.name = c.Label;
+    if (c.Label) e.label = c.Label;
+    if (c.Title) e.title = c.Title;
+    if (c.Subtitle) e.subtitle = c.Subtitle;
+    if (c.Description) e.description = c.Description;
+    if (c.ImageUri) e.imageUri = c.ImageUri;
+    if (c.ImagePreviewUri) e.imagePreviewUri = c.ImagePreviewUri;
+    if (c.LinkUri) e.linkUri = c.LinkUri;
+    if (c.LinkZoom != null) e.linkZoom = c.LinkZoom;
+    if (c.LinkJavascriptEnabled != null) e.linkJavascriptEnabled = c.LinkJavascriptEnabled;
+    if (c.SignalFence != null) e.signalFence = c.SignalFence; 
+    if (c.Visibility != null) e.visibility = c.Visibility;
+    if (c.Enabled != null) e.enabled = c.Enabled;
+    if (c.Locked != null) e.locked = c.Locked;
 
     // drop fields
-    d._beacon = c._beacon; delete c._beacon; delete c.BeaconId;
-    d.latitude = c.Latitude; delete c.Latitude;
-    d.longitude = c.Longitude; delete c.Longitude;
-    d.altitude = c.Longitude; delete c.Altitude;
-    d.bearing = c.Bearing; delete c.Bearing;
-    d.speed = c.Speed; delete c.Speed;
-    d.accuracy = c.Accuracy; delete c.Accuracy;
+    if (c._beacon) d._beacon = c._beacon;
+    if (c.Latitude) d.latitude = c.Latitude;
+    if (c.Longitude) d.longitude = c.Longitude;
+    if (c.Longitude) d.altitude = c.Longitude;
+    if (c.Bearing != null) d.bearing = c.Bearing;
+    if (c.Speed != null) d.speed = c.Speed;
+    if (c.Accuracy != null) d.accuracy = c.Accuracy;
 
-    console.log('id:' + e._id + '\n' + util.inspect(c, false, 5) + "\n");
+    console.log('id:' + e._id + '\n' + util.inspect(d, false, 5) + "\n");
   }
 
 }
