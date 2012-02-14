@@ -51,9 +51,12 @@ var beacons = [
     _id: '0001.120101.00000.000.000007' }
 ]
 
+
 var aid = '0000.000000.00000.000.000000';  // annonymous user
 var jid = '0000.000000.00000.000.000001';  // jay
 var gid = '0000.000000.00000.000.000002';  // george
+var mid = '0000.000000.00000.000.000003';  // max
+var did = '0000.000000.00000.000.000004';  // darren
 
 var candi = [];
 var entities = [];
@@ -91,7 +94,7 @@ function splitCandi(cb) {
   // generate new _ids
   for (var i = 0; i < candi.length; i++) {
     candi[i]._id = genId(2, candi[i].CreatedDate * 1000, candi[i].Id);
-    console.log("_id: " + candi[i]._id + " Id: " + candi[i].Id + " Parent: " + candi[i].Parent);
+    // console.log("_id: " + candi[i]._id + " Id: " + candi[i].Id + " Parent: " + candi[i].Parent);
   }
   // hook up _parent
   for (var i = 0; i < candi.length; i++) {
@@ -116,7 +119,7 @@ function splitCandi(cb) {
       }
     }
     if (!candi[i]._beacon) 
-      candi[i]._beacon = beacons[0]._id;  // majic lost beacon
+      candi[i]._beacon = beacons[0]._id;  // magic unknown beacon
     //console.log("_id: " + candi[i]._id + " BeaconId: " + candi[i].BeaconId + " _beacon: " + candi[i]._beacon);
   }
 
@@ -124,23 +127,56 @@ function splitCandi(cb) {
   var c = candi;  // candi, entities, drops
   for (var i = 0; i < candi.length; i++) {
     var e = {}, d = {}, c = candi[i];
+    
+    // unused fields
     delete c.__metadata;
     delete c.Uri;
+    delete c.Children;
+
+    // set the user fields
+    var id = jid;  // default to Jay
+    if (!c.Creator) id = aid;
+    if (c.Creator === 1000) id = aid;
+    if (c.Creator === 1002) id = gid;
+    if (c.Creator === 1013) id = mid;
+    if (c.Creator === 1014) id = did;
+
+    // if (c.Creator != 1001 && c.Creator != 1002) console.log(c.Creator + ' ' + id);
+
+    // shared fields
     e._id = candi[i]._id; d._entity = c._id; delete c._id; delete c.Id;
+    e.modifier = e.creator = e.owner = d.creator = d.modifier = d.owner = id; delete c.Creator; delete c.Modifier
+    e.createdDate = d.createdDate = c.CreatedDate * 1000; delete c.CreatedDate;
+    e.modifiedDate = d.modifiedDate = c.ModifiedDate * 1000; delete c.ModifiedDate;
+
+    // entitity fields
     e._parent = c._parent; delete c._parent; delete c.Parent;
-    e.name = c.Label; e.title = c.Title != c.Label ? c.Title : undefined; delete c.Title; delete c.Label;
-    e.subtitle = c.Subtitle || undefined; delete c.Subtitle;
-    e.description = c.Description || undefined; delete c.Description;
-    e.imageUri = c.ImageUri || undefined; delete c.ImageUri;
-    e.imagePreviewUri = c.ImagePreviewUri || undefined; delete c.ImagePreviewUri;
-    e.linkUri = c.LinkUri || undefined; delete c.LinkUri;
-    e.linkZoom = c.LinkZoom || undefined; delete c.LinkZoom;
-    e.LinkJavascriptEnabled = c.LinkJavascriptEnabled || undefined; delete c.LinkJavascriptEnabled;
+    e.type = c.Type; delete c.Type;
+    e.name = c.Label;
+    e.title = c.Title; delete c.Title;
+    e.label = c.Label; delete c.Label;
+    e.subtitle = c.Subtitle; delete c.Subtitle;
+    e.description = c.Description; delete c.Description;
+    e.imageUri = c.ImageUri; delete c.ImageUri;
+    e.imagePreviewUri = c.ImagePreviewUri; delete c.ImagePreviewUri;
+    e.linkUri = c.LinkUri; delete c.LinkUri;
+    e.linkZoom = c.LinkZoom; delete c.LinkZoom;
+    e.linkJavascriptEnabled = c.LinkJavascriptEnabled; delete c.LinkJavascriptEnabled;
+    e.signalFence = c.SignalFence;  delete c.SignalFence;
+    e.visibility = c.Visibility; delete c.Visibility;
+    e.enabled = c.Enabled; delete c.Enabled;
+    e.locked = c.Locked; delete c.Locked;
 
+    // drop fields
+    d._beacon = c._beacon; delete c._beacon; delete c.BeaconId;
+    d.latitude = c.Latitude; delete c.Latitude;
+    d.longitude = c.Longitude; delete c.Longitude;
+    d.altitude = c.Longitude; delete c.Altitude;
+    d.bearing = c.Bearing; delete c.Bearing;
+    d.speed = c.Speed; delete c.Speed;
+    d.accuracy = c.Accuracy; delete c.Accuracy;
 
-    // console.log('subtitle ' + c.Subtitle);
-    // console.log('id:' + e._id + ' c: ' + util.inspect(c, false, 5) + "\n");
-
+    console.log('id:' + e._id + '\n' + util.inspect(c, false, 5) + "\n");
   }
 
 }
