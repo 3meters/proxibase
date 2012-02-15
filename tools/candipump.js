@@ -178,12 +178,14 @@ function splitCandi(cb) {
     if (c.Accuracy != null) d.accuracy = c.Accuracy;
 
     // console.log('id:' + e._id + '\n' + util.inspect(d, false, 5) + "\n");
-    entities[i].push(e);
-    drops[i].push(d);
+    entities[i] = e;
+    drops[i] = d;
 
   }
 
-  loadDocs(0);
+  fs.writeFileSync('entities.json', JSON.stringify(entities));
+  fs.writeFileSync('drops.json', JSON.stringify(drops));
+  done();
 
 }
 
@@ -199,18 +201,19 @@ function loadDocs(iDoc) {
   }
 
   var req = https.request(options, onRes);
-  req.write({ data: { JSON.stringify(entities[iDoc]); } });
+  var json = JSON.stringify(entities[iDoc]);
+  req.write({ data: json });
   req.end();
 
   function onRes(res) {
     res.on('error', function(e) { throw e });
     res.on('data', function(data) {
       console.log(iDoc + ': ' + util.inspect(JSON.parse(data)));
-    }
+    });
     res.on('end', function() {
       iDoc++;
       loadDocs(iDoc); // recurse
-    }
+    });
   }
 }
 
