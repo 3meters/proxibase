@@ -1,5 +1,6 @@
 
 var http = require('http');
+var https = require('https');
 var util = require('util');
 var genId = require('./genids');
 var fs = require('fs');
@@ -176,10 +177,44 @@ function splitCandi(cb) {
     if (c.Speed != null) d.speed = c.Speed;
     if (c.Accuracy != null) d.accuracy = c.Accuracy;
 
-    console.log('id:' + e._id + '\n' + util.inspect(d, false, 5) + "\n");
+    // console.log('id:' + e._id + '\n' + util.inspect(d, false, 5) + "\n");
+    entities[i].push(e);
+    drops[i].push(d);
+
   }
 
+  loadDocs(0);
+
 }
+
+function loadDocs(iDoc) {
+  if (iDoc >= entities.length) done(); // break recursion
+
+  var options = {
+    host: "api.localhost",
+    port: 8043,
+    method: "POST",
+    path: "/entities",
+    headers:  {"content-type": "application/json"}
+  }
+
+  var req = https.request(options, onRes);
+  req.write({ data: { JSON.stringify(entities[iDoc]); } });
+  req.end();
+
+  function onRes(res) {
+    res.on('error', function(e) { throw e });
+    res.on('data', function(data) {
+      console.log(iDoc + ': ' + util.inspect(JSON.parse(data)));
+    }
+    res.on('end', function() {
+      iDoc++;
+      loadDocs(iDoc); // recurse
+    }
+  }
+}
+
+
 
 function done() {
   console.log('finished');
