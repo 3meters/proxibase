@@ -189,34 +189,6 @@ function splitCandi(cb) {
 
 }
 
-function loadDocs(iDoc) {
-  if (iDoc >= entities.length) done(); // break recursion
-
-  var options = {
-    host: "api.localhost",
-    port: 8043,
-    method: "POST",
-    path: "/entities",
-    headers:  {"content-type": "application/json"}
-  }
-
-  var req = https.request(options, onRes);
-  var json = JSON.stringify(entities[iDoc]);
-  req.write({ data: json });
-  req.end();
-
-  function onRes(res) {
-    res.on('error', function(e) { throw e });
-    res.on('data', function(data) {
-      console.log(iDoc + ': ' + util.inspect(JSON.parse(data)));
-    });
-    res.on('end', function() {
-      iDoc++;
-      loadDocs(iDoc); // recurse
-    });
-  }
-}
-
 
 
 function done() {
