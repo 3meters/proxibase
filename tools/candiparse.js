@@ -70,7 +70,7 @@ function getCandi() {
 
   var options = {
     host: "dev.aircandi.com",
-    path: "/airodata.svc/Entities",
+    path: "/airodata.svc/Users",
     headers:  {"Accept": "application/json"},
   }
 
@@ -86,10 +86,75 @@ function getCandi() {
       candi = candiObj.d; // pull array to outer object
       // console.log("candi:\n" + util.inspect(candi, false, 5));
       console.log("Total candi: " + candi.length);
-      return splitCandi();
+      return processUsers();
     });
   }
 }
+
+function processUsers() {
+  var users = [];
+  for (var i = 0; i < candi.length; i++) {
+    var c = candi[i];
+    var u =  {};
+    if (c.Id === 1001) u._id = jid;
+    if (c.Id === 1002) u._id = gid;
+    if (c.Id === 1003) u._id = aid;
+    if (c.Id === 1013) u._id = mid;
+    if (c.Id === 1014) u._id = did;
+    u._owner = u._creator = u._modifier = jid;
+    if (c.Name) u.name = c.Name;
+    if (c.Email) u.email = c.Email; if (u._id === mid) u.email = "max@3meters.com";
+    if (c.Role) u.role = c.Role;
+    if (c.Password) u.password = c.Password;
+    if (c.ImageUri) u.imageUri = c.ImageUri;
+    if (c.LinkUri) u.linkUri = c.LinkUri;
+    if (c.Location) u.location = c.Location;
+    if (c.FacebookId) u.facebookId = c.FacebookId;
+    if (c.IsDeveloper) u.isDeveloper = c.IsDeveloper;
+    if (c.CreatedDate) u.createdDate = c.CreatedDate;
+    if (c.ModifiedDate) u.modifiedDate = c.ModifiedDate;
+
+    users.push(u);
+  }
+  console.dir(users);
+  fs.writeFileSync('users.json', JSON.stringify(users));
+}
+
+
+function processBeacons() {
+  var newBeacons = [];
+  for (var i = 0; i < candi.length; i++) {
+    var c = candi[i];
+    var b =  {};
+    b._owner = b._creator = b.modifier = jid;
+    b.name = c.Id;
+    for (var j = 0; j < beacons.length; j++) {
+      if (c.Id === beacons[j].Id) {
+        b._id = beacons[j]._id;
+        j = beacons.length;
+      }
+    }
+    if (c.Ssid) b.ssid = c.Ssid;
+    if (c.Label) b.label = c.Label;
+    if (c.BeaconSet) b._beaconSet = c.BeaconSet;
+    if (c.Locked) b.locked = c.Locked;
+    if (c.Visibility) b.visibility = c.Visibility;
+    if (c.BeaconType) b.beaconType = c.BeaconType;
+    if (c.Latitude) b.latitude  = c.Latitude;
+    if (c.Longitude) b.longitude = c.Longitude;
+    if (c.Altitude) b.altitude = c.Altitude;
+    if (c.Accuracy) b.accuracy = c.Accuracy;
+    if (c.Bearing) b.bearing = c.Bearing;
+    if (c.Speed) b.speed = c.Speed;
+    if (c.CreatedDate) b.createdDate = c.CreatedDate;
+    if (c.ModifiedDate) b.modifiedDate = c.ModifiedDate;
+    
+    newBeacons.push(b);
+  }
+  console.dir(newBeacons);
+  fs.writeFileSync('beacons.json', JSON.stringify(newBeacons));
+}
+
 
 function splitCandi(cb) {
   // generate new _ids
