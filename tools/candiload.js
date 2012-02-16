@@ -22,37 +22,51 @@ var candiModels = {
   6: "EntityTypes" // 6 
 };
 
-var entities = JSON.parse(fs.readFileSync('entities.json'));
-console.log("entities: " + entities.length); 
+var tables = [];
+var tableNames= [];
 
-var drops = JSON.parse(fs.readFileSync('drops.json'));
-console.log("drops: " + drops.length);
+tables[0] = JSON.parse(fs.readFileSync('entities.json'));
+tableNames[0] = 'entities';
+console.log("entities: " + tables[0].length); 
+
+tables[1] = JSON.parse(fs.readFileSync('drops.json'));
+tableNames[1] = 'drops';
+console.log("drops: " + tables[1].length);
 
 var options = {
     host: "api.localhost",
     port: 8043,
-    headers:  {"content-type": "application/json"}
+    headers:  {"content-type": "application/json"},
+    method: "post"
   }
 
-loadDocs(entities, 0);
+function loadTable(iTable) {
+  if (iTable >= tables.length) return done(); // break recursion
+  loadDoc(tables[iTable], 0, tableNames[iTable], function() {
+    iTable++;
+    loadTable(iTable); // recurse
+  });
+}
 
-function loadDocs(docs, i) {
+function loadDoc(docs, iDoc, tableName, next) {
 
-  if (i >= docs.length) done(); // break recursion
+  if (iDoc >= docs.length) return next(); // break recursion
+
+  options.path = "/" + tableName;
 
   var req = https.request(options, onRes);
-  var json = JSON.stringify({ data: docs[i] });
+  var json = JSON.stringify({ data: docs[iDoc] });
   req.write(json);
   req.end();
 
   function onRes(res) {
     res.on('error', function(e) { throw e });
     res.on('data', function(data) {
-      console.log(i + ': ' + util.inspect(JSON.parse(data)));
+      console.log(iDoc + ': ' + util.inspect(JSON.parse(data)));
     });
     res.on('end', function() {
-      i++;
-      loadDocs(i); // recurse
+      iDoc++;
+      loadDoc(docs, iDoc, tableName, next); // recurse
     });
   }
 }
@@ -61,4 +75,5 @@ function done() {
   process.exit(0);
 }
 
+loadTable(0);
 
