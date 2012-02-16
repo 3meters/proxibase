@@ -56,8 +56,8 @@ var beacons = [
 var aid = '0000.000000.00000.000.000000';  // annonymous user
 var jid = '0000.000000.00000.000.000001';  // jay
 var gid = '0000.000000.00000.000.000002';  // george
-var mid = '0000.000000.00000.000.000003';  // max
-var did = '0000.000000.00000.000.000004';  // darren
+var mid = '0000.120101.49595.648.383743';  // max
+var did = '0000.120101.36563.345.675873';  // darren
 
 var candi = [];
 var entities = [];
@@ -70,7 +70,7 @@ function getCandi() {
 
   var options = {
     host: "dev.aircandi.com",
-    path: "/airodata.svc/Users",
+    path: "/airodata.svc/Entities",
     headers:  {"Accept": "application/json"},
   }
 
@@ -86,7 +86,7 @@ function getCandi() {
       candi = candiObj.d; // pull array to outer object
       // console.log("candi:\n" + util.inspect(candi, false, 5));
       console.log("Total candi: " + candi.length);
-      return processUsers();
+      return processEntities();
     });
   }
 }
@@ -126,7 +126,7 @@ function processBeacons() {
   for (var i = 0; i < candi.length; i++) {
     var c = candi[i];
     var b =  {};
-    b._owner = b._creator = b.modifier = jid;
+    b._owner = b._creator = b._modifier = jid;
     b.name = c.Id;
     for (var j = 0; j < beacons.length; j++) {
       if (c.Id === beacons[j].Id) {
@@ -148,7 +148,7 @@ function processBeacons() {
     if (c.Speed) b.speed = c.Speed;
     if (c.CreatedDate) b.createdDate = c.CreatedDate;
     if (c.ModifiedDate) b.modifiedDate = c.ModifiedDate;
-    
+
     newBeacons.push(b);
   }
   console.dir(newBeacons);
@@ -156,7 +156,7 @@ function processBeacons() {
 }
 
 
-function splitCandi(cb) {
+function processEntities(cb) {
   // generate new _ids
   for (var i = 0; i < candi.length; i++) {
     candi[i]._id = genId(2, candi[i].CreatedDate * 1000, candi[i].Id);
@@ -211,7 +211,7 @@ function splitCandi(cb) {
 
     // shared fields
     e._id = candi[i]._id; d._entity = c._id;
-    e.modifier = e.creator = e.owner = d.creator = d.modifier = d.owner = id;
+    e._modifier = e._creator = e._owner = d._creator = d._modifier = d._owner = id;
     e.createdDate = d.createdDate = c.CreatedDate * 1000;
     e.modifiedDate = d.modifiedDate = c.ModifiedDate * 1000;
 
