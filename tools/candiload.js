@@ -33,6 +33,14 @@ tables[1] = JSON.parse(fs.readFileSync('drops.json'));
 tableNames[1] = 'drops';
 console.log("drops: " + tables[1].length);
 
+tables[2] = JSON.parse(fs.readFileSync('users.json'));
+tableNames[2] = 'users';
+console.log("users: " + tables[2].length);
+
+tables[3] = JSON.parse(fs.readFileSync('beacons.json'));
+tableNames[3] = 'beacons';
+console.log("beacons: " + tables[3].length);
+
 var options = {
     host: "api.localhost",
     port: 8043,
