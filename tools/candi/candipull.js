@@ -1,9 +1,10 @@
+/*
+ * suck candi from dev.aircandi.com, transform it into data files that can be loaded into proxibase
+ */
 
-var http = require('http');
-var https = require('https');
-var util = require('util');
-var genId = require('./genids');
-var fs = require('fs');
+var http = require('http')
+var genId = require('./genids')
+var fs = require('fs')
 
 var proxModels = {
   0: "users",
@@ -13,7 +14,7 @@ var proxModels = {
   4: "comments",
   5: "documents",
   6: "beaconsets"
-};
+}
 
 var candiModels = {
   0: "User",  // 5
@@ -21,9 +22,9 @@ var candiModels = {
   2: "Comments", // 21 
   3: "Documents", // 1
   4: "Beacons", // 6
-  5: "Entities", // 76
+  5: "Entities", // 78
   6: "EntityTypes" // 6 
-};
+}
 
 var beacons = [
   { Id: '00:00:00:00:00:00',
@@ -53,25 +54,31 @@ var beacons = [
 ]
 
 
-var aid = '0000.000000.00000.000.000000';  // annonymous user
-var jid = '0000.000000.00000.000.000001';  // jay
-var gid = '0000.000000.00000.000.000002';  // george
-var mid = '0000.120101.49595.648.383743';  // max
-var did = '0000.120101.36563.345.675873';  // darren
+var aid = '0000.000000.00000.000.000000'  // annonymous user
+var jid = '0000.000000.00000.000.000001'  // jay
+var gid = '0000.000000.00000.000.000002'  // george
+var mid = '0000.120101.49595.648.383743'  // max
+var did = '0000.120101.36563.345.675873'  // darren
+
+var tables = [
+  {name: "Users", fn: processUsers},
+  {name: "Beacons", fn: processBeacons},
+  {name: "Entities", fn: processEntities}
+]
 
 var candi = [];
-var entities = [];
-var drops = [];
 
 // start it
-getCandi();
+getCandi(tables.length, done);
 
-function getCandi() {
+function getCandi(iTable, cb) {
+
+  if (!iTable--) return cb(); // done, break recursion
 
   var options = {
     host: "dev.aircandi.com",
-    path: "/airodata.svc/Entities",
-    headers:  {"Accept": "application/json"},
+    path: "/airodata.svc/" + tables[iTable].name,
+    headers:  {"Accept": "application/json"}
   }
 
   http.get(options, onRes)
@@ -84,14 +91,12 @@ function getCandi() {
     res.on('end', function() {
       var candiObj = JSON.parse(json);
       candi = candiObj.d; // pull array to outer object
-      // console.log("candi:\n" + util.inspect(candi, false, 5));
-      console.log("Total candi: " + candi.length);
-      return processEntities();
+      return tables[iTable].fn(iTable, cb);
     });
   }
 }
 
-function processUsers() {
+function processUsers(iTable, cb) {
   var users = [];
   for (var i = 0; i < candi.length; i++) {
     var c = candi[i];
@@ -116,12 +121,13 @@ function processUsers() {
 
     users.push(u);
   }
-  console.dir(users);
   fs.writeFileSync('users.json', JSON.stringify(users));
+  console.log(users.length + ' users');
+  return getCandi(iTable, cb);
 }
 
 
-function processBeacons() {
+function processBeacons(iTable, cb) {
   var newBeacons = [];
   for (var i = 0; i < candi.length; i++) {
     var c = candi[i];
@@ -151,17 +157,21 @@ function processBeacons() {
 
     newBeacons.push(b);
   }
-  console.dir(newBeacons);
   fs.writeFileSync('beacons.json', JSON.stringify(newBeacons));
+  console.log(newBeacons.length + ' beacons');
+  return getCandi(iTable, cb);
 }
 
 
-function processEntities(cb) {
+function processEntities(iTable, cb) {
+  var entities = [];
+  var drops = [];
+
   // generate new _ids
   for (var i = 0; i < candi.length; i++) {
     candi[i]._id = genId(2, candi[i].CreatedDate * 1000, candi[i].Id);
-    // console.log("_id: " + candi[i]._id + " Id: " + candi[i].Id + " Parent: " + candi[i].Parent);
   }
+
   // hook up _parent
   for (var i = 0; i < candi.length; i++) {
     if (candi[i].Parent) {
@@ -172,8 +182,8 @@ function processEntities(cb) {
         }
       }
     }
-    //console.log("_id: " + candi[i]._id + " Id: " + candi[i].Id + " Parent: " + candi[i].Parent + " _par: " + candi[i]._parent);
   }
+
   // hook up _beacon
   for (var i = 0; i < candi.length; i++) {
     if (candi[i].BeaconId) {
@@ -186,18 +196,12 @@ function processEntities(cb) {
     }
     if (!candi[i]._beacon) 
       candi[i]._beacon = beacons[0]._id;  // magic unknown beacon
-    //console.log("_id: " + candi[i]._id + " BeaconId: " + candi[i].BeaconId + " _beacon: " + candi[i]._beacon);
   }
 
   // make new properties and delete old ones
   var c = candi;  // candi, entities, drops
   for (var i = 0; i < candi.length; i++) {
     var e = {}, d = {}, c = candi[i];
-    
-    // unused fields
-    delete c.__metadata;
-    delete c.Uri;
-    delete c.Children;
 
     // set the user fields
     var id = jid;  // default to Jay
@@ -206,8 +210,6 @@ function processEntities(cb) {
     if (c.Creator === 1002) id = gid;
     if (c.Creator === 1013) id = mid;
     if (c.Creator === 1014) id = did;
-
-    // if (c.Creator != 1001 && c.Creator != 1002) console.log(c.Creator + ' ' + id);
 
     // shared fields
     e._id = candi[i]._id; d._entity = c._id;
@@ -242,19 +244,17 @@ function processEntities(cb) {
     if (c.Speed != null) d.speed = c.Speed;
     if (c.Accuracy != null) d.accuracy = c.Accuracy;
 
-    // console.log('id:' + e._id + '\n' + util.inspect(d, false, 5) + "\n");
     entities[i] = e;
     drops[i] = d;
-
   }
 
   fs.writeFileSync('entities.json', JSON.stringify(entities));
   fs.writeFileSync('drops.json', JSON.stringify(drops));
-  done();
+  console.log(entities.length + ' entities');
+  console.log(drops.length + ' drops');
+  return getCandi(iTable, cb);
 
 }
-
-
 
 function done() {
   console.log('finished');
