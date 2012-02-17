@@ -1,3 +1,15 @@
+/*
+ * read json files and load them into proxibase via the rest api
+ */
+
+var options = {
+  host: "api.localhost",
+  port: 8043,
+  headers:  {"content-type": "application/json"},
+  method: "post"
+}
+
+
 var https = require('https');
 var util = require('util');
 var fs = require('fs');
@@ -41,12 +53,6 @@ tables[3] = JSON.parse(fs.readFileSync('beacons.json'));
 tableNames[3] = 'beacons';
 console.log("beacons: " + tables[3].length);
 
-var options = {
-    host: "api.localhost",
-    port: 8043,
-    headers:  {"content-type": "application/json"},
-    method: "post"
-  }
 
 function loadTable(iTable) {
   if (iTable >= tables.length) return done(); // break recursion
