@@ -69,4 +69,18 @@ exports.checkUser = function(test) {
   })
 }
 
+exports.updateUser = function(test) {
+  var options = _.clone(_options)
+  var data = _.clone(_data)
+  data.name = 'Test User2'
+  options.body= JSON.stringify({data: data})
+  options.uri = _uri + '/__ids:' + _data._id
+  req.post(options, function(err, res, body) {
+    test.ok(res && res.statusCode && res.statusCode === 200, "Bad status code")
+    body = JSON.parse(body)
+    test.ok(body && body.count && body.count === 1, "Bad count")
+    test.done()
+  })
+}
+
 
