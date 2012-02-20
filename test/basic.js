@@ -11,26 +11,33 @@ var
   config = require('../config'),
   _baseUri = "https://api." + config.host + ":" + config.port + "/",
   _uri = _baseUri + "users",
-  _data = {
-    _id: "tid",
-    name: "Test User",
-    email: "foo@bar.com"
+  _body = {
+    data: {
+      _id: "tid",
+      name: "Test User",
+      email: "foo@bar.com"
+    }
   },
   _options = {
     uri: _uri,
     headers: {
       "content-type": "application/json"
     },
-    body: JSON.stringify({data: _data})
+    body: JSON.stringify(_body)
   }
+
+function checkCode(res, code) {
+  code = code || 200
+  assert(res && res.statusCode && res.statusCode === code)
+}
 
 log('\nTesting ' + _baseUri)
 
 exports.getUsers = function(test) {
   req.get(_uri, function(err, res, body) {
-    assert.ok(res && res.statusCode, 'Fatal: could not reach server') // bail on fail
-    test.ok(res.statusCode === 200, 'unexpected status code')
+    checkCode(res)
     body = JSON.parse(body)
+    assert(body && body.data && body.data instanceof Array)
     test.done()
   })
 }
@@ -38,7 +45,7 @@ exports.getUsers = function(test) {
 // delete first in case old test left data around
 exports.delUsers = function(test) {
   req.del(_uri + '/__ids:tid', function(err, res) {
-    test.ok(res && res.statusCode && res.statusCode === 200, 'Bad status code')
+    checkCode(res) // delete unfound record will return statusCode 200
     test.done()
   })
 }
@@ -46,39 +53,47 @@ exports.delUsers = function(test) {
 exports.addUser = function(test) {
   var options = _.clone(_options)
   req.post(options, function(err, res, body) {
-    test.ifError(err)
-    test.ok(res && res.statusCode === 200, "Bad statusCode: " + 
-      res.statusCode + "\nres.body:\n" + body)
+    checkCode(res)
     body = JSON.parse(body)
-    test.ok(body.count && body.count === 1, "Bad count")
-    test.ok(body && body.data && body.data instanceof Array, "Missing data")
-    test.ok(body.data.length === 1, "Bad data length")
-    test.ok(body.data[0]._id && body.data[0]._id === _data._id, "Bad _id")
+    assert(body.count && body.count === 1)
+    assert(body && body.data && body.data instanceof Array)
+    assert(body.data.length === 1)
+    assert(body.data[0]._id && body.data[0]._id === _body.data._id)
     test.done()
   })
 }
 
 exports.checkUser = function(test) {
   req.get(_uri + "/__ids:tid", function(err, res, body) {
-    test.ok(res && res.statusCode && res.statusCode === 200, "Bad statusCode")
+    checkCode(res)
     body = JSON.parse(body)
-    test.ok(body && body.count && body.count === 1, "Bad count")
-    test.ok(body.data && body.data && body.data instanceof Array, "Missing data")
-    test.ok(body.data[0].name && body.data[0].name === _data.name, 'Bad name')
+    assert(body && body.count && body.count === 1)
+    assert(body.data && body.data && body.data instanceof Array)
+    assert(body.data[0].name && body.data[0].name === _body.data.name)
     test.done()
   })
 }
 
 exports.updateUser = function(test) {
   var options = _.clone(_options)
-  var data = _.clone(_data)
-  data.name = 'Test User2'
-  options.body= JSON.stringify({data: data})
-  options.uri = _uri + '/__ids:' + _data._id
+  var body = _.clone(_body)
+  body.data.name = 'Test User2'
+  options.body= JSON.stringify(body)
+  options.uri = _uri + '/__ids:' + _body.data._id
   req.post(options, function(err, res, body) {
-    test.ok(res && res.statusCode && res.statusCode === 200, "Bad status code")
+    checkCode(res)
     body = JSON.parse(body)
-    test.ok(body && body.count && body.count === 1, "Bad count")
+    assert(body && body.count && body.count === 1)
+    test.done()
+  })
+}
+
+exports.checkUpdatedUser = function(test) {
+  req.get(_uri + '/__ids:' + _body.data._id, function(err, res, body) {
+    checkCode(res)
+    body = JSON.parse(body)
+    assert(body && body.data && body.data instanceof Array)
+    assert(body.data[0].name === 'Test User2')
     test.done()
   })
 }
