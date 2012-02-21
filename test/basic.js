@@ -93,4 +93,18 @@ exports.checkUpdatedUser = function(test) {
   })
 }
 
+exports.deleteUpdateUser = function(test) {
+  req.del(_uri + '/__ids:' + _body.data._id, function(err, res) {
+    parse(res)
+    assert(res.body.count === 1)
+    test.done()
+  })
+}
 
+exports.checkUpdatedUserDeleted = function(test) {
+  req.get(_uri + '/__ids:' + _body.data._id, function(err, res) {
+    parse(res)
+    assert(res.body.count === 0)
+    test.done()
+  })
+}
