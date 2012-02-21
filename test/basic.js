@@ -1,17 +1,20 @@
 /*
  * Proxibase basic test
+ *
+ * To run:  nodeunit .
  */
 
-// Just say yummy to module globals in tests
+var _baseUri = 'https://api.localhost:8043'
+
+// uncomment to test production
+// _baseUri = 'https://api.proxibase.com'
+
 var
   assert = require('assert'),
-  util = require('util'),
   req = require('request'),
   _ = require('underscore'),
   log = require('../lib/log'),
-  config = require('../config'),
-  _baseUri = "https://api." + config.host + ":" + config.port + "/",
-  _uri = _baseUri + "users",
+  _uri = _baseUri + "/users",
   _body = {
     data: {
       _id: "tid",
@@ -27,17 +30,19 @@ var
     body: JSON.stringify(_body)
   }
 
+log('\nTesting ' + _baseUri)
+
+// Parse response.  Bail with assert on fail
 function parse(res, code) {
-  // works if named function is called directly, but not from nodeunit
+  // the following works if a named function calls parse directly, but not when called from nodeunit
   // var caller = arguments.callee.caller.name || 'unknown'
   code = code || 200
-  assert(res && res.statusCode && res.statusCode === code, "Bad statusCode")
+  assert(res && res.statusCode && res.statusCode === code, "Bad res.statusCode")
   res.body = JSON.parse(res.body)
-  assert(res.body && res.body.count === parseInt(res.body.count), "Bad body.count") // 0 is ok
-  if (res.body.data) assert(res.body.data instanceof Array, "Bad body.data")
+  assert(res.body && res.body.count === parseInt(res.body.count), "Bad res.body.count") // 0 is ok
+  if (res.body.data) assert(res.body.data instanceof Array, "Bad res.body.data")
 }
 
-log('\nTesting ' + _baseUri)
 
 exports.getUsers = function (test) {
   req.get(_uri, function(err, res) {
@@ -58,8 +63,8 @@ exports.addUser = function(test) {
   var options = _.clone(_options)
   req.post(options, function(err, res) {
     parse(res)
-    assert(res.body.count === 1)
-    assert(res.body.data[0]._id && res.body.data[0]._id === _body.data._id)
+    test.ok(res.body.count === 1)
+    test.ok(res.body.data[0]._id && res.body.data[0]._id === _body.data._id)
     test.done()
   })
 }
@@ -67,7 +72,7 @@ exports.addUser = function(test) {
 exports.checkUser = function(test) {
   req.get(_uri + "/__ids:tid", function(err, res) {
     parse(res)
-    assert(res.body.data[0].name && res.body.data[0].name === _body.data.name)
+    test.ok(res.body.data[0].name && res.body.data[0].name === _body.data.name)
     test.done()
   })
 }
@@ -80,7 +85,7 @@ exports.updateUser = function(test) {
   options.uri = _uri + '/__ids:' + _body.data._id
   req.post(options, function(err, res) {
     parse(res)
-    assert(res.body.count === 1)
+    test.ok(res.body.count === 1)
     test.done()
   })
 }
@@ -88,7 +93,7 @@ exports.updateUser = function(test) {
 exports.checkUpdatedUser = function(test) {
   req.get(_uri + '/__ids:' + _body.data._id, function(err, res) {
     parse(res)
-    assert(res.body.data[0].name === 'Test User2')
+    test.ok(res.body.data[0].name === 'Test User2')
     test.done()
   })
 }
@@ -96,7 +101,7 @@ exports.checkUpdatedUser = function(test) {
 exports.deleteUpdateUser = function(test) {
   req.del(_uri + '/__ids:' + _body.data._id, function(err, res) {
     parse(res)
-    assert(res.body.count === 1)
+    test.ok(res.body.count === 1)
     test.done()
   })
 }
@@ -104,7 +109,7 @@ exports.deleteUpdateUser = function(test) {
 exports.checkUpdatedUserDeleted = function(test) {
   req.get(_uri + '/__ids:' + _body.data._id, function(err, res) {
     parse(res)
-    assert(res.body.count === 0)
+    test.ok(res.body.count === 0)
     test.done()
   })
 }
