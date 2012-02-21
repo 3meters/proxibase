@@ -53,20 +53,23 @@ Returns each document with its lookup fields fully populated. Default false.
 ### POST Rules
 1. Set req.headers.content-type to 'application/json'
 2. Make sure req.body is parsable json
-3. Enclose new data in a data element, e.g: 
+3. Enclose new data in a data element inside and array: e.g: 
+4. Only one array element is supported currently, but this may change in the future
 
     request.body = {
-      "data": {
-        "field1": "foo",
-        "field2": "bar" 
-      }
+      "data": [ 
+        {
+          "field1": "foo",
+          "field2": "bar" 
+        }
+      ]
     }
 
 ### POST /tablename
-Inserts req.body.data into the tablename table.  If a value for _id is specified it will be used, otherwise the server will generate a value for _id.  Only one record may be inserted per request.
+Inserts req.body.data[0] into the tablename table.  If a value for _id is specified it will be used, otherwise the server will generate a value for _id.  Only one record may be inserted per request.
 
 ### POST /tablename/__ids:id1
-Updates the record with _id = id1 in tablename.  Fields not inlucded in request.body.data will not be modified.
+Updates the record with _id = id1 in tablename.  Fields not inlucded in request.body.data[0] will not be modified.
 
 ### DELETE /tablename/__ids:id1,id2
 Deletes those records.
