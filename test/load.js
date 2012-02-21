@@ -1,4 +1,6 @@
-
+/*
+ * Load dummy data into prox and school
+ */
 
 var
   req = require('request'),
@@ -20,9 +22,6 @@ var
     },
     body: JSON.stringify(_body)
   }
-
-
-
 
 
 exports.prox = function() {
