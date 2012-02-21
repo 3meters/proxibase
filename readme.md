@@ -26,16 +26,16 @@ Returns information about the table's schema.
 Returns the table's first 1000 records unsorted.
 
 ### GET /tableName/__ids:id1,id2
-Returns records with the specified ids. Note the initial __ids:
+Returns records with the specified ids. Note the initial __ids:  Do quote or put spaces betweeen the id parameters themselves.
 
 ### GET /tableName/__names:name1,name2
-Returns records with the specified names. Note the initial __names:
+Returns records with the specified names. Note the initial __names:  Do not quote or put spaces between the name parameters.  If the value of your name contains a comma, you cannot use this method to find it.  Use the __do/find method in this case. 
 
 ### GET /tablename/[__ids:...|__names:.../]childTable1,childTable2|*
 Returns all records specified with subdocuments for each child table specified. The wildcard * returns all child documents.  All fields from child documents are returned.  The query limit is applied both to the main document array and to each of its child arrays. Filters only apply to the main document, not to the document's children.
 
 ### GET parameters
-Place GET query parameters at the end of the URL beginning with a ?.  They are delimited by &.
+Place GET query parameters at the end of the URL beginning with a ?. Separate parameters with &. Parameter ordering does not matter.
 
     ?__find={"firstname":"John","lastname":{"$in":["Smith","Jones"]},"age":{"$lt":5}}
 Returns the records in the table found using mongodb's [advanced query syntax](http://www.mongodb.org/display/DOCS/Advanced+Queries). The value of __find must be parsable JSON. The rest of the url need not.
@@ -104,10 +104,10 @@ The table property is required.  All others are optional. The value of the find 
 with request.body
 
     {
-      "beacons": ["macId1", "macId2"]
+      "data": ["macId1", "macId2"]
     }
 
-returns all entites dropped for the specified beacons
+returns all entites dropped for the specified beacons. Drops are included as an array attached to each entity.
 
 ## Etc
 * [Building a Proxibase Server from scratch](proxibase/wiki/ServerSetup)

@@ -14,6 +14,7 @@
     "mongoose": "*",
     "underscore": "*",
     "nodemailer": "*",
+    "request": "*",
     "ejs": "*",
     "jade": "*",
     "stylus": "*"
