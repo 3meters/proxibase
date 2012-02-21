@@ -1,2 +1,0 @@
-#! /bin/sh
-nohup nodemon >/var/log/prox.log 2>&1 &
