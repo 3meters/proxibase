@@ -1,10 +1,10 @@
 var 
   req = require('request'),
   _ = require('underscore'),
-  // log = require('../../lib/log'),
+  log = require('../../lib/log'),
   load = require('../util').loadProx,
   parse = require('../util').parseRes,
-  _baseUri = require('../util')._baseUri,
+  _baseUri = require('../util').getBaseUri,
   _uri = _baseUri + "/entities",
   _body = {
     data: {

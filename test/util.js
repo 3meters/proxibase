@@ -7,7 +7,10 @@ var _baseUri = 'https://api.localhost:8043'
 // uncomment to test production
 // _baseUri = 'https://api.proxibase.com'
 
-exports._baseUri = _baseUri
+exports.getBaseUri = function() {
+  log('\nURI: ' + _baseUri)
+  return _baseUri
+}
 
 var
   assert = require('assert'),
