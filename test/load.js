@@ -5,40 +5,54 @@
 var
   req = require('request'),
   _ = require('underscore'),
-  log = require('../../lib/log'),
+  log = require('../lib/log'),
   parse = require('./util').parseRes,
-  _baseUri = require('../util')._baseUri,
-  _body = {
-    data: {
-      _id: "tid",
-      name: "Test User",
-      email: "foo@bar.com"
-    }
-  },
+  _baseUri = require('./util')._baseUri,
+  beacons = [],
+  entities = [],
+  drops = [],
   _options = {
-    uri: _uri,
     headers: {
       "content-type": "application/json"
-    },
-    body: JSON.stringify(_body)
+    }
   }
-
 
 exports.prox = function() {
+  var tables = [
+    { fn: loadBeacons, count: 10 },
+    { fn: loadEntities, count: 100 },
+    { fn: loadDrops, count: 100 }
+  ]
 
-   _body = {
-    data: {
-      _id: "tid001",
-      name: "Test Entity",
-      type: "picture"
+  // go
+  tables.forEach(function(load, i) {
+    log('table ' + i)
+    load.fn(load.count)
+  })
+
+  log('beacons', beacons)
+
+  function loadBeacons(i) {
+    if (!i--) return
+    var s = i.toString()
+    if (i < 10) s = '0' + s
+    beacons[i] = {
+      _id: '0001.120201.00000.0000' + s,
+      name: '99:99:00:00:00:' + s,
+      ssid: 'Test Beacon ' + s
     }
-  },
-  _options = {
-    uri: _uri,
-    headers: {
-      "content-type": "application/json"
-    },
-    body: JSON.stringify(_body)
+    loadBeacons(i)
   }
 
+  function loadEntities(i) {
+    if (!i--) return
+    loadEntities(i)
+  }
+
+  function loadDrops(i) {
+    if (!i--) return
+    loadDrops(i)
+  }
 }
+
+exports.prox()
