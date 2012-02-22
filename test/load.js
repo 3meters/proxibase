@@ -7,7 +7,7 @@ var
   _ = require('underscore'),
   log = require('../lib/log'),
   parse = require('./util').parseRes,
-  _baseUri = require('./util')._baseUri,
+  _baseUri = require('./util').getBaseUri(),
   beacons = [],
   entities = [],
   drops = [],
@@ -20,38 +20,44 @@ var
 exports.prox = function() {
   var tables = [
     { fn: loadBeacons, count: 10 },
-    { fn: loadEntities, count: 100 },
-    { fn: loadDrops, count: 100 }
+    { fn: loadEntities, count: 10 },
+    { fn: loadDrops, count: 10 }
   ]
 
-  // go
-  tables.forEach(function(load, i) {
-    log('table ' + i)
-    load.fn(load.count)
-  })
+  loadTable(tables.length)
 
-  log('beacons', beacons)
+  function loadTable(iTable, cb) {
+    if (!iTable--) {
+      log('\nFinished ok')
+      process.exit(0)
+    }
+    log('\nLoading table ' + iTable)
+    tables[iTable].fn(tables[iTable].count, iTable, loadTable)
+  }
 
-  function loadBeacons(i) {
-    if (!i--) return
-    var s = i.toString()
-    if (i < 10) s = '0' + s
-    beacons[i] = {
+  function loadBeacons(iBeacon, iTbl, cb) {
+    if (!iBeacon--) return cb(iTbl)
+    log('Loading Beacon ' + iBeacon)
+    var s = iBeacon.toString()
+    if (iBeacon < 10) s = '0' + s
+    beacons[iBeacon] = {
       _id: '0001.120201.00000.0000' + s,
       name: '99:99:00:00:00:' + s,
       ssid: 'Test Beacon ' + s
     }
-    loadBeacons(i)
+    loadBeacons(iBeacon, iTbl, cb)
   }
 
-  function loadEntities(i) {
-    if (!i--) return
-    loadEntities(i)
+  function loadEntities(iEntity, iTbl, cb) {
+    if (!iEntity--) return cb(iTbl)
+    log('Loading Entity ' + iEntity)
+    loadEntities(iEntity, iTbl, cb)
   }
 
-  function loadDrops(i) {
-    if (!i--) return
-    loadDrops(i)
+  function loadDrops(iDrop, iTbl, cb) {
+    if (!iDrop--) return cb(iTbl)
+    log("Loading Drop " + iDrop)
+    loadDrops(iDrop, iTbl, cb)
   }
 }
 

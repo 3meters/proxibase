@@ -9,7 +9,7 @@ var
   _ = require('underscore'),
   log = require('../../lib/log'),
   parse = require('../util').parseRes,
-  _baseUri = require('../util')._baseUri,
+  _baseUri = require('../util').getBaseUri(),
   _uri = _baseUri + "/users",
   _body = {
     data: [
