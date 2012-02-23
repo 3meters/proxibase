@@ -71,7 +71,7 @@ function genEntity(iEntity, iTbl, cb) {
     _creator: jid,
     _modifier: jid,
     name: 'Test Entity ' + iEntity,
-    type: 'picture'
+    type: 'post'
   }
   if (parentId != iEntity) entities[iEntity]._parent = genId(entityModelId, parentId)
 
