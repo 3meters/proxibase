@@ -7,10 +7,13 @@ sudo npm install -g nodeunit
 
 Target
 ======
-By default will test the local server.  To test production edit util.js.
+By default will test the local server.  To test production create a file
+named config.json in this directory and put this in it:
 
-Run
-===
-nodeunit basic
-nodeunit prox
-nodeunit school
+{
+  "server": "https://api.proxibase.com:443"
+}
+
+To Run
+======
+nodeunit tests
