@@ -3,8 +3,8 @@
  */
 
 var options = {
-  host: "api.localhost",
-  port: 8043,
+  host: "api.proxibase.com",
+  port: 443,
   headers:  {"content-type": "application/json"},
   method: "post"
 }
@@ -69,7 +69,7 @@ function loadDoc(docs, iDoc, tableName, next) {
   options.path = "/" + tableName;
 
   var req = https.request(options, onRes);
-  var json = JSON.stringify({ data: docs[iDoc] });
+  var json = JSON.stringify({ data: [docs[iDoc]] });
   req.write(json);
   req.end();
 

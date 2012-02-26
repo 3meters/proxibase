@@ -6,7 +6,7 @@
 var
   req = require('request'),
   _ = require('underscore'),
-  log = require('../../lib/log'),
+  log = require('../../lib/util').log,
   parse = require('../util').parseRes,
   _baseUri = require('../util').getBaseUri() + '/__do',
   _body = {

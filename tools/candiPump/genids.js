@@ -22,8 +22,6 @@ module.exports = function(schemaId, timeUTC, oldId) {
 
   // UTC date, YYMMDD
   var nowUTC = new Date(timeUTC);
-  // log('now', now.getTime());
-  // log('nowUTC', nowUTC.getTime());
   var year = pad((nowUTC.getFullYear() - 2000), 2);  // start from 2000
   var month = pad((nowUTC.getMonth() + 1), 2); // read Jan as 01, not 00
   var day = pad((nowUTC.getDate()), 2);
@@ -38,7 +36,6 @@ module.exports = function(schemaId, timeUTC, oldId) {
   if (oldId) rand = pad(oldId, 6);
 
   var id = [schema, dateUTC, secondsUTC, millisecs, rand].join('.');
-  // log('_id', id);
   return id;
 }
 
