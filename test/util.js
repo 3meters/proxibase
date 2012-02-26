@@ -5,7 +5,7 @@
 var 
   fs = require('fs'),
   assert = require('assert'),
-  log = require('../lib/log'),
+  log = require('../lib/util').log,
   _baseUri = 'https://api.localhost:8043'
 
 // if config.json exists and is well-formed point the tests at the specified server
