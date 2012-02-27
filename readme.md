@@ -114,3 +114,10 @@ returns all entites dropped for the specified beacons. Drops are included as an 
 
 ## Etc
 * [Building a Proxibase Server from scratch](proxibase/wiki/ServerSetup)
+
+## Todo
+0. Centralize error reporting using sendErr
+1. Remove [] from function signiture of singleton posts
+2. getEntForBeacons:  change user lookup projection list
+3. genEntForBecons:   get rid of author
+4. getEntities: factor out of getEnt and make callable
