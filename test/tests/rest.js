@@ -30,8 +30,40 @@ exports.delUsers = function delUsers2(test) {
   })
 }
 
+exports.postWithMissingBody = function(test) {
+  var options = getOptions('users')
+  req.post(options, function(err, res) {
+    check(res, test, 400)
+    test.ok(res.body.Error)
+    test.done()
+  })
+}
+
+exports.postWithBadJsonInBody = function(test) {
+  var options = getOptions('users', {name: "Test UserBad"})
+  options.body = '{data: "This is not JSON"}'
+  req.post(options, function(err, res) {
+    check(res, test, 400)
+    test.ok(res.body.Error)
+    test.done()
+  })
+}
+
+exports.postWithMissingDataTag = function(test) {
+  var options = getOptions('users', { name: "Test UserBad" })
+  req.post(options, function(err, res) {
+    check(res, test, 400)
+    test.ok(res.body.Error)
+    test.done()
+  })
+}
+
+exports.postWithMultipleArrayElements = function(test) {
+  test.done()
+}
+
 exports.addBadUser = function(test) {
-  var options = getOptions('users', {data: [ { _id: 'testIdBad', name: 'Bad User Without Email'} ] })
+  var options = getOptions('users', {data: { _id: 'testIdBad', name: 'Bad User Without Email'} })
   req.post(options, function(err, res) {
     check(res, test, 400)
     test.ok(res.body.Error)
@@ -40,11 +72,11 @@ exports.addBadUser = function(test) {
 }
 
 exports.addUser = function(test) {
-  var options = getOptions('users', { data: [testUser1] })
+  var options = getOptions('users', { data: testUser1 })
   req.post(options, function(err, res) {
     check(res, test)
     test.ok(res.body.count === 1)
-    test.ok(res.body.data[0]._id && res.body.data[0]._id === testUser1._id)
+    test.ok(res.body.data && res.body.data._id && res.body.data._id === testUser1._id)
     test.done()
   })
 }
@@ -58,11 +90,11 @@ exports.checkUser = function(test) {
 }
 
 exports.updateUser = function(test) {
-  var options = getOptions('users/__ids:' + testUser1._id, {data: [{ name: 'Test User2' }] })
+  var options = getOptions('users/__ids:' + testUser1._id, {data: { name: 'Test User2' } })
   req.post(options, function(err, res) {
     check(res, test)
     test.ok(res.body.count === 1)
-    test.ok(res.body.data[0].name === 'Test User2')
+    test.ok(res.body.data && res.body.data.name && res.body.data.name === 'Test User2')
     test.done()
   })
 }
@@ -70,7 +102,7 @@ exports.updateUser = function(test) {
 exports.checkUpdatedUser = function(test) {
   req.get(uri + '/__ids:' + testUser1._id, function(err, res) {
     check(res, test)
-    test.ok(res.body.data[0].name === 'Test User2')
+    test.ok(res.body.data && res.body.data[0] && res.body.data[0].name === 'Test User2')
     test.done()
   })
 }
@@ -90,3 +122,19 @@ exports.checkUpdatedUserDeleted = function(test) {
     test.done()
   })
 }
+
+exports.addUserWithoutId = function(test) {
+  test.done()
+}
+
+exports.getUserFromGeneratedId = function(test) {
+  test.done()
+}
+
+exports.deleteUserWithGeneratedId = function(test) {
+  test.done()
+}
+
+exports.checkUserWithGeneratedIdGone = function(test) {
+  test.done()
+} 

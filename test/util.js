@@ -32,7 +32,6 @@ exports.check = function(res, test, code) {
   } catch (e) {
     throw new Error('res.body is not valid JSON')
   }
-  if (res.body.data) assert(res.body.data instanceof Array, 'res.body.data is not an array')
 }
 
 // genterate a request options object template that can be safely modified
