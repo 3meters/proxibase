@@ -120,4 +120,11 @@ returns all entites dropped for the specified beacons. Drops are included as an 
 1. Remove [] from function signiture of singleton posts
 2. getEntForBeacons:  change user lookup projection list
 3. genEntForBecons:   get rid of author
-4. getEntities: factor out of getEnt and make callable
+4. getEntities: factor out getEnt as public, chainable call
+5. add singleton get
+6. update candipump to drop [] in posts
+7. update genProxData to drop [] in posts
+8. rest.get: field lists for lookups
+9. rest.get: fields lists for children
+10. rest.get: child counts
+11. rest.get: table.childtable.childtable...
