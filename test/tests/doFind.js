@@ -7,33 +7,25 @@ var
   req = require('request'),
   _ = require('underscore'),
   log = require('../../lib/util').log,
-  parse = require('../util').parseRes,
-  _baseUri = require('../util').getBaseUri() + '/__do',
-  _body = {
-    table: 'users',
-  }
-  _options = {
-    uri: _baseUri + '/find',
-    headers: {
-      "content-type": "application/json"
-    },
-    body: JSON.stringify(_body)
-  }
+  check = require('../util').check,
+  getOptions = require('../util').getOptions,
+  path = '/__do/find'
 
 exports.echo = function(test) {
-  var options = _.clone(_options)
-  options.uri = _baseUri + '/echo'
+  var body = { table: 'users' }
+  var options = getOptions('__do/echo', body)
   req.post(options, function(err, res) {
-    parse(res)
-    test.ok(_.isEqual(res.body, _body))
+    check(res, test)
+    test.ok(_.isEqual(res.body, body))
     test.done()
   })
 }
 
 exports.simpleFind = function(test) {
-  var options = _.clone(_options)
+  var body = { table: 'users' }
+  var options = getOptions(path, body)
   req.post(options, function(err, res) {
-    parse(res)
+    check(res, test)
     test.ok(res.body && res.body.data && res.body.data instanceof Array)
     test.done()
   })

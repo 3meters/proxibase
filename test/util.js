@@ -18,18 +18,42 @@ try {
 
 log('\nTesting ' + _baseUri)
 
-exports.getBaseUri = function() {
+var getBaseUri = exports.getBaseUri = function() {
   return _baseUri
 }
 
 // Parse response.  Bail with assert on fail
-exports.parseRes = function(res, code) {
+exports.check = function(res, test, code) {
   code = code || 200
   assert(res && res.statusCode, 'Server not responding')
-  assert(res.statusCode === code, 'Bad statusCode: ' + res.statusCode)
-  res.body = JSON.parse(res.body)
-  assert(res.body, 'Problem parsing res.body')
-  if (res.body.data) assert(res.body.data instanceof Array, 'Bad res.body.data')
+  test.ok(res.statusCode === code, 'Bad statusCode: ' + res.statusCode + ' expected: ' + code)
+  if (res.body) try {
+    res.body = JSON.parse(res.body)
+  } catch (e) {
+    throw new Error('res.body is not valid JSON')
+  }
+  if (res.body.data) assert(res.body.data instanceof Array, 'res.body.data is not an array')
+}
+
+// genterate a request options object template that can be safely modified
+exports.getOptions = function(path, body) {
+  if (!path) path = ''
+  else {
+    if (path.indexOf('/') != 0) path = '/' + path  // prepend slash if not already present
+  }
+  var options = {
+    uri: getBaseUri() + path,
+    headers: { "content-type": "application/json" }
+  }
+  if (body) {
+    try {
+      body = JSON.stringify(body)
+    } catch (e) {
+      throw new Error("Could not convert body to JSON\n" + e.stack)
+    }
+    options.body = body
+  }
+  return options
 }
 
 
