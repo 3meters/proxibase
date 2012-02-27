@@ -4,69 +4,63 @@
 
 var
   req = require('request'),
-  _ = require('underscore'),
   log = require('../../lib/util').log,
-  parse = require('../util').parseRes,
-  _baseUri = require('../util').getBaseUri(),
-  _uri = _baseUri + "/users",
-  _body = {
-    data: [
-      {
-        _id: "tid",
-        name: "Test User",
-        email: "foo@bar.com"
-      }
-    ]
-  },
-  _options = {
-    uri: _uri,
-    headers: {
-      "content-type": "application/json"
-    },
-    body: JSON.stringify(_body)
+  uri = require('../util').getBaseUri() + '/users',
+  check = require('../util').check,
+  getOptions = require('../util').getOptions,
+  testUser1 = {
+    _id: "testId1",
+    name: "Test User1",
+    email: "foo@bar.com"
   }
 
+// make sure the server is alive
 exports.getUsers = function (test) {
-  req.get(_uri, function(err, res) {
-    parse(res)
+  req.get(uri, function(err, res) {
+    check(res, test)
     test.done()
   })
 }
 
 // delete first in case old test left data around
 exports.delUsers = function delUsers2(test) {
-  req.del(_uri + '/__ids:tid', function(err, res) {
-    parse(res)
+  req.del(uri + '/__ids:testId1,testId2', function(err, res) {
+    check(res, test)
+    test.done()
+  })
+}
+
+exports.addBadUser = function(test) {
+  var options = getOptions('users', {data: [ { _id: 'testIdBad', name: 'Bad User Without Email'} ] })
+  req.post(options, function(err, res) {
+    check(res, test, 400)
+    test.ok(res.body.Error)
     test.done()
   })
 }
 
 exports.addUser = function(test) {
-  var options = _.clone(_options)
+  var options = getOptions('users', { data: [testUser1] })
   req.post(options, function(err, res) {
-    parse(res)
+    check(res, test)
     test.ok(res.body.count === 1)
-    test.ok(res.body.data[0]._id && res.body.data[0]._id === _body.data[0]._id)
+    test.ok(res.body.data[0]._id && res.body.data[0]._id === testUser1._id)
     test.done()
   })
 }
 
 exports.checkUser = function(test) {
-  req.get(_uri + "/__ids:tid", function(err, res) {
-    parse(res)
-    test.ok(res.body.data[0].name && res.body.data[0].name === _body.data[0].name)
+  req.get(uri + '/__ids:' + testUser1._id, function(err, res) {
+    check(res, test)
+    test.ok(res.body.data && res.body.data[0].name && res.body.data[0].name === testUser1.name)
     test.done()
   })
 }
 
 exports.updateUser = function(test) {
-  var options = _.clone(_options)
-  var body = _.clone(_body)
-  body.data[0].name = 'Test User2'
-  options.body= JSON.stringify(body)
-  options.uri = _uri + '/__ids:' + _body.data[0]._id
+  var options = getOptions('users/__ids:' + testUser1._id, {data: [{ name: 'Test User2' }] })
   req.post(options, function(err, res) {
-    parse(res)
+    check(res, test)
     test.ok(res.body.count === 1)
     test.ok(res.body.data[0].name === 'Test User2')
     test.done()
@@ -74,24 +68,24 @@ exports.updateUser = function(test) {
 }
 
 exports.checkUpdatedUser = function(test) {
-  req.get(_uri + '/__ids:' + _body.data[0]._id, function(err, res) {
-    parse(res)
+  req.get(uri + '/__ids:' + testUser1._id, function(err, res) {
+    check(res, test)
     test.ok(res.body.data[0].name === 'Test User2')
     test.done()
   })
 }
 
 exports.deleteUpdateUser = function(test) {
-  req.del(_uri + '/__ids:' + _body.data[0]._id, function(err, res) {
-    parse(res)
+  req.del(uri + '/__ids:' + testUser1._id, function(err, res) {
+    check(res, test)
     test.ok(res.body.count === 1)
     test.done()
   })
 }
 
 exports.checkUpdatedUserDeleted = function(test) {
-  req.get(_uri + '/__ids:' + _body.data[0]._id, function(err, res) {
-    parse(res)
+  req.get(uri + '/__ids:' + testUser1._id, function(err, res) {
+    check(res, test)
     test.ok(res.body.count === 0)
     test.done()
   })
