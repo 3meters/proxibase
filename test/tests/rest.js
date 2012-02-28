@@ -34,7 +34,7 @@ exports.postWithMissingBody = function(test) {
   var options = getOptions('users')
   req.post(options, function(err, res) {
     check(res, test, 400)
-    test.ok(res.body.Error)
+    test.ok(res.body.error)
     test.done()
   })
 }
@@ -44,7 +44,7 @@ exports.postWithBadJsonInBody = function(test) {
   options.body = '{data: "This is not JSON"}'
   req.post(options, function(err, res) {
     check(res, test, 400)
-    test.ok(res.body.Error)
+    test.ok(res.body.error)
     test.done()
   })
 }
@@ -53,7 +53,7 @@ exports.postWithMissingDataTag = function(test) {
   var options = getOptions('users', { name: "Test UserBad" })
   req.post(options, function(err, res) {
     check(res, test, 400)
-    test.ok(res.body.Error)
+    test.ok(res.body.error)
     test.done()
   })
 }
@@ -66,7 +66,7 @@ exports.addBadUser = function(test) {
   var options = getOptions('users', {data: { _id: 'testIdBad', name: 'Bad User Without Email'} })
   req.post(options, function(err, res) {
     check(res, test, 400)
-    test.ok(res.body.Error)
+    test.ok(res.body.error)
     test.done()
   })
 }
