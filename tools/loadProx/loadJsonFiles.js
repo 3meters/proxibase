@@ -54,7 +54,7 @@ function loadDoc(docs, iDoc, tableName, next) {
   options.path = "/" + tableName
 
   var req = https.request(options, onRes)
-  var json = JSON.stringify({ data: [docs[iDoc]] })
+  var json = JSON.stringify({ data: docs[iDoc] })
   req.write(json)
   req.end()
 
