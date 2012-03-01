@@ -3,15 +3,15 @@
  */
 
 var 
+  https = require('https'),
+  fs = require('fs'),
   options = {
     host: "api.localhost",
     port: 8043,
     headers:  {"content-type": "application/json"},
     method: "post"
   },
-  https = require('https'),
-  log = require('../lib/log'),
-  fs = require('fs'),
+  log = require('../../lib/util').log,
   tables = [],
   tableNames= []
 
