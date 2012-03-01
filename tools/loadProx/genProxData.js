@@ -5,7 +5,7 @@
 var
   cBeacons = 1,  // change to add more data
   fs = require('fs'),
-  log = require('../../lib/log'),
+  log = require('../../lib/util').log,
   beacons = [],
   entities = [],
   drops = [],
@@ -23,12 +23,6 @@ var
 
 loadTable(tables.length)
 
-function genId(tableId, seed) {
-  var s = seed.toString()
-  if (s < 10) s = '0' + s
-  return '000' + tableId.toString() + '.100101.55555.000.0000' + s
-}
-
 function loadTable(iTable, cb) {
   if (!iTable--) done()
   tables[iTable].fn(tables[iTable].count, iTable, loadTable)
@@ -44,7 +38,7 @@ function genBeacon(iBeacon, iTbl, cb) {
     _owner: jid,
     _creator: jid,
     _modifier: jid,
-    name: '99:99:00:00:00:' + s,
+    bssid: '99:99:00:00:00:' + s,
     ssid: 'Test Beacon ' + iBeacon.toString()
   }
   for (var i = 3; i--;) {
@@ -73,7 +67,7 @@ function genEntity(iEntity, iTbl, cb) {
     name: 'Test Entity ' + iEntity,
     type: 'post'
   }
-  if (parentId != iEntity) entities[iEntity]._parent = genId(entityModelId, parentId)
+  if (parentId != iEntity) entities[iEntity]._entity = genId(entityModelId, parentId)
 
   // every third entity gets a comment
   if (!(iEntity % 3)) {
@@ -87,6 +81,12 @@ function genEntity(iEntity, iTbl, cb) {
     })
   }
   genEntity(iEntity, iTbl, cb)
+}
+
+function genId(tableId, seed) {
+  var s = seed.toString()
+  if (s < 10) s = '0' + s
+  return '000' + tableId.toString() + '.100101.55555.000.0000' + s
 }
 
 function done() {

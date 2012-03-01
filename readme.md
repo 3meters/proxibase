@@ -116,15 +116,11 @@ returns all entites dropped for the specified beacons. Drops are included as an 
 * [Building a Proxibase Server from scratch](proxibase/wiki/ServerSetup)
 
 ## Todo
-0. Centralize error reporting using sendErr
-1. Remove [] from function signiture of singleton posts
-2. getEntForBeacons:  change user lookup projection list
-3. genEntForBecons:   get rid of author
-4. getEntities: factor out getEnt as public, chainable call
-5. add singleton get
-6. update candipump to drop [] in posts
-7. update genProxData to drop [] in posts
-8. rest.get: field lists for lookups
-9. rest.get: fields lists for children
-10. rest.get: child counts
-11. rest.get: table.childtable.childtable...
+* bug /tablename,ksksks
+* update candipump to drop [] in posts
+* update genProxData to drop [] in posts
+* add singleton get
+* rest.get: field lists for lookups
+* rest.get: fields lists for children
+* rest.get: child counts
+* rest.get: table.childtable.childtable...
