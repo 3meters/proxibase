@@ -1,6 +1,6 @@
 config.js
 node_modules
 old
-.json
+*.json
 .monitor
 crash.js
