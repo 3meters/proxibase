@@ -3,7 +3,7 @@
  */
 
 var
-  cBeacons = 1,  // change to add more data
+  cBeacons = 1,  // change to add more data, max 99
   fs = require('fs'),
   log = require('../../lib/util').log,
   beacons = [],
@@ -42,18 +42,23 @@ function genBeacon(iBeacon, iTbl, cb) {
     ssid: 'Test Beacon ' + iBeacon.toString()
   }
   for (var i = 3; i--;) {
-    var entityId = genId(entityModelId, ((iBeacon * 5) + (i * 5)) )
-    var dropId = genId(dropModelId, (iBeacon * 5) + i)
-    drops.push({
-      _id: dropId,
-      _owner: jid,
-      _creator: jid,
-      _modifier: jid,
-      _entity: entityId,
-      _beacon: beaconId
-    })
+    var entNum = ((iBeacon * 5) + (i * 5))
+    var entityId = genId(entityModelId, entNum)
+    var dropId = genId(dropModelId, entNum)
+    genDrop(dropId, entityId, beaconId)
   }
   genBeacon(iBeacon, iTbl, cb)
+}
+
+function genDrop(dropId, entityId, beaconId) {
+  drops.push({
+    _id: dropId,
+    _owner: jid,
+    _creator: jid,
+    _modifier: jid,
+    _entity: entityId,
+    _beacon: beaconId
+  })
 }
 
 function genEntity(iEntity, iTbl, cb) {
@@ -83,10 +88,29 @@ function genEntity(iEntity, iTbl, cb) {
   genEntity(iEntity, iTbl, cb)
 }
 
-function genId(tableId, seed) {
-  var s = seed.toString()
-  if (s < 10) s = '0' + s
-  return '000' + tableId.toString() + '.100101.55555.000.0000' + s
+function pad(number, digits) {
+  var s = number.toString()
+  assert(s.indexOf('-') < 0 && s.indexOf('.') < 0 && s.length <= digits, "Invalid id seed: " + s)
+  for (var i = digits - s.length, zeros = ''; i--;) {
+    zeros += '0'
+  }
+  return zeros + s
+}
+
+// put sep in string s at every freq. return delienated s
+function delineate(s, freq, sep) {
+  var cSeps = Math.floor(s.length / freq)
+  for (var out = '', i = 0; i < cSeps; i++) {
+    out += s.slice(0, freq)
+    s = s.slice(freq)
+  }
+  out += s
+  log('s: ' + s + ' out: ' +  out)
+}
+
+function genId(tableId, recNum) {
+  recNumStr = pad(recNum, 6)
+  return '000' + tableId.toString() + '.100101.55555.000.' + recNumStr
 }
 
 function done() {
