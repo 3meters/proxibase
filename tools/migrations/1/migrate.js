@@ -1,3 +1,14 @@
+/*
+ * migrate proxibase database from version 1 to version 2
+ *
+ * reads json files from ./old containing all data from version 1
+ * writes json files to ./new containing all transformed data for verstion 2
+ *
+ * Since this is a file-to-file transform, all calls are synchronous
+ *
+ */
+
+
 var
   fs = require('fs'),
   _baseUri = 'https://api.localhost:8043',
@@ -34,10 +45,10 @@ function makeNewBeaconId(beacon) {
 
 function copySysFields(oldRec, newRec) {
   newRec._owner = oldRec._owner,
-  newRec.creator = oldRec._creator,
-  newRec.modifier = oldRec._modifier,
+  newRec._creator = oldRec._creator,
+  newRec._modifier = oldRec._modifier,
   newRec.createdDate = oldRec.createdDate,
-  newRec.modifiedDate = newRec.modifiedDate
+  newRec.modifiedDate = oldRec.modifiedDate
 }
 
 // read all .json files in the ./old directory and parse them into .data arrays on the table objects 
@@ -72,7 +83,7 @@ function transform() {
 
   tables.drops.data.forEach(function(drop) {
 
-    // create a new link record with the new keyformt of the beacons table
+    // create a new link record with the new keyformat of the beacons table
     var beacon = getRecById('beacons', drop._beacon)
     if (!beacon) { 
       console.log('Cannot find beacon ' + drop._beacon + '  skipping...')
