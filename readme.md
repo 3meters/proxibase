@@ -87,7 +87,7 @@ Lists the web methods. POST to /__do/methodName executes a method passing in the
 Returns request.body
 
 ### POST /__do/find
-Is a way to do a GET on any table in the system, but with the added convenience of putting the paramters in the request body rather than on the query string. find expects request.body to contain JSON of this form:
+Is a way to do a GET on any table in the system, but with the paramters in the request body rather than on the query string. find expects request.body to contain JSON of this form:
 
     {
       "table": "tableName",
@@ -107,20 +107,25 @@ The table property is required.  All others are optional. The value of the find 
 with request.body
 
     {
-      "data": ["macId1", "macId2"]
+      "beaconIds": ["0001:bssid1", "0001:bssid2"]
     }
 
-returns all entites dropped for the specified beacons. Drops are included as an array attached to each entity.
+returns all entites dropped for the specified beacons.
 
 ## Etc
 * [Building a Proxibase Server from scratch](proxibase/wiki/ServerSetup)
 
 ## Todo
-* bug /tablename,ksksks
-* update candipump to drop [] in posts
-* update genProxData to drop [] in posts
-* add singleton get
+* bug: GET /tablename,foo
+* 
+* util.sendErr => res.err
+* rest.get: child counts
+* rest.get: lookups for links
 * rest.get: field lists for lookups
 * rest.get: fields lists for children
-* rest.get: child counts
+* rest.get: find on children, innner and outer
+* rest.get: find on parents, inner and outer
 * rest.get: table.childtable.childtable...
+* rest.get: singleton get
+
+* rest.post: insert array
