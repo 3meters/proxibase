@@ -1,8 +1,8 @@
 /*
- * reads all .json files from the current working directory and loads them into proxibase via the rest api
+ * reads all .json files from the ./files directory and loads them into proxibase via the rest api
  */
 
-var 
+var
   https = require('https'),
   fs = require('fs'),
   options = {
@@ -13,9 +13,11 @@ var
   },
   log = require('../../lib/util').log,
   tables = [],
-  tableNames= []
+  tableNames= [],
+  errors = [],
+  dir = './files'
 
-exports.run = function(server, ext) {
+run = function(server, ext) {
   if (server === 'prod') {
     options.host = 'api.proxibase.com',
     options.port = 443
@@ -26,14 +28,14 @@ exports.run = function(server, ext) {
 
 function readFiles(ext) {
   ext = ext || '.json'
-  var fileNames = fs.readdirSync('.')
+  var fileNames = fs.readdirSync(dir)
   for (var i = fileNames.length; i--;) {
     if (fileNames[i].indexOf(ext, fileNames[i].length - ext.length) < 0) fileNames.splice(i, 1)
   }
   log('files', fileNames)
 
   fileNames.forEach(function(fileName) {
-    tables.push(JSON.parse(fs.readFileSync(fileName)))
+    tables.push(JSON.parse(fs.readFileSync(dir + '/' + fileName)))
     tableNames.push(fileName.slice(0, fileName.length - ext.length))
   })
   log('tables', tableNames)
@@ -66,7 +68,16 @@ function loadDoc(docs, iDoc, tableName, next) {
     })
     res.on('end', function() {
       var statusMsg = ''
-      if (res.statusCode !== 200) statusMsg = '  statusCode: ' + res.statusCode
+      if (res.statusCode !== 200) {
+        statusMsg = '  statusCode: ' + res.statusCode
+        errors.push({
+          statusCode: res.statusCode, 
+          table: tableName,
+          iDoc: iDoc, 
+          data: docs[iDoc],
+          error: JSON.parse(json)
+        })
+      }
       log(tableName + ': ' + iDoc + statusMsg, JSON.parse(json))
       iDoc++
       loadDoc(docs, iDoc, tableName, next) // recurse
@@ -75,7 +86,11 @@ function loadDoc(docs, iDoc, tableName, next) {
 }
 
 function done() {
-  process.exit(0)
+  if (errors.length) log('\nFinished with ' + errors.length + ' error(s)', errors, false, 5)
+  else log('\nFinished ok')
+  process.exit(errors.length)
 }
 
+run()
+// run('prod')
 
