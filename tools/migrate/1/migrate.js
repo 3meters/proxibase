@@ -16,14 +16,14 @@ var
   req = require('request'),
   tables = {
     'users': { id: 0 },
-    'beacons': { id: 1 },
+    'links': { id: 1 },
     'entities': { id: 2 },
-    'drops': { id: 3 },
+    'beacons': { id: 3 },
+    'drops': { id: 33 },
     'comments': { id: 4 },
     'documents': { id: 5 },
     'beaconsets': { id: 6 },
-    'observations': { id: 7 },
-    'links': { id: 8 }
+    'observations': { id: 7 }
   },
   tableArray = []
 
@@ -40,7 +40,7 @@ function getRecById(tableName, id) {
 }
 
 function makeNewBeaconId(beacon) {
-  return '0001:' + beacon.bssid
+  return '0003:' + beacon.bssid
 }
 
 function copySysFields(oldRec, newRec) {

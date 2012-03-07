@@ -113,19 +113,25 @@ with request.body
 returns all entites dropped for the specified beacons.
 
 ## Etc
-* [Building a Proxibase Server from scratch](proxibase/wiki/ServerSetup)
+* [Building a Proxibase Server](proxibase/wiki/ServerSetup)
+* [Building a Dev Machine](proxibase/wiki/DevSetup)
 
 ## Todo
 * bug: GET /tablename,foo
-* 
+*
+* __do/schema?format=full
+* move genId to util
+* write util.parseId
+* rest.get: lookups for links
 * util.sendErr => res.err
 * rest.get: child counts
-* rest.get: lookups for links
 * rest.get: field lists for lookups
 * rest.get: fields lists for children
 * rest.get: find on children, innner and outer
 * rest.get: find on parents, inner and outer
 * rest.get: table.childtable.childtable...
 * rest.get: singleton get
+* do version migration in place
+* make direct connection through mongod driver 
 
 * rest.post: insert array
