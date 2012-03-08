@@ -13,6 +13,8 @@ module.exports = {
     certFilePath: "./keys/dev/dev.crt",
     caFilePath: null
   },
+  bypassSsl: false,
+  bypassSslPort: 8080,
   mdb: {
     host: "localhost",
     port: 27017,
