@@ -34,7 +34,7 @@ function loadTable(iTable, cb) {
     if (err) throw err
     if (res.statusCode === 200) {
       var body = JSON.parse(res.body)
-      fs.writeFileSync(tableName + '.json', JSON.stringify(body.data))
+      fs.writeFileSync('./files/' + tableName + '.json', JSON.stringify(body.data))
     } else {
       console.log('Status code ' + res.statusCode + ' for table ' + tableName)
     }
