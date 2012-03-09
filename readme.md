@@ -34,6 +34,9 @@ Returns records with the specified names. Note the initial __names:  Do not quot
 ### GET /tablename/[__ids:...|__names:.../]childTable1,childTable2|*
 Returns all records specified with subdocuments for each child table specified. The wildcard * returns all child documents.  All fields from child documents are returned.  The query limit is applied both to the main document array and to each of its child arrays. Filters only apply to the main document, not to the document's children.
 
+### GET /tablename/__genid
+Generates a valid id for the table with the UTC timestamp of the request.  Useful if you want to make posts to mulitple tables with the primary and foreign keys preassigned.
+
 ### GET parameters
 Place GET query parameters at the end of the URL beginning with a ?. Separate parameters with &. Parameter ordering does not matter.
 
@@ -53,8 +56,17 @@ Returns each document with its lookup fields fully populated. Default false.
 ### POST Rules
 1. Set req.headers.content-type to 'application/json'
 2. Make sure req.body is parsable json
-3. Enclose new data in a data element inside and array: e.g: 
-4. Only one array element is supported currently, but this may change in the future
+3. Write the data for the new object inside a data element in the request body.  The new element can either be a simple object or an array of objects.
+4. If you use an array, currently only one element is supported per post, but this may change in the future
+
+    request.body = {
+      "data": {
+        "field1": "foo",
+        "field2": "bar" 
+      }
+    }
+
+or
 
     request.body = {
       "data": [ 
@@ -66,10 +78,10 @@ Returns each document with its lookup fields fully populated. Default false.
     }
 
 ### POST /tablename
-Inserts req.body.data[0] into the tablename table.  If a value for _id is specified it will be used, otherwise the server will generate a value for _id.  Only one record may be inserted per request.
+Inserts req.body.data or req.body.data[0] into the tablename table.  If a value for _id is specified it will be used, otherwise the server will generate a value for _id.  Only one record may be inserted per request. If you specifiy values for any of the system fields, those values will be stored.  If you do not the system will generates defaults for you.
 
 ### POST /tablename/__ids:id1
-Updates the record with _id = id1 in tablename.  Fields not inlucded in request.body.data[0] will not be modified.
+Updates the record with _id = id1 in tablename.  Non-system fields not inlucded in request.body.data or request.body.data[0] will not be modified.
 
 ### DELETE /tablename/__ids:id1,id2
 Deletes those records.
@@ -107,10 +119,33 @@ The table property is required.  All others are optional. The value of the find 
 with request.body
 
     {
-      "beaconIds": ["0001:bssid1", "0001:bssid2"]
+      "beaconIds": ["0003:01:02:03:04:05:06", "0003:11:12:13:14:15:16"],
+      "getChildren": true   // optional
     }
 
-returns all entites dropped for the specified beacons.
+returns all entites linked to the specified beacons and their immediate children and comments
+
+### POST /__do/getEntities
+
+with request.body
+
+    {
+      "enityIds": ["entId1" "entId2"],
+      "getChildren": true   // optional
+    }
+
+returns all entites and their immediate children and comments.
+
+### POST /__do/getEntitiesForUser
+
+with request.body
+
+    {
+      "userEmail": "jay@3meters.com"
+      "getChildren": true   // optional
+    }
+
+returns all entites created by that user and their immediate childrewn and comments.  
 
 ## Etc
 * [Building a Proxibase Server](proxibase/wiki/ServerSetup)
@@ -120,8 +155,6 @@ returns all entites dropped for the specified beacons.
 * bug: GET /tablename,foo
 *
 * __do/schema?format=full
-* move genId to util
-* write util.parseId
 * rest.get: lookups for links
 * util.sendErr => res.err
 * rest.get: child counts
