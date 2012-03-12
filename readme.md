@@ -62,17 +62,17 @@ Returns each document with its lookup fields fully populated. Default false.
     request.body = {
       "data": {
         "field1": "foo",
-        "field2": "bar" 
+        "field2": "bar"
       }
     }
 
 or
 
     request.body = {
-      "data": [ 
+      "data": [
         {
           "field1": "foo",
-          "field2": "bar" 
+          "field2": "bar"
         }
       ]
     }
@@ -148,15 +148,17 @@ with request.body
 returns all entites created by that user and their immediate childrewn and comments.  
 
 ## Etc
-* [Building a Proxibase Server](proxibase/wiki/ServerSetup)
-* [Building a Dev Machine](proxibase/wiki/DevSetup)
+* [Building a Proxibase Server](proxibase/wiki/Server-Setup)
+* [Building a Dev Machine](proxibase/wiki/Dev-Setup)
 
 ## Todo
 * bug: GET /tablename,foo
-*
-* __do/schema?format=full
+
+* test: update test data genenerator to new schema
+* test: write tests for custom methods
+* test: deploy test server
+
 * rest.get: lookups for links
-* util.sendErr => res.err
 * rest.get: child counts
 * rest.get: field lists for lookups
 * rest.get: fields lists for children
@@ -164,7 +166,16 @@ returns all entites created by that user and their immediate childrewn and comme
 * rest.get: find on parents, inner and outer
 * rest.get: table.childtable.childtable...
 * rest.get: singleton get
-* do version migration in place
-* make direct connection through mongod driver 
-
 * rest.post: insert array
+
+* util: sendErr => res.err
+* __do/schema: slim and full version of schema apis
+* rationalize version migration into a command-linable pipeline
+* do version migration in place?
+* make direct connection through mongod driver (for db.dropDatabase, etc.)
+
+* user authentication
+* user session keys
+* user accounts
+* user authenticaiton
+* user permission setting
