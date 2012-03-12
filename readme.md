@@ -155,12 +155,14 @@ returns all entites created by that user and their immediate childrewn and comme
 
 ## Todo
 ### Bugs
-GET /tablename,foo
+* GET /tablename,foo
+
 ### Test/Perf
 * update test data genenerator to new schema
 * write tests for custom methods
 * deploy test server
 * Basic benchmark framework
+
 ### Rest
 * get: lookups for links
 * get: child counts
@@ -171,15 +173,18 @@ GET /tablename,foo
 * get: table.childtable.childtable...
 * get: singleton get
 * post: insert array
+
 ### Misc
 * util: sendErr => res.err
 * __do/schema: slim and full version of schema apis
 * rationalize version migration into a command-linable pipeline
 * do version migration in place?
 * make direct connection through mongod driver (for db.dropDatabase, etc.)
+
 ### Ops
 * Upgrade box from micro to small
 * Build Joyent box and perf compare
+
 ### Security
 * Store passwords hashed authentication
 * Provide user authentication API
@@ -191,6 +196,7 @@ GET /tablename,foo
 * Rate limit gets 
 * Rate limit posts
 * Lock / unlock account
+
 ### Website
 * Read-only browse UI over tables
 * User profile update UI
