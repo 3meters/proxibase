@@ -6,9 +6,13 @@ Web: https://www.proxibase.com
 API: https://api.proxibase.com
 
 ## REST API
-https://api.proxibase.com/__info
+### GET https://api.proxibase.com/__info
 
-Returns table schema information
+Returns the rest tables and their table Ids
+
+### GET https://api.proxibase.com/tableName/__info
+
+Returns detailed field information about each table
 
 ### _id fields
 Every proxibase record has a an immutable _id field that is unique within proxiabse. _ids have this form, with dates and times represented in UTC: 
@@ -18,9 +22,6 @@ Every proxibase record has a an immutable _id field that is unique within proxia
 meaning
 
     tableId.dateSince2000.secondsSinceMidnight.milliseconds.randomNumber
-
-### GET /tableName/__info
-Returns information about the table's schema.
 
 ### GET /tableName
 Returns the table's first 1000 records unsorted.

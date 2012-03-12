@@ -3,62 +3,59 @@
  */
 
 var
-  cBeacons = 1,  // change to add more data, max 99
+  cBeacons = 3,
+  cEntities = 15,
   fs = require('fs'),
-  log = require('../../lib/util').log,
-  beacons = [],
-  entities = [],
-  drops = [],
-  comments = [],
-  beaconModelId = 1,
-  entityModelId = 2,
-  dropModelId = 3,
-  commentModelId = 4,
   jid = '0000.000000.00000.000.000001',
   gid = '0000.000000.00000.000.000002',
-  tables = [
-    { fn: genBeacon, count: cBeacons },
-    { fn: genEntity, count: cBeacons * 15 }
-  ]
+  log = require('../../lib/util').log
 
-loadTable(tables.length)
-
-function loadTable(iTable, cb) {
-  if (!iTable--) done()
-  tables[iTable].fn(tables[iTable].count, iTable, loadTable)
+function run() {
+  genUsers()
+  genBeacons(cBeacons)
+  // genEntities(cEntities)
 }
 
-function genBeacon(iBeacon, iTbl, cb) {
-  if (!iBeacon--) return cb(iTbl)
-  var s = iBeacon.toString()
-  if (iBeacon < 10) s = '0' + s
-  beaconId = genId(beaconModelId, iBeacon)
-  beacons[iBeacon] = {
-    _id: beaconId,
-    _owner: jid,
-    _creator: jid,
-    _modifier: jid,
-    bssid: '99:99:00:00:00:' + s,
-    ssid: 'Test Beacon ' + iBeacon.toString()
-  }
-  for (var i = 3; i--;) {
-    var entNum = ((iBeacon * 5) + (i * 5))
-    var entityId = genId(entityModelId, entNum)
-    var dropId = genId(dropModelId, entNum)
-    genDrop(dropId, entityId, beaconId)
-  }
-  genBeacon(iBeacon, iTbl, cb)
-}
-
-function genDrop(dropId, entityId, beaconId) {
-  drops.push({
-    _id: dropId,
-    _owner: jid,
-    _creator: jid,
-    _modifier: jid,
-    _entity: entityId,
-    _beacon: beaconId
+function genUsers() {
+  var users = []
+  users.push({
+    _id: jid,
+    name: 'Jay Gecko',
+    email: 'jay@3meters.com',
+    location: 'Seattle, WA',
+    facebookId: 'george.snelling',
+    pictureUri: 'https://s3.amazonaws.com/3meters_images/1001_20120211_103113.jpg',
+    isDeveloper: true
   })
+  users.push({
+    _id: gid,
+    name: 'George Snelling',
+    email: 'george@3meters.com',
+    location: 'Seattle, WA',
+    facebookId: '696942623',
+    pictureUri: 'https://graph.facebook.com/george.snelling/picture?type=large',
+    isDeveloper: true
+  })
+  serialize(users, 'users')
+}
+
+function genBeacons(count) {
+  var beacons = [], beaconsPrefix = '0003'
+  for (var i = 0; i < count; i++) {
+    // make a macID
+    var id = pad(i,12)
+    id = delineate(id, 2, ':')
+    id = beaconsPrefix + ':' + id
+    beacons.push({
+      _id: id,
+      ssid: 'Test Beacon ' + i,
+      beaconType: 'fixed',
+      latitude: 47.659052376993834,     // jays house for now
+      longitude: -122.659052376993834,
+      visibility: 'public'
+    })
+  }
+  serialize(beacons, 'beacons')
 }
 
 function genEntity(iEntity, iTbl, cb) {
@@ -88,6 +85,15 @@ function genEntity(iEntity, iTbl, cb) {
   genEntity(iEntity, iTbl, cb)
 }
 
+function serialize(tbl, name) {
+  tbl.forEach(function(row) {
+    row._owner = jid
+    row._creator = jid
+    row._modifier =  jid
+  })
+  fs.writeFileSync('./files/' + name + '.json', JSON.stringify(tbl))
+}
+
 function pad(number, digits) {
   var s = number.toString()
   assert(s.indexOf('-') < 0 && s.indexOf('.') < 0 && s.length <= digits, "Invalid id seed: " + s)
@@ -101,23 +107,16 @@ function pad(number, digits) {
 function delineate(s, freq, sep) {
   var cSeps = Math.floor(s.length / freq)
   for (var out = '', i = 0; i < cSeps; i++) {
-    out += s.slice(0, freq)
+    out += s.slice(0, freq) + sep
     s = s.slice(freq)
   }
-  out += s
-  log('s: ' + s + ' out: ' +  out)
+  return out.slice(0,-1) + s // trim the last sep and add the remainder
+  
 }
 
 function genId(tableId, recNum) {
   recNumStr = pad(recNum, 6)
-  return '000' + tableId.toString() + '.100101.55555.000.' + recNumStr
+  return '000' + tableId.toString() + '.010101.00000.000.' + recNumStr
 }
 
-function done() {
-  fs.writeFileSync('entities.json', JSON.stringify(entities))
-  fs.writeFileSync('beacons.json', JSON.stringify(beacons))
-  fs.writeFileSync('drops.json', JSON.stringify(drops))
-  fs.writeFileSync('comments.json', JSON.stringify(comments))
-  log('\Finished\n')
-  process.exit(0)
-}
+run()
