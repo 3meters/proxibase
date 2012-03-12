@@ -59,14 +59,12 @@ Returns each document with its lookup fields fully populated. Default false.
 3. Write the data for the new object inside a data element in the request body.  The new element can either be a simple object or an array of objects.
 4. If you use an array, currently only one element is supported per post, but this may change in the future
 
-
     request.body = {
       "data": {
         "field1": "foo",
         "field2": "bar"
       }
     }
-
 
 or
 
