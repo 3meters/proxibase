@@ -12,6 +12,7 @@
   "dependencies": {
     "express": "*",
     "mongoose": "*",
+    "mongoskin": "*",
     "underscore": "*",
     "nodemailer": "*",
     "request": "*",
