@@ -4,16 +4,17 @@
 
 var
   cBeacons = 3,
-  cEntities = 15,
+  entsPerBeacon = 5,
+  childrenPerEnt = 5,
   fs = require('fs'),
-  jid = '0000.000000.00000.000.000001',
-  gid = '0000.000000.00000.000.000002',
+  jid = '0000.000000.00000.555.000001',
+  gid = '0000.000000.00000.555.000002',
   log = require('../../lib/util').log
 
 function run() {
   genUsers()
   genBeacons(cBeacons)
-  // genEntities(cEntities)
+  genEntities(cBeacons * entsPerBeacon)
 }
 
 function genUsers() {
@@ -36,18 +37,20 @@ function genUsers() {
     pictureUri: 'https://graph.facebook.com/george.snelling/picture?type=large',
     isDeveloper: true
   })
-  serialize(users, 'users')
+  save(users, 'users')
+}
+
+function makeBeaconId(recNum) {
+  var id = pad(recNum, 12)
+  id = delineate(id, 2, ':')
+  return '0003:' + id
 }
 
 function genBeacons(count) {
   var beacons = [], beaconsPrefix = '0003'
   for (var i = 0; i < count; i++) {
-    // make a macID
-    var id = pad(i,12)
-    id = delineate(id, 2, ':')
-    id = beaconsPrefix + ':' + id
     beacons.push({
-      _id: id,
+      _id: makeBeaconId(i),
       ssid: 'Test Beacon ' + i,
       beaconType: 'fixed',
       latitude: 47.659052376993834,     // jays house for now
@@ -55,37 +58,59 @@ function genBeacons(count) {
       visibility: 'public'
     })
   }
-  serialize(beacons, 'beacons')
+  save(beacons, 'beacons')
 }
 
-function genEntity(iEntity, iTbl, cb) {
-  if (!iEntity--) return cb(iTbl)
-  var parentId = iEntity - (iEntity % 5)
-  entities[iEntity] = {
-    _id: genId(entityModelId, iEntity),
-    _owner: jid,
-    _creator: jid,
-    _modifier: jid,
-    name: 'Test Entity ' + iEntity,
-    type: 'post'
-  }
-  if (parentId != iEntity) entities[iEntity]._entity = genId(entityModelId, parentId)
+function genEntities(count) {
+  var
+    entities = [], entPrefix = '0002',
+    links = [], linkPrefix = '0001',
+    parentId = '',
+    root = false
 
-  // every third entity gets a comment
-  if (!(iEntity % 3)) {
-    comments.push({
-      _id: genId(commentModelId, comments.length),
-      _owner: jid,
-      _modifier: jid,
-      _creator: jid,
-      _entity: genId(entityModelId, iEntity),
-      title: "Comment on entity " + iEntity
+  for (var i = 0; i < count; i++) {
+    var id = entPrefix + '.010101.00000.555.' + pad(i, 6)
+    root = false
+
+    // is entity a root
+    if (i % childrenPerEnt === 0) {
+      root = true
+      parentId = id
+      // link to beacon
+      var beaconNum = Math.floor(i / entsPerBeacon)
+      links.push({
+        _from: id,
+        _to: makeBeaconId(beaconNum)
+      })
+    }
+    entities.push({
+      _id: id,
+      imagePreviewUri: "https://s3.amazonaws.com/3meters_images/1000_test_parent_ent_preview.jpg",
+      imageUri: "https://s3.amazonaws.com/3meters_images/1000_test_parent_ent.jpg",
+      label: "Test Entitiy " + i,
+      signalFence: -100,
+      title: "Test Entity " + i,
+      type: "com.proxibase.aircandi.candi.picture",
+      comments: [ ],
+      visibility: "public",
+      enabled: true,
+      locked: false,
+      linkJavascriptEnabled: false,
+      linkZoom: false,
+      root: root
     })
+    if (!root) {
+      links.push({
+        _from: id,
+        _to: parentId
+      })
+    }
   }
-  genEntity(iEntity, iTbl, cb)
+  save(entities, 'entities')
+  save(links, 'links')
 }
 
-function serialize(tbl, name) {
+function save(tbl, name) {
   tbl.forEach(function(row) {
     row._owner = jid
     row._creator = jid
