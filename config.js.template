@@ -5,6 +5,7 @@
 module.exports = {
   name: "Proxibase",
   host: "localhost",
+  host_external: "aircandi.com",  
   port: 8043,
   env: "dev", // dev|prod
   notify: "pager@3meters.com.deleteme",
