@@ -117,6 +117,14 @@ Is a way to do a GET on any table in the system, but with the paramters in the r
 
 The table property is required.  All others are optional. The value of the find property is passed through to mongodb unmodified, so it can be used to specify any clauses that mongodb supports, including sorting, offset, etc.  See mongodb's [advanced query syntax](http://www.mongodb.org/display/DOCS/Advanced+Queries) for details. This may present a security problem, so will likely be removed once the public query syntax becomes more full-featured.
 
+### POST /__do/touch
+Updates every record in a table.  Usefull when you need to re-run triggers on all records
+
+    {
+      "table": "tableName",     // required
+      "preserveModified, true   // optional, default true, if false the method will update the modified date
+    }
+
 ### POST /__do/getEntitiesForBeacons
 
 with request.body
