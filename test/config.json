@@ -1,4 +1,4 @@
 {
-  "_server": "https://api.localhost:8043",
-  "server": "https://api.proxibase.com:443"
+  "server": "https://api.localhost:8043",
+  "_server": "https://api.proxibase.com:443"
 }
