@@ -159,16 +159,18 @@ returns all entites created by that user and their immediate childrewn and comme
 * GET /tablename,foo
 
 ### Test/Perf
-* update test data genenerator to new schema
-* write tests for custom methods
+* hook up data generator to test harness
+* write sample tests for custom methods
 * deploy test server
 * Basic benchmark framework
 
 ### Rest
+* get: convert to mongoskin
 * get: lookups for links
 * get: child counts
 * get: field lists for lookups
 * get: fields lists for children
+* saveAPI: convert to mongoskin
 * get: find on children, innner and outer
 * get: find on parents, inner and outer
 * get: table.childtable.childtable...
@@ -176,11 +178,8 @@ returns all entites created by that user and their immediate childrewn and comme
 * post: insert array
 
 ### Misc
-* util: sendErr => res.err
-* __do/schema: slim and full version of schema apis
 * rationalize version migration into a command-linable pipeline
 * do version migration in place?
-* make direct connection through mongod driver (for db.dropDatabase, etc.)
 
 ### Ops
 * Upgrade box from micro to small
