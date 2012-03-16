@@ -33,6 +33,8 @@ Returns records with the specified ids. Note the initial __ids:  Do quote or put
 Returns records with the specified names. Note the initial __names:  Do not quote or put spaces between the name parameters.  If the value of your name contains a comma, you cannot use this method to find it.  Use the __do/find method in this case. 
 
 ### GET /tablename/[__ids:...|__names:.../]childTable1,childTable2|*
+TEMPORARILY DISABLED
+
 Returns all records specified with subdocuments for each child table specified. The wildcard * returns all child documents.  All fields from child documents are returned.  The query limit is applied both to the main document array and to each of its child arrays. Filters only apply to the main document, not to the document's children.
 
 ### GET /tablename/__genid
@@ -51,6 +53,8 @@ Returns only the fields specified. _id is always returned.
 Returns only the first 30 records. Max 1000.
 
     ?__lookups=true
+TEMPORARILY DISABLED
+
 Returns each document with its lookup fields fully populated. Default false.
 
 
@@ -110,8 +114,8 @@ Is a way to do a GET on any table in the system, but with the paramters in the r
       "names": ["name1", "name2"],
       "fields": ["field1","field2"],
       "find": {"name":"name1"},
-      "children": ["childTable1","childTable2"],
-      "lookups": true,
+      "children": ["childTable1","childTable2"], // temporarily disabled
+      "lookups": true, // temporarily disabled
       "limit": 25
     }
 
@@ -173,17 +177,16 @@ returns all entites created by that user and their immediate childrewn and comme
 * Basic benchmark framework
 
 ### Rest
-* get: convert to mongoskin
-* get: lookups for links
-* get: child counts
+* get: lookups
 * get: field lists for lookups
+* get: children
 * get: fields lists for children
-* saveAPI: convert to mongoskin
-* get: find on children, innner and outer
-* get: find on parents, inner and outer
+* get: outer joins
+* get: child counts
 * get: table.childtable.childtable...
 * get: singleton get
 * post: insert array
+* saveAPI: convert to mongoskin
 
 ### Misc
 * rationalize version migration into a command-linable pipeline
@@ -201,7 +204,7 @@ returns all entites created by that user and their immediate childrewn and comme
 * User permission setting API
 * Map users to accounts
 * Accrue user requests to acconts
-* Rate limit gets 
+* Rate limit gets
 * Rate limit posts
 * Lock / unlock account
 
