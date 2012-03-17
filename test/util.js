@@ -36,7 +36,7 @@ var getDefaultReq = exports.getDefaultReq = function() {
 
 // disgourge req and res contents of failed test
 
-var barf = exports.barf = function(req, res, msg) {
+var dump = exports.dump = function(req, res, msg) {
   var out = msg || 'Test failed'
   out += '\n\nreq.method: ' + req.method
   out += '\nreq.uri: ' + req.uri
@@ -52,16 +52,16 @@ var barf = exports.barf = function(req, res, msg) {
 
 exports.check = function(req, res, code) {
   assert(req, 'Invalide call to test.util.check.  Missing required req')
-  assert(res && res.statusCode, barf(req, res, 'Fatal: No response'))
+  assert(res && res.statusCode, dump(req, res, 'Fatal: No response'))
   code = code || 200
-  assert(res.statusCode === code, barf(req, res,
+  assert(res.statusCode === code, dump(req, res,
     'Bad statusCode ' + res.statusCode + ' expected: ' + code))
   if (res.body) {
     try {
       res.body = JSON.parse(res.body)
     }
     catch (e) {
-      assert(false, barf(req, res, 'Body did not contain valid JSON\n'))
+      assert(false, dump(req, res, 'Body did not contain valid JSON\n'))
     }
   }
 }

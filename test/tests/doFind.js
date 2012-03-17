@@ -9,7 +9,7 @@ var
   log = require('../../lib/util').log,
   testUtil = require('../util'),
   check = testUtil.check,
-  barf = testUtil.barf,
+  dump = testUtil.dump,
   baseUri = testUtil.getBaseUri(),
   req = testUtil.getDefaultReq()
 
@@ -21,7 +21,7 @@ exports.echo = function(test) {
   req.body = JSON.stringify(body)
   request(req, function(err, res) {
     check(req, res)
-    assert.deepEqual(res.body, body, barf(req, res))
+    assert.deepEqual(res.body, body, dump(req, res))
     test.done()
   })
 }
@@ -31,7 +31,7 @@ exports.simpleFind = function(test) {
   req.body = JSON.stringify({table:'users'})
   request(req, function(err, res) {
     check(req, res)
-    assert(res.body && res.body.data && res.body.data instanceof Array, barf(req, res))
+    assert(res.body && res.body.data && res.body.data instanceof Array, dump(req, res))
     test.done()
   })
 }
