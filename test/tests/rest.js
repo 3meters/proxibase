@@ -215,5 +215,11 @@ exports.deleteUserWithGeneratedId = function(test) {
 }
 
 exports.checkUserWithGeneratedIdGone = function(test) {
-  test.done()
+  req.method = 'get'
+  req.uri = baseUri + '/users/__ids:' + testUserGenId._id
+  request(req, function(err, res){
+    check(req, res)
+    assert(res.body.count === 0)
+    test.done()
+  })
 }
