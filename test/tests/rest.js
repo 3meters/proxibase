@@ -31,7 +31,8 @@ exports.getUsers = function (test) {
 }
 
 // delete first in case old test left data around
-exports.delUsers = function delUsers2(test) {
+// TODO: this should go away when we test against a test server with a known dataset
+exports.delUsers = function delUsers(test) {
   req.method = 'delete'
   req.uri = baseUri + '/users/__ids:testId1,testId2'
   request(req, function(err, res) {
