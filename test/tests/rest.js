@@ -7,12 +7,16 @@ var
   log = require('../../lib/util').log,
   testUtil = require('../util'),
   check = testUtil.check,
-  dump = testUtil.dump,
+  barf = testUtil.barf,
   baseUri = testUtil.getBaseUri(),
   req = testUtil.getDefaultReq(),
   testUser1 = {
     _id: "testId1",
     name: "Test User1",
+    email: "foo@bar.com"
+  },
+  testUserGenId = {
+    name: "Test User GenId",
     email: "foo@bar.com"
   }
 
@@ -70,7 +74,24 @@ exports.postWithMissingDataTag = function(test) {
 }
 
 exports.postWithMultipleArrayElements = function(test) {
-  test.done()
+  req.method = 'post'
+  req.uri = baseUri + '/users'
+  req.body = JSON.stringify({
+    data: [
+      {
+        name: "TestUser0",
+        email: "foo@bar.com"
+      },{
+        name: "TestUser1",
+        email: "foo@bar.com"
+      }
+    ]
+  })
+  request(req, function(err, res) {
+    check(req, res, 400)
+    assert(res.body.error)
+    test.done()
+  })
 }
 
 exports.addBadUser = function(test) {
@@ -148,18 +169,51 @@ exports.checkUpdatedUserDeleted = function(test) {
   })
 }
 
+exports.updateNonExistantUser = function(test) {
+  req.method = 'post'
+  req.uri = baseUri + '/users/__ids:bogus'
+  req.body = '{"data":{"name":"Test User Bogus"}}'
+  request(req, function(err, res) {
+    check(req, res, 404)
+    test.done()
+  })
+}
+
 exports.addUserWithoutId = function(test) {
-  test.done()
+  req.method = 'post'
+  req.uri = baseUri + '/users'
+  req.body = JSON.stringify({data:testUserGenId})
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.count === 1)
+    assert(res.body.data && res.body.data._id)
+    testUserGenId._id = res.body.data._id
+    test.done()
+  })
 }
 
 exports.getUserFromGeneratedId = function(test) {
-  test.done()
+  req.method = 'get'
+  req.uri = baseUri + '/users/__ids:' + testUserGenId._id
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.count === 1 &&
+      res.body.data && res.body.data.length === 1,
+      barf(req, res))
+    test.done()
+  })
 }
 
 exports.deleteUserWithGeneratedId = function(test) {
-  test.done()
+  req.method = 'delete'
+  req.uri = baseUri + '/users/__ids:' + testUserGenId._id
+  request(req, function(err, res){
+    check(req, res)
+    assert(res.body.count === 1)
+    test.done()
+  })
 }
 
 exports.checkUserWithGeneratedIdGone = function(test) {
   test.done()
-} 
+}
