@@ -4,29 +4,34 @@
  */
 
 var
-  req = require('request'),
-  _ = require('underscore'),
+  request = require('request'),
+  assert = require('assert'),
   log = require('../../lib/util').log,
-  check = require('../util').check,
-  getOptions = require('../util').getOptions,
-  path = '/__do/find'
+  testUtil = require('../util'),
+  check = testUtil.check,
+  dump = testUtil.dump,
+  baseUri = testUtil.getBaseUri(),
+  req = testUtil.getDefaultReq()
+
+req.method = 'post'
 
 exports.echo = function(test) {
-  var body = { table: 'users' }
-  var options = getOptions('__do/echo', body)
-  req.post(options, function(err, res) {
-    check(res, test)
-    test.ok(_.isEqual(res.body, body))
+  req.uri = baseUri + '/__do/echo'
+  var body = {table:'users'}
+  req.body = JSON.stringify(body)
+  request(req, function(err, res) {
+    check(req, res)
+    assert.deepEqual(res.body, body, dump(req, res))
     test.done()
   })
 }
 
 exports.simpleFind = function(test) {
-  var body = { table: 'users' }
-  var options = getOptions(path, body)
-  req.post(options, function(err, res) {
-    check(res, test)
-    test.ok(res.body && res.body.data && res.body.data instanceof Array)
+  req.uri = baseUri + '/__do/find'
+  req.body = JSON.stringify({table:'users'})
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body && res.body.data && res.body.data instanceof Array, dump(req, res))
     test.done()
   })
 }
