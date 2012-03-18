@@ -1,140 +1,226 @@
 /*
- *  Proxibase rest test
+ *  Proxibase rest basic test
  */
 
 var
-  req = require('request'),
+  request = require('request'),
   log = require('../../lib/util').log,
-  uri = require('../util').getBaseUri() + '/users',
-  check = require('../util').check,
-  getOptions = require('../util').getOptions,
+  testUtil = require('../util'),
+  check = testUtil.check,
+  dump = testUtil.dump,
+  baseUri = testUtil.getBaseUri(),
+  req = testUtil.getDefaultReq(),
   testUser1 = {
     _id: "testId1",
     name: "Test User1",
     email: "foo@bar.com"
+  },
+  testUserGenId = {
+    name: "Test User GenId",
+    email: "foo@bar.com"
   }
 
-// make sure the server is alive
+// make sure the server is responding
 exports.getUsers = function (test) {
-  req.get(uri, function(err, res) {
-    check(res, test)
+  req.method = 'get'
+  req.uri = baseUri
+  request(req, function(err, res) {
+    check(req, res)
     test.done()
   })
 }
 
 // delete first in case old test left data around
-exports.delUsers = function delUsers2(test) {
-  req.del(uri + '/__ids:testId1,testId2', function(err, res) {
-    check(res, test)
+// TODO: this should go away when we test against a test server with a known datasett 
+exports.delUsers = function delUsers(test) {
+  req.method = 'delete'
+  req.uri = baseUri + '/users/__ids:testId1,testId2'
+  request(req, function(err, res) {
+    check(req, res)
     test.done()
   })
 }
 
 exports.postWithMissingBody = function(test) {
-  var options = getOptions('users')
-  req.post(options, function(err, res) {
-    check(res, test, 400)
-    test.ok(res.body.error)
+  req.method = 'post'
+  req.uri = baseUri + '/users'
+  delete req.body
+  request(req, function(err, res) {
+    check(req, res, 400)
+    assert(res.body.error, dump(req, res))
     test.done()
   })
 }
 
 exports.postWithBadJsonInBody = function(test) {
-  var options = getOptions('users', {name: "Test UserBad"})
-  options.body = '{data: "This is not JSON"}'
-  req.post(options, function(err, res) {
-    check(res, test, 400)
-    test.ok(res.body.error)
+  req.method = 'post'
+  req.uri = baseUri + '/users'
+  req.body = '{data: "This is not JSON"}'
+  request(req, function(err, res) {
+    check(req, res, 400)
+    assert(res.body.error, dump(req, res))
     test.done()
   })
 }
 
 exports.postWithMissingDataTag = function(test) {
-  var options = getOptions('users', { name: "Test UserBad" })
-  req.post(options, function(err, res) {
-    check(res, test, 400)
-    test.ok(res.body.error)
+  req.method = 'post'
+  req.uri = baseUri + '/users'
+  req.body = '{"name":"ForgotToEncloseDataInDataTag"}'
+  request(req, function(err, res) {
+    check(req, res, 400)
+    assert(res.body.error, dump(req, res))
     test.done()
   })
 }
 
 exports.postWithMultipleArrayElements = function(test) {
-  test.done()
+  req.method = 'post'
+  req.uri = baseUri + '/users'
+  req.body = JSON.stringify({
+    data: [
+      {
+        name: "TestUser0",
+        email: "foo@bar.com"
+      },{
+        name: "TestUser1",
+        email: "foo@bar.com"
+      }
+    ]
+  })
+  request(req, function(err, res) {
+    check(req, res, 400)
+    assert(res.body.error, dump(req, res))
+    test.done()
+  })
 }
 
 exports.addBadUser = function(test) {
-  var options = getOptions('users', {data: { _id: 'testIdBad', name: 'Bad User Without Email'} })
-  req.post(options, function(err, res) {
-    check(res, test, 400)
-    test.ok(res.body.error)
+  req.method = 'post'
+  req.uri = baseUri + '/users'
+  req.body = JSON.stringify({data:{_id:'testIdBad',name:'Bad User Without Email'}})
+  request(req, function(err, res) {
+    check(req, res, 400)
+    assert(res.body.error, dump(req, res))
     test.done()
   })
 }
 
 exports.addUser = function(test) {
-  var options = getOptions('users', { data: testUser1 })
-  req.post(options, function(err, res) {
-    check(res, test)
-    test.ok(res.body.count === 1)
-    test.ok(res.body.data && res.body.data._id && res.body.data._id === testUser1._id)
+  req.method = 'post'
+  req.uri = baseUri + '/users'
+  req.body = JSON.stringify({data:testUser1})
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.count === 1, dump(req, res))
+    assert(res.body.data && res.body.data._id && res.body.data._id === testUser1._id, dump(req, res))
     test.done()
   })
 }
 
 exports.checkUser = function(test) {
-  req.get(uri + '/__ids:' + testUser1._id, function(err, res) {
-    check(res, test)
-    test.ok(res.body.data && res.body.data[0].name && res.body.data[0].name === testUser1.name)
+  req.method = 'get'
+  req.uri = baseUri + '/users/__ids:' + testUser1._id
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.data && res.body.data[0].name && res.body.data[0].name === testUser1.name, dump(req, res))
     test.done()
   })
 }
 
 exports.updateUser = function(test) {
-  var options = getOptions('users/__ids:' + testUser1._id, {data: { name: 'Test User2' } })
-  req.post(options, function(err, res) {
-    check(res, test)
-    test.ok(res.body.count === 1)
-    test.ok(res.body.data && res.body.data.name && res.body.data.name === 'Test User2')
+  req.method = 'post'
+  req.uri = baseUri + '/users/__ids:' + testUser1._id
+  req.body = '{"data":{"name":"Test User2"}}'
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.count === 1)
+    assert(res.body.data && res.body.data.name && res.body.data.name === 'Test User2', dump(req, res))
     test.done()
   })
 }
 
 exports.checkUpdatedUser = function(test) {
-  req.get(uri + '/__ids:' + testUser1._id, function(err, res) {
-    check(res, test)
-    test.ok(res.body.data && res.body.data[0] && res.body.data[0].name === 'Test User2')
+  req.method = 'get'
+  req.uri = baseUri + '/users/__ids:' + testUser1._id
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.data && res.body.data[0] && res.body.data[0].name === 'Test User2', dump(req, res))
     test.done()
   })
 }
 
 exports.deleteUpdateUser = function(test) {
-  req.del(uri + '/__ids:' + testUser1._id, function(err, res) {
-    check(res, test)
-    test.ok(res.body.count === 1)
+  req.method = 'delete'
+  req.uri = baseUri + '/users/__ids:' + testUser1._id
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.count === 1, dump(req, res))
     test.done()
   })
 }
 
 exports.checkUpdatedUserDeleted = function(test) {
-  req.get(uri + '/__ids:' + testUser1._id, function(err, res) {
-    check(res, test)
-    test.ok(res.body.count === 0)
+  req.method = 'get'
+  req.uri = baseUri + '/users/__ids:' + testUser1._id
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.count === 0, dump(req, res))
+    test.done()
+  })
+}
+
+exports.updateNonExistantUser = function(test) {
+  req.method = 'post'
+  req.uri = baseUri + '/users/__ids:bogus'
+  req.body = '{"data":{"name":"Test User Bogus"}}'
+  request(req, function(err, res) {
+    check(req, res, 404)
     test.done()
   })
 }
 
 exports.addUserWithoutId = function(test) {
-  test.done()
+  req.method = 'post'
+  req.uri = baseUri + '/users'
+  req.body = JSON.stringify({data:testUserGenId})
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.count === 1, dump(req, res))
+    assert(res.body.data && res.body.data._id, dump(req, res))
+    testUserGenId._id = res.body.data._id
+    test.done()
+  })
 }
 
 exports.getUserFromGeneratedId = function(test) {
-  test.done()
+  req.method = 'get'
+  req.uri = baseUri + '/users/__ids:' + testUserGenId._id
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.count === 1 &&
+      res.body.data && res.body.data.length === 1,
+      dump(req, res))
+    test.done()
+  })
 }
 
 exports.deleteUserWithGeneratedId = function(test) {
-  test.done()
+  req.method = 'delete'
+  req.uri = baseUri + '/users/__ids:' + testUserGenId._id
+  request(req, function(err, res){
+    check(req, res)
+    assert(res.body.count === 1, dump(req, res))
+    test.done()
+  })
 }
 
 exports.checkUserWithGeneratedIdGone = function(test) {
-  test.done()
-} 
+  req.method = 'get'
+  req.uri = baseUri + '/users/__ids:' + testUserGenId._id
+  request(req, function(err, res){
+    check(req, res)
+    assert(res.body.count === 0, dump(req, res))
+    test.done()
+  })
+}
