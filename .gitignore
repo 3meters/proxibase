@@ -2,5 +2,6 @@ config.js
 node_modules
 old
 *.json
+!package.json
 .monitor
 crash.js
