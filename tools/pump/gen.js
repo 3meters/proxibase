@@ -1,20 +1,27 @@
+// #! /usr/bin/env node
 /*
  * Create dummy datafiles to load into prox
  */
 
 var
-  cBeacons = 3,
-  entsPerBeacon = 5,
-  childrenPerEnt = 5,
   fs = require('fs'),
+  path = require('path'),
+  program = require('commander'),
   jid = '0000.000000.00000.555.000001',
   gid = '0000.000000.00000.555.000002',
   log = require('../../lib/util').log
 
+program
+  .option('-b, --beacons <beacons>', 'beacons to generate [3]', Number, 3)
+  .option('-e, --epb <epb>', 'entities per beacon [5]', Number, 5)
+  .option('-c, --cpe <cpe>', 'child entities per entity [5]', Number, 5)
+  .option('-o, --out <files>', 'output direcotry [files]', String, 'files')
+  .parse(process.argv)
+
 function run() {
   genUsers()
-  genBeacons(cBeacons)
-  genEntities(cBeacons * entsPerBeacon)
+  genBeacons(program.beacons)
+  genEntities(program.beacons * program.epb)
 }
 
 function genUsers() {
@@ -73,11 +80,11 @@ function genEntities(count) {
     root = false
 
     // is entity a root
-    if (i % childrenPerEnt === 0) {
+    if (i % program.cpe === 0) { // children per entity
       root = true
       parentId = id
       // link to beacon
-      var beaconNum = Math.floor(i / entsPerBeacon)
+      var beaconNum = Math.floor(i / program.epb) // entities per beacon
       links.push({
         _from: id,
         _to: makeBeaconId(beaconNum)
@@ -111,12 +118,13 @@ function genEntities(count) {
 }
 
 function save(tbl, name) {
+  if (!path.existsSync(program.out)) fs.mkdirSync(program.out)
   tbl.forEach(function(row) {
     row._owner = jid
     row._creator = jid
     row._modifier =  jid
   })
-  fs.writeFileSync('./files/' + name + '.json', JSON.stringify(tbl))
+  fs.writeFileSync(program.out + '/' + name + '.json', JSON.stringify(tbl))
 }
 
 function pad(number, digits) {
