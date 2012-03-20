@@ -1,6 +1,11 @@
-// #! /usr/bin/env node
 /*
- * Create dummy datafiles to load into prox
+ * Create dummy datafiles to load into a proxibase server
+ *
+ * Usage:
+ *
+ *    node gen
+ *
+ *    node gen --help
  */
 
 var

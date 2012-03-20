@@ -1,19 +1,24 @@
 /*
  * pull: suck all data from a proxibase server into local json files via the public rest API
+ *
+ * Usage:
+ *
+ *    node pull
+ *
+ *    node pull --help
  */
 
 var
   fs = require('fs'),
   path = require('path'),
-  assert = require('assert'),
   program = require('commander'),
-  baseUri = 'https://api.localhost:8043',
   req = require('request'),
-  tables = []
+  tables = [],
+  baseUri = ''
 
 // parse command line options
 
-program
+programthrow new Error('Unexpected statusCode: ' + res.statusCode)
   .option('-s --server <server>', 'server to pull data from [dev|prod|uri]', String, 'dev')
   .option('-o, --out <files>', 'output direcotry [files]', String, 'files')
   .parse(process.argv)
@@ -25,7 +30,7 @@ switch(program.server) {
     baseUri = 'https://api.localhost:8043'
     break
   case 'prod':
-    baseUri = 'https://api.proxibase.com'
+    baseUri = 'https://api.proxibase.com:443'
     break
   case 'uri':
     baseUri = program.server
