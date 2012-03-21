@@ -1,0 +1,12 @@
+# ignore file for nodemon
+# https://github.com/remy/nodemon
+
+.git
+config
+node_modules
+readme.*
+keys
+*.json
+old
+test
+tools
