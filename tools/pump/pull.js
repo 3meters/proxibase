@@ -18,7 +18,7 @@ var
 
 // parse command line options
 
-programthrow new Error('Unexpected statusCode: ' + res.statusCode)
+program
   .option('-s --server <server>', 'server to pull data from [dev|prod|uri]', String, 'dev')
   .option('-o, --out <files>', 'output direcotry [files]', String, 'files')
   .parse(process.argv)
@@ -57,7 +57,6 @@ req.get(baseUri + '/__info', function (err, res) {
 
 function pullTable(iTable, cb) {
   if (!iTable--) return cb
-
   var tableName = tables[iTable]
   var options = {
     headers: { "content-type": "application/json" }
