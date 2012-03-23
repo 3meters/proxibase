@@ -11,84 +11,89 @@
 var
   fs = require('fs'),
   path = require('path'),
-  program = require('commander'),
-  _ = require('underscore'),
+  cli = require('commander'),  // command line interface
   constants = require('../../test/constants.js'),
-  tableMap = constants.tableMap,
   jid = constants.jid,
-  gid = constants.gid,
+  tableIds = constants.tableIds,
   timeStamp = constants.timeStamp,
+  getDefaultRecord = constants.getDefaultRecord,
+  users = [],
+  beacons = [],
+  entities = [],
+  links = [],
   log = require('../../lib/util').log
 
-program
-  .option('-b, --beacons <beacons>', 'beacons to generate [3]', Number, 3)
-  .option('-e, --epb <epb>', 'entities per beacon [5]', Number, 5)
-  .option('-c, --cpe <cpe>', 'child entities per entity [5]', Number, 5)
-  .option('-o, --out <files>', 'output direcotry [files]', String, 'files')
+cli
+  .option('-b, --beacons <num>', 'beacons to generate [3]', Number, 3)
+  .option('-e, --epb <num>', 'entities per beacon [5]', Number, 5)
+  .option('-c, --cpe <num>', 'child entities per entity [5]', Number, 5)
+  .option('-o, --out <dir>', 'output direcotry [files]', String, 'files')
   .parse(process.argv)
+
 
 function run() {
   genUsers()
-  genBeacons(program.beacons)
-  genEntities(program.beacons * program.epb * program.cpe)
+  genBeacons(cli.beacons)
+  genEntities(cli.beacons * cli.epb, true) // parents
+  genEntities(cli.beacons * cli.epb * cli.cpe, false) // children
 }
 
-// just copy the defaults
+
 function genUsers() {
-  var users = tableMap.users.records
+  users.push(getDefaultRecord('users'))
+  users.push({
+    _id: genId('users', 2),
+    name: 'George Snelling',
+    email: 'george@3meters.com'
+  })
   save(users, 'users')
 }
 
-function makeBeaconId(recNum) {
+
+function genBeaconId(recNum) {
   var id = pad(recNum, 12)
   id = delineate(id, 2, ':')
-  var prefix = pad(tableMap.beacons.tableId, 4) + ':'
+  var prefix = pad(tableIds.beacons, 4) + ':' // TODO: change to '.'
   return  prefix + id
 }
 
+
 function genBeacons(count) {
-  var beacons = []
   for (var i = 0; i < count; i++) {
-    beacons.push({
-      _id: makeBeaconId(i),
-      ssid: 'Test Beacon ' + i,
-      beaconType: 'fixed',
-      latitude: tableMap.beacons.records[0].latitude,
-      longitude: tableMap.beacons.records[0].longitude,
-      visibility: 'public'
-    })
+    var beacon = getDefaultRecord('beacons')
+    beacon._id = genBeaconId(i)
+    beacon.ssid = 'Test Beacon ' + i,
+    beacons.push(beacon)
   }
   save(beacons, 'beacons')
 }
 
-function genEntities(count) {
+
+function genEntities(count, isRoot) {
   var
-    entities = [],
-    links = [],
-    newEnt = {}
+    entName = isRoot ? 'Test Root Entity ' : 'Test Child Enitiy ',
+    countParents = cli.beacons * cli.epb // child Ids start after parent Ids
 
   for (var i = 0; i < count; i++) {
-    newEnt = _.clone(tableMap.entities.records[0]) // start with the defualt
-    newEnt._id = genId('entities', i)
-    newEnt.root = false
-    newEnt.label = "Test Entitiy " + i
-    newEnt.title = "Test Entitiy " + i
+    var newEnt = getDefaultRecord('entities')
+    var recNum = isRoot ? i : i + countParents
+    newEnt._id = genId('entities', recNum)
+    newEnt.root = isRoot
+    newEnt.label = newEnt.title = entName + recNum
+    entities.push(newEnt)
 
-    // is entity a root
-    if (i % program.cpe === 0) { // children per entity
-      newEnt.root = true
+    if (isRoot) {
       // create link to beacon
-      var beaconNum = Math.floor(i / program.cpe / program.epb) // entities per beacon
+      var beaconNum = Math.floor(i / cli.epb)
       // log('beaconNum ' + beaconNum)
       links.push({
         _from: newEnt._id,
-        _to: makeBeaconId(beaconNum)
+        _to: genBeaconId(beaconNum)
       })
     }
-    entities.push(newEnt)
-    if (!newEnt.root) {
+    else {
       // create link to parent entity
-      var parentRecNum = (i - (i % program.cpe)) // children per entity, tricky
+      var parentRecNum = Math.floor(i / cli.cpe) // yeah, this is right
       // log('parentRecNum ' + parentRecNum)
       links.push({
         _from: newEnt._id,
@@ -100,14 +105,15 @@ function genEntities(count) {
   save(links, 'links')
 }
 
-function save(tbl, name) {
-  if (!path.existsSync(program.out)) fs.mkdirSync(program.out)
-  tbl.forEach(function(row) {
+
+function save(table, name) {
+  if (!path.existsSync(cli.out)) fs.mkdirSync(cli.out)
+  table.forEach(function(row) {
     row._owner = jid
     row._creator = jid
     row._modifier =  jid
   })
-  fs.writeFileSync(program.out + '/' + name + '.json', JSON.stringify(tbl))
+  fs.writeFileSync(cli.out + '/' + name + '.json', JSON.stringify(table))
 }
 
 function pad(number, digits) {
@@ -131,8 +137,8 @@ function delineate(s, freq, sep) {
 }
 
 function genId(tableName, recNum) {
-  assert(tableMap[tableName], 'Invalid table name ' + tableName)
-  tablePrefix = pad(tableMap[tableName].tableId, 4)
+  assert((typeof tableIds[tableName] === 'number'), 'Invalid table name ' + tableName)
+  tablePrefix = pad(tableIds[tableName], 4)
   recNum = pad(recNum, 6)
   return tablePrefix + timeStamp + recNum
 }
