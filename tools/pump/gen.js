@@ -12,8 +12,12 @@ var
   fs = require('fs'),
   path = require('path'),
   program = require('commander'),
-  jid = '0000.000000.00000.555.000001',
-  gid = '0000.000000.00000.555.000002',
+  _ = require('underscore'),
+  constants = require('../../test/constants.js'),
+  tableMap = constants.tableMap,
+  jid = constants.jid,
+  gid = constants.gid,
+  timeStamp = constants.timeStamp,
   log = require('../../lib/util').log
 
 program
@@ -26,47 +30,31 @@ program
 function run() {
   genUsers()
   genBeacons(program.beacons)
-  genEntities(program.beacons * program.epb)
+  genEntities(program.beacons * program.epb * program.cpe)
 }
 
+// just copy the defaults
 function genUsers() {
-  var users = []
-  users.push({
-    _id: jid,
-    name: 'Jay Gecko',
-    email: 'jay@3meters.com',
-    location: 'Seattle, WA',
-    facebookId: 'george.snelling',
-    pictureUri: 'https://s3.amazonaws.com/3meters_images/1001_20120211_103113.jpg',
-    isDeveloper: true
-  })
-  users.push({
-    _id: gid,
-    name: 'George Snelling',
-    email: 'george@3meters.com',
-    location: 'Seattle, WA',
-    facebookId: '696942623',
-    pictureUri: 'https://graph.facebook.com/george.snelling/picture?type=large',
-    isDeveloper: true
-  })
+  var users = tableMap.users.records
   save(users, 'users')
 }
 
 function makeBeaconId(recNum) {
   var id = pad(recNum, 12)
   id = delineate(id, 2, ':')
-  return '0003:' + id
+  var prefix = pad(tableMap.beacons.tableId, 4) + ':'
+  return  prefix + id
 }
 
 function genBeacons(count) {
-  var beacons = [], beaconsPrefix = '0003'
+  var beacons = []
   for (var i = 0; i < count; i++) {
     beacons.push({
       _id: makeBeaconId(i),
       ssid: 'Test Beacon ' + i,
       beaconType: 'fixed',
-      latitude: 47.659052376993834,     // jays house for now
-      longitude: -122.659052376993834,
+      latitude: tableMap.beacons.records[0].latitude,
+      longitude: tableMap.beacons.records[0].longitude,
       visibility: 'public'
     })
   }
@@ -75,46 +63,36 @@ function genBeacons(count) {
 
 function genEntities(count) {
   var
-    entities = [], entPrefix = '0002',
-    links = [], linkPrefix = '0001',
-    parentId = '',
-    root = false
+    entities = [],
+    links = [],
+    newEnt = {}
 
   for (var i = 0; i < count; i++) {
-    var id = entPrefix + '.010101.00000.555.' + pad(i, 6)
-    root = false
+    newEnt = _.clone(tableMap.entities.records[0]) // start with the defualt
+    newEnt._id = genId('entities', i)
+    newEnt.root = false
+    newEnt.label = "Test Entitiy " + i
+    newEnt.title = "Test Entitiy " + i
 
     // is entity a root
     if (i % program.cpe === 0) { // children per entity
-      root = true
-      parentId = id
-      // link to beacon
-      var beaconNum = Math.floor(i / program.epb) // entities per beacon
+      newEnt.root = true
+      // create link to beacon
+      var beaconNum = Math.floor(i / program.cpe / program.epb) // entities per beacon
+      // log('beaconNum ' + beaconNum)
       links.push({
-        _from: id,
+        _from: newEnt._id,
         _to: makeBeaconId(beaconNum)
       })
     }
-    entities.push({
-      _id: id,
-      imagePreviewUri: "https://s3.amazonaws.com/3meters_images/1000_test_parent_ent_preview.jpg",
-      imageUri: "https://s3.amazonaws.com/3meters_images/1000_test_parent_ent.jpg",
-      label: "Test Entitiy " + i,
-      signalFence: -100,
-      title: "Test Entity " + i,
-      type: "com.proxibase.aircandi.candi.picture",
-      comments: [ ],
-      visibility: "public",
-      enabled: true,
-      locked: false,
-      linkJavascriptEnabled: false,
-      linkZoom: false,
-      root: root
-    })
-    if (!root) {
+    entities.push(newEnt)
+    if (!newEnt.root) {
+      // create link to parent entity
+      var parentRecNum = (i - (i % program.cpe)) // children per entity, tricky
+      // log('parentRecNum ' + parentRecNum)
       links.push({
-        _from: id,
-        _to: parentId
+        _from: newEnt._id,
+        _to: genId('entities', parentRecNum)
       })
     }
   }
@@ -152,9 +130,11 @@ function delineate(s, freq, sep) {
   
 }
 
-function genId(tableId, recNum) {
-  recNumStr = pad(recNum, 6)
-  return '000' + tableId.toString() + '.010101.00000.000.' + recNumStr
+function genId(tableName, recNum) {
+  assert(tableMap[tableName], 'Invalid table name ' + tableName)
+  tablePrefix = pad(tableMap[tableName].tableId, 4)
+  recNum = pad(recNum, 6)
+  return tablePrefix + timeStamp + recNum
 }
 
 run()
