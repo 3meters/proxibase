@@ -3,20 +3,21 @@
  */
 
 var
-  _ = require('underscore')
-  tableMap = {
-    users: {tableId:0, records:[]},
-    links: {tableId:1, records:[]},
-    entities: {tableId:2, records:[]},
-    beacons: {tableId:3, records:[]},
-    documents: {tableId:5, records:[]},
-    observations: {tableId:7, records:[]}
+  _ = require('underscore'),            // for cloning objects
+  timeStamp = '.010101.00000.555.',     // jan 1 2000 + 555 miliseconds
+  jid = '0000' + timeStamp + '000001',  // Jay is the prime user
+  tableIds = {
+    users: 0,
+    links: 1,
+    entities: 2,
+    beacons: 3,
+    documents: 5,
+    observations: 7
   },
-  timeStamp = '.010101.00000.555.',
-  jid = '0000' + timeStamp + '000001',
-  gid = '0000' + timeStamp + '000002'
+  defaultRecord = {}
 
-tableMap.users.records.push({
+
+defaultRecord.users = {
   _id: jid,
   _owner: jid,
   _modifier: jid,
@@ -26,21 +27,10 @@ tableMap.users.records.push({
   facebookId: 'george.snelling',
   pictureUri: 'https://s3.amazonaws.com/3meters_images/1001_20120211_103113.jpg',
   isDeveloper: true
-})
+}
 
-tableMap.users.records.push({
-  _id: gid,
-  _owner: gid,
-  _modifier: gid,
-  name: 'George Snelling',
-  email: 'george@3meters.com',
-  location: 'Seattle, WA',
-  facebookId: '696942623',
-  pictureUri: 'https://graph.facebook.com/george.snelling/picture?type=large',
-  isDeveloper: true
-})
 
-tableMap.beacons.records.push({
+defaultRecord.beacons = {
   _id: '0003.00:00:00:55:00:01',
   _owner: jid,
   _creator: jid,
@@ -50,15 +40,16 @@ tableMap.beacons.records.push({
   latitude: 47.659052376993834,     // jays house for now
   longitude: -122.659052376993834,
   visibility: 'public'
-})
+}
 
-tableMap.entities.records.push({
+
+defaultRecord.entities = {
   _id: '0002' + timeStamp + '00001',
   imagePreviewUri: 'https://s3.amazonaws.com/3meters_images/default_entity_preview.jpg',
   imageUri: 'https://s3.amazonaws.com/3meters_images/default_entity.jpg',
   label: 'Default Entitiy',
-  signalFence: -100,
   title: 'Default Entitiy',
+  signalFence: -100,
   type: 'com.proxibase.aircandi.candi.picture',
   comments: [ ],
   visibility: 'public',
@@ -67,11 +58,15 @@ tableMap.entities.records.push({
   linkJavascriptEnabled: false,
   linkZoom: false,
   root: root
-})
+}
 
-exports.tableMap = _.clone(tableMap)  // hand out a safe copy
-exports.timeStamp = timeStamp
+// remeber to clone any exported objects
 exports.jid = jid
-exports.gid = gid
+exports.timeStamp = timeStamp
+exports.tableIds = _.clone(tableIds)
+exports.getDefaultRecord = function(tableName) {
+  assert(defaultRecord[tableName], 'No default record for ' + tableName)
+  return _.clone(defaultRecord[tableName])
+}
 
 
