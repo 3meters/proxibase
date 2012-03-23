@@ -19,7 +19,7 @@ var
   errors = []
 
 program
-  .option('-s --server <dev>', 'push to server [dev|test|prod|uri]', String, 'dev')
+  .option('-s --server <dev>', 'push to server [dev|test|prod|url]', String, 'dev')
   .option('-i --in <files>', 'input direcotry [files]', String, 'files')
   .option('-q --quiet', 'do not log sucessful inserts')
   .parse(process.argv)
@@ -36,12 +36,8 @@ switch(program.server) {
   case 'prod':
     baseUri = 'https://api.proxibase.com:443'
     break
-  case 'uri':
-    baseUri = program.server
-    break
   default:
-    console.error('Invalid value for --server')
-    process.exit(1)
+    baseUri = program.server
 }
 
 readFiles(program.in)
