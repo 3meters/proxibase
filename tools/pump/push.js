@@ -57,6 +57,7 @@ function readFiles(dir) {
 
 function loadTable(iTable) {
   if (iTable >= tables.length) return done() // break recursion
+  log('loading ' + tableNames[iTable])
   loadDoc(tables[iTable], 0, tableNames[iTable], function() {
     iTable++
     loadTable(iTable) // recurse

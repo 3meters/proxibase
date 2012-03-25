@@ -7,7 +7,7 @@
 
 var
   config = exports.config = require('../../config'),  
-  mongoskin = require('mongoskin'),  
+  mongoskin = require('mongoskin'),
   log = require('../../lib/util').log,
   sendErr = require('../../lib/util').sendErr
 
