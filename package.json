@@ -15,6 +15,7 @@
     "mongoskin": "*",
     "underscore": "*",
     "commander": "*",
+    "async": "*",
     "nodemailer": "*",
     "request": "*",
     "ejs": "*",
