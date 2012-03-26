@@ -72,6 +72,7 @@ function loadDoc(docs, iDoc, tableName, next) {
   options.headers = {"content-type":"application/json"}
   options.uri = baseUri + '/' + tableName
   options.body = JSON.stringify({ data: docs[iDoc] })
+
   req.post(options, function(err, res) {
     if (err) throw err
     if (!res) throw new Error('No response')
