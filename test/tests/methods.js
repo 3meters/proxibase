@@ -257,6 +257,15 @@ exports.checkInsertBeacon = function(test) {
   })
 }
 
+exports.deleteBeacon = function (test) {
+  req.method = 'delete'
+  req.uri = baseUri + '/beacons/__ids:' + testBeacon._id
+  request(req, function(err, res) {
+    check(req, res)
+    test.done()
+  })
+}
+
 exports.checkInsertObservationForRootEntity = function(test) {
   req.method = 'post'
   req.body = JSON.stringify({table:'observations',find:{_beacon:testBeacon._id,_entity:testEntity._id}})
