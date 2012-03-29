@@ -163,8 +163,8 @@ exports.longitude = longitude
 exports.timeStamp = timeStamp
 exports.timeStampMs = timeStampMs
 exports.tableIds = _.clone(tableIds)
-exports.comments = comments
-exports.smokeDataProfile = smokeDataProfile
+exports.comments = _.clone(comments)
+exports.smokeDataProfile = _.clone(smokeDataProfile)
 exports.getDefaultRecord = function(tableName) {
   assert(defaultRecord[tableName], 'No default record for ' + tableName)
   return _.clone(defaultRecord[tableName])

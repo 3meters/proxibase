@@ -16,6 +16,7 @@ cli
   .option('-s, --spe <num>', 'sub entities per entity [5]', Number, 5)
   .option('-c, --cpe <num>', 'comments per entity [5]', Number, 5)
   .option('-d, --database <database>', 'database name [proxTest]', String, 'proxTest')
+  .option('-v, --validate', 'validate database inserts against schema')
   .option('-f, --files', 'create files rather than update the database')
   .option('-o, --out <dir>', 'output directory for files [files]', String, 'files')
   .parse(process.argv)

@@ -8,8 +8,11 @@ sudo npm install -g nodeunit
 Smoke Test Data
 ===============
 The mongo server used for the smoke test must have the fully populated smokeData 
-database. To generate the smokeData database, run the genSmoke module in the pump directory. The host and port settings come from the local config file and the database
-is a setting from the smokeDataProfile in /test/constants. The proxibase service must be running if the smokeDataProfile is using a mongoose connection. Running genSmoke always rebuilds the smokeData database.
+database. To generate the smokeData database, run the genSmoke module in the pump 
+directory. The host and port settings come from the local config file and the database 
+is a setting from the smokeDataProfile in /test/constants. The proxibase service must 
+be running if the smokeDataProfile is using a mongoose connection. Running genSmoke 
+always rebuilds the smokeData database.
 
 node genSmoke
 

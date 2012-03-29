@@ -1,86 +1,120 @@
 /*
- * Generate dummy data to files or directly to a mongo server
+ * Generate dummy data for a proxibase server
+ *   Save to JSON files or directly to mongodb
+ *   Silently overwrites existing files or tables
  */
 
 var
   fs = require('fs'),
   path = require('path'),
   async = require('async'),
-  mongoskin = require('mongoskin'),  
+  mongoskin = require('mongoskin'),
   log = require('../../lib/util').log,
   constants = require('../../test/constants.js'),
   tableIds = constants.tableIds,
-  timeStamp = constants.timeStamp,
-  getDefaultRecord = constants.getDefaultRecord,
-  comments = constants.comments,
-  users = [],
-  documents = [],
-  observations = [],
-  beacons = [],
-  entities = [],
-  links = [],
-  profile,
-  db
+  goose = require('../../lib/goose'), // Wraps mongoose.js
+  table = {},                         // Map of tables to be generated
+  startTime,                          // Elapsed time counter
+  db,                                 // Mongoskin connection object
+  mdb,                                // Mongoose connection object
+  save,                               // Save function
+  options = {                         // Default options
+    beacons: 3,                       // Count of beacons
+    epb: 5,                           // Entites per beacon
+    spe: 5,                           // Subentities (aka children) per beacon
+    cpe: 5,                           // Comments per entity
+    database: 'proxTest',             // Database name
+    validate: false,                  // Validate database data against mongoose schema
+    files: false,                     // Output to JSON files rather than to datbase
+    out: 'files'                      // File output directory
+  }
 
-module.exports.generateData = function(dataProfile) {
-  profile = dataProfile
 
-  if (profile.files) {
+module.exports.generateData = function(profile) {
+
+  startTime = new Date().getTime() // start program timer
+
+  for (key in profile) {
+    options[key] = profile[key]
+  }
+
+  if (options.files) {
+    // save to files
+    if (!path.existsSync(options.out)) fs.mkdirSync(options.out)
     log('Saving to files...')
-    run(profile)
+    save = saveTo.file
+    run()
   }
+
   else {
-    /* 
-     * Our own connection so we don't need to have proxibase service running.
-     * Database will be created if it doesn't already exist.
-     */
-    var config = require('../../conf/config') // this could get better
-    config.mdb.database = profile.database
-    var connectString = config.mdb.host + ':' + config.mdb.port +  '/' + config.mdb.database + '?auto_reconnect'
-    db = mongoskin.db(connectString)
-    log('Saving directly to database: ' + connectString)
-    run(profile)
+    // save to database
+    var config = require('../../conf/config')  // local server default config.js
+    config.mdb.database = options.database     // override database name
+    var dbUri = config.mdb.host + ':' + config.mdb.port +  '/' + config.mdb.database
+
+    if (options.validate) {
+      // save via mongoose
+      log('Saving to database ' + dbUri + ' with validation')
+      save = saveTo.dbValidate
+    }
+    else {
+      // save via mongoskin
+      log('Saving to database ' + dbUri)
+      save = saveTo.db
+    }
+
+    db = mongoskin.db(dbUri + '?auto_reconnect')
+    db.dropDatabase(function(err) {
+      if (err) throw err
+      ensureIndices(config, function(err) {
+        if (err) throw err
+        run()
+      })
+    })
   }
 }
 
-function run(profile) {
-
-  // see https://github.com/caolan/async#series
-  async.series([
-    genUsers(done),
-    genDocuments(done),
-    genBeacons(profile.beacons, done),
-    genEntities(profile.beacons * profile.epb, true, done), // parents
-    genEntities(profile.beacons * profile.epb * profile.cpe, false, done), // children
-    saveEntities(done)
-  ],
-  function(err, results) {
-    console.log('Finished')
-    process.exit(0)
-  })
-
-  function done(err) {
-    return(err, null) // no results to post-process
-  }
-}
-
-function genUsers(callback) {
-  users.push(getDefaultRecord('users1'))
-  users.push(getDefaultRecord('users2'))
-  save(users, 'users', function(err) {
-    if (err) return callback(err)
-    log('saved ' + users.length + ' users')
-    return callback()
+// Ensure the database has the indexes defined by the service's models
+function ensureIndices(config, callback) {
+  log('Creating database and ensuring indeces')
+  goose.connect(config.mdb, function(err, connection) {
+    if (err) throw err
+    mdb = connection
+    // When the following dummy query is fired mongoose.js will connect to the db and
+    // ensure that the indeces defined in prox/lib/models are defined in the database
+    mdb.models.users.find({_id:-1}, function(err) {
+      log('Database Ok\nSaving to database...')
+      return callback(err)
+    })
   })
 }
 
-function genDocuments(callback) {
-  documents.push(getDefaultRecord('documents'))
-  save(documents, 'documents', function(err) {
-    if (err) return callback(err)
-    log('saved ' + documents.length + ' documents')
-    return callback()
+function run() {
+  genUsers()
+  genDocuments()
+  genBeacons()
+  genEntities()
+  genChildEntities()
+  saveAll(function(err) {
+    if (err) throw err
+    if (!options.files) {
+      db.close()
+      mdb.close()
+    }
+    var elapsedTime = ((new Date().getTime()) - startTime) / 1000
+    log('Finished in ' + elapsedTime + ' seconds')
   })
+}
+
+function genUsers() {
+  table.users = []
+  table.users.push(constants.getDefaultRecord('users1'))
+  table.users.push(constants.getDefaultRecord('users2'))
+}
+
+function genDocuments() {
+  table.documents = []
+  table.documents.push(constants.getDefaultRecord('documents'))
 }
 
 function genBeaconId(recNum) {
@@ -90,86 +124,77 @@ function genBeaconId(recNum) {
   return  prefix + id
 }
 
-
-function genBeacons(count, callback) {
-  for (var i = 0; i < count; i++) {
-    var beacon = getDefaultRecord('beacons')
+function genBeacons() {
+  table.beacons = []
+  for (var i = 0; i < options.beacons; i++) {
+    var beacon = constants.getDefaultRecord('beacons')
     beacon._id = genBeaconId(i)
     beacon.ssid = beacon.ssid + ' ' + i
     beacon.bssid = beacon._id.substring(5)
-    beacons.push(beacon)
+    table.beacons.push(beacon)
   }
-  save(beacons, 'beacons', function(err) {
-    if (err) return callback(err)
-    log('saved ' + beacons.length + ' beacons')
-    return callback()
-  })
 }
 
-function genEntities(count, isRoot, callback) {
-  var countParents = profile.beacons * profile.epb // child Ids start after parent Ids
+function genEntities() {
+  genEntityRecords(options.beacons * options.epb, true)
+}
+
+function genChildEntities(callback) {
+  genEntityRecords(options.beacons * options.epb * options.spe, false)
+}
+
+// Makes entity, link, and observation records for parent entities (isRoot = true)
+//   or child entities (isRoot = false)
+function genEntityRecords(count, isRoot) {
+
+  table.entities = table.entities || []
+  table.links = table.links || []
+  table.observations = table.observations || []
+
+  var countParents = options.beacons * options.epb // child Ids start after parent Ids
 
   for (var i = 0; i < count; i++) {
     var 
-      newEnt = getDefaultRecord('entities'),
+      newEnt = constants.getDefaultRecord('entities'),
       recNum = isRoot ? i : i + countParents,
-      beaconNum = Math.floor(i / profile.epb)
+      beaconNum = Math.floor(i / options.epb)
 
     newEnt._id = genId('entities', recNum)
     newEnt.root = isRoot
     newEnt.label = newEnt.title = isRoot ? newEnt.title + ' ' + recNum : newEnt.title + ' Child ' + recNum
-    entities.push(newEnt)
+    table.entities.push(newEnt)
 
-    /* Link */
-    newLink = getDefaultRecord('links')
+    // Link
+    newLink = constants.getDefaultRecord('links')
     newLink._id = genId('links', recNum)
     newLink._from = newEnt._id
     newLink.fromTableId = tableIds['entities']
     if (isRoot) {
-      // create link to beacon
+      // Link to beacon
       newLink._to = genBeaconId(beaconNum)
       newLink.toTableId = tableIds['beacons']
     }
     else {
-      // create link to parent entity
-      var parentRecNum = Math.floor(i / profile.cpe) // yeah, this is right
+      // Link to parent entity
+      var parentRecNum = Math.floor(i / options.cpe) // yeah, this is right
       newLink._to = genId('entities', parentRecNum)
       newLink.toTableId = tableIds['entities']
     }
-    links.push(newLink)
+    table.links.push(newLink)
 
-    /* Observation */
-    var newObservation = getDefaultRecord('observations')
+    // Observation
+    var newObservation = constants.getDefaultRecord('observations')
     newObservation._id = genId('observations', recNum)
     newObservation._beacon = genBeaconId(beaconNum)
     newObservation._entity = newEnt._id
-    observations.push(newObservation)
+    table.observations.push(newObservation)
 
-    /* Comments */
+    // Comments
     newEnt.comments = []
-    for (var j = 0; j < profile.cpe; j++) {
-      newEnt.comments.push(comments)
+    for (var j = 0; j < options.cpe; j++) {
+      newEnt.comments.push(constants.comments)
     }
   }
-  return callback()
-}
-
-function saveEntities(callback) {
-  save(entities, 'entities', function(err) {
-    if (err) return callback(err)
-    log('saved ' + entities.length + ' entities') // + ((isRoot) ? ' parent' : ' child') + ' enities')
-
-    save(links, 'links', function(err) {
-      if (err) return callback(err)
-      log('saved ' + links.length + ' links')  // + ((isRoot) ? ' beacon' : ' parent') + ' links')
-
-      save(observations, 'observations', function(err) {
-        if (err) return callback(err)
-        log('saved ' + observations.length + ' observations')  // + ((isRoot) ? ' beacon' : ' parent') + ' links')
-        return callback()
-      })
-    })
-  })
 }
 
 // create a digits-length string from number left-padded with zeros
@@ -197,26 +222,52 @@ function genId(tableName, recNum) {
   assert((typeof tableIds[tableName] === 'number'), 'Invalid table name ' + tableName)
   tablePrefix = pad(tableIds[tableName], 4)
   recNum = pad(recNum + 1, 6)
-  return tablePrefix + '.' + timeStamp + '.' + recNum
+  return tablePrefix + '.' + constants.timeStamp + '.' + recNum
 }
 
-// save either to a file or to the database
-function save(table, name, callback) {
-  if (profile.files) {
-    if (!path.existsSync(profile.out)) fs.mkdirSync(profile.out)
-    fs.writeFileSync(profile.out + '/' + name + '.json', JSON.stringify(table))
-    return callback()
+function saveAll(callback) {
+  var tableNames = []
+  for (name in table) {
+    tableNames.push(name)
   }
-  else {
-    db.createCollection(name, function(err, collection) {
-      if (err) return callback(err)
-      collection.remove({}, {safe: true}, function(err, count) {
-        if (err) return callback(err)
-        collection.insert(table, {safe: true}, function(err, docs) {
-          if (err) return callback(err)
-          return callback()
-        })
+  async.forEachSeries(tableNames, save, function(err) {
+    return callback(err)
+  })
+}
+
+var saveTo = {
+  file:
+    // save to a JSON file ready to load via push
+    function (tableName, callback) {
+      var fileName = options.out + '/' + tableName + '.json'
+      fs.writeFileSync(fileName, JSON.stringify(table[tableName]))
+      log(table[tableName].length + ' ' + tableName)
+      return callback()
+    },
+  db:
+    // save in bulk via mongoskin bypassing schema validation
+    function (tableName, callback) {
+      var collection = db.collection(tableName)
+      collection.insert(table[tableName], {safe: true}, function(err, docs) {
+        log(table[tableName].length + ' ' + tableName)
+        return callback(err)
       })
-    })
-  }
+    },
+  dbValidate:
+    // save via mongoose validating each record against mongoose schema
+    function (tableName, callback) {
+      var model = mdb.models[tableName]
+
+      async.forEachSeries(table[tableName], saveRow, function(err) {
+        log(table[tableName].length + ' ' + tableName)
+        return callback()
+      })
+
+      function saveRow(row, cb) {
+        var mongooseDoc = new model(row)
+        mongooseDoc.save(function(err) {
+          return cb(err)
+        })
+      }
+    }
 }
