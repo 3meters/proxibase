@@ -11,7 +11,7 @@ if [ ! $PROX ]; then
 fi
 
 if [ ! $PROXLOG ]; then
-  PROXLOG='/var/log/prox'
+  PROXLOG='/var/log/prox/prox.log'
 fi
 
 echo "PROXLOG: $PROXLOG"
@@ -19,6 +19,6 @@ echo "PROXLOG: $PROXLOG"
 cd $PROX
 nohup nodemon --watch lib --delay 1 prox.js >>$PROXLOG 2>&1 &
 
-sleep 1
+sleep 2
 cat $PROXLOG
 echo 
