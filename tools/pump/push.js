@@ -19,7 +19,7 @@ var
   errors = []
 
 program
-  .option('-s --server <dev>', 'push to server [dev|test|prod|url]', String, 'dev')
+  .option('-s --server <dev>', 'push to server [dev|test|prod|prodtest|url]', String, 'dev')
   .option('-i --in <files>', 'input direcotry [files]', String, 'files')
   .option('-q --quiet', 'do not log sucessful inserts')
   .parse(process.argv)
@@ -31,11 +31,13 @@ switch(program.server) {
     baseUri = 'https://api.localhost:8043'
     break
   case 'test':
-    baseUri = 'https://api.proxibase.com:8043'
+    baseUri = 'https://api.localhost.com:8044'
     break
   case 'prod':
     baseUri = 'https://api.proxibase.com:443'
     break
+  case 'prodtest':
+    baseUri = 'https://api.proxibase.com:8044'
   default:
     baseUri = program.server
 }
