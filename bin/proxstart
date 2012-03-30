@@ -14,5 +14,11 @@ if [ ! $PROXLOG ]; then
   PROXLOG='/var/log/prox'
 fi
 
+echo "PROXLOG: $PROXLOG"
+
 cd $PROX
-nohup nodemon --watch lib --delay 1 prox.js >>$PROXLOG/prox.log 2>&1 &
+nohup nodemon --watch lib --delay 1 prox.js >>$PROXLOG 2>&1 &
+
+sleep 1
+cat $PROXLOG
+echo 
