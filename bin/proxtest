@@ -1,0 +1,36 @@
+#! /bin/sh
+
+#
+# test.sh: shell script to run all the tests against a clean database
+#
+# Assumptions:
+#  mongod is running
+#  node and nodeunit are already on the current users path
+#
+
+if [ ! $PROX ]; then
+  PROX='/usr/local/prox'
+fi
+
+if [ ! $PROXLOG ]; then
+  PROXLOG='/var/log/prox'
+fi
+
+TESTLOG="$PROXLOG/proxtest.log"
+
+cd $PROX
+echo "Test server log: $TESTLOG"
+
+# create smoke dataset
+node ./tools/pump/genSmoke.js
+
+# start proxibase server against smoke dataset on default test port
+node ./prox.js -d smokeData -p 8044 >>$TESTLOG 2>&1 &
+
+# wait for the server to start
+echo "Waiting for test server to start"
+sleep 3
+
+# run it passing along any command line arguments
+node $* ./test/testprox
+
