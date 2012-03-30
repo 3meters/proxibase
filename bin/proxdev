@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 #
 # dev proxibase startup script using nodemon
 # see https://github.com/remy/nodemon
