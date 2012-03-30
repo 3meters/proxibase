@@ -11,14 +11,12 @@ if [ ! $PROX ]; then
   PROX='/usr/local/prox'
 fi
 
-if [ ! $PROXLOG ]; then
-  PROXLOG='/var/log/prox'
+if [ ! $PROXTESTLOG ]; then
+  PROXTESTLOG='/var/log/prox/proxtest.log'
 fi
 
-TESTLOG="$PROXLOG/proxtest.log"
-
 cd $PROX
-echo "Test server log: $TESTLOG"
+echo "Test server log: $PROXTESTLOG"
 
 # create smoke dataset
 node ./tools/pump/genSmoke.js
@@ -26,7 +24,7 @@ node ./tools/pump/genSmoke.js
 # start proxibase server against smoke dataset on default test port
 #  this will fail with only a message in the log if the test node
 #  server is already running
-node ./prox.js -d smokeData -p 8044 >>$TESTLOG 2>&1 &
+node ./prox.js -d smokeData -p 8044 >>$PROXTESTLOG 2>&1 &
 
 # wait for the server to start
 echo "Waiting for test server to start"
