@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 # Look for all running node procs on the box
 # Unix / Linux only
