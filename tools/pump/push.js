@@ -13,7 +13,7 @@ var
   path = require('path')
   program = require('commander'),
   req = require('request'),
-  log = require('../../lib/util').log,
+  log = require(__dirname + '/../../lib/util').log,
   tables = [],
   tableNames= [],
   errors = []
