@@ -11,7 +11,8 @@ var
   cli = require('commander'),
   reporter = require('nodeunit').reporters.default, 
   req = require('request'),
-  serverUrl = 'https://api.localhost:8044', 
+  config = require('../conf/config'),
+  serverUrl = 'https://api.' + config.host + ':' + config.testport,
   testDir = 'tests'
   log = require('../lib/util').log
 
