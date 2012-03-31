@@ -1,10 +1,11 @@
 #!/bin/sh
 #
-# Run all proxibase tests against a clean test database
+# Run all proxibase tests against a clean smokeData test database
 #
-# Assumptions:
-#  mongod is running
-#  node and nodeunit are already on the current users path
+# Assumes mongod is running
+#
+# $PROX is an evironment variable that should contain the full path of the 
+#   Proxibase root directory
 #
 
 if [ ! $PROX ]; then
@@ -22,7 +23,7 @@ echo "Test server log: $PROXTESTLOG"
 node ./tools/pump/genSmoke.js
 
 # start proxibase server against smoke dataset on default test port
-#  this will fail with only a message in the log if the test node
+#  this will fail benignly with a message in the log if the test
 #  server is already running
 node ./prox.js --test --database smokeData >>$PROXTESTLOG 2>&1 &
 

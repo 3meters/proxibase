@@ -2,9 +2,8 @@
 
 # production proxibase startup script using nodemon
 # see https://github.com/remy/nodemon
-# Useage: 
-#   cd <proxdir>
-#   sudo bin/proxstart
+# Useage:
+#   sudo $PROX/bin/proxstart
 
 if [ ! $PROX ]; then
   PROX='/usr/local/prox'
@@ -19,10 +18,12 @@ if [ "$1" = "-c" ]; then
   rm $PROXLOG
 fi
 
-echo "proxlog: $PROXLOG"
+echo "proxlog: $PROXLOG ..."
 
 cd $PROX
 nohup nodemon --watch lib --delay 1 prox.js >>$PROXLOG 2>&1 &
+
+# TODO: we should capture the process ID and stash so we can kill it specifically later
 
 sleep 2
 cat $PROXLOG

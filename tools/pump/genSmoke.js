@@ -4,7 +4,7 @@
  * with the checkin unit tests.
  */
 var
-  genData = require('./genData'),
-  constants = require('../../test/constants.js')
+  genData = require(__dirname + '/genData'),
+  constants = require(__dirname + '/../../test/constants')
 
 genData.generateData(constants.smokeDataProfile)

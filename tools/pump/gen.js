@@ -7,7 +7,7 @@
  *    node gen --help
  */
 var
-  genData = require('./genData'),
+  genData = require(__dirname + '/genData'),
   cli = require('commander')  // command line interface
 
 cli

@@ -11,29 +11,41 @@ var
   cli = require('commander'),
   reporter = require('nodeunit').reporters.default, 
   req = require('request'),
-  config = require('../conf/config'),
-  serverUrl = 'https://api.' + config.host + ':' + config.testport,
-  testDir = 'tests'
-  log = require('../lib/util').log
+  testDir = 'tests',
+  configFile= 'configtest.js',
+  config,
+  serverUri,
+  util = require('../lib/util'),
+  log = util.log
 
 
 cli
-  .option('-s --server <url>', 'Server url [' + serverUrl + ']')
+  .option('-c --config <file>', 'config file [configtest.js]')
+  .option('-s --server <url>', 'Server url [' + serverUri + ']')
   .option('-t --testdir <dir>', 'Test dir [' + testDir + ']')
   .parse(process.argv)
 
-if (cli.server) serverUrl = cli.server
-if (cli.testdir) testDir = cli.testdir
-
-exports.getBaseUri = function() {
-  return serverUrl
+if (cli.server) {
+  serverUri = cli.server
+}
+else {
+  if (cli.config) configFile = cli.config
+  config = util.findConfig(configFile)
+  serverUri = util.getUrl(config)
 }
 
-log('\nTesting: ' + exports.getBaseUri())
+if (cli.testdir) testDir = cli.testdir
+
+// ./util.js forwards this function to the tests
+exports.getBaseUri = function() {
+  return serverUri
+}
+
+log('\nTesting: ' + serverUri)
 log('Tests: ' + testDir)
 
 // make sure the test server is running
-req.get(serverUrl, function(err, res) {
+req.get(serverUri, function(err, res) {
   if (err) {
     log('Fatal: the test server is not responding')
     process.exit(1)

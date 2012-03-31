@@ -12,7 +12,7 @@ var
   sendErr = require('../../lib/util').sendErr
 
 // Our own connection so we don't need to have proxibase service running
-var db = mongoskin.db(config.mdb.host + ':' + config.mdb.port +  '/' + config.mdb.database + '?auto_reconnect')
+var db = mongoskin.db(config.db.host + ':' + config.db.port +  '/' + config.db.database + '?auto_reconnect')
 
 getEntities()
 
