@@ -24,12 +24,12 @@ node ./tools/pump/genSmoke.js
 # start proxibase server against smoke dataset on default test port
 #  this will fail with only a message in the log if the test node
 #  server is already running
-node ./prox.js -d smokeData -p 8044 >>$PROXTESTLOG 2>&1 &
+node ./prox.js --test --database smokeData >>$PROXTESTLOG 2>&1 &
 
 # wait for the server to start
 echo "Waiting for test server to start"
 sleep 3
 
 # run it passing along any command line arguments
-node $* ./test/testprox
+node ./test/testprox $*
 
