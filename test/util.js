@@ -4,7 +4,7 @@
 
 var 
   assert = require('assert'),
-  util = require('util'),
+  util = require('../lib/util'),
   testProx = require('./testprox')
 
 

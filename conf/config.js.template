@@ -23,8 +23,10 @@ module.exports = {
       poolSize: 3
     }
   },
-  notifyOnStart: {
-    on: false,
-    email: 'pager@3meters.com'
+  notify: {
+    onStart: false,
+    to: 'pager@3meters.com',
+    from: '3meters Robot<robot2@3meters.com>',
+    pwSeed: '1'
   }
 }
