@@ -131,36 +131,10 @@ Updates every record in a table.  Usefull when you need to re-run triggers on al
 
 ### POST /__do/getEntitiesForBeacons
 
-with request.body
-
-    {
-      "beaconIds": ["0003:01:02:03:04:05:06", "0003:11:12:13:14:15:16"],
-      "getChildren": true   // optional
-    }
-
-returns all entites linked to the specified beacons and their immediate children and comments
-
 ### POST /__do/getEntities
-
-with request.body
-
-    {
-      "enityIds": ["entId1" "entId2"],
-      "getChildren": true   // optional
-    }
-
-returns all entites and their immediate children and comments.
 
 ### POST /__do/getEntitiesForUser
 
-with request.body
-
-    {
-      "userEmail": "jay@3meters.com"
-      "getChildren": true   // optional
-    }
-
-returns all entites created by that user and their immediate childrewn and comments.  
 
 ## Etc
 * [Building a Proxibase Server](proxibase/wiki/Server-Setup)
@@ -171,9 +145,6 @@ returns all entites created by that user and their immediate childrewn and comme
 * GET /tablename,foo
 
 ### Test/Perf
-* hook up data generator to test harness
-* write sample tests for custom methods
-* deploy test server
 * Basic benchmark framework
 
 ### Rest
@@ -193,7 +164,6 @@ returns all entites created by that user and their immediate childrewn and comme
 * do version migration in place?
 
 ### Ops
-* Upgrade box from micro to small
 * Build Joyent box and perf compare
 
 ### Security

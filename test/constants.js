@@ -3,18 +3,18 @@
  */
 
 var
-  _ = require('underscore'),              // for cloning objects
-  timeStamp = '010101.00000.555',         // jan 1 2000 + 555 miliseconds
-  timeStampMs = new Date(2001, 0, 1, 0, 0, 0, 555).getTime()   // same but in milliseconds
-  uid1 = '0000.' + timeStamp + '.000001', // Standard user
-  uid2 = '0000.' + timeStamp + '.000002', // Dev user
+  _ = require('underscore'),                                  // For cloning objects
+  timeStamp = '010101.00000.555',                             // Jan 1 2000 + 555 miliseconds
+  timeStampMs = new Date(2001, 0, 1, 0, 0, 0, 555).getTime()  // Same but in milliseconds
+  uid1 = '0000.' + timeStamp + '.000001',                     // Standard user
+  uid2 = '0000.' + timeStamp + '.000002',                     // Dev user
   bssid = '00:00:00:00:00:01',
-  beaconId = '0003:' + bssid,             // TODO: Change : to .
+  beaconId = '0003:' + bssid,                                 // TODO: Change : to .
   entityId = '0002.' + timeStamp + '.000001',
   documentId = '0005.' + timeStamp + '.000001',
   observationId = '0007.' + timeStamp + '.000001',
   linkId = '0001.' + timeStamp + '.000001',
-  latitude = 47.659052376993834,          // Jay's house for now
+  latitude = 47.659052376993834,                              // Jay's house for now
   longitude = -122.659052376993834,
   password = 'password',
   tableIds = {
@@ -34,7 +34,7 @@ var
     database: 'smokeData'
   }
 
-// add system properties
+// Add system properties
 function addSystemFields(record) {
   record._owner = uid1
   record._creator = uid1
@@ -149,25 +149,26 @@ for (tableName in defaultRecord) {
   addSystemFields(defaultRecord[tableName])
 }
 
-// remeber to clone any exported objects
-exports.uid1 = uid1
-exports.uid2 = uid2
-exports.password = password
-exports.beaconId = beaconId
-exports.entityId = entityId
-exports.documentId = documentId
-exports.observationId = observationId
-exports.linkId = linkId
-exports.latitude = latitude
-exports.longitude = longitude
-exports.timeStamp = timeStamp
-exports.timeStampMs = timeStampMs
-exports.tableIds = _.clone(tableIds)
-exports.comments = _.clone(comments)
-exports.smokeDataProfile = _.clone(smokeDataProfile)
-exports.getDefaultRecord = function(tableName) {
+// Remeber to _.clone() all exported objects!
+module.exports = {
+  uid1: uid1,
+  uid2: uid2,
+  password: password,
+  beaconId: beaconId,
+  entityId: entityId,
+  documentId: documentId,
+  observationId: observationId,
+  linkId: linkId,
+  latitude: latitude,
+  longitude: longitude,
+  timeStamp: timeStamp,
+  timeStampMs: timeStampMs,
+  tableIds: _.clone(tableIds),
+  comments: _.clone(comments),
+  smokeDataProfile: _.clone(smokeDataProfile)
+}
+module.exports.getDefaultRecord = function(tableName) {
   assert(defaultRecord[tableName], 'No default record for ' + tableName)
   return _.clone(defaultRecord[tableName])
 }
-
 

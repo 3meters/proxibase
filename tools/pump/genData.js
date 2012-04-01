@@ -4,19 +4,22 @@
  *   Silently overwrites existing files or tables
  */
 
+process.chdir(__dirname)
+
 var
   fs = require('fs'),
   path = require('path'),
   async = require('async'),
   mongoskin = require('mongoskin'),
-  log = require('../../lib/util').log,
-  constants = require('../../test/constants.js'),
+  util = require('../../lib/util'),
+  log = util.log,
+  constants = require('../../test/constants'),
   tableIds = constants.tableIds,
   goose = require('../../lib/goose'), // Wraps mongoose.js
   table = {},                         // Map of tables to be generated
   startTime,                          // Elapsed time counter
   db,                                 // Mongoskin connection object
-  mdb,                                // Mongoose connection object
+  gdb,                                // Mongoose connection object
   save,                               // Save function
   options = {                         // Default options
     beacons: 3,                       // Count of beacons
@@ -28,7 +31,6 @@ var
     files: false,                     // Output to JSON files rather than to datbase
     out: 'files'                      // File output directory
   }
-
 
 module.exports.generateData = function(profile) {
 
@@ -48,9 +50,9 @@ module.exports.generateData = function(profile) {
 
   else {
     // save to database
-    var config = require('../../conf/config')  // local server default config.js
-    config.mdb.database = options.database     // override database name
-    var dbUri = config.mdb.host + ':' + config.mdb.port +  '/' + config.mdb.database
+    var config = util.findConfig()            // Use the default server database connection
+    config.db.database = options.database     // Override database name
+    var dbUri = config.db.host + ':' + config.db.port +  '/' + config.db.database
 
     if (options.validate) {
       // save via mongoose
@@ -77,12 +79,12 @@ module.exports.generateData = function(profile) {
 // Ensure the database has the indexes defined by the service's models
 function ensureIndices(config, callback) {
   log('Creating database and ensuring indeces')
-  goose.connect(config.mdb, function(err, connection) {
+  goose.connect(config.db, function(err, connection) {
     if (err) throw err
-    mdb = connection
+    gdb = connection
     // When the following dummy query is fired mongoose.js will connect to the db and
     // ensure that the indeces defined in prox/lib/models are defined in the database
-    mdb.models.users.find({_id:-1}, function(err) {
+    gdb.models.users.find({_id:-1}, function(err) {
       log('Database Ok\nSaving to database...')
       return callback(err)
     })
@@ -99,7 +101,7 @@ function run() {
     if (err) throw err
     if (!options.files) {
       db.close()
-      mdb.close()
+      gdb.close()
     }
     var elapsedTime = ((new Date().getTime()) - startTime) / 1000
     log('Finished in ' + elapsedTime + ' seconds')
@@ -256,7 +258,7 @@ var saveTo = {
   dbValidate:
     // save via mongoose validating each record against mongoose schema
     function (tableName, callback) {
-      var model = mdb.models[tableName]
+      var model = gdb.models[tableName]
 
       async.forEachSeries(table[tableName], saveRow, function(err) {
         log(table[tableName].length + ' ' + tableName)

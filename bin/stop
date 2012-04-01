@@ -1,7 +1,0 @@
-#! /bin/sh
-
-# kill all running node procs on the box
-# Unix / Linux only 
-
-kill -9 `ps ax | grep node | grep -v grep | awk '{print $1}'`
-
