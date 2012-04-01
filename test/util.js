@@ -3,28 +3,13 @@
  */
 
 var 
-  fs = require('fs'),
   assert = require('assert'),
-  util = require('util'),
-  log = require('../lib/util').log,
-  _baseUri = 'https://api.localhost:8043'
+  util = require('../lib/util'),
+  testProx = require('./testprox')
 
-// if config.json exists and is well-formed point the tests at the specified server
-
-try {
-  var configJson = fs.readFileSync('./config.json', 'utf8')
-  _baseUri = JSON.parse(configJson).server
-} catch (err) {
-  log('\nCould not find or parse config.json. Testing default server')
-}
-
-log('\nTesting ' + _baseUri)
 
 // return the base URI used by all tests
-
-var getBaseUri = exports.getBaseUri = function() {
-  return _baseUri
-}
+exports.getBaseUri = testProx.getBaseUri
 
 // all requests set content type
 

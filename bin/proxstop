@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# kill all running node procs on the box
+# Unix / Linux only 
+
+# get the process Ids of running node processes
+PIDS=`ps ax | grep node | grep -v grep | awk '{print $1}'`
+
+# if there are any kill them
+if [ "$PIDS" ]; then
+  kill -9 $PIDS
+fi
+

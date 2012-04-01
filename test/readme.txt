@@ -14,22 +14,38 @@ is a setting from the smokeDataProfile in /test/constants. The proxibase service
 be running if the smokeDataProfile is using a mongoose connection. Running genSmoke 
 always rebuilds the smokeData database.
 
+
+Create the test data set
+========================
+cd $PROX/tools/pump
 node genSmoke
 
-Target
-======
-By default will test the local server.  To test production create a file
-named config.json in this directory and put this in it:
 
-{
-  "server": "https://api.proxibase.com:443"
-}
+Start proxibase using database smokeData listening to the test port
+===================================================================
+cd $PROX
+node prox -d smokeData -p 8044
 
-The proxibase server being tested must be pointed at the 'smokeData' mongo
-database:
 
-node prox -d smokeData
+Change the test target (optional)
+=================================
+By default the tests run against https://api.localhost:8044.  To change the 
+target, run the test command below passing in the target url folloing the 
+-s or --server flag on the command line
 
-To Run
-======
-nodeunit tests
+
+Change the test diretory (optional)
+===================================
+If you are working on new tests that aren't ready to be make part of the main suite, 
+you can put then in a differnt folder and run them separately using the -t flag
+
+
+Run the tests
+=============
+node testprox -s <testServerUrl> -t <testDir>
+
+
+For the lazy
+============
+There is a unix shell script file in $PROX/bin called proxtest that automates
+these steps
