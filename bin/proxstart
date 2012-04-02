@@ -25,6 +25,6 @@ nohup nodemon --watch lib --delay 1 prox.js >>$PROXLOG 2>&1 &
 
 # TODO: we should capture the process ID and stash so we can kill it specifically later
 
-sleep 2
+sleep 5
 cat $PROXLOG
 echo
