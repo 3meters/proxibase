@@ -247,13 +247,22 @@ var saveTo = {
       return callback()
     },
   db:
-    // save in bulk via mongoskin bypassing schema validation
+    // save via mongoskin bypassing schema validation
     function (tableName, callback) {
       var collection = db.collection(tableName)
-      collection.insert(table[tableName], {safe: true}, function(err, docs) {
+
+      // save row-at-a-time because mongo chokes saving large arrays
+      async.forEachSeries(table[tableName], saveRow, function(err) {
+        if (err) throw err
         log(table[tableName].length + ' ' + tableName)
-        return callback(err)
+        return callback()
       })
+
+      function saveRow(row, callback) {
+        collection.insert(row, {safe: true}, function(err) {
+          return callback(err)
+        })
+      }
     },
   dbValidate:
     // save via mongoose validating each record against mongoose schema
@@ -261,14 +270,15 @@ var saveTo = {
       var model = gdb.models[tableName]
 
       async.forEachSeries(table[tableName], saveRow, function(err) {
+        if (err) throw err
         log(table[tableName].length + ' ' + tableName)
         return callback()
       })
 
-      function saveRow(row, cb) {
+      function saveRow(row, callback) {
         var mongooseDoc = new model(row)
         mongooseDoc.save(function(err) {
-          return cb(err)
+          return callback(err)
         })
       }
     }
