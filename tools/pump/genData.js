@@ -32,7 +32,7 @@ var
     out: 'files'                      // File output directory
   }
 
-module.exports.generateData = function(profile) {
+module.exports = function(profile, callback) {
 
   startTime = new Date().getTime() // start program timer
 
@@ -45,7 +45,7 @@ module.exports.generateData = function(profile) {
     if (!path.existsSync(options.out)) fs.mkdirSync(options.out)
     log('Saving to files...')
     save = saveTo.file
-    run()
+    run(callback)
   }
 
   else {
@@ -70,7 +70,7 @@ module.exports.generateData = function(profile) {
       if (err) throw err
       ensureIndices(config, function(err) {
         if (err) throw err
-        run()
+        run(callback)
       })
     })
   }
@@ -91,7 +91,7 @@ function ensureIndices(config, callback) {
   })
 }
 
-function run() {
+function run(callback) {
   genUsers()
   genDocuments()
   genBeacons()
@@ -104,7 +104,8 @@ function run() {
       gdb.close()
     }
     var elapsedTime = ((new Date().getTime()) - startTime) / 1000
-    log('Finished in ' + elapsedTime + ' seconds')
+    log('genData finished in ' + elapsedTime + ' seconds')
+    if (callback) return callback()
   })
 }
 

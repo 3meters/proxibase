@@ -26,12 +26,21 @@ var
     observations: 7
   },
   defaultRecord = {},
-  smokeDataProfile = {
-    beacons: 5,
-    epb: 5,
-    spe: 5,
-    cpe: 5,
-    database: 'smokeData'
+  dbProfile = {
+    smokeTest: {
+      beacons: 5,
+      epb: 5,
+      spe: 5,
+      cpe: 5,
+      database: 'smokeData'
+    },
+    perfTest: {
+      beacons: 1000,
+      epb: 5,
+      spe: 5,
+      cpe: 5,
+      database: 'perfData'
+    }
   }
 
 // Add system properties
@@ -165,7 +174,7 @@ module.exports = {
   timeStampMs: timeStampMs,
   tableIds: _.clone(tableIds),
   comments: _.clone(comments),
-  smokeDataProfile: _.clone(smokeDataProfile)
+  dbProfile: _.clone(dbProfile)
 }
 module.exports.getDefaultRecord = function(tableName) {
   assert(defaultRecord[tableName], 'No default record for ' + tableName)
