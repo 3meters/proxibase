@@ -1,0 +1,35 @@
+#!/usr/bin/env node
+
+/*
+ * cli for ../ensureDb.js
+ * 
+ * nix usage:  bin/ensuredb
+ * win usage:  node bin/ensuredb
+ */
+
+var
+  assert = require('assert'),
+  cli = require('commander'),
+  dbProfile = require('../constants').dbProfile,
+  profile,
+  ensureDb = require('../ensureDb')
+
+cli
+  .option('-p --profile <profile>', 'constants.dbProfile [smokeTest]', String, 'smokeTest')
+  .option('-d --database <database>', 'overide dbProfile database')
+  .option('-c --clean', 'create a new, clean template database even if one already exists')
+  .parse(process.argv)
+
+assert(dbProfile[cli.profile], 'Invalid dbProfile name')
+
+profile = dbProfile[cli.profile]
+
+if (cli.database) profile.database = cli.database
+if (cli.clean) profile.clean = cli.clean
+
+ensureDb(profile, done)
+
+function done(err) {
+  if (err) throw err
+  console.log('Finished ok')
+}

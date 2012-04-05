@@ -9,8 +9,10 @@ process.chdir(__dirname)
 
 var
   cli = require('commander'),
-  reporter = require('nodeunit').reporters.default, 
+  reporter = require('nodeunit').reporters.default,
   req = require('request'),
+  ensureDb = require('./ensureDb'),
+  dbProfile = require('./constants').dbProfile,
   testDir = 'tests',
   configFile= 'configtest.js',
   config,
@@ -20,7 +22,7 @@ var
 
 
 cli
-  .option('-c --config <file>', 'config file [configtest.js]')
+  .option('-c --config <file>', 'Config file [configtest.js]')
   .option('-s --server <url>', 'Server url [' + serverUri + ']')
   .option('-t --testdir <dir>', 'Test dir [' + testDir + ']')
   .parse(process.argv)
@@ -41,15 +43,23 @@ exports.getBaseUri = function() {
   return serverUri
 }
 
-log('\nTesting: ' + serverUri)
-log('Tests: ' + testDir)
-
-// make sure the test server is running
-req.get(serverUri, function(err, res) {
-  if (err) {
-    log('Fatal: the test server is not responding')
-    process.exit(1)
-  }
-  reporter.run([testDir])
+// ensure the tests start with a clean smokeTest database
+ensureDb(dbProfile.smokeTest, function(err) {
+  if (err) throw err
+  checkServer()
 })
+
+function checkServer() {
+  log('\nTesting: ' + serverUri)
+  log('Tests: ' + testDir)
+
+  // make sure the test server is running
+  req.get(serverUri, function(err, res) {
+    if (err) {
+      log('Fatal: the test server is not responding')
+      process.exit(1)
+    }
+    reporter.run([testDir])
+  })
+}
 
