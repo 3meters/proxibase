@@ -29,7 +29,7 @@ var
   defaultRecord = {},
   dbProfile = {
     smokeTest: {
-      beacons: 10,
+      beacons: 100,
       epb: 5,
       spe: 5,
       cpe: 5,

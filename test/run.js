@@ -1,37 +1,41 @@
 #!/usr/bin/env node
 
+
 /*
  * testprox.js: run the proxibase nodeunit tests
- *   see https://github.com/caolan/nodeunit
+ *   see readme.txt and https://github.com/caolan/nodeunit
  *
  *   useage:  node testprox
  */
 
 
-
 var
+  util = require('../lib/util'),
+  timer = new util.Timer(),
   fs = require('fs'),
-  logFile = ('testServer.log'),
-  logStream,
-  cwd = process.cwd(),
   spawn = require('child_process').spawn,
-  req = require('request'),
   cli = require('commander'),
   reporter = require('nodeunit').reporters.default,
-  ensureDb = require('./ensureDb'),
+  req = require('request'),
+  mongoskin = require('mongoskin'),
+  genData = require(__dirname + '/../tools/pump/genData'),
   dbProfile = require('./constants').dbProfile,
   testUtil = require('./util'),
+  configFile = 'configtest.js',
   testDir = 'tests',
+  logFile = 'testServer.log',
+  logStream,
+  cwd = process.cwd(),
   testServer,
   testServerStarted = false,
-  util = require('../lib/util'),
-  configFile = 'configtest.js',
   config = util.findConfig(configFile),
   serverUrl = util.getUrl(config),
-  timer = new util.Timer()
   log = util.log
 
+
+// Nodeunit likes to be sitting above its test directories
 process.chdir(__dirname)
+
 
 cli
   .option('-c, --config <file>', 'Config file [configtest.js]')
@@ -41,7 +45,7 @@ cli
   .parse(process.argv)
 
 
-// Override default test server target based on command line flags
+// Process command-line interface flags
 if (cli.server) {
   serverUrl = testUtil.serverUrl = cli.server
 }
@@ -52,17 +56,18 @@ else {
     serverUrl = testUtil.serverUrl = util.getUrl(config)
   }
 }
-
 if (cli.testdir) testDir = cli.testdir
 if (cli.log) logFile = cli.log
 
 
-// ensure the tests start with a clean smokeTest database
+// Make sure the right database exists and the test server is running
 ensureDb(dbProfile.smokeTest, function(err) {
   if (err) throw err
   ensureServer()
 })
 
+
+// Ensure the test server is running.  If not start one and pipe its log to a file
 function ensureServer() {
 
   log('Checking for test server ' + serverUrl)
@@ -118,6 +123,64 @@ function ensureServer() {
 }
 
 
+/*
+ *  Ensure that a clean test database exists.  Look for a database called <database>Template.
+ *  If it exists copy it to the target database.  If not, create it using $PROX/tools/genData.
+ *
+ *  Options are the the same as genData
+ */
+function ensureDb(options, callback) {
+
+  assert(options && options.database, 'options.database is required')
+
+  var
+    database = options.database,
+    template = database + 'Template',
+    db = mongoskin.db(config.db.host + ':' + config.db.port +  '/' + database + '?auto_reconnect')
+
+  db.dropDatabase(function(err, done) {
+    if (err) throw err
+
+    // See if template database exists
+    db.admin.listDatabases(function(err, results) {
+      if (err) throw err
+      if (!(results && results.databases)) throw new Error('Unexpected results from listDatabases')
+
+      var templateExists = false
+      results.databases.forEach(function(db) {
+        if (db.name === template) {
+          templateExists = true
+          return
+        }
+      })
+
+      if (!templateExists) {
+        log('Creating new template database ' + template)
+        db.close()
+        options.database = template
+        options.validate = true         // Use mongoose and run schema validators on insert
+        genData(options, function() {
+          // Now try again with the template database in place
+          options.database = database
+          return ensureDb(options, callback)
+        })
+      }
+
+      else {
+        log('Copying database from ' + template)
+        var start = new Date()
+        db.admin.command({copydb:1, fromdb:template, todb:database}, function(err, result) {
+          if (err) throw err
+          db.close()
+          log('Database copied in ' + util.getElapsedTime(start) + ' seconds')
+          return callback()    // Finished
+       })
+      }
+    })
+  })
+}
+
+
 function runTests() {
   log('\nTesting: ' + serverUrl)
   log('Test dirs: ' + testDir)
@@ -144,7 +207,7 @@ function finish(err) {
     process.chdir(cwd)
   }
   catch (e) {
-    // giving up
+    // Give up
   }
   log('Tests finished in ' + timer.stop() + ' seconds')
   process.exit(status)
