@@ -10,7 +10,8 @@ var
   check = testUtil.check,
   dump = testUtil.dump,
   constants = require('../constants'),  
-  baseUri = testUtil.getBaseUri(),
+  dbProfile = constants.dbProfile.smokeTest,
+  baseUri = testUtil.serverUrl,
   req = testUtil.getDefaultReq(),
   testLatitude = 50,
   testLongitude = 50,
@@ -167,14 +168,16 @@ exports.getEntities = function (test) {
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 1, dump(req, res))
-    assert(res.body.data && res.body.data[0] && res.body.data[0].children.length === 5, dump(req, res))
-    assert(res.body.data && res.body.data[0] && res.body.data[0].childrenCount === 5, dump(req, res))
-    assert(res.body.data && res.body.data[0] && res.body.data[0].comments.length === 5, dump(req, res))
-    assert(res.body.data && res.body.data[0] && res.body.data[0].commentsCount === 5, dump(req, res))
-    assert(res.body.data && res.body.data[0] && res.body.data[0]._beacon === constants.beaconId, dump(req, res))
-    assert(res.body.data && res.body.data[0] && res.body.data[0].location, dump(req, res))
-    assert(res.body.data && res.body.data[0] && res.body.data[0].location.latitude, dump(req, res))
-    assert(res.body.data && res.body.data[0] && res.body.data[0].location.longitude, dump(req, res))
+    assert(res.body.data && res.body.data[0], dump(req, res))
+    var record = res.body.data[0]
+    assert(record.children.length === dbProfile.spe, dump(req, res))
+    assert(record.childrenCount === dbProfile.spe, dump(req, res))
+    assert(record.comments.length === dbProfile.cpe, dump(req, res))
+    assert(record.commentsCount === dbProfile.cpe, dump(req, res))
+    assert(record._beacon === constants.beaconId, dump(req, res))
+    assert(record.location, dump(req, res))
+    assert(record.location.latitude, dump(req, res))
+    assert(record.location.longitude, dump(req, res))
     test.done()
   })
 }
@@ -185,7 +188,7 @@ exports.getEntitiesForBeacons = function (test) {
   req.uri = baseUri + '/__do/getEntitiesForBeacons'
   request(req, function(err, res) {
     check(req, res)
-    assert(res.body.count === 5, dump(req, res))
+    assert(res.body.count === dbProfile.epb, dump(req, res))
     test.done()
   })
 }
@@ -196,7 +199,7 @@ exports.getEntitiesForUser = function (test) {
   req.uri = baseUri + '/__do/getEntitiesForUser'
   request(req, function(err, res) {
     check(req, res)
-    assert(res.body.count === 25, dump(req, res))
+    assert(res.body.count === Math.min(constants.recordLimit, dbProfile.beacons * dbProfile.epb), dump(req, res))
     test.done()
   })
 }

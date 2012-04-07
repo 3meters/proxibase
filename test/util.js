@@ -2,39 +2,40 @@
  * Proxibase test util module
  */
 
-var 
+var
   assert = require('assert'),
   util = require('../lib/util'),
-  testProx = require('./testprox')
+  config = util.findConfig('configtest.js'),
+  serverUrl = util.getUrl(config)
 
 
-// return the base URI used by all tests
-exports.getBaseUri = testProx.getBaseUri
+// Base Uri all test requests call, can be overridden by callers
+exports.serverUrl = serverUrl
 
-// all requests set content type
 
+// All requests set content type
 var getDefaultReq = exports.getDefaultReq = function() {
   return {
     headers:{"content-type":"application/json"}
   }
 }
 
-// disgourge req and res contents of failed test
 
+// Disgourge req and res contents of failed test
 var dump = exports.dump = function(req, res, msg) {
   var out = msg || 'Test failed'
   out += '\n\nreq.method: ' + req.method
   out += '\nreq.uri: ' + req.uri
   if (req.method === 'post' && req.body) {
-    out += 'req.body:\n' + util.inspect(req.body) + '\n'
+    out += '\nreq.body:\n' + util.inspect(req.body) + '\n'
   }
   if (res.statusCode) out += '\n\nres.statusCode: ' + res.statusCode + '\n'
   if (res.body) out += 'res.body:\n' + util.inspect(res.body) + '\n'
   return out
 }
 
-// Ensure response, check status code, parse body
 
+// Ensure response, check status code, parse body
 exports.check = function(req, res, code) {
   assert(req, 'Invalide call to test.util.check.  Missing required req')
   assert(res && res.statusCode, dump(req, res, 'Fatal: No response'))

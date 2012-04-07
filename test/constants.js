@@ -25,21 +25,15 @@ var
     documents: 5,
     observations: 7
   },
+  recordLimit = 1000,
   defaultRecord = {},
   dbProfile = {
     smokeTest: {
-      beacons: 5,
+      beacons: 10,
       epb: 5,
       spe: 5,
       cpe: 5,
       database: 'smokeData'
-    },
-    perfTest: {
-      beacons: 1000,
-      epb: 5,
-      spe: 5,
-      cpe: 5,
-      database: 'perfData'
     }
   }
 
@@ -172,6 +166,7 @@ module.exports = {
   longitude: longitude,
   timeStamp: timeStamp,
   timeStampMs: timeStampMs,
+  recordLimit: recordLimit,
   tableIds: _.clone(tableIds),
   comments: _.clone(comments),
   dbProfile: _.clone(dbProfile)
