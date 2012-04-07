@@ -10,7 +10,7 @@ var
   testUtil = require('../util'),
   check = testUtil.check,
   dump = testUtil.dump,
-  baseUri = testUtil.getBaseUri(),
+  baseUri = testUtil.serverUrl,
   req = testUtil.getDefaultReq()
 
 req.method = 'post'

@@ -4,8 +4,6 @@
  *   Silently overwrites existing files or tables
  */
 
-process.chdir(__dirname)
-
 var
   fs = require('fs'),
   path = require('path'),
@@ -160,7 +158,7 @@ function genEntityRecords(count, isRoot) {
     var 
       newEnt = constants.getDefaultRecord('entities'),
       recNum = isRoot ? i : i + countParents,
-      beaconNum = Math.floor(i / (isRoot ? options.beacons : options.beacons * options.epb))
+      beaconNum = Math.floor(i / (isRoot ? options.epb : options.beacons * options.epb))
 
     newEnt._id = genId('entities', recNum)
     newEnt.root = isRoot
