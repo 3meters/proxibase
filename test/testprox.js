@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 /*
  * testprox.js: run the proxibase nodeunit tests
  *   see https://github.com/caolan/nodeunit
@@ -26,6 +28,7 @@ var
   configFile = 'configtest.js',
   config = util.findConfig(configFile),
   serverUrl = util.getUrl(config),
+  timer = new util.Timer()
   log = util.log
 
 process.chdir(__dirname)
@@ -143,6 +146,6 @@ function finish(err) {
   catch (e) {
     // giving up
   }
-  log('Tests finished')
+  log('Tests finished in ' + timer.stop() + ' seconds')
   process.exit(status)
 }
