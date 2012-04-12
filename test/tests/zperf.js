@@ -25,7 +25,7 @@ var
 
 
 exports.start = function(test) {
-  testTimer.expected = 300
+  testTimer.expected = 1200
   testTimer.start()
   test.done()
 }
@@ -34,7 +34,7 @@ function done(test, testName, timer) {
   assert(timer.expected, "You forgot to set timer.expected")
   var time = timer.stop()
   assert(time < timer.expected, 'Performance test ' + testName +
-    ' failed.  Time: ' + time + ', expected: ' + timer.expected)
+    ' failed.  Time: ' + time + ', Expected: ' + timer.expected)
   results.push({test: testName, time: time, expected: timer.expected})
   test.done()
 }
@@ -71,7 +71,7 @@ exports.insert100Users = function(test) {
     timer = new util.Timer(),
     user = getRec('users')
 
-  timer.expected = 3
+  timer.expected = 30
   delete user._id
   delete user.createdDate
   delete user.modifiedDate
@@ -94,7 +94,7 @@ exports.insert100Users = function(test) {
 
 exports.find100Users = function(test) {
   var timer = new Timer()
-  timer.expected = 3
+  timer.expected = 30
   req.method = 'post'
   req.uri = baseUri + '/__do/find'
 
@@ -111,7 +111,7 @@ exports.find100Users = function(test) {
 
 exports.findAndUpdate100Users = function(test) {
   var timer = new Timer()
-  timer.expected = 8
+  timer.expected = 120
   req.method = 'post'
 
   findAndUpdateUser(100)
@@ -139,7 +139,7 @@ exports.findAndUpdate100Users = function(test) {
 
 exports.get100Entities = function (test) {
   var timer = new Timer()
-  timer.expected = 10
+  timer.expected = 300
   req.method = 'post'
 
   getEntity(100)
@@ -161,7 +161,7 @@ exports.get100Entities = function (test) {
 
 exports.getEntitiesFor100Beacons = function (test) {
   var timer = new Timer()
-  timer.expected = 10
+  timer.expected = 300
   req.method = 'post'
 
   getEntitiesForBeacon(100)
@@ -182,7 +182,7 @@ exports.getEntitiesFor100Beacons = function (test) {
 
 exports.getEntitiesFor100Users = function(test) {
   var timer = new Timer(),
-    recordLimit = 100
+    recordLimit = 300
   timer.expected = 120
   req.method = 'post'
 
@@ -206,7 +206,7 @@ exports.getEntitiesFor100Users = function(test) {
 
 exports.getEntitiesNear100Locations = function (test) {
   var timer = new Timer()
-  timer.expected = 120
+  timer.expected = 300
   req.method = 'post'
 
   getEntitiesNearLocation(100)
