@@ -12,6 +12,7 @@ var
   util = require('../../lib/util'),
   log = util.log,
   constants = require('../../test/constants'),
+  testUtil = require('../../test/util'),
   tableIds = constants.tableIds,
   goose = require('../../lib/goose'), // Wraps mongoose.js
   table = {},                         // Map of tables to be generated
@@ -118,18 +119,11 @@ function genDocuments() {
   table.documents.push(constants.getDefaultRecord('documents'))
 }
 
-function genBeaconId(recNum) {
-  var id = pad(recNum + 1, 12)
-  id = delineate(id, 2, ':')
-  var prefix = pad(tableIds.beacons, 4) + ':' // TODO: change to '.'
-  return  prefix + id
-}
-
 function genBeacons() {
   table.beacons = []
   for (var i = 0; i < options.beacons; i++) {
     var beacon = constants.getDefaultRecord('beacons')
-    beacon._id = genBeaconId(i)
+    beacon._id = testUtil.genBeaconId(i)
     beacon.ssid = beacon.ssid + ' ' + i
     beacon.bssid = beacon._id.substring(5)
     table.beacons.push(beacon)
@@ -160,33 +154,33 @@ function genEntityRecords(count, isRoot) {
       recNum = isRoot ? i : i + countParents,
       beaconNum = Math.floor(i / (isRoot ? options.epb : options.beacons * options.epb))
 
-    newEnt._id = genId('entities', recNum)
+    newEnt._id = testUtil.genId('entities', recNum)
     newEnt.root = isRoot
     newEnt.label = newEnt.title = isRoot ? newEnt.title + ' ' + recNum : newEnt.title + ' Child ' + recNum
     table.entities.push(newEnt)
 
     // Link
     newLink = constants.getDefaultRecord('links')
-    newLink._id = genId('links', recNum)
+    newLink._id = testUtil.genId('links', recNum)
     newLink._from = newEnt._id
     newLink.fromTableId = tableIds['entities']
     if (isRoot) {
       // Link to beacon
-      newLink._to = genBeaconId(beaconNum)
+      newLink._to = testUtil.genBeaconId(beaconNum)
       newLink.toTableId = tableIds['beacons']
     }
     else {
       // Link to parent entity
       var parentRecNum = Math.floor(i / options.cpe) // yeah, this is right
-      newLink._to = genId('entities', parentRecNum)
+      newLink._to = testUtil.genId('entities', parentRecNum)
       newLink.toTableId = tableIds['entities']
     }
     table.links.push(newLink)
 
     // Observation
     var newObservation = constants.getDefaultRecord('observations')
-    newObservation._id = genId('observations', recNum)
-    newObservation._beacon = genBeaconId(beaconNum)
+    newObservation._id = testUtil.genId('observations', recNum)
+    newObservation._beacon = testUtil.genBeaconId(beaconNum)
     newObservation._entity = newEnt._id
     table.observations.push(newObservation)
 
@@ -196,34 +190,6 @@ function genEntityRecords(count, isRoot) {
       newEnt.comments.push(constants.comments)
     }
   }
-}
-
-// create a digits-length string from number left-padded with zeros
-function pad(number, digits) {
-  var s = number.toString()
-  assert(s.indexOf('-') < 0 && s.indexOf('.') < 0 && s.length <= digits, "Invalid id seed: " + s)
-  for (var i = digits - s.length, zeros = ''; i--;) {
-    zeros += '0'
-  }
-  return zeros + s
-}
-
-// put sep in string s at every freq. return delienated s
-function delineate(s, freq, sep) {
-  var cSeps = Math.floor(s.length / freq)
-  for (var out = '', i = 0; i < cSeps; i++) {
-    out += s.slice(0, freq) + sep
-    s = s.slice(freq)
-  }
-  return out.slice(0,-1) + s // trim the last sep and add the remainder
-}
-
-// make a standard _id field for a table with recNum as the last id element
-function genId(tableName, recNum) {
-  assert((typeof tableIds[tableName] === 'number'), 'Invalid table name ' + tableName)
-  tablePrefix = pad(tableIds[tableName], 4)
-  recNum = pad(recNum + 1, 6)
-  return tablePrefix + '.' + constants.timeStamp + '.' + recNum
 }
 
 function saveAll(callback) {

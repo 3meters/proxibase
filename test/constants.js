@@ -46,7 +46,7 @@ function addSystemFields(record) {
   record.modifiedDate = timeStampMs
 }
 
-defaultRecord.users1 = {
+defaultRecord.users = defaultRecord.users1 = {
   _id: uid1,
   name: 'Test User',
   email: 'test@3meters.com',
