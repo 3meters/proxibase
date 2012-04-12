@@ -1,6 +1,6 @@
 
 /*
- * Test /__do/find
+ * Proxibase base web method tests
  */
 
 var
@@ -34,6 +34,20 @@ exports.simpleFind = function(test) {
   request(req, function(err, res) {
     check(req, res)
     assert(res.body && res.body.data && res.body.data instanceof Array, dump(req, res))
+    test.done()
+  })
+}
+
+exports.findWithLimit = function(test) {
+  var limit = 10
+  req.uri = baseUri + '/__do/find'
+  req.body = JSON.stringify({table:'entities', limit: limit})
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body && res.body.data && res.body.data instanceof Array, dump(req, res))
+    assert(res.body.count === limit, dump(req, res))
+    assert(res.body.data.length === limit, dump(req, res))
+    assert(res.body.more[0] === 'entities', dump(req, res))
     test.done()
   })
 }

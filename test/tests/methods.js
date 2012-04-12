@@ -1,6 +1,6 @@
+
 /*
-/*
- *  Proxibase rest basic test
+ *  Proxibase custom methods test
  */
 
 var
