@@ -199,7 +199,8 @@ exports.getEntitiesForUser = function (test) {
   req.uri = baseUri + '/__do/getEntitiesForUser'
   request(req, function(err, res) {
     check(req, res)
-    assert(res.body.count === Math.min(constants.recordLimit, dbProfile.beacons * dbProfile.epb), dump(req, res))
+    assert(res.body.count === Math.min(constants.recordLimit,
+        dbProfile.beacons * dbProfile.epb / dbProfile.users), dump(req, res))
     test.done()
   })
 }

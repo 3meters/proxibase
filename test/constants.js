@@ -14,8 +14,8 @@ var
   documentId = '0005.' + timeStamp + '.000001',
   observationId = '0007.' + timeStamp + '.000001',
   linkId = '0001.' + timeStamp + '.000001',
-  latitude = 47.659052376993834,                              // Jay's house for now
-  longitude = -122.659052376993834,
+  latitude = 47,                                              // Nearby
+  longitude = -122,
   password = 'password',
   tableIds = {
     users: 0,
@@ -29,6 +29,7 @@ var
   defaultRecord = {},
   dbProfile = {
     smokeTest: {
+      users: 10,
       beacons: 100,
       epb: 5,
       spe: 5,
@@ -39,9 +40,6 @@ var
 
 // Add system properties
 function addSystemFields(record) {
-  record._owner = uid1
-  record._creator = uid1
-  record._modifier = uid1
   record.createdDate = timeStampMs
   record.modifiedDate = timeStampMs
 }
@@ -49,7 +47,7 @@ function addSystemFields(record) {
 defaultRecord.users = defaultRecord.users1 = {
   _id: uid1,
   name: 'Test User',
-  email: 'test@3meters.com',
+  email: 'testuser@3meters.com',
   imageUri: 'https://s3.amazonaws.com/3meters_images/test_user1.jpg',
   location: 'Testville, WA',
   password: password,
@@ -84,7 +82,6 @@ comments = {
   imageUri : 'https://s3.amazonaws.com/3meters_images/test_user1.jpg',
   name : 'Test User',
   location : 'Testville, WA',
-  _creator : uid1,
   createdDate : timeStampMs
 }
 

@@ -21,6 +21,7 @@ var
   gdb,                                // Mongoose connection object
   save,                               // Save function
   options = {                         // Default options
+    users: 3,                         // Count of users
     beacons: 3,                       // Count of beacons
     epb: 5,                           // Entites per beacon
     spe: 5,                           // Subentities (aka children) per beacon
@@ -110,8 +111,13 @@ function run(callback) {
 
 function genUsers() {
   table.users = []
-  table.users.push(constants.getDefaultRecord('users1'))
-  table.users.push(constants.getDefaultRecord('users2'))
+  for (var i = 0; i < options.users; i++) {
+    var user = constants.getDefaultRecord('users')
+    user._id = testUtil.genId('users', i)
+    user.name = 'Test User ' + (i + 1)
+    user.email = 'testuser' + (i + 1) + '@3meters.com'
+    table.users.push(user)
+  }
 }
 
 function genDocuments() {
@@ -126,6 +132,11 @@ function genBeacons() {
     beacon._id = testUtil.genBeaconId(i)
     beacon.ssid = beacon.ssid + ' ' + i
     beacon.bssid = beacon._id.substring(5)
+    beacon._owner = beacon._creator = beacon._modifier =
+      testUtil.genId('users', Math.floor((i * options.users) / options.beacons))
+    // Inch our way around the world
+    beacon.latitude = (beacon.latitude + (i / 1000)) % 180
+    beacon.longitude = (beacon.longitude + (i / 1000)) % 180
     table.beacons.push(beacon)
   }
 }
@@ -153,10 +164,14 @@ function genEntityRecords(count, isRoot) {
       newEnt = constants.getDefaultRecord('entities'),
       recNum = isRoot ? i : i + countParents,
       beaconNum = Math.floor(i / (isRoot ? options.epb : options.beacons * options.epb))
+      ownerRecNum = Math.floor((i * options.users) / (options.beacons * options.epb))
+
 
     newEnt._id = testUtil.genId('entities', recNum)
     newEnt.root = isRoot
-    newEnt.label = newEnt.title = isRoot ? newEnt.title + ' ' + recNum : newEnt.title + ' Child ' + recNum
+    newEnt.label = newEnt.title = isRoot ? 
+      newEnt.title + ' ' + (recNum + 1) :
+      newEnt.title + ' Child ' + (recNum + 1)
     table.entities.push(newEnt)
 
     // Link
@@ -165,13 +180,18 @@ function genEntityRecords(count, isRoot) {
     newLink._from = newEnt._id
     newLink.fromTableId = tableIds['entities']
     if (isRoot) {
+      // Set the owner fields
+      newEnt._owner = newEnt._creator = newEnt._modifier = testUtil.genId('users', ownerRecNum)
       // Link to beacon
       newLink._to = testUtil.genBeaconId(beaconNum)
       newLink.toTableId = tableIds['beacons']
     }
     else {
+      // Set the owner fields
+      newEnt._owner = newEnt._creator = newEnt._modifier =
+        testUtil.genId('users', Math.floor(ownerRecNum / options.spe))
       // Link to parent entity
-      var parentRecNum = Math.floor(i / options.cpe) // yeah, this is right
+      var parentRecNum = Math.floor(i / options.spe) // yeah, this is right
       newLink._to = testUtil.genId('entities', parentRecNum)
       newLink.toTableId = tableIds['entities']
     }
