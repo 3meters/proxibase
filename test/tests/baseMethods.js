@@ -66,7 +66,7 @@ exports.findById = function(test) {
 
 exports.findByNameCaseInsensitive = function(test) {
   req.uri = baseUri + '/__do/find'
-  var name = constants.getDefaultRecord('users1').name.toUpperCase()
+  var name = 'TeSt uSeR 1'
   req.body = JSON.stringify({table:'users', names:[name]})
   request(req, function(err, res) {
     check(req, res)
@@ -79,13 +79,13 @@ exports.findByNameCaseInsensitive = function(test) {
 
 exports.findPassThrough = function(test) {
   req.uri = baseUri + '/__do/find'
-  var name = constants.getDefaultRecord('users2').name
-  req.body = JSON.stringify({table:'users', find:{name:name}})
+  var email = 'testuser1@3meters.com'
+  req.body = JSON.stringify({table:'users', find:{email:email}})
   request(req, function(err, res) {
     check(req, res)
     assert(res.body && res.body.data && res.body.data instanceof Array, dump(req, res))
     assert(res.body.data.length === 1 && res.body.count === 1, dump(req, res))
-    assert(res.body.data[0]._id === constants.uid2, dump(req, res))
+    assert(res.body.data[0].email === email, dump(req, res))
     test.done()
   })
 }

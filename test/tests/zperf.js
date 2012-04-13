@@ -25,17 +25,31 @@ var
 
 
 exports.start = function(test) {
-  testTimer.expected = 1200
+  testTimer.expected = 6000
   testTimer.start()
   test.done()
 }
 
-function done(test, testName, timer) {
-  assert(timer.expected, "You forgot to set timer.expected")
+
+// Process perf test results
+function done(test, testName, timer, count) {
+  test.ok(timer && timer.expected, "You forgot to set timer.expected")
+  count = count || 0
   var time = timer.stop()
-  assert(time < timer.expected, 'Performance test ' + testName +
+  var recsPerSecond = (Math.round(1000 * count / time) / 1000)
+  test.ok(time < timer.expected, 'Performance test ' + testName +
     ' failed.  Time: ' + time + ', Expected: ' + timer.expected)
-  results.push({test: testName, time: time, expected: timer.expected})
+  if (recsPerSecond) {
+    test.ok(recsPerSecond > 10, 'Performance test ' + testName + 
+      ' failed.  RecsPerSecond:  ' + recsPerSecond + ', Expected: ' + 10)
+  }
+  results.push({
+    test: testName,
+    time: time,
+    expected: timer.expected,
+    count: count,
+    recsPerSecond: recsPerSecond
+    })
   test.done()
 }
 
@@ -61,7 +75,7 @@ exports.cleanData = function(test) {
     req.body = JSON.stringify({ids: ids})
     request(req, function(err, res) {
       check(req, res)
-      done(test, 'cleanData', timer)
+      done(test, 'cleanData', timer, res.body.count)
     })
   })
 }
@@ -69,9 +83,10 @@ exports.cleanData = function(test) {
 exports.insert100Users = function(test) {
   var
     timer = new util.Timer(),
-    user = getRec('users')
+    user = getRec('users'),
+    cRecs = 0
 
-  timer.expected = 30
+  timer.expected = 60
   delete user._id
   delete user.createdDate
   delete user.modifiedDate
@@ -79,7 +94,7 @@ exports.insert100Users = function(test) {
 
   insertUser(100)
   function insertUser(i) {
-    if (!i--) return done(test, 'insert100Users', timer)
+    if (!i--) return done(test, 'insert100Users', timer, cRecs)
     user.name = 'Perf Test User ' + i
     user.email = 'perftestuser' + i + '@3meters.com'
     req.method = 'post'
@@ -87,36 +102,42 @@ exports.insert100Users = function(test) {
     req.uri = baseUri + '/users'
     request(req, function(err, res) {
       check(req, res)
+      if (res.body.count) cRecs += res.body.count
       return insertUser(i)
     })
   }
 }
 
 exports.find100Users = function(test) {
-  var timer = new Timer()
-  timer.expected = 30
+  var 
+    timer = new Timer(), 
+    cRecs = 0
+  timer.expected = 60
   req.method = 'post'
   req.uri = baseUri + '/__do/find'
 
   findUser(100)
   function findUser(i) {
-    if (!i--) return done(test, 'find100Users', timer)
+    if (!i--) return done(test, 'find100Users', timer, cRecs)
     req.body = JSON.stringify({table:'users',find:{email:'perftestuser' + i + '@3meters.com'}})
     request(req, function(err, res) {
       check(req, res)
+      if (res.body.count) cRecs += res.body.count
       return findUser(i)
     })
   }
 }
 
 exports.findAndUpdate100Users = function(test) {
-  var timer = new Timer()
+  var 
+    timer = new Timer(),
+    cRecs = 0
   timer.expected = 120
   req.method = 'post'
 
   findAndUpdateUser(100)
   function findAndUpdateUser(i) {
-    if (!i--) return done(test, 'findAndUpdate100Users', timer)
+    if (!i--) return done(test, 'findAndUpdate100Users', timer, cRecs)
     req.uri = baseUri + '/__do/find'
     req.body = JSON.stringify({
       table: 'users',
@@ -129,7 +150,8 @@ exports.findAndUpdate100Users = function(test) {
       req.body = JSON.stringify({data:{location:'Updated Perfburg' + i + ', WA'}})
       request(req, function(err, res) {
         check(req, res)
-        assert(res.body && res.body.count && res.body.count > 0, dump(req, res))
+        if (res.body.count) cRecs += res.body.count
+        test.ok(res.body && res.body.count && res.body.count > 0, dump(req, res))
         return findAndUpdateUser(i)
       })
     })
@@ -138,14 +160,16 @@ exports.findAndUpdate100Users = function(test) {
 
 
 exports.get100Entities = function (test) {
-  var timer = new Timer()
+  var
+    timer = new Timer(),
+    cRecs = 0
   timer.expected = 300
   req.method = 'post'
 
   getEntity(100)
 
   function getEntity(i) {
-    if (!i--) return done(test, 'get100Entities', timer)  // break recursion
+    if (!i--) return done(test, 'get100Entities', timer, cRecs)  // break recursion
     var recNum = Math.floor(Math.random() * dbProfile.beacons * dbProfile.epb)
     var id = testUtil.genId('entities', recNum)
 
@@ -153,28 +177,32 @@ exports.get100Entities = function (test) {
     req.body = JSON.stringify({entityIds:[id],eagerLoad:{children:true,comments:true}})
     request(req, function(err, res) {
       check(req, res)
-      assert(res.body.count === 1, dump(req, res))
+      if (res.body.count) cRecs += res.body.count
+      test.ok(res.body.count === 1, dump(req, res))
       return getEntity(i) // recurse
     })
   }
 }
 
 exports.getEntitiesFor100Beacons = function (test) {
-  var timer = new Timer()
+  var 
+    timer = new Timer(),
+    cRecs = 0
   timer.expected = 300
   req.method = 'post'
 
   getEntitiesForBeacon(100)
 
   function getEntitiesForBeacon(i) {
-    if (!i--) return done(test, 'getEntitesFor100Beacons', timer)
+    if (!i--) return done(test, 'getEntitesFor100Beacons', timer, cRecs)
     var recNum = Math.floor(Math.random() * dbProfile.beacons)
     var id = testUtil.genBeaconId(recNum)
     req.body = JSON.stringify({beaconIds:[id],eagerLoad:{children:true,comments:false}})
     req.uri = baseUri + '/__do/getEntitiesForBeacons'
     request(req, function(err, res) {
       check(req, res)
-      assert(res.body.count === dbProfile.epb, dump(req, res))
+      if (res.body.count) cRecs += res.body.count
+      test.ok(res.body.count === dbProfile.epb, dump(req, res))
       getEntitiesForBeacon(i)
     })
   }
@@ -182,14 +210,15 @@ exports.getEntitiesFor100Beacons = function (test) {
 
 exports.getEntitiesFor100Users = function(test) {
   var timer = new Timer(),
-    recordLimit = 300
+    recordLimit = 300,
+    cRecs = 0 
   timer.expected = 120
   req.method = 'post'
 
   getEntitiesForUser(100)
 
   function getEntitiesForUser(i) {
-    if (!i--) return done(test, 'getEntitiesFor100Users', timer)
+    if (!i--) return done(test, 'getEntitiesFor100Users', timer, cRecs)
     req.body = JSON.stringify({
       userId:constants.uid1,
       eagerLoad:{children:false,comments:false},
@@ -197,22 +226,25 @@ exports.getEntitiesFor100Users = function(test) {
     req.uri = baseUri + '/__do/getEntitiesForUser'
     request(req, function(err, res) {
       check(req, res)
+      if (res.body.count) cRecs += res.body.count
       // This check currently fails because the method doesn't support limits
-      // assert(res.body.count === Math.min(recordLimit, dbProfile.beacons * dbProfile.epb), dump(req, res))
+      // test.ok(res.body.count === Math.min(recordLimit, dbProfile.beacons * dbProfile.epb), dump(req, res))
       return getEntitiesForUser(i)
     })
   }
 }
 
 exports.getEntitiesNear100Locations = function (test) {
-  var timer = new Timer()
+  var 
+    timer = new Timer(),
+    cRecs = 0
   timer.expected = 300
   req.method = 'post'
 
   getEntitiesNearLocation(100)
 
   function getEntitiesNearLocation(i) {
-    if (!i--) return done(test, 'getEntitiesNear100Locations', timer)
+    if (!i--) return done(test, 'getEntitiesNear100Locations', timer, cRecs)
     req.body = JSON.stringify({
       userId: constants.uid1,
       latitude: constants.latitude,
@@ -222,6 +254,7 @@ exports.getEntitiesNear100Locations = function (test) {
     req.uri = baseUri + '/__do/getEntitiesNearLocation'
     request(req, function(err, res) {
       check(req, res)
+      if (res.body.count) cRecs += res.body.count
       return getEntitiesNearLocation(i)
     })
   }
@@ -233,7 +266,7 @@ exports.cleanup = function(test) {
 
 exports.finish = function(test) {
   var time = testTimer.stop()
-  assert(time < testTimer.expected)
+  test.ok(time < testTimer.expected)
   results.push({'Total': {time: time, expected: testTimer.expected}})
   log('\nResults: ', results)
   log()

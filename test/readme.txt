@@ -19,7 +19,7 @@ Run the tests automatically
 
 The test server's output will be written to $PROX/test/testServer.log
 
-seed node testprox -h for addtional command line options
+see node testprox -h for addtional command line options
 
 
 
