@@ -208,17 +208,17 @@ exports.getEntitiesFor100Beacons = function (test) {
   }
 }
 
-exports.getEntitiesFor100Users = function(test) {
+exports.getEntitiesFor10Users = function(test) {
   var timer = new Timer(),
     recordLimit = 300,
     cRecs = 0 
   timer.expected = 120
   req.method = 'post'
 
-  getEntitiesForUser(100)
+  getEntitiesForUser(10)
 
   function getEntitiesForUser(i) {
-    if (!i--) return done(test, 'getEntitiesFor100Users', timer, cRecs)
+    if (!i--) return done(test, 'getEntitiesFor10Users', timer, cRecs)
     req.body = JSON.stringify({
       userId:constants.uid1,
       eagerLoad:{children:false,comments:false},
