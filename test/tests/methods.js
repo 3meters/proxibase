@@ -305,6 +305,29 @@ exports.checkInsertComment = function (test) {
   })
 }
 
+exports.updateEntity = function (test) {
+  req.method = 'post'
+  testEntity.title = 'Testing super candi'
+  req.body = JSON.stringify({entity:testEntity})
+  req.uri = baseUri + '/__do/updateEntity'
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.count === 1, dump(req, res))
+    assert(res.body.data && res.body.data._id, dump(req, res))
+    test.done()
+  })
+}
+
+exports.checkUpdateEntity = function (test) {
+  req.method = 'get'
+  req.uri = baseUri + '/entities/__ids:' + testEntity._id
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.data && res.body.data[0] && res.body.data[0].title === 'Testing super candi', dump(req, res))
+    test.done()
+  })
+}
+
 exports.deleteEntity = function (test) {
   req.method = 'post'
   req.body = JSON.stringify({entityId:testEntity._id,deleteChildren:false})
