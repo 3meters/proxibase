@@ -10,7 +10,7 @@
     { "name": "Dave Stearns", "email": "dave@3meters.com" }
   ],
   "dependencies": {
-    "express": "*",
+    "express": "< 3.0",
     "mongoose": "*",
     "mongoskin": "*",
     "underscore": "*",
