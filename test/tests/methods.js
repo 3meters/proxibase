@@ -163,7 +163,7 @@ exports.deleteUpdateUser = function(test) {
 
 exports.getEntities = function (test) {
   req.method = 'post'
-  req.body = JSON.stringify({entityIds:[constants.entityId],eagerLoad:{children:true,comments:true}})
+  req.body = JSON.stringify({ entityIds:[constants.entityId], eagerLoad:{children:true,comments:true} })
   req.uri = baseUri + '/__do/getEntities'
   request(req, function(err, res) {
     check(req, res)
@@ -189,6 +189,24 @@ exports.getEntitiesForBeacons = function (test) {
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === dbProfile.epb, dump(req, res))
+    assert(res.body.date, dump(req, res))
+    test.done()
+  })
+}
+
+exports.getEntitiesForBeaconsLimited = function (test) {
+  req.method = 'post'
+  req.body = JSON.stringify({ 
+    beaconIds:[constants.beaconId], 
+    eagerLoad:{ children:true,comments:false }, 
+    options:{limit:3, skip:0, sort:{modifiedDate:-1}}
+  })
+  req.uri = baseUri + '/__do/getEntitiesForBeacons'
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.count === 3, dump(req, res))
+    assert(res.body.more.length === 1, dump(req, res))
+    assert(res.body.more[0] === 'entities', dump(req, res))
     test.done()
   })
 }
