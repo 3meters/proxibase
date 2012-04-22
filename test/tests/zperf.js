@@ -174,10 +174,14 @@ exports.get100Entities = function (test) {
     var id = testUtil.genId('entities', recNum)
 
     req.uri = baseUri + '/__do/getEntities'
-    req.body = JSON.stringify({entityIds:[id],eagerLoad:{children:true,comments:true}})
+    req.body = JSON.stringify({
+      entityIds:[id], 
+      eagerLoad:{children:true, comments:true}, 
+      options:{limit:1000, skip:0, sort:{modifiedDate:-1}}
+    })
     request(req, function(err, res) {
       check(req, res)
-      if (res.body.count) cRecs += res.body.count
+      if (res.body.count) cRecs += ((res.body.count) + (res.body.count * dbProfile.spe))
       test.ok(res.body.count === 1, dump(req, res))
       return getEntity(i) // recurse
     })
@@ -197,12 +201,51 @@ exports.getEntitiesFor100Beacons = function (test) {
     if (!i--) return done(test, 'getEntitesFor100Beacons', timer, cRecs)
     var recNum = Math.floor(Math.random() * dbProfile.beacons)
     var id = testUtil.genBeaconId(recNum)
-    req.body = JSON.stringify({beaconIds:[id],eagerLoad:{children:true,comments:false}})
+    req.body = JSON.stringify({
+      beaconIds:[id], 
+      eagerLoad:{ children:true, comments:false }, 
+      options:{ limit:1000, skip:0, sort:{modifiedDate:-1} }
+    })
     req.uri = baseUri + '/__do/getEntitiesForBeacons'
     request(req, function(err, res) {
       check(req, res)
-      if (res.body.count) cRecs += res.body.count
+      if (res.body.count) cRecs += ((res.body.count) + (res.body.count * dbProfile.spe))
       test.ok(res.body.count === dbProfile.epb, dump(req, res))
+      getEntitiesForBeacon(i)
+    })
+  }
+}
+
+exports.getEntitiesFor10x10Beacons = function (test) {
+  var 
+    timer = new Timer(),
+    cRecs = 0,
+    batchSize = 10
+  timer.expected = 300
+  req.method = 'post'
+
+  getEntitiesForBeacon(dbProfile.beacons / batchSize)
+
+  function getEntitiesForBeacon(i) {
+    if (!i--) return done(test, 'getEntitesFor10x10Beacons', timer, cRecs)
+    var beaconRecNumStart = (i + 1) * batchSize  
+    var beaconRecNumEnd = beaconRecNumStart - batchSize
+    var beaconIds = []
+    for (var j = beaconRecNumStart; j--;) {
+      if (j < beaconRecNumEnd) break
+      var id = testUtil.genBeaconId(j)
+      beaconIds.push(id)
+    }
+    req.body = JSON.stringify({
+      beaconIds:beaconIds, 
+      eagerLoad:{ children:true, comments:false }, 
+      options:{ limit:1000, skip:0, sort:{modifiedDate:-1} }
+    })
+    req.uri = baseUri + '/__do/getEntitiesForBeacons'
+    request(req, function(err, res) {
+      check(req, res)
+      test.ok(res.body.count === dbProfile.epb * batchSize, dump(req, res))
+      if (res.body.count) cRecs += ((res.body.count) + (res.body.count * dbProfile.spe))
       getEntitiesForBeacon(i)
     })
   }
@@ -221,14 +264,15 @@ exports.getEntitiesFor10Users = function(test) {
     if (!i--) return done(test, 'getEntitiesFor10Users', timer, cRecs)
     req.body = JSON.stringify({
       userId:constants.uid1,
-      eagerLoad:{children:false,comments:false},
-      limit: recordLimit})  // this line has no effect -- limit is not a supported param in the custom methods
+      eagerLoad:{children:false, comments:false},
+      options:{limit:1000, skip:0, sort:{modifiedDate:-1}}
+    })
     req.uri = baseUri + '/__do/getEntitiesForUser'
     request(req, function(err, res) {
       check(req, res)
       if (res.body.count) cRecs += res.body.count
       // This check currently fails because the method doesn't support limits
-      // test.ok(res.body.count === Math.min(recordLimit, dbProfile.beacons * dbProfile.epb), dump(req, res))
+      //test.ok(res.body.count === Math.min(recordLimit, dbProfile.beacons * dbProfile.epb), dump(req, res))
       return getEntitiesForUser(i)
     })
   }
@@ -249,7 +293,8 @@ exports.getEntitiesNear100Locations = function (test) {
       userId: constants.uid1,
       latitude: constants.latitude,
       longitude: constants.longitude,
-      radius: 0.00001
+      radius: 0.00001,
+      options:{limit:1000, skip:0, sort:{modifiedDate:-1}}
     })
     req.uri = baseUri + '/__do/getEntitiesNearLocation'
     request(req, function(err, res) {
@@ -272,4 +317,3 @@ exports.finish = function(test) {
   log()
   test.done()
 }
-
