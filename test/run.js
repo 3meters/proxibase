@@ -48,6 +48,9 @@ cli
 // Process command-line interface flags
 if (cli.server) {
   serverUrl = testUtil.serverUrl = cli.server
+  // This option is used for running tests locally against a remote server
+  // Assume it is already running and go
+  return runTests()
 }
 else {
   if (cli.config) {
