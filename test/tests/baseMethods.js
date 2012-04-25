@@ -47,7 +47,7 @@ exports.findWithLimit = function(test) {
     assert(res.body && res.body.data && res.body.data instanceof Array, dump(req, res))
     assert(res.body.count === limit, dump(req, res))
     assert(res.body.data.length === limit, dump(req, res))
-    assert(res.body.more[0] === 'entities', dump(req, res))
+    assert(res.body.more === true, dump(req, res))
     test.done()
   })
 }
