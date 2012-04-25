@@ -177,7 +177,7 @@ exports.get100Entities = function (test) {
     req.body = JSON.stringify({
       entityIds:[id], 
       eagerLoad:{children:true, comments:true}, 
-      options:{limit:1000, skip:0, sort:{modifiedDate:-1}}
+      options:{limit:500, skip:0, sort:{modifiedDate:-1}}
     })
     request(req, function(err, res) {
       check(req, res)
@@ -204,7 +204,7 @@ exports.getEntitiesFor100Beacons = function (test) {
     req.body = JSON.stringify({
       beaconIds:[id], 
       eagerLoad:{ children:true, comments:false }, 
-      options:{ limit:1000, skip:0, sort:{modifiedDate:-1} }
+      options:{ limit:500, skip:0, sort:{modifiedDate:-1} }
     })
     req.uri = baseUri + '/__do/getEntitiesForBeacons'
     request(req, function(err, res) {
@@ -239,7 +239,7 @@ exports.getEntitiesFor10x10Beacons = function (test) {
     req.body = JSON.stringify({
       beaconIds:beaconIds, 
       eagerLoad:{ children:true, comments:false }, 
-      options:{ limit:1000, skip:0, sort:{modifiedDate:-1} }
+      options:{ limit:500, skip:0, sort:{modifiedDate:-1} }
     })
     req.uri = baseUri + '/__do/getEntitiesForBeacons'
     request(req, function(err, res) {
@@ -265,7 +265,7 @@ exports.getEntitiesFor10Users = function(test) {
     req.body = JSON.stringify({
       userId:constants.uid1,
       eagerLoad:{children:false, comments:false},
-      options:{limit:1000, skip:0, sort:{modifiedDate:-1}}
+      options:{limit:500, skip:0, sort:{modifiedDate:-1}}
     })
     req.uri = baseUri + '/__do/getEntitiesForUser'
     request(req, function(err, res) {
@@ -294,7 +294,7 @@ exports.getEntitiesNear100Locations = function (test) {
       latitude: constants.latitude,
       longitude: constants.longitude,
       radius: 0.00001,
-      options:{limit:1000, skip:0, sort:{modifiedDate:-1}}
+      options:{limit:500, skip:0, sort:{modifiedDate:-1}}
     })
     req.uri = baseUri + '/__do/getEntitiesNearLocation'
     request(req, function(err, res) {
