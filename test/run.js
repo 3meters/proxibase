@@ -171,11 +171,11 @@ function ensureDb(options, callback) {
 
       else {
         log('Copying database from ' + template)
-        var start = new Date()
+        var timer = new util.Timer()
         db.admin.command({copydb:1, fromdb:template, todb:database}, function(err, result) {
           if (err) throw err
           db.close()
-          log('Database copied in ' + util.getElapsedTime(start) + ' seconds')
+          log('Database copied in ' + timer.read() + ' seconds')
           return callback()    // Finished
        })
       }
@@ -212,6 +212,6 @@ function finish(err) {
   catch (e) {
     // Give up
   }
-  log('Tests finished in ' + timer.stop() + ' seconds')
+  log('Tests finished in ' + timer.read() + ' seconds')
   process.exit(status)
 }
