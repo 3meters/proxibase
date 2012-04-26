@@ -3,28 +3,35 @@
  */
 
 module.exports = {
-  serviceName: 'Proxibase',
-  protocol: 'https',
-  host: 'localhost',
-  host_external: 'aircandi.com',
-  port: 8043,                           // set to 8044 for test
-  ssl: {
-    keyFilePath: './keys/dev/dev.pem',
-    certFilePath: './keys/dev/dev.crt',
-    caFilePath: null
-  },
-  db: {
+  service: {
+    name: 'Proxibase',
+    mode: 'development',                  // development or production
+    protocol: 'https',
     host: 'localhost',
-    port: 27017,
-    database: 'prox',                   // set to smokeData for test
-    options: {
-      strict: true,
-      auto_reconnect: true,
-      poolSize: 3
+    host_external: 'aircandi.com',
+    port: 8043,                           // set to 8044 for test
+    ssl: {
+      keyFilePath: './keys/dev/dev.pem',
+      certFilePath: './keys/dev/dev.crt',
+      caFilePath: null
     }
   },
   notify: {
     onStart: false,
     to: 'pager2010@3meters.com'
+  },
+  log: {
+    level: 1,                             // 0, 1, 2  higher numbers mean more log output
+    perf: 'perf.csv'                      // delete property to not log perf data
+  },
+  db: {
+    host: 'localhost',
+    port: 27017,
+    database: 'prox',                     // set to smokeData for test
+    options: {
+      strict: true,
+      auto_reconnect: true,
+      poolSize: 3
+    }
   }
 }
