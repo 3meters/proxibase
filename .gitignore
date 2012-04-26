@@ -2,7 +2,8 @@ config*.js
 node_modules
 old
 *.json
+*.csv
+*.log
 !package.json
 .monitor
 crash.js
-*.log
