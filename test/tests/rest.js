@@ -3,6 +3,7 @@
  */
 
 var
+  assert = require('assert'),
   request = require('request'),
   log = require('../../lib/util').log,
   testUtil = require('../util'),
