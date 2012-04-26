@@ -13,6 +13,7 @@ var
   util = require('../lib/util'),
   timer = new util.Timer(),
   fs = require('fs'),
+  assert = require('assert'),
   spawn = require('child_process').spawn,
   cli = require('commander'),
   reporter = require('nodeunit').reporters.default,

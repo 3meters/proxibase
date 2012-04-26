@@ -3,6 +3,7 @@
  */
 
 var
+  assert = require('assert'),
   _ = require('underscore'),                                  // For cloning objects
   timeStamp = '010101.00000.555',                             // Jan 1 2000 + 555 miliseconds
   timeStampMs = new Date(2001, 0, 1, 0, 0, 0, 555).getTime()  // Same but in milliseconds
