@@ -6,3 +6,5 @@ old
 .monitor
 crash.js
 *.log
+
+/perf.csv
