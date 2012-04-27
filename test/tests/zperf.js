@@ -35,7 +35,7 @@ exports.start = function(test) {
 function done(test, testName, timer, count) {
   test.ok(timer && timer.expected, "You forgot to set timer.expected")
   count = count || 0
-  var time = timer.stop()
+  var time = timer.read()
   var recsPerSecond = (Math.round(1000 * count / time) / 1000)
   test.ok(time < timer.expected, 'Performance test ' + testName +
     ' failed.  Time: ' + time + ', Expected: ' + timer.expected)
@@ -310,7 +310,7 @@ exports.cleanup = function(test) {
 }
 
 exports.finish = function(test) {
-  var time = testTimer.stop()
+  var time = testTimer.read()
   test.ok(time < testTimer.expected)
   results.push({'Total': {time: time, expected: testTimer.expected}})
   log('\nResults: ', results)
