@@ -5,7 +5,7 @@
  * testprox.js: run the proxibase nodeunit tests
  *   see readme.txt and https://github.com/caolan/nodeunit
  *
- *   useage:  node testprox
+ *   usage:  node run
  */
 
 
@@ -23,7 +23,8 @@ var
   dbProfile = require('./constants').dbProfile,
   testUtil = require('./util'),
   configFile = 'configtest.js',
-  testDir = 'tests',
+  basicDirs = ['basic'],
+  testDirs = ['basic', 'perf'],
   logFile = 'testServer.log',
   logStream,
   cwd = process.cwd(),
@@ -41,7 +42,8 @@ process.chdir(__dirname)
 cli
   .option('-c, --config <file>', 'Config file [configtest.js]')
   .option('-s, --server <url>', 'Server url')
-  .option('-t, --testdir <dir>', 'Test dir [' + testDir + ']')
+  .option('-t, --testdir <dir>', 'Test directory')
+  .option('-b, --basic', 'Only run the basic tests')
   .option('-l, --log <file>', 'Test server log file [' + logFile + ']')
   .parse(process.argv)
 
@@ -186,9 +188,11 @@ function ensureDb(options, callback) {
 
 
 function runTests() {
+  var dirs = testDirs
+  if (cli.basic) dirs = basicDirs
   log('\nTesting: ' + serverUrl)
-  log('Test dirs: ' + testDir)
-  reporter.run([testDir], false, finish)
+  log('Test dirs: ' + dirs)
+  reporter.run(dirs, false, finish)
 }
 
 
