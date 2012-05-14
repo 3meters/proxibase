@@ -1,0 +1,49 @@
+#!/bin/bash
+#
+# fixraid
+#
+# chkconfig: 345 84 16
+# description: user workaround for mdadm raid driving striping config problem on amazon
+#
+
+# For some reason the amazon linux ami utility mdadm refuses to remember the boot 
+# settings for the raid array striping attached ec2 storage
+#
+# This script redefines the raid array on each boot.  It should go away when
+# the Amazon Linux AMI folks figure out how to solve this problem 
+#
+# To run it on each reboot, put this script in /etc/init.d, owned by root, with 
+# read and execute permissions
+#
+start () {
+    echo "$0 reconfiguring raid drive"
+    mdadm --stop /dev/md127
+    mdadm --stop /dev/md0
+    mdadm --create /dev/md0 --run --level=10 -n4 /dev/sdh*
+    sleep 1
+    mount -a
+}
+
+stop () {
+    umount /dev/md0p1
+}
+
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart)
+        stop
+        start
+	;;
+    *)
+        echo $"Usage: $0 {start|stop|restart}"
+        exit 2
+esac
+exit $?
+
+
