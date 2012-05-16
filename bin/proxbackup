@@ -4,9 +4,10 @@
 
 backupdir="/var/backups/prox"
 mailto="backup@3meters.com"
+cmd="/mongodb/bin/mongodump"
 
 today=`date`
-mongodump --db prox --out $backupdir/dump
+$cmd --db prox --out $backupdir/dump
 tar czf $backupdir/proxdump.gz $backupdir/dump
 uuencode $backupdir/proxdump.gz proxdump.gz | mailx -s "Proxibase backup $today" $mailto
 
