@@ -1,9 +1,7 @@
-#!/bin/sh
+#!/bin/bash
 
 # production proxibase startup script using nodemon
 # see https://github.com/remy/nodemon
-# Useage:
-#   sudo $PROX/bin/proxstart
 
 if [ ! $PROX ]; then
   PROX='/usr/local/prox'
