@@ -22,7 +22,7 @@ module.exports = {
   },
   log: {
     level: 1,                             // 0, 1, 2  higher numbers mean more log output
-    perf: 'perf.csv'                      // delete property to not log perf data
+    perf: '/var/log/prox/perf.csv'                      // delete property to not log perf data
   },
   db: {
     host: 'localhost',
