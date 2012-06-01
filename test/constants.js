@@ -12,6 +12,7 @@ var
   bssid = '00:00:00:00:00:01',
   beaconId = '0003:' + bssid,                                 // TODO: Change : to .
   entityId = '0002.' + timeStamp + '.000001',
+  childEntityId = '0002.' + timeStamp + '.000501',
   documentId = '0005.' + timeStamp + '.000001',
   observationId = '0007.' + timeStamp + '.000001',
   linkId = '0001.' + timeStamp + '.000001',
@@ -157,6 +158,7 @@ module.exports = {
   password: password,
   beaconId: beaconId,
   entityId: entityId,
+  childEntityId: childEntityId,
   documentId: documentId,
   observationId: observationId,
   linkId: linkId,
