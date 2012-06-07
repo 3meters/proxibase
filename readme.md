@@ -136,16 +136,12 @@ Updates every record in a table.  Usefull when you need to re-run triggers on al
 ### POST /__do/getEntitiesForUser
 
 
-## Etc
-* [Building a Proxibase Server](proxibase/wiki/Server-Setup)
-* [Building a Dev Machine](proxibase/wiki/Dev-Setup)
+## Wiki
+* (proxibase/wiki/)
 
 ## Todo
 ### Bugs
 * GET /tablename,foo
-
-### Test/Perf
-* Basic benchmark framework
 
 ### Rest
 * get: lookups
@@ -162,9 +158,6 @@ Updates every record in a table.  Usefull when you need to re-run triggers on al
 ### Misc
 * rationalize version migration into a command-linable pipeline
 * do version migration in place?
-
-### Ops
-* Build Joyent box and perf compare
 
 ### Security
 * Store passwords hashed authentication
