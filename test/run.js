@@ -1,6 +1,3 @@
-#!/usr/bin/env node
-
-
 /*
  * testprox.js: run the proxibase nodeunit tests
  *   see readme.txt and https://github.com/caolan/nodeunit
