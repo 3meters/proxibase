@@ -8,3 +8,5 @@ crash.js
 *.log
 
 /perf.csv
+/proxibase.sublime-project
+/proxibase.sublime-workspace
