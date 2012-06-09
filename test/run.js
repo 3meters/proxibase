@@ -1,6 +1,3 @@
-#!/usr/bin/env node
-
-
 /*
  * testprox.js: run the proxibase nodeunit tests
  *   see readme.txt and https://github.com/caolan/nodeunit
@@ -19,7 +16,7 @@ var
   reporter = require('nodeunit').reporters.default,
   req = require('request'),
   mongoskin = require('mongoskin'),
-  genData = require(__dirname + '/../tools/pump/genData'),
+  // genData = require(__dirname + '/../tools/pump/genData'),
   dbProfile = require('./constants').dbProfile,
   testUtil = require('./util'),
   configFile = 'configtest.js',
