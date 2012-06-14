@@ -52,7 +52,6 @@ defaultRecord.users = defaultRecord.users1 = {
   email: 'testuser@3meters.com',
   imageUri: 'https://s3.amazonaws.com/3meters_images/test_user1.jpg',
   location: 'Testville, WA',
-  password: password,
   isDeveloper: false
 }
 
@@ -65,6 +64,8 @@ defaultRecord.users2 = {
   password: password,
   isDeveloper: true
 }
+
+
 
 defaultRecord.documents = {
   _id: documentId,
