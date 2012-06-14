@@ -7,6 +7,7 @@ old
 crash.js
 *.log
 
+/test/oauth/*.html
 /perf.csv
 /proxibase.sublime-project
 /proxibase.sublime-workspace
