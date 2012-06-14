@@ -49,9 +49,10 @@ function addSystemFields(record) {
 defaultRecord.users = defaultRecord.users1 = {
   _id: uid1,
   name: 'Test User',
-  email: 'testuser@3meters.com',
-  imageUri: 'https://s3.amazonaws.com/3meters_images/test_user1.jpg',
+  email: 'test@3meters.com',
+  imageUri: 'https://twimg0-a.akamaihd.net/profile_images/2302466332/cartTostvine.jpg',
   location: 'Testville, WA',
+  oauthId: 'twitter:606624261',
   isDeveloper: false
 }
 

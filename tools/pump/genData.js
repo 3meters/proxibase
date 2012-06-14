@@ -79,7 +79,7 @@ module.exports = function(profile, callback) {
 // Ensure the database has the indexes defined by the service's models
 function ensureIndices(config, callback) {
   log('Creating database and ensuring indeces')
-  goose.connect(config.db, function(err, connection) {
+  goose.connect(config, function(err, connection) {
     if (err) throw err
     gdb = connection
     // When the following dummy query is fired mongoose.js will connect to the db and
@@ -116,6 +116,7 @@ function genUsers() {
     user._id = testUtil.genId('users', i)
     user.name = 'Test User ' + (i + 1)
     user.email = 'testuser' + (i + 1) + '@3meters.com'
+    if (i > 0) delete user.oauthId  // for now, only the first test user has a real oauthId
     table.users.push(user)
   }
 }

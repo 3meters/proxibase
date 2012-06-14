@@ -16,7 +16,7 @@ var
   reporter = require('nodeunit').reporters.default,
   req = require('request'),
   mongoskin = require('mongoskin'),
-  // genData = require(__dirname + '/../tools/pump/genData'),
+  genData = require(__dirname + '/../tools/pump/genData'),
   dbProfile = require('./constants').dbProfile,
   testUtil = require('./util'),
   configFile = 'configtest.js',
