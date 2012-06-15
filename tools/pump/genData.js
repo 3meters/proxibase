@@ -116,7 +116,6 @@ function genUsers() {
     user._id = testUtil.genId('users', i)
     user.name = 'Test User ' + (i + 1)
     user.email = 'testuser' + (i + 1) + '@3meters.com'
-    if (i > 0) delete user.oauthId  // for now, only the first test user has a real oauthId
     table.users.push(user)
   }
 }

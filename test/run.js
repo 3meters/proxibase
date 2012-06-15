@@ -21,7 +21,7 @@ var
   testUtil = require('./util'),
   configFile = 'configtest.js',
   basicDirs = ['basic'],
-  testDirs = ['basic', 'perf'],
+  testDirs = ['basic', 'oauth', 'perf'],
   logFile = 'testServer.log',
   logStream,
   cwd = process.cwd(),
@@ -59,7 +59,7 @@ else {
     serverUrl = testUtil.serverUrl = util.getUrl(config)
   }
 }
-if (cli.testdir) testDir = cli.testdir
+if (cli.testdir) testDirs = [cli.testdir]
 if (cli.log) logFile = cli.log
 
 
