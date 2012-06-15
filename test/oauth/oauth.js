@@ -17,15 +17,32 @@ var
   request = require('request'),
   jsdom = require('jsdom'),
   testUtil = require('../util'),
+  constants = require('../constants'),
   check = testUtil.check,
   dump = testUtil.dump,
   req = testUtil.getDefaultReq(),
+  testOauthId = {
+    twitter: 'twitter:606624261'
+  },
   jQuerySrc = 'http://code.jquery.com/jquery-1.7.2.min.js',
-  // baseUri = testUtil.serverUrl,
-  baseUri = 'https://localhost:8043', // still dev for now, to switch to test, must have user accounts
-                                      // on oauth providers that redirect to the test host on port 8044
+  baseUri = testUtil.serverUrl,
   log = require('../../lib/util').log
 
+
+// Update the default user with the oauthId of our test user account on Twitter
+// This approximates a user updating their account and validating with a different
+// oauth provider
+
+exports.updateDefaultUserOauthId = function(test) {
+  req.method = 'post'
+  req.uri = baseUri + '/users/__ids:' + constants.uid1
+  req.body = JSON.stringify({ data: {oauthId: testOauthId.twitter } })
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.data.oauthId === testOauthId.twitter, dump(req, res))
+    test.done()
+  })
+}
 
 // Authorize our Twitter test user via oauth
 exports.authTwitter = function(test) {
@@ -34,8 +51,6 @@ exports.authTwitter = function(test) {
     authPage = __dirname + '/twitterAuth.html',
     authResultsPage = __dirname + '/twitterAuthResults.html'
 
-
-  log('baseUri', baseUri)
   req.method = 'get'
   req.uri = baseUri + '/signin/twitter'
   request(req, function(err, res) {
@@ -96,8 +111,13 @@ exports.authTwitter = function(test) {
             'authResult page, see ' + authResultsPage)
 
           // Call it
+          // At this point twitter has authticated the user
+          // With this call we look them up in our database by their oauthID
+          // If we find them, we get a 200 and create or update a session
+          // If we don't find them, we get a 406
+
           request(proxAuthRedirectUrl, function(err, res) {
-            assert(res.statusCode === 406, 'Unexpected status code')
+            check(req, res)
             test.done()
           })
         })

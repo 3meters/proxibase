@@ -52,7 +52,6 @@ defaultRecord.users = defaultRecord.users1 = {
   email: 'test@3meters.com',
   imageUri: 'https://twimg0-a.akamaihd.net/profile_images/2302466332/cartTostvine.jpg',
   location: 'Testville, WA',
-  oauthId: 'twitter:606624261',
   isDeveloper: false
 }
 
