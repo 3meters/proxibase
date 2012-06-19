@@ -8,8 +8,7 @@
 var
   config = exports.config = require('../../config'),  
   mongoskin = require('mongoskin'),
-  log = require('../../lib/util').log,
-  sendErr = require('../../lib/util').sendErr
+  log = require('../../lib/util').log
 
 // Our own connection so we don't need to have proxibase service running
 var db = mongoskin.db(config.db.host + ':' + config.db.port +  '/' + config.db.database + '?auto_reconnect')
@@ -43,11 +42,8 @@ function addRoot(entity) {
 
 function removeBeaconLinks(entity) {
   db.collection('links').remove({_from:entity._id, toTableId:3}, {safe:true, multi:true}, function(err) {
-      if (err) 
-        return sendErr(res, err) 
-      else {
-        addComments(entity)
-      }
+    if (err) throw(err)
+    addComments(entity)
   })
 }
 
@@ -60,10 +56,10 @@ function addComments(entity) {
     comments.forEach(function(comment) {
 
       db.collection('users').findOne({_id:comment._creator}, function(err, user) {
-        if (err) return sendErr(module.res, err)
+        if (err) throw(err)
         entity.comments.push({title: comment.title, description: comment.description, name: user.name, location: user.location, imageUri: user.imageUri, _creator:comment._creator,  createdDate:comment.createdDate})
         db.collection('entities').update({_id:entity._id}, entity, {safe:true}, function(err) {
-          if (err) return sendErr(res, err)
+          if (err) throw(err)
         })
       })
     })
