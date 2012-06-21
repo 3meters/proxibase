@@ -18,7 +18,7 @@ var
 req.method = 'post'
 
 exports.echo = function(test) {
-  req.uri = baseUri + '/__do/echo'
+  req.uri = baseUri + '/do/echo'
   var body = {table:'users'}
   req.body = JSON.stringify(body)
   request(req, function(err, res) {
@@ -29,7 +29,7 @@ exports.echo = function(test) {
 }
 
 exports.simpleFind = function(test) {
-  req.uri = baseUri + '/__do/find'
+  req.uri = baseUri + '/do/find'
   req.body = JSON.stringify({table:'users'})
   request(req, function(err, res) {
     check(req, res)
@@ -40,7 +40,7 @@ exports.simpleFind = function(test) {
 
 exports.findWithLimit = function(test) {
   var limit = 10
-  req.uri = baseUri + '/__do/find'
+  req.uri = baseUri + '/do/find'
   req.body = JSON.stringify({table:'entities', limit: limit})
   request(req, function(err, res) {
     check(req, res)
@@ -53,7 +53,7 @@ exports.findWithLimit = function(test) {
 }
 
 exports.findById = function(test) {
-  req.uri = baseUri + '/__do/find'
+  req.uri = baseUri + '/do/find'
   req.body = JSON.stringify({table:'users', ids:[constants.uid1]})
   request(req, function(err, res) {
     check(req, res)
@@ -65,7 +65,7 @@ exports.findById = function(test) {
 }
 
 exports.findByNameCaseInsensitive = function(test) {
-  req.uri = baseUri + '/__do/find'
+  req.uri = baseUri + '/do/find'
   var name = 'TeSt uSeR 1'
   req.body = JSON.stringify({table:'users', names:[name]})
   request(req, function(err, res) {
@@ -78,7 +78,7 @@ exports.findByNameCaseInsensitive = function(test) {
 }
 
 exports.findPassThrough = function(test) {
-  req.uri = baseUri + '/__do/find'
+  req.uri = baseUri + '/do/find'
   var email = 'testuser1@3meters.com'
   req.body = JSON.stringify({table:'users', find:{email:email}})
   request(req, function(err, res) {
@@ -91,7 +91,7 @@ exports.findPassThrough = function(test) {
 }
 
 exports.touch = function(test) {
-  req.uri = baseUri + '/__do/touch'
+  req.uri = baseUri + '/do/touch'
   req.body = JSON.stringify({table:'users'})
   request(req, function(err, res) {
     check(req, res)

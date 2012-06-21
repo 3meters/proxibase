@@ -57,7 +57,7 @@ exports.cleanData = function(test) {
   var timer = new util.Timer()
   timer.expected = 10
   req.method = 'post'
-  req.uri = baseUri + '/__do/find'
+  req.uri = baseUri + '/do/find'
   req.body = JSON.stringify({
     table: 'users',
     fields: ['_id'],
@@ -71,7 +71,7 @@ exports.cleanData = function(test) {
       ids.push(row._id)
     })
     req.method = 'delete'
-    req.uri = baseUri + '/users'
+    req.uri = baseUri + '/data/users'
     req.body = JSON.stringify({ids: ids})
     request(req, function(err, res) {
       check(req, res)
@@ -99,7 +99,7 @@ exports.insert100Users = function(test) {
     user.email = 'perftestuser' + i + '@3meters.com'
     req.method = 'post'
     req.body = JSON.stringify({data:user})
-    req.uri = baseUri + '/users'
+    req.uri = baseUri + '/data/users'
     request(req, function(err, res) {
       check(req, res)
       if (res.body.count) cRecs += res.body.count
@@ -114,7 +114,7 @@ exports.find100Users = function(test) {
     cRecs = 0
   timer.expected = 60
   req.method = 'post'
-  req.uri = baseUri + '/__do/find'
+  req.uri = baseUri + '/do/find'
 
   findUser(100)
   function findUser(i) {
@@ -138,7 +138,7 @@ exports.findAndUpdate100Users = function(test) {
   findAndUpdateUser(100)
   function findAndUpdateUser(i) {
     if (!i--) return done(test, 'findAndUpdate100Users', timer, cRecs)
-    req.uri = baseUri + '/__do/find'
+    req.uri = baseUri + '/do/find'
     req.body = JSON.stringify({
       table: 'users',
       fields: ['_id'],
@@ -146,7 +146,7 @@ exports.findAndUpdate100Users = function(test) {
     })
     request(req, function(err, res) {
       check(req, res)
-      req.uri = baseUri + '/users/__ids:' + res.body.data[0]._id
+      req.uri = baseUri + '/data/users/ids:' + res.body.data[0]._id
       req.body = JSON.stringify({data:{location:'Updated Perfburg' + i + ', WA'}})
       request(req, function(err, res) {
         check(req, res)
@@ -173,7 +173,7 @@ exports.get100Entities = function (test) {
     var recNum = Math.floor(Math.random() * dbProfile.beacons * dbProfile.epb)
     var id = testUtil.genId('entities', recNum)
 
-    req.uri = baseUri + '/__do/getEntities'
+    req.uri = baseUri + '/do/getEntities'
     req.body = JSON.stringify({
       entityIds:[id], 
       eagerLoad:{children:true, comments:true}, 
@@ -206,7 +206,7 @@ exports.getEntitiesFor100Beacons = function (test) {
       eagerLoad:{ children:true, comments:false }, 
       options:{ limit:500, skip:0, sort:{modifiedDate:-1} }
     })
-    req.uri = baseUri + '/__do/getEntitiesForBeacons'
+    req.uri = baseUri + '/do/getEntitiesForBeacons'
     request(req, function(err, res) {
       check(req, res)
       if (res.body.count) cRecs += ((res.body.count) + (res.body.count * dbProfile.spe))
@@ -241,7 +241,7 @@ exports.getEntitiesFor10x10Beacons = function (test) {
       eagerLoad:{ children:true, comments:false }, 
       options:{ limit:500, skip:0, sort:{modifiedDate:-1} }
     })
-    req.uri = baseUri + '/__do/getEntitiesForBeacons'
+    req.uri = baseUri + '/do/getEntitiesForBeacons'
     request(req, function(err, res) {
       check(req, res)
       test.ok(res.body.count === dbProfile.epb * batchSize, dump(req, res))
@@ -267,7 +267,7 @@ exports.getEntitiesFor10Users = function(test) {
       eagerLoad:{children:false, comments:false},
       options:{limit:500, skip:0, sort:{modifiedDate:-1}}
     })
-    req.uri = baseUri + '/__do/getEntitiesForUser'
+    req.uri = baseUri + '/do/getEntitiesForUser'
     request(req, function(err, res) {
       check(req, res)
       if (res.body.count) cRecs += res.body.count
@@ -296,7 +296,7 @@ exports.getEntitiesNear100Locations = function (test) {
       radius: 0.00001,
       options:{limit:500, skip:0, sort:{modifiedDate:-1}}
     })
-    req.uri = baseUri + '/__do/getEntitiesNearLocation'
+    req.uri = baseUri + '/do/getEntitiesNearLocation'
     request(req, function(err, res) {
       check(req, res)
       if (res.body.count) cRecs += res.body.count

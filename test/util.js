@@ -7,7 +7,7 @@ var
   util = require('../lib/util'),
   constants = require('./constants'),
   config = util.findConfig('configtest.js'),
-  serverUrl = util.getUrl(config)
+  serverUrl = util.getRootUrl(config)
 
 
 // Base Uri all test requests call, can be overridden by callers

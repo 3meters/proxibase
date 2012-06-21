@@ -28,7 +28,7 @@ var
   testServer,
   testServerStarted = false,
   config = util.findConfig(configFile),
-  serverUrl = util.getUrl(config),
+  serverUrl = util.getRootUrl(config),
   log = util.log
 
 
@@ -116,8 +116,9 @@ function ensureServer() {
       // Parse output to see if sever is ready. Fragile!
       if (data.indexOf('listen') >= 0) {
         testServerStarted = true
-        req.get(serverUrl + '/users', function(err, res) {
+        req.get(serverUrl + '/data/users', function(err, res) {
           if (err) throw err
+          if (res.statusCode !== 200) throw new Error('Could not get /data/users, aborting test')
           return runTests()
         })
       }
