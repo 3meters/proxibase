@@ -35,7 +35,7 @@ var
 
 exports.updateDefaultUserOauthId = function(test) {
   req.method = 'post'
-  req.uri = baseUri + '/users/__ids:' + constants.uid1
+  req.uri = baseUri + '/data/users/ids:' + constants.uid1
   req.body = JSON.stringify({ data: {oauthId: testOauthId.twitter } })
   request(req, function(err, res) {
     check(req, res)

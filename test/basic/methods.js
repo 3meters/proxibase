@@ -68,7 +68,7 @@ var
 exports.lookupVersion = function (test) {
   req.method = 'post'
   req.body = JSON.stringify({table:'documents',find:{type:'version',target:'aircandi'}})
-  req.uri = baseUri + '/__do/find'
+  req.uri = baseUri + '/do/find'
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 1, dump(req, res))
@@ -79,7 +79,7 @@ exports.lookupVersion = function (test) {
 /* housekeeping */
 exports.cleanupUser = function (test) {
   req.method = 'delete'
-  req.uri = baseUri + '/users/__ids:' + testUser._id
+  req.uri = baseUri + '/data/users/ids:' + testUser._id
   request(req, function(err, res) {
     check(req, res)
     test.done()
@@ -90,7 +90,7 @@ exports.cleanupUser = function (test) {
 exports.cleanupEntity = function (test) {
   req.method = 'post'
   req.body = JSON.stringify({entityId:testEntity._id,deleteChildren:false})
-  req.uri = baseUri + '/__do/deleteEntity'
+  req.uri = baseUri + '/do/deleteEntity'
   request(req, function(err, res) {
     check(req, res)
     test.done()
@@ -100,7 +100,7 @@ exports.cleanupEntity = function (test) {
 /* housekeeping */
 exports.cleanupBeacon = function (test) {
   req.method = 'delete'
-  req.uri = baseUri + '/beacons/__ids:' + testBeacon._id
+  req.uri = baseUri + '/data/beacons/ids:' + testBeacon._id
   request(req, function(err, res) {
     check(req, res)
     test.done()
@@ -110,7 +110,7 @@ exports.cleanupBeacon = function (test) {
 exports.insertUser = function (test) {
   req.method = 'post'
   req.body = JSON.stringify({data:testUser})
-  req.uri = baseUri + '/users'
+  req.uri = baseUri + '/data/users'
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 1, dump(req, res))
@@ -122,7 +122,7 @@ exports.insertUser = function (test) {
 exports.signinUser = function (test) {
   req.method = 'post'
   req.body = JSON.stringify({table:'users',find:{email:'johnqtest@3meters.com'}})
-  req.uri = baseUri + '/__do/find'
+  req.uri = baseUri + '/do/find'
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 1, dump(req, res))
@@ -133,7 +133,7 @@ exports.signinUser = function (test) {
 exports.updateUser = function (test) {
   req.method = 'post'
   req.body = JSON.stringify({data:{location:'Testburg, WA'}})
-  req.uri = baseUri + '/users/__ids:' + testUser._id
+  req.uri = baseUri + '/data/users/ids:' + testUser._id
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 1, dump(req, res))
@@ -144,7 +144,7 @@ exports.updateUser = function (test) {
 
 exports.checkUpdatedUser = function(test) {
   req.method = 'get'
-  req.uri = baseUri + '/users/__ids:' + testUser._id
+  req.uri = baseUri + '/data/users/ids:' + testUser._id
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.data && res.body.data[0] && res.body.data[0].location === 'Testburg, WA', dump(req, res))
@@ -154,7 +154,7 @@ exports.checkUpdatedUser = function(test) {
 
 exports.deleteUpdateUser = function(test) {
   req.method = 'delete'
-  req.uri = baseUri + '/users/__ids:' + testUser._id
+  req.uri = baseUri + '/data/users/ids:' + testUser._id
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 1, dump(req, res))
@@ -169,7 +169,7 @@ exports.getEntitiesLoadChildren = function (test) {
    */
   req.method = 'post'
   req.body = JSON.stringify({ entityIds:[constants.entityId], eagerLoad:{parents:false,children:true,comments:true} })
-  req.uri = baseUri + '/__do/getEntities'
+  req.uri = baseUri + '/do/getEntities'
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 1, dump(req, res))
@@ -196,7 +196,7 @@ exports.getEntitiesLoadParents = function (test) {
    */
   req.method = 'post'
   req.body = JSON.stringify({ entityIds:[constants.childEntityId], eagerLoad:{parents:true,children:false,comments:true} })
-  req.uri = baseUri + '/__do/getEntities'
+  req.uri = baseUri + '/do/getEntities'
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 1, dump(req, res))
@@ -213,7 +213,7 @@ exports.getEntitiesLoadParents = function (test) {
 exports.getEntitiesForBeacons = function (test) {
   req.method = 'post'
   req.body = JSON.stringify({beaconIds:[constants.beaconId],eagerLoad:{children:true,comments:false}})
-  req.uri = baseUri + '/__do/getEntitiesForBeacons'
+  req.uri = baseUri + '/do/getEntitiesForBeacons'
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === dbProfile.epb, dump(req, res))
@@ -229,7 +229,7 @@ exports.getEntitiesForBeaconsLimited = function (test) {
     eagerLoad:{ children:true,comments:false }, 
     options:{limit:3, skip:0, sort:{modifiedDate:-1}}
   })
-  req.uri = baseUri + '/__do/getEntitiesForBeacons'
+  req.uri = baseUri + '/do/getEntitiesForBeacons'
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 3, dump(req, res))
@@ -241,7 +241,7 @@ exports.getEntitiesForBeaconsLimited = function (test) {
 exports.getEntitiesForUser = function (test) {
   req.method = 'post'
   req.body = JSON.stringify({userId:constants.uid1, eagerLoad:{children:false,comments:false}})
-  req.uri = baseUri + '/__do/getEntitiesForUser'
+  req.uri = baseUri + '/do/getEntitiesForUser'
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === Math.min(constants.recordLimit,
@@ -253,7 +253,7 @@ exports.getEntitiesForUser = function (test) {
 exports.getEntitiesNearLocation = function (test) {
   req.method = 'post'
   req.body = JSON.stringify({userId:testUser._id,latitude:testLatitude,longitude:testLongitude,radius:0.00001})
-  req.uri = baseUri + '/__do/getEntitiesNearLocation'
+  req.uri = baseUri + '/do/getEntitiesNearLocation'
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 0, dump(req, res))
@@ -264,7 +264,7 @@ exports.getEntitiesNearLocation = function (test) {
 exports.insertRootEntity = function (test) {
   req.method = 'post'
   req.body = JSON.stringify({entity:testEntity, beacon:testBeacon, link:{_to:testBeacon._id}, observation:{latitude:testLatitude, longitude:testLongitude, _beacon:testBeacon._id},userId:testUser._id})
-  req.uri = baseUri + '/__do/insertEntity'
+  req.uri = baseUri + '/do/insertEntity'
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 1, dump(req, res))
@@ -276,7 +276,7 @@ exports.insertRootEntity = function (test) {
 exports.checkInsertRootEntity = function(test) {
   req.method = 'post'
   req.body = JSON.stringify({table:'entities',find:{_id:testEntity._id}})
-  req.uri = baseUri + '/__do/find'
+  req.uri = baseUri + '/do/find'
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 1, dump(req, res))
@@ -287,7 +287,7 @@ exports.checkInsertRootEntity = function(test) {
 exports.checkInsertLinkToRootEntity = function(test) {
   req.method = 'post'
   req.body = JSON.stringify({table:'links',find:{_to:testBeacon._id}})
-  req.uri = baseUri + '/__do/find'
+  req.uri = baseUri + '/do/find'
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 1, dump(req, res))
@@ -298,7 +298,7 @@ exports.checkInsertLinkToRootEntity = function(test) {
 exports.checkInsertBeacon = function(test) {
   req.method = 'post'
   req.body = JSON.stringify({ table:'beacons', find:{ _id:testBeacon._id }})
-  req.uri = baseUri + '/__do/find'
+  req.uri = baseUri + '/do/find'
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 1, dump(req, res))
@@ -308,7 +308,7 @@ exports.checkInsertBeacon = function(test) {
 
 exports.deleteBeacon = function (test) {
   req.method = 'delete'
-  req.uri = baseUri + '/beacons/__ids:' + testBeacon._id
+  req.uri = baseUri + '/data/beacons/ids:' + testBeacon._id
   request(req, function(err, res) {
     check(req, res)
     test.done()
@@ -318,7 +318,7 @@ exports.deleteBeacon = function (test) {
 exports.checkInsertObservationForRootEntity = function(test) {
   req.method = 'post'
   req.body = JSON.stringify({table:'observations',find:{_beacon:testBeacon._id,_entity:testEntity._id}})
-  req.uri = baseUri + '/__do/find'
+  req.uri = baseUri + '/do/find'
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 1, dump(req, res))
@@ -329,7 +329,7 @@ exports.checkInsertObservationForRootEntity = function(test) {
 exports.insertComment = function (test) {
   req.method = 'post'
   req.body = JSON.stringify({entityId:testEntity._id,comment:testComment})
-  req.uri = baseUri + '/__do/insertComment'
+  req.uri = baseUri + '/do/insertComment'
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 1, dump(req, res))
@@ -340,7 +340,7 @@ exports.insertComment = function (test) {
 exports.checkInsertComment = function (test) {
   req.method = 'post'
   req.body = JSON.stringify({entityIds:[testEntity._id],eagerLoad:{children:true,comments:true}})
-  req.uri = baseUri + '/__do/getEntities'
+  req.uri = baseUri + '/do/getEntities'
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 1, dump(req, res))
@@ -354,7 +354,7 @@ exports.updateEntity = function (test) {
   req.method = 'post'
   testEntity.title = 'Testing super candi'
   req.body = JSON.stringify({entity:testEntity})
-  req.uri = baseUri + '/__do/updateEntity'
+  req.uri = baseUri + '/do/updateEntity'
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 1, dump(req, res))
@@ -365,7 +365,7 @@ exports.updateEntity = function (test) {
 
 exports.checkUpdateEntity = function (test) {
   req.method = 'get'
-  req.uri = baseUri + '/entities/__ids:' + testEntity._id
+  req.uri = baseUri + '/data/entities/ids:' + testEntity._id
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.data && res.body.data[0] && res.body.data[0].title === 'Testing super candi', dump(req, res))
@@ -376,7 +376,7 @@ exports.checkUpdateEntity = function (test) {
 exports.deleteEntity = function (test) {
   req.method = 'post'
   req.body = JSON.stringify({entityId:testEntity._id,deleteChildren:false})
-  req.uri = baseUri + '/__do/deleteEntity'
+  req.uri = baseUri + '/do/deleteEntity'
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 1, dump(req, res))
@@ -388,7 +388,7 @@ exports.deleteEntity = function (test) {
 exports.checkDeleteEntity = function(test) {
   req.method = 'post'
   req.body = JSON.stringify({table:'entities',find:{_id:testEntity._id}})
-  req.uri = baseUri + '/__do/find'
+  req.uri = baseUri + '/do/find'
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 0, dump(req, res))
@@ -399,7 +399,7 @@ exports.checkDeleteEntity = function(test) {
 exports.checkDeleteLink = function(test) {
   req.method = 'post'
   req.body = JSON.stringify({table:'links',find:{_to:testBeacon._id,_from:testEntity._id}})
-  req.uri = baseUri + '/__do/find'
+  req.uri = baseUri + '/do/find'
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 0, dump(req, res))
@@ -410,7 +410,7 @@ exports.checkDeleteLink = function(test) {
 exports.checkDeleteObservation = function(test) {
   req.method = 'post'
   req.body = JSON.stringify({table:'observations',find:{_beacon:testBeacon._id,_entity:testEntity._id}})
-  req.uri = baseUri + '/__do/find'
+  req.uri = baseUri + '/do/find'
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 0, dump(req, res))

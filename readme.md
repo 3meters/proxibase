@@ -6,13 +6,9 @@ Web: https://www.proxibase.com
 API: https://api.proxibase.com
 
 ## REST API
-### GET https://api.proxibase.com/__info
+### GET https://api.proxibase.com/schema/<tableName>
 
-Returns the rest tables and their table Ids
-
-### GET https://api.proxibase.com/tableName/__info
-
-Returns detailed field information about each table
+Returns a table's schema
 
 ### _id fields
 Every proxibase record has a an immutable _id field that is unique within proxiabse. _ids have this form, with dates and times represented in UTC: 
@@ -26,33 +22,33 @@ meaning
 ### GET /tableName
 Returns the table's first 1000 records unsorted.
 
-### GET /tableName/__ids:id1,id2
-Returns records with the specified ids. Note the initial __ids:  Do quote or put spaces betweeen the id parameters themselves.
+### GET /tableName/ids:id1,id2
+Returns records with the specified ids. Note the initial ids:  Do quote or put spaces betweeen the id parameters themselves.
 
-### GET /tableName/__names:name1,name2
-Returns records with the specified names. Note the initial __names:  Do not quote or put spaces between the name parameters.  If the value of your name contains a comma, you cannot use this method to find it.  Use the __do/find method in this case. 
+### GET /tableName/names:name1,name2
+Returns records with the specified names. Note the initial names:  Do not quote or put spaces between the name parameters.  If the value of your name contains a comma, you cannot use this method to find it.  Use the do/find method in this case. 
 
-### GET /tablename/[__ids:...|__names:.../]childTable1,childTable2|*
+### GET /tablename/[ids:...|names:.../]childTable1,childTable2|*
 TEMPORARILY DISABLED
 
 Returns all records specified with subdocuments for each child table specified. The wildcard * returns all child documents.  All fields from child documents are returned.  The query limit is applied both to the main document array and to each of its child arrays. Filters only apply to the main document, not to the document's children.
 
-### GET /tablename/__genid
+### GET /tablename/genid
 Generates a valid id for the table with the UTC timestamp of the request.  Useful if you want to make posts to mulitple tables with the primary and foreign keys preassigned.
 
 ### GET parameters
 Place GET query parameters at the end of the URL beginning with a ?. Separate parameters with &. Parameter ordering does not matter.
 
-    ?__find={"firstname":"John","lastname":{"$in":["Smith","Jones"]},"age":{"$lt":5}}
-Returns the records in the table found using mongodb's [advanced query syntax](http://www.mongodb.org/display/DOCS/Advanced+Queries). The value of __find must be parsable JSON. The rest of the url need not.
+    ?find={"firstname":"John","lastname":{"$in":["Smith","Jones"]},"age":{"$lt":5}}
+Returns the records in the table found using mongodb's [advanced query syntax](http://www.mongodb.org/display/DOCS/Advanced+Queries). The value of find must be parsable JSON. The rest of the url need not.
 
-    ?__fields=_id,name,created
+    ?fields=_id,name,created
 Returns only the fields specified. _id is always returned. 
 
-    ?__limit=30
+    ?limit=30
 Returns only the first 30 records. Max 1000.
 
-    ?__lookups=true
+    ?lookups=true
 TEMPORARILY DISABLED
 
 Returns each document with its lookup fields fully populated. Default false.
@@ -87,25 +83,25 @@ or
 ### POST /tablename
 Inserts req.body.data or req.body.data[0] into the tablename table.  If a value for _id is specified it will be used, otherwise the server will generate a value for _id.  Only one record may be inserted per request. If you specifiy values for any of the system fields, those values will be stored.  If you do not the system will generates defaults for you.
 
-### POST /tablename/__ids:id1
+### POST /tablename/ids:id1
 Updates the record with _id = id1 in tablename.  Non-system fields not inlucded in request.body.data or request.body.data[0] will not be modified.
 
-### DELETE /tablename/__ids:id1,id2
+### DELETE /tablename/ids:id1,id2
 Deletes those records.
 
-### DELETE /tablename/__ids:*
+### DELETE /tablename/ids:*
 Deletes all records in the table.
 
 <a name="webmethods"></a>
 ## Custom Web Methods
-[https://api.proxibase.com/__do](https://api.proxibase.com/__do)
+[https://api.proxibase.com/do](https://api.proxibase.com/do)
 
-Lists the web methods. POST to /__do/methodName executes a method passing in the full request and response objects. The request body must be in JSON format. 
+Lists the web methods. POST to /do/methodName executes a method passing in the full request and response objects. The request body must be in JSON format. 
 
-### POST /__do/echo
+### POST /do/echo
 Returns request.body
 
-### POST /__do/find
+### POST /do/find
 Is a way to do a GET on any table in the system, but with the paramters in the request body rather than on the query string. find expects request.body to contain JSON of this form:
 
     {
@@ -121,7 +117,7 @@ Is a way to do a GET on any table in the system, but with the paramters in the r
 
 The table property is required.  All others are optional. The value of the find property is passed through to mongodb unmodified, so it can be used to specify any clauses that mongodb supports, including sorting, offset, etc.  See mongodb's [advanced query syntax](http://www.mongodb.org/display/DOCS/Advanced+Queries) for details. This may present a security problem, so will likely be removed once the public query syntax becomes more full-featured.
 
-### POST /__do/touch
+### POST /do/touch
 Updates every record in a table.  Usefull when you need to re-run triggers on all records
 
     {
@@ -129,19 +125,29 @@ Updates every record in a table.  Usefull when you need to re-run triggers on al
       "preserveModified, true   // optional, default true, if false the method will update the modified date
     }
 
-### POST /__do/getEntitiesForBeacons
-
-### POST /__do/getEntities
-
-### POST /__do/getEntitiesForUser
-
 
 ## Wiki
 * (proxibase/wiki/)
 
 ## Todo
 ### Bugs
-* GET /tablename,foo
+* GET /data/tablename,foo
+
+### Security
+* Accept user and session keys in posts
+* Tests for Facebook and Google
+* User permission checking API
+* User permission setting API
+* Map users to accounts
+* Accrue user requests to acconts
+* Rate limit gets
+* Rate limit posts
+* Lock / unlock account
+
+### Website
+* Read-only browse UI over tables
+* User profile update UI
+* My Candi UI
 
 ### Rest
 * get: lookups
@@ -159,19 +165,3 @@ Updates every record in a table.  Usefull when you need to re-run triggers on al
 * rationalize version migration into a command-linable pipeline
 * do version migration in place?
 
-### Security
-* Store passwords hashed authentication
-* Provide user authentication API
-* Provide and check session keys
-* User permission checking API
-* User permission setting API
-* Map users to accounts
-* Accrue user requests to acconts
-* Rate limit gets
-* Rate limit posts
-* Lock / unlock account
-
-### Website
-* Read-only browse UI over tables
-* User profile update UI
-* My Candi UI
