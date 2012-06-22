@@ -44,7 +44,36 @@ exports.updateDefaultUserOauthId = function(test) {
   })
 }
 
-// Authorize our Twitter test user via oauth
+// Authorize via Facebook
+exports.authFacebook = function(test) {
+
+  test.done()
+
+  var options = {
+    provider: 'facebook',
+    oauthUri: baseUri + '/signin/facebook',
+    loginUri: 'https://twitter.com/oauth/authenticate',
+    authPage: __dirname + '/facebookAuth.html',
+    authResultsPage: __dirname + '/facebookAuthResults.html',
+    loginFormQuery: '#login_form :input',
+    loginFormFields: {
+      authenticity_token: -1,
+      oauth_token: -1,
+      'session[username_or_email]': 'threemeterstest',
+      'session[password]': 'doodah'
+    }
+  }
+
+  /*
+  testProvider(options, function(err) {
+    test.done()
+  })
+  */
+}
+
+
+
+// Authorize via Twitter
 exports.authTwitter = function(test) {
 
   var options = {
@@ -55,11 +84,18 @@ exports.authTwitter = function(test) {
     authResultsPage: __dirname + '/twitterAuthResults.html',
     loginFormQuery: '#oauth_form :input',
     loginFormFields: {
-      authenticity_token: -1,
-      oauth_token: -1,
+      // authenticity_token: -1,
+      // oauth_token: -1,
       'session[username_or_email]': 'threemeterstest',
       'session[password]': 'doodah'
-    }
+    },
+    credentials: {
+     userNameField: 'session[username_or_email]',
+     userNameValue: 'threemeterstest',
+     passwordField: 'session[password]',
+     passwordValue: 'doodah'
+    },
+    loginForm: {}
   }
   testProvider(options, function(err) {
     test.done()
@@ -69,6 +105,7 @@ exports.authTwitter = function(test) {
 
 // Test each oauth provider
 function testProvider(options, callback) {
+  var loginForm = {}
 
   req.method = 'get'
   req.uri = options.oauthUri
@@ -85,21 +122,36 @@ function testProvider(options, callback) {
 
       if (errors) throw errors
 
+      /*
       window.$(options.loginFormQuery).each(function(index, input) {
         if (options.loginFormFields[input.name] === -1) options.loginFormFields[input.name] = input.value
       })
+      */
 
+      window.$(options.loginFormQuery).each(function(index, input) {
+        if (input.value) loginForm[input.name] = input.value
+      })
+
+      // Add our known credentials to the form
+      loginForm[options.credentials.userNameField] = options.credentials.userNameValue
+      loginForm[options.credentials.passwordField] = options.credentials.passwordValue
+
+
+      /*
       for (field in options.loginFormFields) {
         assert(field !== -1, 'Could not find field ' + options.provider + ' ' + field + 
           '. See ' + options.authPage)
       }
+      */
 
       // Try to login through the UI as our test user
+      log('loginForm', loginForm)
 
       request({
         uri: options.loginUri,
         method: 'post',
-        form: options.loginFormFields
+        // form: options.loginFormFields
+        form: loginForm
       }, function(err, res) {
 
         // If the login succeded the provider will return an page including a redirect 
@@ -118,6 +170,8 @@ function testProvider(options, callback) {
           // Find the url that the provider plans to redirect the user to
           var selector = 'meta[http-equiv=refresh]'
           var metaTag = window.$(selector).attr('content')
+          assert (metaTag, 'Authentication appears to have failed, oauth provider did not redirect. See ' +
+            options.authResultsPage)
           metaTag.split(';').forEach(function(element) {
             if (element.indexOf('url=') === 0) proxAuthRedirectUrl = element.substr(4)
           })
