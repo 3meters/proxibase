@@ -47,78 +47,92 @@ exports.updateDefaultUserOauthId = function(test) {
 // Authorize our Twitter test user via oauth
 exports.authTwitter = function(test) {
 
-  var
-    authPage = __dirname + '/twitterAuth.html',
-    authResultsPage = __dirname + '/twitterAuthResults.html'
+  var options = {
+    provider: 'twitter',
+    oauthUri: baseUri + '/signin/twitter',
+    loginUri: 'https://twitter.com/oauth/authenticate',
+    authPage: __dirname + '/twitterAuth.html',
+    authResultsPage: __dirname + '/twitterAuthResults.html',
+    loginFormQuery: '#oauth_form :input',
+    loginFormFields: {
+      authenticity_token: -1,
+      oauth_token: -1,
+      'session[username_or_email]': 'threemeterstest',
+      'session[password]': 'doodah'
+    }
+  }
+  testProvider(options, function(err) {
+    test.done()
+  })
+}
+
+
+// Test each oauth provider
+function testProvider(options, callback) {
 
   req.method = 'get'
-  req.uri = baseUri + '/signin/twitter'
+  req.uri = options.oauthUri
   request(req, function(err, res) {
 
-    // we should be redirected to a URL containing our twitter application token and secret,
-    // then twitter should respond with the twitter user interface login page.  This attempts
-    // to log in via the UI to our twitter test account
+    // we should be redirected to a URL containing our provider application token and secret,
+    // then the provider should respond with the its user interface login page.  This attempts
+    // to log in via the provider's UI using the credentials of our test account on each provider
 
-    fs.writeFileSync(authPage, res.body)  // corpse
+    fs.writeFileSync(options.authPage, res.body)  // corpse
 
     // run jQuery over the UI page asking the user to trust our app
     jsdom.env(res.body, [ jQuerySrc ], function(errors, window) {
 
       if (errors) throw errors
-      var authenticity_token, oauth_token
 
-      window.$('#oauth_form :input').each(function(index, input) {
-        if (input.name === 'authenticity_token') authenticity_token = input.value
-        if (input.name === 'oauth_token') oauth_token = input.value
+      window.$(options.loginFormQuery).each(function(index, input) {
+        if (options.loginFormFields[input.name] === -1) options.loginFormFields[input.name] = input.value
       })
 
-      assert(authenticity_token, 'Could not find twitter authenticity_token, see ' + authPage)
-      assert(oauth_token, 'Could not find twitter oauth_token, see ' + authPage)
+      for (field in options.loginFormFields) {
+        assert(field !== -1, 'Could not find field ' + options.provider + ' ' + field + 
+          '. See ' + options.authPage)
+      }
 
-      // Try to login through the UI as our test twitter user
+      // Try to login through the UI as our test user
 
       request({
-        uri: 'https://twitter.com/oauth/authenticate',
+        uri: options.loginUri,
         method: 'post',
-        form: {
-          authenticity_token: authenticity_token,
-          oauth_token: oauth_token,
-          'session[username_or_email]': 'threemeterstest',
-          'session[password]': 'doodah'
-        }
+        form: options.loginFormFields
       }, function(err, res) {
 
-        // If the login succeded twitter will return an page including a redirect 
+        // If the login succeded the provider will return an page including a redirect 
         // in a header meta tag that points to our user authtication page.  Dig out 
         // that url with jquery and call it.
 
         var proxAuthRedirectUrl
         if (err) assert(false, err)
 
-        fs.writeFileSync(authResultsPage, res.body)  // corpse
+        fs.writeFileSync(options.authResultsPage, res.body)  // corpse
 
-        // Run jQuery over twitter response page our authorization attempt
+        // Run jQuery over the provider's page responding to our authorization attempt
         jsdom.env(res.body, [ jQuerySrc ], function(errors, window) {
           if (errors) throw errors
 
-          // Find the url twitter plans to redirect the user to
+          // Find the url that the provider plans to redirect the user to
           var selector = 'meta[http-equiv=refresh]'
           var metaTag = window.$(selector).attr('content')
           metaTag.split(';').forEach(function(element) {
             if (element.indexOf('url=') === 0) proxAuthRedirectUrl = element.substr(4)
           })
-          assert(proxAuthRedirectUrl, 'Could not extract the auth redirect url from twitter\'s ' +
-            'authResult page, see ' + authResultsPage)
+          assert(proxAuthRedirectUrl, 'Could not extract the auth redirect url from ' +
+            options.provider + '\'s authResult page, see ' + options.authResultsPage)
 
           // Call it
-          // At this point twitter has authticated the user
+          // At this point the provider has authticated the user
           // With this call we look them up in our database by their oauthID
           // If we find them, we get a 200 and create or update a session
           // If we don't find them, we get a 406
 
           request(proxAuthRedirectUrl, function(err, res) {
             check(req, res)
-            test.done()
+            callback()
           })
         })
       })
