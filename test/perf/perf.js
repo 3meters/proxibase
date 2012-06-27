@@ -97,6 +97,7 @@ exports.insert100Users = function(test) {
     if (!i--) return done(test, 'insert100Users', timer, cRecs)
     user.name = 'Perf Test User ' + i
     user.email = 'perftestuser' + i + '@3meters.com'
+    user.password = 'foobar'
     req.method = 'post'
     req.body = JSON.stringify({data:user})
     req.uri = baseUri + '/data/users'
