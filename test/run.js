@@ -56,7 +56,7 @@ else {
   if (cli.config) {
     configFile = cli.config
     config = util.findConfig(configFile)
-    serverUrl = testUtil.serverUrl = util.getUrl(config)
+    serverUrl = testUtil.serverUrl = util.getRootUrl(config)
   }
 }
 if (cli.testdir) testDirs = [cli.testdir]

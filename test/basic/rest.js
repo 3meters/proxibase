@@ -14,11 +14,13 @@ var
   testUser1 = {
     _id: "testId1",
     name: "Test User1",
-    email: "foo@bar.com"
+    email: "foo@bar.com",
+    password: 'foobar'
   },
   testUserGenId = {
     name: "Test User GenId",
-    email: "foo@bar.com"
+    email: "foo@bar.com",
+    password: 'foobar'
   }
 
 
