@@ -26,6 +26,7 @@ var
   },
   jQuerySrc = 'http://code.jquery.com/jquery-1.7.2.min.js',
   baseUri = testUtil.serverUrl,
+  _exports = {}  // for commenting out tests
   log = require('../../lib/util').log
 
 
@@ -45,14 +46,14 @@ exports.updateDefaultUserOauthId = function(test) {
 }
 
 // Authorize our Twitter test user via oauth
-var authTwitterOld = function(test) {
+_exports.authTwitterOld = function(test) {
 
   var
     authPage = __dirname + '/twitterOldAuth.html',
     authResultsPage = __dirname + '/twitterOldAuthResults.html'
 
   req.method = 'get'
-  req.uri = baseUri + '/signin/twitter'
+  req.uri = baseUri + '/auth/signin/twitter'
   request(req, function(err, res) {
 
     // We should be redirected to a URL containing our twitter application token and secret,
@@ -88,7 +89,7 @@ var authTwitterOld = function(test) {
         }
       }, function(err, res) {
 
-        // If the login succeded twitter will return an page including a redirect 
+        // If the login succeded twitter will return a page including a redirect 
         // in a header meta tag that points to our user authtication page.  Dig out 
         // that url with jquery and call it.
 
@@ -131,11 +132,11 @@ var fbLoginUri = "https://www.facebook.com/login.php?api_key=451189364910079&ski
 
 
 // Authorize via Facebook
-var authFacebook = function(test) {
+_exports.authFacebook = function(test) {
 
   var options = {
     provider: 'facebook',
-    oauthUri: baseUri + '/signin/facebook',
+    oauthUri: baseUri + '/auth/signin/facebook',
     //loginUri: 'https://facebook.com/login.php',
 
 loginUri:'https://www.facebook.com/login.php?api_key=123890574419138&skip_api_login=1&display=page&cancel_url=https%3A%2F%2Flocalhost%3A8044%2Fsignin%2Ffacebook%3Ferror_reason%3Duser_denied%26error%3Daccess_denied%26error_description%3DThe%2Buser%2Bdenied%2Byour%2Brequest.&fbconnect=1&next=https%3A%2F%2Fwww.facebook.com%2Fdialog%2Fpermissions.request%3F_path%3Dpermissions.request%26app_id%3D123890574419138%26redirect_uri%3Dhttps%253A%252F%252Flocalhost%253A8044%252Fsignin%252Ffacebook%26display%3Dpage%26response_type%3Dcode%26fbconnect%3D1%26from_login%3D1%26client_id%3D451189364910079&rcount=1',
@@ -164,7 +165,7 @@ exports.authTwitter = function(test) {
 
   var options = {
     provider: 'twitter',
-    oauthUri: baseUri + '/signin/twitter',
+    oauthUri: baseUri + '/auth/signin/twitter',
     loginUri: 'https://twitter.com/oauth/authenticate',
     authPage: __dirname + '/twitterAuth.html',
     authResultsPage: __dirname + '/twitterAuthResults.html',
