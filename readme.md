@@ -5,6 +5,69 @@ Web: https://www.proxibase.com
 
 API: https://api.proxibase.com
 
+## AUTHENTICATION
+Users can be authenticated locally with a password, or by a oauth provider such as Facebook, Twitter, or Google.  Their authentication source is stored in the users.authSource field which is required.  Valid values may be found in util.statics.authSources.  The users table now requires either a password or valid oauth credentials to be stored before a user record to be created.  The email field is now unique.
+
+### Local
+If a new user is created with a password we assume the authSource is local.  We validate that the password is sufficiently strong before saving, and we save a one-way hash of the password the user entered.  See the users schema for the password rules and hash methods.
+
+Users sign in via a new api:
+
+    /auth/signin
+    method: post
+    body: {
+      user: {
+        name: (name or email will work, case-insensitive)
+        password: password  (case-sensitive)
+      }
+    }
+
+On success the api returns a session object with two fields of interest, _owner and key.  _owner is user's _id, and key is a session key.  In order to validate a request, include those values on each request, either as query parameters like so:
+
+    /data/users?user=0000.120628.57119.055.350009&session=fb3f74034f591e3053e6e8617c46fb35
+    method:  get, post, or delete
+
+or as fields in the body of a post like so:
+
+    /do/find
+    method: post
+    body: = {
+      table:'users',
+      user: 0000.120628.57119.055.350009
+      session: fb3f74034f591e3053e6e8617c46fb35
+    }
+
+If you pass invaild session credentials the request will fail with a 401 (not authorized).  If they are valid, all responses will contain a user object that includes the user's id and name. Sessions are bound to a particular client IP address.  They expire after two weeks without use.
+
+Sessions can be destroyed via
+
+    /auth/signout
+    method: post
+    body: {
+      user: user._id
+      session: session.key
+    }
+
+User passwords can no longer be updated via the ordinary rest methods, but can only be changed via a new change password api:
+
+    /auth/changepw  
+    method: post
+    body: {
+      user:{
+        _id:  user._id
+        oldPassword: oldPassword
+        newPassword: newPassword
+      }
+    }
+
+### Oauth
+
+Signin via ouath like so:
+
+    /auth/signin/facebook|twitter|google
+
+session management after a sucessful authentication is the same as with local authentication.  If the user authenticates via an oauth provider, we store their provider credentials and user key, allowing us to access their picture and other provider specific data (friends, followers, etc) on their behalf.  
+
 ## REST API
 ### GET https://api.proxibase.com/schema/<tableName>
 
@@ -133,11 +196,17 @@ Updates every record in a table.  Usefull when you need to re-run triggers on al
 ### Bugs
 * GET /data/tablename,foo
 
-### Security
-* Accept user and session keys in posts
-* Tests for Facebook and Google
+### Authentication
+* Validate user email
+* Recover lost password workflow
+* Create user with oauth workflow
+* Oauth tests for Facebook and Google
+
+### Permissions
 * User permission checking API
 * User permission setting API
+
+### Rate limiting
 * Map users to accounts
 * Accrue user requests to acconts
 * Rate limit gets
