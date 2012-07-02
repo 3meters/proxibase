@@ -127,29 +127,22 @@ _exports.authTwitterOld = function(test) {
   })
 }
 
-// This is the action tag from facebook when called from dev mode
-var fbLoginUri = "https://www.facebook.com/login.php?api_key=451189364910079&skip_api_login=1&display=page&cancel_url=https%3A%2F%2Flocalhost%3A8043%2Fsignin%2Ffacebook%3Ferror_reason%3Duser_denied%26error%3Daccess_denied%26error_description%3DThe%2Buser%2Bdenied%2Byour%2Brequest.&fbconnect=1&next=https%3A%2F%2Fwww.facebook.com%2Fdialog%2Fpermissions.request%3F_path%3Dpermissions.request%26app_id%3D451189364910079%26redirect_uri%3Dhttps%253A%252F%252Flocalhost%253A8043%252Fsignin%252Ffacebook%26display%3Dpage%26response_type%3Dcode%26fbconnect%3D1%26from_login%3D1%26client_id%3D451189364910079&rcount=1"
 
-
-// Authorize via Facebook
-_exports.authFacebook = function(test) {
+// Authorize via Twitter
+exports.authTwitter = function(test) {
 
   var options = {
-    provider: 'facebook',
-    oauthUri: baseUri + '/auth/signin/facebook',
-    //loginUri: 'https://facebook.com/login.php',
-
-loginUri:'https://www.facebook.com/login.php?api_key=123890574419138&skip_api_login=1&display=page&cancel_url=https%3A%2F%2Flocalhost%3A8044%2Fsignin%2Ffacebook%3Ferror_reason%3Duser_denied%26error%3Daccess_denied%26error_description%3DThe%2Buser%2Bdenied%2Byour%2Brequest.&fbconnect=1&next=https%3A%2F%2Fwww.facebook.com%2Fdialog%2Fpermissions.request%3F_path%3Dpermissions.request%26app_id%3D123890574419138%26redirect_uri%3Dhttps%253A%252F%252Flocalhost%253A8044%252Fsignin%252Ffacebook%26display%3Dpage%26response_type%3Dcode%26fbconnect%3D1%26from_login%3D1%26client_id%3D451189364910079&rcount=1',
-
-    authPage: __dirname + '/facebookAuth.html',
-    authResultsPage: __dirname + '/facebookAuthResults.html',
-    loginFormQuery: '#login_form :input',
-    // loginCancel: 'cancel',
+    provider: 'twitter',
+    oauthUri: baseUri + '/auth/signin/twitter',
+    authPage: __dirname + '/twitterAuth.html',
+    authResultsPage: __dirname + '/twitterAuthResults.html',
+    loginFormName: '#oauth_form',
+    loginCancel: 'cancel',
     credentials: {
-     userNameField: 'email',
-     userNameValue: 'george.snellingtest',
-     passwordField: 'pass',
-     passwordValue: 'foobar1'
+     userNameField: 'session[username_or_email]',
+     userNameValue: 'threemeterstest',
+     passwordField: 'session[password]',
+     passwordValue: 'doodah'
     }
   }
 
@@ -159,23 +152,21 @@ loginUri:'https://www.facebook.com/login.php?api_key=123890574419138&skip_api_lo
 }
 
 
-
-// Authorize via Twitter
-exports.authTwitter = function(test) {
+// Authorize via Facebook
+_exports.authFacebook = function(test) {
 
   var options = {
-    provider: 'twitter',
-    oauthUri: baseUri + '/auth/signin/twitter',
-    loginUri: 'https://twitter.com/oauth/authenticate',
-    authPage: __dirname + '/twitterAuth.html',
-    authResultsPage: __dirname + '/twitterAuthResults.html',
-    loginFormQuery: '#oauth_form :input',
-    loginCancel: 'cancel',
+    provider: 'facebook',
+    oauthUri: baseUri + '/auth/signin/facebook',
+    authPage: __dirname + '/facebookAuth.html',
+    authResultsPage: __dirname + '/facebookAuthResults.html',
+    loginFormName: '#login_form',
+    // loginCancel: 'cancel',
     credentials: {
-     userNameField: 'session[username_or_email]',
-     userNameValue: 'threemeterstest',
-     passwordField: 'session[password]',
-     passwordValue: 'doodah'
+     userNameField: 'email',
+     userNameValue: 'george.snellingtest',
+     passwordField: 'pass',
+     passwordValue: 'foobar1'
     }
   }
 
@@ -208,7 +199,10 @@ function testProvider(options, callback) {
 
       if (errors) throw errors
 
-      window.$(options.loginFormQuery).each(function(index, input) {
+      var jQuerySelectLoginFormInputs = options.loginFormName + ' :input'
+
+      // window.$(options.loginFormQuery).each(function(index, input) {
+      window.$(jQuerySelectLoginFormInputs).each(function(index, input) {
         if (input.name && input.value) loginForm[input.name] = input.value
       })
 
@@ -222,13 +216,13 @@ function testProvider(options, callback) {
       // Try to login through the UI as our test user
       log('loginForm', loginForm)
 
-      // TODO: get the post URL from the form's action element
+      // Use JQuery to extract the login form's action URI
+      var loginFormActionUri = window.$(options.loginFormName).attr('action')
 
       request({
         headers: {'User-Agent': userAgent},
-        uri: options.loginUri,
+        uri: loginFormActionUri,
         method: 'post',
-        // form: options.loginFormFields
         form: loginForm
       }, function(err, res) {
 
