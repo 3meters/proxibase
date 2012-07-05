@@ -203,7 +203,7 @@ exports.getEntitiesFor100Beacons = function (test) {
     var recNum = Math.floor(Math.random() * dbProfile.beacons)
     var id = testUtil.genBeaconId(recNum)
     req.body = JSON.stringify({
-      beaconIds:[id], 
+      beaconIdsNew:[id], 
       eagerLoad:{ children:true, comments:false }, 
       options:{ limit:500, skip:0, sort:{modifiedDate:-1} }
     })
@@ -238,7 +238,7 @@ exports.getEntitiesFor10x10Beacons = function (test) {
       beaconIds.push(id)
     }
     req.body = JSON.stringify({
-      beaconIds:beaconIds, 
+      beaconIdsNew:beaconIds, 
       eagerLoad:{ children:true, comments:false }, 
       options:{ limit:500, skip:0, sort:{modifiedDate:-1} }
     })
