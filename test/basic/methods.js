@@ -212,7 +212,7 @@ exports.getEntitiesLoadParents = function (test) {
 
 exports.getEntitiesForBeacons = function (test) {
   req.method = 'post'
-  req.body = JSON.stringify({beaconIds:[constants.beaconId],eagerLoad:{children:true,comments:false}})
+  req.body = JSON.stringify({beaconIdsNew:[constants.beaconId],eagerLoad:{children:true,comments:false}})
   req.uri = baseUri + '/do/getEntitiesForBeacons'
   request(req, function(err, res) {
     check(req, res)
@@ -225,7 +225,7 @@ exports.getEntitiesForBeacons = function (test) {
 exports.getEntitiesForBeaconsLimited = function (test) {
   req.method = 'post'
   req.body = JSON.stringify({ 
-    beaconIds:[constants.beaconId], 
+    beaconIdsNew:[constants.beaconId], 
     eagerLoad:{ children:true,comments:false }, 
     options:{limit:3, skip:0, sort:{modifiedDate:-1}}
   })
@@ -233,7 +233,7 @@ exports.getEntitiesForBeaconsLimited = function (test) {
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 3, dump(req, res))
-    assert(res.body.more === true, dump(req, res))
+    assert(res.body.more === false, dump(req, res))
     test.done()
   })
 }
