@@ -244,9 +244,20 @@ function testProvider(options, callback) {
           var metaTag = window.$(selector).attr('content')
           assert (metaTag, 'Authentication appears to have failed, oauth provider did not redirect. See ' +
             options.authResultsPage)
-          metaTag.split(';').forEach(function(element) {
-            if (element.indexOf('url=') === 0) proxAuthRedirectUrl = element.substr(4)
-          })
+          switch (options.provider) {
+            case 'twitter':
+              proxAuthRedirectUrl = metaTag.substr(metaTag.indexOf('url=') + 4)
+              break
+            case 'facebook':
+              // facebook wants to stash a cookie with your login info, and then 
+              // read that cookie before performing the redirect.  I don't know 
+              // how to get around this at the moment -- disabling the facebook test
+              // The following was a guess but it didn't work.  
+              // proxAuthRedirectUrl = options.oauthUri + '?code=' + window.$('#input_new_perms').attr('value')
+              break
+            default: 
+          }
+          log('redirecting to ', proxAuthRedirectUrl)
           assert(proxAuthRedirectUrl, 'Could not extract the auth redirect url from ' +
             options.provider + '\'s authResult page, see ' + options.authResultsPage)
 

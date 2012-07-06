@@ -112,6 +112,7 @@ exports.signinValid = function(test) {
     assert(res.body.user)
     assert(res.body.user._id === user1._id)
     assert(res.body.user.name === user1.name)
+    assert(res.body.user.email)
     assert(res.body.session)
     session = res.body.session
     test.done()
@@ -131,6 +132,7 @@ exports.signinMixedCaseName = function(test) {
     assert(res.body.user)
     assert(res.body.user._id === user1._id)
     assert(res.body.user.name === user1.name)
+    assert(res.body.user.email)
     assert(res.body.session)
     test.done()
   })
@@ -148,6 +150,7 @@ exports.signinEmail = function(test) {
     assert(res.body.user)
     assert(res.body.user._id === user1._id)
     assert(res.body.user.name === user1.name)
+    assert(res.body.user.email)
     assert(res.body.session)
     test.done()
   })
