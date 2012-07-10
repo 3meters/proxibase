@@ -70,7 +70,7 @@ exports.addUserWithDupeEmail = function(test) {
 }
 
 
-exports.signinBadUserName = function(test) {
+exports.signinWrongFields = function(test) {
   req.method = 'post'
   req.uri = baseUri + '/auth/signin'
   req.body = JSON.stringify({
@@ -80,7 +80,21 @@ exports.signinBadUserName = function(test) {
     }
   })
   request(req, function(err, res) {
-    check(req, res, 404)
+    check(req, res, 400)
+    test.done()
+  })
+}
+
+
+exports.signinBadEmail = function(test) {
+  req.method = 'post'
+  req.uri = baseUri + '/auth/signin'
+  req.body = JSON.stringify({user: {
+    email: 'billy@notHere',
+    password: 'wrong'
+  }})
+  request(req, function(err, res) {
+    check(req, res, 401)
     test.done()
   })
 }
@@ -90,7 +104,7 @@ exports.signinBadPassword = function(test) {
   req.method = 'post'
   req.uri = baseUri + '/auth/signin'
   req.body = JSON.stringify({user: {
-    name: 'Auth Test User 1',
+    email: user1.email,
     password: 'wrong'
   }})
   request(req, function(err, res) {
@@ -104,8 +118,8 @@ exports.signinValid = function(test) {
   req.method = 'post'
   req.uri = baseUri + '/auth/signin'
   req.body = JSON.stringify({user:{
-    name: 'Auth Test User 1',
-    password: 'foobar'
+    email: user1.email,
+    password: user1.password
   }})
   request(req, function(err, res) {
     check(req, res)
@@ -120,12 +134,12 @@ exports.signinValid = function(test) {
 }
 
 
-exports.signinMixedCaseName = function(test) {
+exports.signinMixedCaseEmail = function(test) {
   req.method = 'post'
   req.uri = baseUri + '/auth/signin'
   req.body = JSON.stringify({user:{
-    name: 'auth TEST UsEr 1',
-    password: 'foobar'
+    email: user1.email.toUpperCase(),
+    password: user1.password
   }})
   request(req, function(err, res) {
     check(req, res)
@@ -142,8 +156,8 @@ exports.signinEmail = function(test) {
   req.method = 'post'
   req.uri = baseUri + '/auth/signin'
   req.body = JSON.stringify({user:{
-    name: 'authtestuser1@bar.com',
-    password: 'foobar'
+    email: user1.email,
+    password: user1.password
   }})
   request(req, function(err, res) {
     check(req, res)
@@ -184,6 +198,8 @@ exports.validateSession = function(test) {
     assert(res.body.user)
     assert(res.body.user._id === user1._id)
     assert(res.body.user.name === user1.name)
+    assert(res.body.session)
+    assert(res.body.session.key === session.key)
     test.done()
   })
 }
@@ -202,6 +218,8 @@ exports.validateSessionParamsInBody = function(test) {
     assert(res.body.user)
     assert(res.body.user._id === user1._id)
     assert(res.body.user.name === user1.name)
+    assert(res.body.session)
+    assert(res.body.session.key === session.key)
     test.done()
   })
 }
