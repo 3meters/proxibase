@@ -38,7 +38,7 @@ var dump = exports.dump = function(req, res, msg) {
 
 // Ensure response, check status code, parse body
 exports.check = function(req, res, code) {
-  assert(req, 'Invalide call to test.util.check.  Missing required req')
+  assert(req, 'Invalid call to test.util.check.  Missing required req')
   assert(res && res.statusCode, dump(req, res, 'Fatal: No response'))
   code = code || 200
   assert(res.statusCode === code, dump(req, res,
