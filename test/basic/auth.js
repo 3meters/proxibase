@@ -28,6 +28,7 @@ exports.addUserWithoutPassword = function(test) {
   req.body = JSON.stringify({data:user1})
   request(req, function(err, res) {
     check(req, res, 400)
+    assert(res.body.error.code === 400.21)
     test.done()
   })
 }
@@ -40,6 +41,7 @@ exports.addUserWithTooWeakPassword = function(test) {
   req.body = JSON.stringify({data:user1})
   request(req, function(err, res) {
     check(req, res, 400)
+    assert(res.body.error.code === 400.23)
     test.done()
   })
 }
