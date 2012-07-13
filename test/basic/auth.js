@@ -16,10 +16,24 @@ var
   },
   user2 = {
     name: 'Auth Test User 2',
-    email: 'uathTestUser1@bar.com'  // duplicate email on purpose
+    email: 'authTESTuser1@bar.com',  // duplicate email on purpose
+    password: 'foobarfoobar'
   },
   session = {},
+  _exports = {},                    // for commenting out tests
   log = require('../../lib/util').log
+
+
+exports.addUserWithoutEmail = function(test) {
+  req.method = 'post'
+  req.uri = baseUri + '/data/users'
+  req.body = JSON.stringify({data:{name:'MrMissingEmail', password:'foobarfoo'}})
+  request(req, function(err, res) {
+    check(req, res, 400)
+    assert(res.body.error.code === 400.1, dump(req, res))
+    test.done()
+  })
+}
 
 
 exports.addUserWithoutPassword = function(test) {
@@ -40,8 +54,8 @@ exports.addUserWithTooWeakPassword = function(test) {
   user1.password = 'foo'
   req.body = JSON.stringify({data:user1})
   request(req, function(err, res) {
-    check(req, res, 400)
-    assert(res.body.error.code === 400.23)
+    check(req, res, 403)
+    assert(res.body.error.code === 403.21)
     test.done()
   })
 }
@@ -66,7 +80,8 @@ exports.addUserWithDupeEmail = function(test) {
   req.uri = baseUri + '/data/users'
   req.body = JSON.stringify({data:user2})
   request(req, function(err, res) {
-    check(req, res, 400)
+    check(req, res, 403)
+    assert(res.body.error.code === 403.1)
     test.done()
   })
 }
@@ -83,6 +98,7 @@ exports.signinWrongFields = function(test) {
   })
   request(req, function(err, res) {
     check(req, res, 400)
+    assert(res.body.error.code === 400.1)
     test.done()
   })
 }
@@ -97,6 +113,7 @@ exports.signinBadEmail = function(test) {
   }})
   request(req, function(err, res) {
     check(req, res, 401)
+    assert(res.body.error.code === 401.1)
     test.done()
   })
 }
@@ -111,6 +128,7 @@ exports.signinBadPassword = function(test) {
   }})
   request(req, function(err, res) {
     check(req, res, 401)
+    assert(res.body.error.code === 401.1)
     test.done()
   })
 }
@@ -177,6 +195,7 @@ exports.validateSessionBadUser = function(test) {
   req.uri = baseUri + '/data/users?user=bogus&session=' + session.key
   request(req, function(err, res) {
     check(req, res, 401)
+    assert(res.body.error.code === 401.1)
     test.done()
   })
 }
@@ -187,6 +206,7 @@ exports.validateSessionBadKey = function(test) {
   req.uri = baseUri + '/data/users?user=' + session._owner + '&session=bogus'
   request(req, function(err, res) {
     check(req, res, 401)
+    assert(res.body.error.code === 401.1)
     test.done()
   })
 }
@@ -237,6 +257,7 @@ exports.cannotChangePasswordDirectly = function(test) {
   })
   request(req, function(err, res) {
     check(req, res, 403)  // forbidden
+    assert(res.body.error.code === 403.22)
     test.done()
   })
 }
@@ -252,7 +273,8 @@ exports.changePasswordTooWeak = function(test) {
     }
   })
   request(req, function(err, res) {
-    check(req, res, 400)
+    check(req, res, 403)
+    assert(res.body.error.code === 403.21)
     test.done()
   })
 }
