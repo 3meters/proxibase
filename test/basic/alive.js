@@ -48,6 +48,18 @@ exports.getSchemaPage = function(test) {
 }
 
 
+// Check errors info page
+exports.getErrorsPage = function(test) {
+  req.method = 'get'
+  req.uri = baseUri + '/errors'
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body && res.body.errors, dump(req, res))
+    test.done()
+  })
+}
+
+
 // Make sure server barfs on post without body
 exports.postWithMissingBody = function(test) {
   req.method = 'post'
@@ -72,3 +84,16 @@ exports.postWithBadJsonInBody = function(test) {
     test.done()
   })
 }
+
+// Make sure server can find el baño
+exports.speakSpanishToMe = function(test) {
+  req.method = 'get'
+  req.uri = baseUri + '/yadayadayada?lang=es'
+  request(req, function(err, res) {
+    check(req, res, 404)
+    assert(res.body.error, dump(req, res))
+    assert(res.body.error.message === 'No se ha encontrado') // see lib/httperr.js
+    test.done()
+  })
+}
+

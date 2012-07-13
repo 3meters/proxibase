@@ -85,6 +85,7 @@ function ensureIndices(config, callback) {
     // When the following dummy query is fired mongoose.js will connect to the db and
     // ensure that the indeces defined in prox/lib/models are defined in the database
     gdb.models.users.find({_id:-1}, function(err) {
+      if (err) throw err
       log('Database Ok\nSaving to database...')
       return callback(err)
     })
@@ -116,6 +117,7 @@ function genUsers() {
     user._id = testUtil.genId('users', i)
     user.name = 'Test User ' + (i + 1)
     user.email = 'testuser' + (i + 1) + '@3meters.com'
+    user.password = 'doobar' + i
     table.users.push(user)
   }
 }
@@ -255,6 +257,7 @@ var saveTo = {
       var model = gdb.models[tableName]
 
       async.forEachSeries(table[tableName], saveRow, function(err) {
+        if (err) log('debug: err', err)
         if (err) throw err
         log(table[tableName].length + ' ' + tableName)
         return callback()
