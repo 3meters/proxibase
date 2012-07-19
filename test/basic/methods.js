@@ -250,7 +250,7 @@ exports.getEntitiesForBeaconsLimited = function (test) {
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 3, dump(req, res))
-    assert(res.body.more === false, dump(req, res))
+    assert(res.body.more === true, dump(req, res))
     test.done()
   })
 }
