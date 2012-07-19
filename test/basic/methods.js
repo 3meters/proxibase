@@ -40,6 +40,13 @@ var
     linkZoom : false,
     root : true
   },
+  testLink = {
+    _id : '0001.111111.11111.111.222222',
+    _to : '0003:11:11:11:11:11:22',
+    _from : '0002.111111.11111.111.111111',
+    toTableId: 3,
+    fromTableId: 2
+  },
   testBeacon = {
     _id : '0003:11:11:11:11:11:11',
     label: 'Test Beacon Label',
@@ -101,6 +108,16 @@ exports.cleanupEntity = function (test) {
 exports.cleanupBeacon = function (test) {
   req.method = 'delete'
   req.uri = baseUri + '/data/beacons/ids:' + testBeacon._id
+  request(req, function(err, res) {
+    check(req, res)
+    test.done()
+  })
+}
+
+/* housekeeping */
+exports.cleanupLink = function (test) {
+  req.method = 'delete'
+  req.uri = baseUri + '/data/links/ids:' + testLink._id
   request(req, function(err, res) {
     check(req, res)
     test.done()
@@ -372,6 +389,52 @@ exports.checkUpdateEntity = function (test) {
     test.done()
   })
 }
+
+exports.insertLink = function (test) {
+  /*
+   * Jayma: This doesn't fail but I can't find the inserted link document and 
+   * the subsequent updateLink call fails because it can't find it.
+   */
+  req.method = 'post'
+  req.body = JSON.stringify({data:testLink})
+  req.uri = baseUri + '/data/links'
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.count === 1, dump(req, res))
+    assert(res.body.data && res.body.data._id && res.body.data._id === testLink._id, dump(req, res))
+    test.done()
+  })
+}
+
+/*
+exports.updateLink = function (test) {
+  updateLink = {
+    _to : '0002.111111.11111.111.111112',
+    _from : '0002.111111.11111.111.111111'
+  }
+
+  req.method = 'post'
+  req.body = JSON.stringify({link:updateLink, originalToId:'0002.111111.11111.111.111111'})
+  req.uri = baseUri + '/do/updateLink'
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.count === 1, dump(req, res))
+    assert(res.body.data && res.body.data._id, dump(req, res))
+    test.done()
+  })
+}
+
+exports.checkUpdateLink = function (test) {
+  req.method = 'post'
+  req.body = JSON.stringify({table:'links',find:{_to:testLink._to, _from:testLink._from}})
+  req.uri = baseUri + '/do/find'
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.count === 1, dump(req, res))
+    test.done()
+  })
+}
+*/
 
 exports.deleteEntity = function (test) {
   req.method = 'post'
