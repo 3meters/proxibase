@@ -11,8 +11,8 @@ var
   baseUri = testUtil.serverUrl,
   req = testUtil.getDefaultReq(),
   str = JSON.stringify,
-  userId = '',
-  sessionKey = '',
+  adminCreds = '',
+  userCreds = '',
   user1 = {
     name: 'Auth Test User 1',
     email: 'authTestUser1@bar.com'
@@ -46,17 +46,17 @@ exports.loginAsAdmin = function(test) {
     check(req, res)
     assert(res.body.user)
     assert(res.body.session)
-    userId = res.body.user._id
-    sessionKey = res.body.session.key
+    // These credentials will be useds in subsequent tests
+    adminCreds = 'user=' + res.body.user._id + '&session=' + res.body.session.key
     test.done()
   })
 }
 
+
 exports.addUserWithoutEmail = function(test) {
   req.method = 'post'
-  req.uri = baseUri + '/data/users'
-  req.body = JSON.stringify({user: userId, session: sessionKey,
-    data:{name:'MrMissingEmail', password:'foobarfoo'}})
+  req.uri = baseUri + '/data/users?' + adminCreds
+  req.body = JSON.stringify({ data:{ name: 'MrMissingEmail', password: 'foobarfoo' }})
   request(req, function(err, res) {
     check(req, res, 400)
     assert(res.body.error.code === 400.1, dump(req, res))
@@ -67,7 +67,7 @@ exports.addUserWithoutEmail = function(test) {
 
 exports.addUserWithoutPassword = function(test) {
   req.method = 'post'
-  req.uri = baseUri + '/data/users'
+  req.uri = baseUri + '/data/users?' + adminCreds
   req.body = JSON.stringify({data:user1})
   request(req, function(err, res) {
     check(req, res, 400)
@@ -79,7 +79,7 @@ exports.addUserWithoutPassword = function(test) {
 
 exports.addUserWithTooWeakPassword = function(test) {
   req.method = 'post'
-  req.uri = baseUri + '/data/users'
+  req.uri = baseUri + '/data/users?' + adminCreds
   user1.password = 'foo'
   req.body = JSON.stringify({data:user1})
   request(req, function(err, res) {
@@ -93,7 +93,7 @@ exports.addUserWithTooWeakPassword = function(test) {
 exports.addUser = function(test) {
   user1.password = 'foobar'
   req.method = 'post'
-  req.uri = baseUri + '/data/users'
+  req.uri = baseUri + '/data/users?' + adminCreds
   req.body = JSON.stringify({data:user1})
   request(req, function(err, res) {
     check(req, res, 201)
@@ -106,7 +106,7 @@ exports.addUser = function(test) {
 
 exports.addUserWithDupeEmail = function(test) {
   req.method = 'post'
-  req.uri = baseUri + '/data/users'
+  req.uri = baseUri + '/data/users?' + adminCreds
   req.body = JSON.stringify({data:user2})
   request(req, function(err, res) {
     check(req, res, 403)
@@ -176,8 +176,24 @@ exports.signinValid = function(test) {
     assert(res.body.user._id === user1._id)
     assert(res.body.user.name === user1.name)
     assert(res.body.user.email)
+    assert(res.body.user.role && res.body.user.role === 'user')
     assert(res.body.session)
     session = res.body.session
+    userCreds = 'user=' + res.body.session._owner + '&session=' + res.body.session.key
+    test.done()
+  })
+}
+
+
+exports.newUserCanUpdateOwnRecord = function (test) {
+  req.method = 'post'
+  req.uri = baseUri + '/data/users/ids:' + session._owner + '?' + userCreds
+  req.body = str({data: {location: 'Orlando'}})
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.user)
+    assert(res.body.session)
+    assert(res.body.user.location === 'Orlando')
     test.done()
   })
 }
@@ -201,23 +217,6 @@ exports.signinMixedCaseEmail = function(test) {
   })
 }
 
-exports.signinEmail = function(test) {
-  req.method = 'post'
-  req.uri = baseUri + '/auth/signin'
-  req.body = JSON.stringify({user:{
-    email: user1.email,
-    password: user1.password
-  }})
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.user)
-    assert(res.body.user._id === user1._id)
-    assert(res.body.user.name === user1.name)
-    assert(res.body.user.email)
-    assert(res.body.session)
-    test.done()
-  })
-}
 
 exports.validateSessionBadUser = function(test) {
   req.method = 'get'
@@ -276,14 +275,10 @@ exports.validateSessionParamsInBody = function(test) {
 }
 
 
-exports.cannotChangePasswordDirectly = function(test) {
+exports.adminCannotChangePasswordDirectly = function(test) {
   req.method = 'post'
-  req.uri = baseUri + '/data/users/ids:' + user1._id
-  req.body = JSON.stringify({
-    data: {
-      password: 'newpass'
-    }
-  })
+  req.uri = baseUri + '/data/users/ids:' + user1._id + '?' + adminCreds
+  req.body = str({ data: { password: 'newpass' } })
   request(req, function(err, res) {
     check(req, res, 403)  // forbidden
     assert(res.body.error.code === 403.22)
@@ -291,9 +286,10 @@ exports.cannotChangePasswordDirectly = function(test) {
   })
 }
 
-exports.changePasswordTooWeak = function(test) {
+
+exports.userCannotChangePasswordTooWeak = function(test) {
   req.method = 'post'
-  req.uri = baseUri + '/auth/changepw'
+  req.uri = baseUri + '/auth/changepw?' + userCreds
   req.body = JSON.stringify({
     user: {
       _id: user1._id,
@@ -308,9 +304,9 @@ exports.changePasswordTooWeak = function(test) {
   })
 }
 
-exports.changePassword = function(test) {
+exports.userChangePassword = function(test) {
   req.method = 'post'
-  req.uri = baseUri + '/auth/changepw'
+  req.uri = baseUri + '/auth/changepw?' + userCreds
   req.body = JSON.stringify({
     user: {
       _id: user1._id,
