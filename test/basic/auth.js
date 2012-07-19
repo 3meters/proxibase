@@ -10,6 +10,9 @@ var
   dump = testUtil.dump,
   baseUri = testUtil.serverUrl,
   req = testUtil.getDefaultReq(),
+  str = JSON.stringify,
+  userId = '',
+  sessionKey = '',
   user1 = {
     name: 'Auth Test User 1',
     email: 'authTestUser1@bar.com'
@@ -35,12 +38,25 @@ exports.addUserNotLoggedIn = function(test) {
 }
 
 
-
+exports.loginAsAdmin = function(test) {
+  req.method = 'post'
+  req.uri = baseUri + '/auth/signin'
+  req.body = str({ user: { email: 'admin', password: 'admin' }})
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.user)
+    assert(res.body.session)
+    userId = res.body.user._id
+    sessionKey = res.body.session.key
+    test.done()
+  })
+}
 
 exports.addUserWithoutEmail = function(test) {
   req.method = 'post'
   req.uri = baseUri + '/data/users'
-  req.body = JSON.stringify({data:{name:'MrMissingEmail', password:'foobarfoo'}})
+  req.body = JSON.stringify({user: userId, session: sessionKey,
+    data:{name:'MrMissingEmail', password:'foobarfoo'}})
   request(req, function(err, res) {
     check(req, res, 400)
     assert(res.body.error.code === 400.1, dump(req, res))
