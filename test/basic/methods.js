@@ -129,7 +129,7 @@ exports.insertUser = function (test) {
   req.body = JSON.stringify({data:testUser})
   req.uri = baseUri + '/data/users'
   request(req, function(err, res) {
-    check(req, res)
+    check(req, res, 201)
     assert(res.body.count === 1, dump(req, res))
     assert(res.body.data && res.body.data._id && res.body.data._id === testUser._id, dump(req, res))
     test.done()

@@ -24,6 +24,19 @@ var
   log = require('../../lib/util').log
 
 
+exports.addUserNotLoggedIn = function(test) {
+  req.method = 'post'
+  req.uri = baseUri + '/data/users'
+  req.body = JSON.stringify({data:{email:'foo@bar.com', password:'foobarfoo'}})
+  request(req, function(err, res) {
+    check(req, res, 401)
+    test.done()
+  })
+}
+
+
+
+
 exports.addUserWithoutEmail = function(test) {
   req.method = 'post'
   req.uri = baseUri + '/data/users'
@@ -67,7 +80,7 @@ exports.addUser = function(test) {
   req.uri = baseUri + '/data/users'
   req.body = JSON.stringify({data:user1})
   request(req, function(err, res) {
-    check(req, res)
+    check(req, res, 201)
     assert(res.body.data._id)
     user1._id = res.body.data._id
     test.done()
