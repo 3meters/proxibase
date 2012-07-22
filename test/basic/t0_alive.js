@@ -8,15 +8,13 @@ var
   testUtil = require('../util'),
   check = testUtil.check,
   dump = testUtil.dump,
-  baseUri = testUtil.serverUrl,
-  req = testUtil.getDefaultReq(),
+  Req = testUtil.Req,
   log = require('../../lib/util').log
 
 
 // Make sure server is alive and responding
 exports.getIndexPage = function(test) {
-  req.method = 'get'
-  req.uri = baseUri
+  var req = new Req()
   request(req, function(err, res) {
     check(req, res)
     test.done()
@@ -26,8 +24,7 @@ exports.getIndexPage = function(test) {
 
 // Check data info page
 exports.getDataPage = function(test) {
-  req.method = 'get'
-  req.uri = baseUri + '/data'
+  var req = new Req({uri: '/data'})
   request(req, function(err, res) {
     check(req, res)
     assert(res.body && res.body.data && res.body.data.users, dump(req, res))
@@ -38,8 +35,7 @@ exports.getDataPage = function(test) {
 
 // Check schema info page
 exports.getSchemaPage = function(test) {
-  req.method = 'get'
-  req.uri = baseUri + '/schema'
+  var req = new Req({uri: '/schema'})
   request(req, function(err, res) {
     check(req, res)
     assert(res.body && res.body.schema && res.body.schema.users, dump(req, res))
@@ -50,8 +46,7 @@ exports.getSchemaPage = function(test) {
 
 // Check errors info page
 exports.getErrorsPage = function(test) {
-  req.method = 'get'
-  req.uri = baseUri + '/errors'
+  var req = new Req({uri: '/errors'})
   request(req, function(err, res) {
     check(req, res)
     assert(res.body && res.body.errors, dump(req, res))
@@ -62,9 +57,10 @@ exports.getErrorsPage = function(test) {
 
 // Make sure server barfs on post without body
 exports.postWithMissingBody = function(test) {
-  req.method = 'post'
-  req.uri = baseUri + '/data/users'
-  delete req.body
+  var req = new Req({
+    method: 'post',
+    uri: '/do/find'
+  })
   request(req, function(err, res) {
     check(req, res, 400)
     assert(res.body.error, dump(req, res))
@@ -75,8 +71,10 @@ exports.postWithMissingBody = function(test) {
 
 // Make sure server barfs on body not parsable as JSON
 exports.postWithBadJsonInBody = function(test) {
-  req.method = 'post'
-  req.uri = baseUri + '/data/users'
+  var req = new Req({
+    method: 'post',
+    uri: '/data/users',
+  })
   req.body = '{data: "This is not JSON"}'
   request(req, function(err, res) {
     check(req, res, 400)
@@ -87,8 +85,7 @@ exports.postWithBadJsonInBody = function(test) {
 
 // Make sure server can find el baño
 exports.speakSpanishToMe = function(test) {
-  req.method = 'get'
-  req.uri = baseUri + '/yadayadayada?lang=es'
+  var req = new Req({uri: '/aPageThatWillNotBeFound?lang=es'})
   request(req, function(err, res) {
     check(req, res, 404)
     assert(res.body.error, dump(req, res))

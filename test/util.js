@@ -14,43 +14,74 @@ var
 exports.serverUrl = serverUrl
 
 
-// All requests set content type
-var getDefaultReq = exports.getDefaultReq = function() {
-  return {
-    headers:{"content-type":"application/json"}
+// Request options constructor
+var Req = exports.Req = function(options) {
+
+  // Make sure caller uses new
+  if (!(this instanceof arguments.callee)) {
+    throw new Error('Req must be called as a constructor with new')
   }
+
+  for (key in options) {
+    this[key] = options[key]
+  }
+
+  if (this.uri) this.uri = serverUrl + this.uri
+  else this.uri = serverUrl
+
+  if (this.body) {
+    try { this.body = JSON.stringify(this.body) }
+    catch (e) { throw e }
+  }
+
+  this.headers = {"content-type":"application/json"}
+  if (!this.method) this.method = 'get'
+
 }
 
 
 // Disgourge req and res contents of failed test
 var dump = exports.dump = function(req, res, msg) {
-  var out = msg || 'Test failed'
-  out += '\n\nreq.method: ' + req.method
+
+  var out = msg || 'Test failed:'
+  out += '\n\nDump:\n==========================='
+
+  out += '\nreq.method: ' + req.method
   out += '\nreq.uri: ' + req.uri
-  if (req.method !== 'get' && req.body) {
+
+  if (req.body) {
     out += '\nreq.body:\n' + util.inspect(req.body) + '\n'
   }
+
   if (res.statusCode) out += '\n\nres.statusCode: ' + res.statusCode + '\n'
-  if (res.body) out += 'res.body:\n' + util.inspect(res.body) + '\n'
+
+  out += 'res.body:\n' + util.inspect(res.body)
+
+  // util.inspect converts all our newlines to the literal '\n'
+  // this next line converts them back for proper display on the console
+  out = out.replace(/\\n/g, '\n')
+  out += ('\n==========================\n')
+
   return out
 }
 
 
 // Ensure response, check status code, parse body
 exports.check = function(req, res, code) {
-  assert(req, 'Invalid call to test.util.check.  Missing required req')
-  assert(res && res.statusCode, dump(req, res, 'Fatal: No response'))
+  assert(req, 'Missing request')
+  assert(res, 'Missing response')
+  assert(res.statusCode, 'Missing response.statusCode')
   code = code || 200
-  assert(res.statusCode === code, dump(req, res,
-    'Bad statusCode ' + res.statusCode + ' expected: ' + code))
-  if (res.body) {
-    try {
-      res.body = JSON.parse(res.body)
-    }
-    catch (e) {
-      assert(false, dump(req, res, 'Body did not contain valid JSON\n'))
-    }
+  if (req.body) {
+    try { req.body = JSON.parse(req.body) }
+    catch (e) { } // we allow non-JSON in request body
   }
+  if (res.body) {
+    try { res.body = JSON.parse(res.body) }
+    catch (e) { throw e }
+  }
+  assert(code === res.statusCode,
+    dump(req, res, 'Bad statusCode: ' + res.statusCode + ' expected: ' + code))
 }
 
 
