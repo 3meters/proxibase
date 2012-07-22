@@ -6,11 +6,9 @@ var
   assert = require('assert'),
   request = require('request'),
   testUtil = require('../util'),
+  Req = testUtil.Req,
   check = testUtil.check,
   dump = testUtil.dump,
-  baseUri = testUtil.serverUrl,
-  Req = testUtil.Req,
-  str = JSON.stringify,
   testUser = {
     name: 'AuthTestUser',
     email: 'authUser@bar.com',
@@ -23,9 +21,8 @@ var
   log = require('../../lib/util').log
 
 
-exports.CantAddUserWhenNotSignedIn = function(test) {
+exports.cannotAddUserWhenNotSignedIn = function(test) {
   var req = new Req({
-    method: 'post',
     uri: '/data/users',
     body: {data: {email: 'foo@bar.com', password: 'foobarfoo'}}
   })
@@ -36,9 +33,8 @@ exports.CantAddUserWhenNotSignedIn = function(test) {
 }
 
 
-exports.CanSignInAsAdmin = function(test) {
+exports.canSignInAsAdmin = function(test) {
   var req = new Req({
-    method: 'post',
     uri: '/auth/signin',
     body: {user: {email: 'admin', password:'admin'}}
   })
@@ -53,9 +49,8 @@ exports.CanSignInAsAdmin = function(test) {
 }
 
 
-exports.cantAddUserWithoutEmail = function(test) {
+exports.cannotAddUserWithoutEmail = function(test) {
   var req = new Req({
-    method: 'post',
     uri: '/data/users?' + adminCred,
     body: {data: {name: 'bob', password: 'foobar'}}
   })
@@ -67,9 +62,8 @@ exports.cantAddUserWithoutEmail = function(test) {
 }
 
 
-exports.cantAddUserWithoutPassword = function(test) {
+exports.cannotAddUserWithoutPassword = function(test) {
   var req = new Req({
-    method: 'post',
     uri: '/data/users?' + adminCred,
     body: {data: {email: 'foo@bar.com'}}
   })
@@ -81,9 +75,8 @@ exports.cantAddUserWithoutPassword = function(test) {
 }
 
 
-exports.canAddUser = function(test) {
+exports.canAddUserAsAdmin = function(test) {
   var req = new Req({
-    method: 'post',
     uri: '/data/users?' + adminCred,
     body: {data: testUser}
   })
@@ -96,9 +89,8 @@ exports.canAddUser = function(test) {
 }
 
 
-exports.cantAddUserWithDupeEmail = function(test) {
+exports.cannotAddUserWithDupeEmail = function(test) {
   var req = new Req({
-    method: 'post',
     uri: '/data/users?' + adminCred,
     body: {data: testUser}
   })
@@ -110,9 +102,8 @@ exports.cantAddUserWithDupeEmail = function(test) {
 }
 
 
-exports.cantSignInWithWrongFields = function(test) {
+exports.cannotSignInWithWrongFields = function(test) {
   var req = new Req({
-    method: 'post',
     uri: '/auth/signin',
     body: {user: {name: 'Not a user', password: 'password'}}
   })
@@ -124,9 +115,8 @@ exports.cantSignInWithWrongFields = function(test) {
 }
 
 
-exports.cantSignInWithBadEmail = function(test) {
+exports.cannotSignInWithBadEmail = function(test) {
   var req = new Req({
-    method: 'post',
     uri: '/auth/signin',
     body: {user: {email: 'billy@notHere', password: 'wrong'}}
   })
@@ -138,9 +128,8 @@ exports.cantSignInWithBadEmail = function(test) {
 }
 
 
-exports.cantSignInWithBadPassword = function(test) {
+exports.cannotSignInWithBadPassword = function(test) {
   var req = new Req({
-    method: 'post',
     uri: '/auth/signin',
     body: {user: {email: testUser.email, password: 'wrong'}}
   })
@@ -154,7 +143,6 @@ exports.cantSignInWithBadPassword = function(test) {
 
 exports.canSignInAsUser = function(test) {
   var req = new Req({
-    method: 'post',
     uri: '/auth/signin',
     body: {user: {email: testUser.email, password: testUser.password}}
   })
@@ -175,7 +163,6 @@ exports.canSignInAsUser = function(test) {
 
 exports.canSignInWithDifferentCasedEmail = function(test) {
   var req = new Req({
-    method: 'post',
     uri: '/auth/signin',
     body: {user: {email: testUser.email.toUpperCase(), password: testUser.password}}
   })
@@ -191,8 +178,9 @@ exports.canSignInWithDifferentCasedEmail = function(test) {
 }
 
 
-exports.cantValidateSessionWithBadUser = function(test) {
+exports.cannotValidateSessionWithBadUser = function(test) {
   var req = new Req({
+    method: 'get',
     uri: '/data/users?user=bogus&session=' + session.key
   })
   request(req, function(err, res) {
@@ -203,8 +191,9 @@ exports.cantValidateSessionWithBadUser = function(test) {
 }
 
 
-exports.cantValidateSessionWithBadKey = function(test) {
+exports.cannotValidateSessionWithBadKey = function(test) {
   var req = new Req({
+    method: 'get', 
     uri: '/data/users?user=' + session._owner + '&session=bogus'
   })
   request(req, function(err, res) {
@@ -215,8 +204,9 @@ exports.cantValidateSessionWithBadKey = function(test) {
 }
 
 
-exports.CanValidateSession = function(test) {
+exports.canValidateSession = function(test) {
   var req = new Req({
+    method: 'get', 
     uri: '/data/users?user=' + session._owner + '&session=' + session.key
   })
   request(req, function(err, res) {
@@ -233,7 +223,6 @@ exports.CanValidateSession = function(test) {
 
 exports.canValidateSessionUsingParamsInBody = function(test) {
   var req = new Req({
-    method: 'post',
     uri: '/do/find',
     body: {table: 'users', user: session._owner, session: session.key}
   })
@@ -250,14 +239,13 @@ exports.canValidateSessionUsingParamsInBody = function(test) {
 
 
 exports.sessionParamsInQueryStringOverrideOnesInBody = function(test) {
-  // Implement
+  console.error('nyi') 
   test.done()
 }
 
 
 exports.adminCannotChangePasswordDirectly = function(test) {
   var req = new Req({
-    method: 'post',
     uri: '/data/users/ids:' + testUser._id + '?' + adminCred,
     body: {data: {password: 'newpass'}}
   })
@@ -271,7 +259,6 @@ exports.adminCannotChangePasswordDirectly = function(test) {
 
 exports.userCannotChangePasswordTooWeak = function(test) {
   var req = new Req({
-    method: 'post',
     uri: '/user/changepw?' + userCred,
     body: {user: {_id: testUser._id, oldPassword: testUser.password, newPassword: 'password'}}
   })
@@ -284,7 +271,6 @@ exports.userCannotChangePasswordTooWeak = function(test) {
 
 exports.userCanChangePassword = function(test) {
   var req = new Req({
-    method: 'post',
     uri: '/user/changepw?' + userCred,
     body: {user: {_id: testUser._id, oldPassword: testUser.password, newPassword: 'newpassword'}}
   })
@@ -293,4 +279,30 @@ exports.userCanChangePassword = function(test) {
     test.done()
   })
 }
+
+
+exports.userCannotChangeRoles = function(test) {
+  var req = new Req({
+    uri: '/data/users/ids:' + testUser._id + '?' + userCred,
+    body: {data: {role: 'admin'}}
+  })
+  request(req, function(err, res) {
+    check(req, res, 401)
+    assert(res.body.error.code === 401)
+    test.done()
+  })
+}
+
+
+exports.adminCanChangeRoles = function(test) {
+  var req = new Req({
+    uri: '/data/users/ids:' + testUser._id + '?' + adminCred,
+    body: {data: {role: 'admin'}}
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    test.done()
+  })
+}
+
 
