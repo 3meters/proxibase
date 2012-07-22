@@ -15,6 +15,7 @@ exports.serverUrl = serverUrl
 
 
 // Request options constructor
+// Note that default method is post, not get
 var Req = exports.Req = function(options) {
 
   // Make sure caller uses new
@@ -28,6 +29,8 @@ var Req = exports.Req = function(options) {
 
   if (this.uri) this.uri = serverUrl + this.uri
   else this.uri = serverUrl
+
+  this.method = this.method || 'post'
 
   if (this.body) {
     try { this.body = JSON.stringify(this.body) }

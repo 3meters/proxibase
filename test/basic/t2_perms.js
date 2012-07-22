@@ -7,32 +7,31 @@ var
   assert = require('assert'),
   request = require('request'),
   testUtil = require('../util'),
+  Req = testUtil.Req,
   check = testUtil.check,
   dump = testUtil.dump,
-  baseUri = testUtil.serverUrl,
-  req = testUtil.getDefaultReq(),
-  str = JSON.stringify,
   adminCred = '',
   user1Cred = '',
   user2Cred = '',
   user1 = {
     name: 'Perm Test User 1',
     email: 'permTestUser1@bar.com',
-    password: 'foobarfoobar'
+    password: 'foobar'
   },
   user2 = {
     name: 'Perm Test User 2',
     email: 'permTestUser2@bar.com',
-    password: 'foobarfoobar'
+    password: 'foobar'
   },
   _exports = {},                    // for commenting out tests
   log = require('../../lib/util').log
 
 
-exports.signinAsAdmin = function(test) {
-  req.method = 'post'
-  req.uri = baseUri + '/auth/signin'
-  req.body = str({ user: { email: 'admin', password: 'admin' }})
+exports.signInAsAdmin = function(test) {
+  var req = new Req({
+    uri: '/auth/signin',
+    body: {user: {email: 'admin', password: 'admin'}}
+  })
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.user)
@@ -45,9 +44,10 @@ exports.signinAsAdmin = function(test) {
 
 
 exports.addUser1 = function(test) {
-  req.method = 'post'
-  req.uri = baseUri + '/data/users?' + adminCreds
-  req.body = str({data:user1})
+  var req = new Req({
+    uri: '/data/users?' + adminCred,
+    body: {data:user1}
+  })
   request(req, function(err, res) {
     check(req, res, 201)
     assert(res.body.data && res.body.data._id)
@@ -58,9 +58,10 @@ exports.addUser1 = function(test) {
 
 
 exports.addUser2 = function(test) {
-  req.method = 'post'
-  req.uri = baseUri + '/data/users?' + adminCreds
-  req.body = str({data:user2})
+  var req = new Req({
+    uri: '/data/users?' + adminCred,
+    body: {data:user2}
+  })
   request(req, function(err, res) {
     check(req, res, 201)
     assert(res.body.data && res.body.data._id)
@@ -71,9 +72,10 @@ exports.addUser2 = function(test) {
 
 
 exports.signinUser1 = function(test) {
-  req.method = 'post'
-  req.uri = baseUri + '/auth/signin'
-  req.body = str({ user: { email: user1.email, password: user1.password }})
+  var req = new Req({
+    uri: '/auth/signin',
+    body: {user: {email: user1.email, password: user1.password}}
+  })
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.user)
@@ -86,9 +88,10 @@ exports.signinUser1 = function(test) {
 
 
 exports.signinUser2 = function(test) {
-  req.method = 'post'
-  req.uri = baseUri + '/auth/signin'
-  req.body = str({ user: { email: user2.email, password: user2.password }})
+  var req = new Req({
+    uri: '/auth/signin',
+    body: {user: {email: user2.email, password: user2.password}}
+  })
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.user)
@@ -101,41 +104,56 @@ exports.signinUser2 = function(test) {
 
 
 exports.user1CanUpdateOwnRecord = function (test) {
-  req.method = 'post'
-  req.uri = baseUri + '/data/users/ids:' + user1._id + '?' + user1Cred
-  req.body = str({data: {location: 'Orlando'}})
+  var req = new Req({
+    uri: '/data/users/ids:' + user1._id + '?' + user1Cred,
+    body: {data: {location: 'Orlando'}}
+  })
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.user)
     assert(res.body.session)
-    assert(res.body.user.location === 'Orlando')
+    assert(res.body.data.location === 'Orlando')
     test.done()
   })
 }
 
 
-exports.userCannotUpdateOtherPeoplesRecords = function(test) {
-  next()
+exports.user1CannotUpdateUser2UserRecord= function(test) {
+  console.error('nyi')
+  test.done()
 }
 
+
+exports.user1CannotUpdateUser2Record= function(test) {
+  console.error('nyi')
+  test.done()
+}
+
+
+
 exports.userCanCreateARecord = function(test) {
-  next()
+  console.error('nyi')
+  test.done()
 }
 
 exports.userCannotDeleteOthersRecords = function(test) {
-  next()
+  console.error('nyi')
+  test.done()
 }
 
 exports.userCanDeleteOwnRecords = function(test) {
-  next()
+  console.error('nyi')
+  test.done()
 }
 
 exports.adminsCanUpdateOthersRecords = function(test) {
-  next()
+  console.error('nyi')
+  test.done()
 }
 
-exports.adminsCanDeleteOthersRecords function(test) {
-  next()
+exports.adminsCanDeleteOthersRecords = function(test) {
+  console.error('nyi')
+  test.done()
 }
 
 
