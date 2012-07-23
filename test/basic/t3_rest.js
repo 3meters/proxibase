@@ -7,10 +7,9 @@ var
   request = require('request'),
   log = require('../../lib/util').log,
   testUtil = require('../util'),
+  Req = testUtil.Req
   check = testUtil.check,
   dump = testUtil.dump,
-  baseUri = testUtil.serverUrl,
-  req = testUtil.getDefaultReq(),
   testUser1 = {
     _id: "testId1",
     name: "Test User1",
@@ -24,10 +23,11 @@ var
   }
 
 
-// Delete first in case old test left data around
 exports.delUsers = function delUsers(test) {
-  req.method = 'delete'
-  req.uri = baseUri + '/data/users/ids:testId1,testId2'
+  var req = new Req({
+    method: 'delete',
+    uri: '/data/users/ids:testId1,testId2'
+  })
   request(req, function(err, res) {
     check(req, res)
     test.done()
