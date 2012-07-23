@@ -23,6 +23,10 @@ var
     email: 'permTestUser2@bar.com',
     password: 'foobar'
   },
+  doc1 = {
+    name: 'Doc1',
+    data: { foo: 'bar' }
+  },
   _exports = {},                    // for commenting out tests
   log = require('../../lib/util').log
 
@@ -118,42 +122,143 @@ exports.user1CanUpdateOwnRecord = function (test) {
 }
 
 
-exports.user1CannotUpdateUser2UserRecord= function(test) {
-  console.error('nyi')
-  test.done()
+exports.user1CannotUpdateUser2sRecord = function (test) {
+  var req = new Req({
+    uri: '/data/users/ids:' + user2._id + '?' + user1Cred,
+    body: {data: {location: 'Denver'}}
+  })
+  request(req, function(err, res) {
+    check(req, res, 401)
+    test.done()
+  })
 }
 
 
-exports.user1CannotUpdateUser2Record= function(test) {
-  console.error('nyi')
-  test.done()
+exports.cannotAddRecordsWhenNotSignedIn = function(test) {
+  var req = new Req({
+    uri: '/data/documents',
+    body: {data: doc1}
+  })
+  request(req, function(err, res) {
+    check(req, res, 401)
+    test.done()
+  })
 }
 
 
-
-exports.userCanCreateARecord = function(test) {
-  console.error('nyi')
-  test.done()
+exports.user1CanCreateARecord = function(test) {
+  var req = new Req({
+    uri: '/data/documents' + '?' + user1Cred,
+    body: {data: doc1}
+  })
+  request(req, function(err, res) {
+    check(req, res, 201)
+    assert(res.body.data._id)
+    doc1._id = res.body.data._id
+    test.done()
+  })
 }
 
-exports.userCannotDeleteOthersRecords = function(test) {
-  console.error('nyi')
-  test.done()
+
+exports.user1OwnsRecordsHeCreates = function(test) {
+  var req = new Req({
+    method: 'get',
+    uri: '/data/documents/ids:' + doc1._id + '?' + user1Cred,
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.data._owner = user1._id)
+    test.done()
+  })
 }
 
-exports.userCanDeleteOwnRecords = function(test) {
-  console.error('nyi')
-  test.done()
+
+exports.user2CannotUpdateUser1sRecords = function(test) {
+  var req = new Req({
+    uri: '/data/documents/ids:' + doc1._id + '?' + user2Cred,
+    body: {data: {name: 'I updated your doc sucka'}}
+  })
+  request(req, function(err, res) {
+    check(req, res, 401)
+    test.done()
+  })
 }
 
-exports.adminsCanUpdateOthersRecords = function(test) {
-  console.error('nyi')
-  test.done()
+
+exports.user2CannotDeleteUser1sRecords = function(test) {
+  var req = new Req({
+    method: 'delete',
+    uri: '/data/documents/ids:' + doc1._id + '?' + user2Cred,
+  })
+  request(req, function(err, res) {
+    check(req, res, 401)
+    test.done()
+  })
 }
 
-exports.adminsCanDeleteOthersRecords = function(test) {
-  console.error('nyi')
-  test.done()
+
+exports.user1CanUpdateRecordsHeCreated = function(test) {
+  var req = new Req({
+    uri: '/data/documents/ids:' + doc1._id + '?' + user1Cred,
+    body: {data: {name: 'I updated my own document'}}
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    test.done()
+  })
 }
+
+
+exports.user1CanDeleteHisOwnRecords = function(test) {
+  var req = new Req({
+    method: 'delete',
+    uri: '/data/documents/ids:' + doc1._id + '?' + user1Cred,
+  })
+  request(req, function(err, res) {
+    check(req, res, 200)
+    assert(res.body.count && res.body.count === 1)
+    test.done()
+  })
+}
+
+
+exports.user2CanCreateARecord = function(test) {
+  delete doc1._id
+  var req = new Req({
+    uri: '/data/documents' + '?' + user2Cred,
+    body: {data: doc1}
+  })
+  request(req, function(err, res) {
+    check(req, res, 201)
+    assert(res.body.data._id)
+    doc1._id = res.body.data._id
+    test.done()
+  })
+}
+
+
+exports.adminCanUpdateOthersRecords = function(test) {
+  var req = new Req({
+    uri: '/data/documents/ids:' + doc1._id + '?' + adminCred,
+    body: {data: {name: 'I can update any document I please'}}
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    test.done()
+  })
+}
+
+exports.adminCanDeleteOthersRecords = function(test) {
+  var req = new Req({
+    method: 'delete',
+    uri: '/data/documents/ids:' + doc1._id + '?' + adminCred,
+  })
+  request(req, function(err, res) {
+    check(req, res, 200)
+    assert(res.body.count && res.body.count === 1)
+    test.done()
+  })
+}
+
 
 
