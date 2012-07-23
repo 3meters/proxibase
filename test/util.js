@@ -4,6 +4,7 @@
 
 var
   assert = require('assert'),
+  request = require('request'),
   util = require('../lib/util'),
   constants = require('./constants'),
   config = util.findConfig('configtest.js'),
@@ -42,6 +43,45 @@ var Req = exports.Req = function(options) {
 
 }
 
+
+var testUser = {
+  name: 'Test User 0',
+  email: 'testuser0@bar.com',
+  password: 'foobar'
+}
+
+getSession = exports.getSession = function(fn) {
+
+  var req = new Req({
+    uri: '/auth/signin',
+    body: {email: testUser.email, password: testUser.password}
+  })
+
+  request(req, function(err, res) {
+    if (err) throw (err) 
+    if (res.statusCode >= 400) {
+      console.error('creating test user') 
+      // create test user
+      var req = new Req({
+        uri: '/user/create',
+        body: {data: testUser}
+      })
+      request(req, function(err, res) {
+        console.error('1')
+        if (err) throw err
+        console.error('2') 
+        assert(res.body.user && res.body.user._id, dump(req, res))
+        console.error('3') 
+        testUser._id = res.body.data._id
+        return getSession(fn) // test user exists now, try again
+      })
+    }
+    else {
+      assert(res.body.session)
+      fn(null, res.body.session)
+    }
+  })
+}
 
 // Disgourge req and res contents of failed test
 var dump = exports.dump = function(req, res, msg) {
