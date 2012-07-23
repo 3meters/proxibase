@@ -75,7 +75,7 @@ exports.cannotAddUserWithoutPassword = function(test) {
 }
 
 
-exports.canAddUserAsAdmin = function(test) {
+exports.adminCanAddUserViaRest = function(test) {
   var req = new Req({
     uri: '/data/users?' + adminCred,
     body: {data: testUser}
@@ -297,10 +297,38 @@ exports.userCannotChangeRoles = function(test) {
 exports.adminCanChangeRoles = function(test) {
   var req = new Req({
     uri: '/data/users/ids:' + testUser._id + '?' + adminCred,
-    body: {data: {role: 'admin'}}
+    body: {data: {role: 'lobster'}}
   })
   request(req, function(err, res) {
     check(req, res)
+    test.done()
+  })
+}
+
+
+exports.userCannotAddUserViaRest = function(test) {
+  var req = new Req({
+    uri: '/data/users?' + userCred,
+    body: {data: {email: 'authNoRest@bar.com', password: 'foobar'}}
+  })
+  request(req, function(err, res) {
+    check(req, res, 401)
+    assert(res.body.error.code === 401)
+    test.done()
+  })
+}
+
+
+exports.annonymousUserCanCreateUserViaApi = function(test) {
+  var req = new Req({
+    uri: '/user/create',
+    body: {data: {name: 'My Daddy Is A Robot', 
+      email: 'imaNewUser2@bar.com', 
+      password: 'foobar'}
+    }
+  })
+  request(req, function(err, res) {
+    check(req, res, 201)
     test.done()
   })
 }

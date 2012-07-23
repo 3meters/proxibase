@@ -10,34 +10,35 @@ var
   Req = testUtil.Req
   check = testUtil.check,
   dump = testUtil.dump,
+  userCred = '',
   testUser1 = {
     _id: "testId1",
     name: "Test User1",
-    email: "foo@bar.com",
+    email: "restUser1@bar.com",
     password: 'foobar'
   },
   testUserGenId = {
     name: "Test User GenId",
-    email: "foo@bar.com",
+    email: "@bar.com",
     password: 'foobar'
   }
 
 
-exports.delUsers = function delUsers(test) {
-  var req = new Req({
-    method: 'delete',
-    uri: '/data/users/ids:testId1,testId2'
-  })
-  request(req, function(err, res) {
-    check(req, res)
+exports.getSession = function(test) {
+  testUtil.getSession(function(err, session) {
+    if (err) throw err
+    userCred = 'user=' + session._owner + '&session=' + session.key
     test.done()
   })
 }
 
+
 exports.postWithMissingDataTag = function(test) {
-  req.method = 'post'
-  req.uri = baseUri + '/data/users'
-  req.body = '{"name":"ForgotToEncloseDataInDataTag"}'
+  var req = new Req({
+    method: 'get',
+    uri: '/data/users?' + userCred,
+    body: {data: {'name': 'ForgotToEncloseDataInDataTag'}}
+  })
   request(req, function(err, res) {
     check(req, res, 400)
     assert(res.body.error, dump(req, res))
