@@ -11,17 +11,15 @@ var
   check = testUtil.check,
   dump = testUtil.dump,
   userCred = '',
-  testUser1 = {
-    _id: "testId1",
-    name: "Test User1",
-    email: "restUser1@bar.com",
-    password: 'foobar'
+  testDoc1 = {
+    name: "Test Rest Doc 1",
+    data: { foo: 'bar', number: 1 }
   },
-  testUserGenId = {
-    name: "Test User GenId",
-    email: "@bar.com",
-    password: 'foobar'
-  }
+  testDoc2 = {
+    name: "Test Rest Doc 2",
+    data: { foo: 'bar', number: 2 }
+  },
+  _exports = {}  // For commenting out tests
 
 
 exports.getSession = function(test) {
@@ -33,98 +31,155 @@ exports.getSession = function(test) {
 }
 
 
-exports.postWithMissingDataTag = function(test) {
+exports.cannotPostDocWithMissingDataTag = function(test) {
   var req = new Req({
-    method: 'get',
-    uri: '/data/users?' + userCred,
-    body: {data: {'name': 'ForgotToEncloseDataInDataTag'}}
+    uri: '/data/documents?' + userCred,
+    body: {'name': 'ForgotToEncloseDataInDataTag'}
   })
   request(req, function(err, res) {
     check(req, res, 400)
+    assert(res.body.error.code === 400.1)
     assert(res.body.error, dump(req, res))
     test.done()
   })
 }
 
-exports.postWithMultipleArrayElements = function(test) {
-  req.method = 'post'
-  req.uri = baseUri + '/data/users'
-  req.body = JSON.stringify({
-    data: [
+
+exports.cannotPostWithMultipleArrayElements = function(test) {
+  var req = new Req({
+    uri: '/data/documents?' + userCred,
+    body: {data: [
       {
-        name: "TestUser0",
-        email: "foo@bar.com"
+        name: "RestTestMultiDoc0",
       },{
-        name: "TestUser1",
-        email: "foo@bar.com"
+        name: "RestTestMultiDoc1",
       }
-    ]
+    ]}
   })
   request(req, function(err, res) {
     check(req, res, 400)
-    assert(res.body.error, dump(req, res))
     test.done()
   })
 }
 
-exports.addBadUser = function(test) {
-  req.method = 'post'
-  req.uri = baseUri + '/data/users'
-  req.body = JSON.stringify({data:{_id:'testIdBad',name:'Bad User Without Email'}})
+
+exports.cannotPostWithNonSchemaFields = function(test) {
+  var req = new Req({
+    uri: '/data/documents?' + userCred,
+    body: {data: {name: 'I make up fields', myField: 'foo'}}
+  })
   request(req, function(err, res) {
     check(req, res, 400)
-    assert(res.body.error, dump(req, res))
+    assert(res.body.error.code === 400.11) // Bad parameter
     test.done()
   })
 }
 
-exports.addUser = function(test) {
-  req.method = 'post'
-  req.uri = baseUri + '/data/users'
-  req.body = JSON.stringify({data:testUser1})
+
+exports.canAddDoc = function(test) {
+  var req = new Req({
+    uri: '/data/documents?' + userCred,
+    body: {data: testDoc1}
+  })
   request(req, function(err, res) {
     check(req, res, 201)
     assert(res.body.count === 1, dump(req, res))
-    assert(res.body.data && res.body.data._id && res.body.data._id === testUser1._id, dump(req, res))
+    assert(res.body.data && res.body.data._id, dump(req, res))
+    testDoc1._id = res.body.data._id
     test.done()
   })
 }
 
-exports.checkUser = function(test) {
-  req.method = 'get'
-  req.uri = baseUri + '/data/users/ids:' + testUser1._id
+
+exports.canAddDocAsSingleElementArray = function(test) {
+  var req = new Req({
+    uri: '/data/documents?' + userCred,
+    body: {data: testDoc2}
+  })
+  request(req, function(err, res) {
+    check(req, res, 201)
+    assert(res.body.data && res.body.data._id)
+    testDoc2._id = res.body.data._id
+    test.done()
+  })
+}
+
+
+exports.findDocsByIdsWhenSignedIn = function(test) {
+  var req = new Req({
+    method: 'get',
+    uri: '/data/documents/ids:' + testDoc1._id + ',' + testDoc2._id + '?' + userCred
+  })
   request(req, function(err, res) {
     check(req, res)
-    assert(res.body.data && res.body.data[0].name && res.body.data[0].name === testUser1.name, dump(req, res))
+    assert(res.body.count === 2, dump(req, res))
+    assert(res.body.data[0]._id === testDoc1._id, dump(req, res))
+    assert(res.body.data[1].name === testDoc2.name, dump(req, res))
     test.done()
   })
 }
 
-exports.updateUser = function(test) {
-  req.method = 'post'
-  req.uri = baseUri + '/data/users/ids:' + testUser1._id
-  req.body = '{"data":{"name":"Test User2"}}'
+
+_exports.findDocsByNameWhenNotSignedIn = function(test) {
+  var req = new Req({
+    method: 'get',
+    uri: '/data/documents/names:' + testDoc1.name.toUpperCase() + ',' + testDoc2.name
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.count === 2, dump(req, res))
+    test.done()
+  })
+}
+
+
+exports.updateDoc = function(test) {
+  var req = new Req({
+    uri: '/data/documents/ids:' + testDoc1._id + '?' + userCred,
+    body: {data: {name: "Changed Name" } }
+  })
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 1)
-    assert(res.body.data && res.body.data.name && res.body.data.name === 'Test User2', dump(req, res))
+    assert(res.body.data && res.body.data.name)
+    assert(res.body.data.name === 'Changed Name', dump(req, res))
     test.done()
   })
 }
 
-exports.checkUpdatedUser = function(test) {
-  req.method = 'get'
-  req.uri = baseUri + '/data/users/ids:' + testUser1._id
+
+exports.checkUpdatedDoc = function(test) {
+  var req = new Req({
+    method: 'gET',
+    uri: '/data/documents/ids:' + testDoc1._id
+  })
   request(req, function(err, res) {
     check(req, res)
-    assert(res.body.data && res.body.data[0] && res.body.data[0].name === 'Test User2', dump(req, res))
+    assert(res.body.data && res.body.data[0])
+    assert(res.body.data[0].name === 'Changed Name', dump(req, res))
     test.done()
   })
 }
 
-exports.deleteUpdateUser = function(test) {
-  req.method = 'delete'
-  req.uri = baseUri + '/data/users/ids:' + testUser1._id
+
+exports.cannotAddNonSchemaFieldsUsingUpdate = function(test) {
+  var req = new Req({
+    uri: '/data/documents/ids:' + testDoc1._id + '?' + userCred,
+    body: {data: {myNewField: "Should fail" } }
+  })
+  request(req, function(err, res) {
+    check(req, res, 400)
+    assert(res.body.error.code === 400.11) // Bad parameter
+    test.done()
+  })
+}
+
+
+exports.deleteUpdateDoc = function(test) {
+  var req = new Req({
+    method: 'delete',
+    uri: '/data/documents/ids:' + testDoc1._id + '?' + userCred
+  })
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 1, dump(req, res))
@@ -132,9 +187,12 @@ exports.deleteUpdateUser = function(test) {
   })
 }
 
-exports.checkUpdatedUserDeleted = function(test) {
-  req.method = 'get'
-  req.uri = baseUri + '/data/users/ids:' + testUser1._id
+
+exports.checkUpdatedDocDeleted = function(test) {
+  var req = new Req({
+    method: 'gET',
+    uri: '/data/documents/ids:' + testDoc1._id + '?' + userCred
+  })
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 0, dump(req, res))
@@ -142,57 +200,28 @@ exports.checkUpdatedUserDeleted = function(test) {
   })
 }
 
-exports.updateNonExistantUser = function(test) {
-  req.method = 'post'
-  req.uri = baseUri + '/data/users/ids:bogus'
-  req.body = '{"data":{"name":"Test User Bogus"}}'
+
+exports.updateNonExistantDoc = function(test) {
+  var req = new Req({
+    uri: '/data/documents/ids:0000?' + userCred,
+    body: {data: {name: 'I should fail'}}
+  })
   request(req, function(err, res) {
     check(req, res, 404)
     test.done()
   })
 }
 
-exports.addUserWithoutId = function(test) {
-  req.method = 'post'
-  req.uri = baseUri + '/data/users'
-  req.body = JSON.stringify({data:testUserGenId})
+exports.canAddDocWithPreexitingId = function(test) {
+  var req = new Req({
+    uri: '/data/documents?' + userCred,
+    body: {data: {_id: '1234567', name: 'I have my own id'}}
+  })
   request(req, function(err, res) {
     check(req, res, 201)
-    assert(res.body.count === 1, dump(req, res))
-    assert(res.body.data && res.body.data._id, dump(req, res))
-    testUserGenId._id = res.body.data._id
-    test.done()
-  })
-}
-
-exports.getUserFromGeneratedId = function(test) {
-  req.method = 'get'
-  req.uri = baseUri + '/data/users/ids:' + testUserGenId._id
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 1 &&
-      res.body.data && res.body.data.length === 1,
-      dump(req, res))
-    test.done()
-  })
-}
-
-exports.deleteUserWithGeneratedId = function(test) {
-  req.method = 'delete'
-  req.uri = baseUri + '/data/users/ids:' + testUserGenId._id
-  request(req, function(err, res){
-    check(req, res)
-    assert(res.body.count === 1, dump(req, res))
-    test.done()
-  })
-}
-
-exports.checkUserWithGeneratedIdGone = function(test) {
-  req.method = 'get'
-  req.uri = baseUri + '/data/users/ids:' + testUserGenId._id
-  request(req, function(err, res){
-    check(req, res)
-    assert(res.body.count === 0, dump(req, res))
+    assert(res.body.count === 1)
+    assert(res.body.data && res.body.data._id)
+    assert(res.body.data._id === '1234567')
     test.done()
   })
 }
