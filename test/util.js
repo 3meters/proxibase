@@ -50,33 +50,46 @@ var testUser = {
   password: 'foobar'
 }
 
-getSession = exports.getSession = function(fn) {
+getSession = exports.getSession = function(asAdmin, fn) {
+
+  if (typeof(asAdmin) !== 'boolean') {
+    // asAdmin is optional, fn is required, shift
+    fn = asAdmin
+    asAdmin = false
+  }
+  else {
+    if (asAdmin) {
+      testUser = {
+        email: 'admin',
+        password: 'admin'
+      }
+    }
+  }
 
   var req = new Req({
     uri: '/auth/signin',
-    body: {email: testUser.email, password: testUser.password}
+    body: {user: {email: testUser.email, password: testUser.password}}
   })
 
   request(req, function(err, res) {
     if (err) throw (err) 
     if (res.statusCode >= 400) {
-      console.error('creating test user') 
+      if (asAdmin) throw new Error('Cannot sign in with default admin credentials')
       // create test user
       var req = new Req({
         uri: '/user/create',
         body: {data: testUser}
       })
       request(req, function(err, res) {
-        console.error('1')
         if (err) throw err
-        console.error('2') 
-        assert(res.body.user && res.body.user._id, dump(req, res))
-        console.error('3') 
+        check(req, res, 201)
+        assert(res.body.data._id)
         testUser._id = res.body.data._id
         return getSession(fn) // test user exists now, try again
       })
     }
     else {
+      res.body = JSON.parse(res.body)
       assert(res.body.session)
       fn(null, res.body.session)
     }
@@ -110,7 +123,7 @@ var dump = exports.dump = function(req, res, msg) {
 
 
 // Ensure response, check status code, parse body
-exports.check = function(req, res, code) {
+var check = exports.check = function(req, res, code) {
   assert(req, 'Missing request')
   assert(res, 'Missing response')
   assert(res.statusCode, 'Missing response.statusCode')
