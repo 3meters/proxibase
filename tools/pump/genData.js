@@ -265,6 +265,7 @@ var saveTo = {
 
       function saveRow(row, callback) {
         var mongooseDoc = new model(row)
+        mongooseDoc.__user = util.adminUser
         mongooseDoc.save(function(err) {
           return callback(err)
         })
