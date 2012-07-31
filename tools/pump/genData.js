@@ -70,7 +70,7 @@ module.exports = function(profile, callback) {
       if (err) throw err
       ensureIndices(config, function(err) {
         if (err) throw err
-        run(callback)
+        ensureAdminUser(callback) 
       })
     })
   }
@@ -91,6 +91,16 @@ function ensureIndices(config, callback) {
     })
   })
 }
+
+
+function ensureAdminUser(callback) {
+  util.ensureAdminUser(gdb, function(err, adminUser) {
+    if (err) throw err
+    if (!adminUser) throw new Error('Could not create admin user')
+    run(callback) 
+  })
+}
+
 
 function run(callback) {
   genUsers()
@@ -266,6 +276,7 @@ var saveTo = {
       function saveRow(row, callback) {
         var mongooseDoc = new model(row)
         mongooseDoc.__user = util.adminUser
+        if (row._owner) mongooseDoc.__user = {_id: row._owner, role: 'user'}
         mongooseDoc.save(function(err) {
           return callback(err)
         })
