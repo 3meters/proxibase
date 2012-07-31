@@ -17,10 +17,9 @@ var
   util = require('../../lib/util'),
   Timer = util.Timer,
   testTimer = new Timer,
+  Req = testUtil.Req,
   check = testUtil.check,
   dump = testUtil.dump,
-  baseUri = testUtil.serverUrl,
-  req = testUtil.getDefaultReq(),
   log = util.log
 
 
@@ -56,12 +55,13 @@ function done(test, testName, timer, count) {
 exports.cleanData = function(test) {
   var timer = new util.Timer()
   timer.expected = 10
-  req.method = 'post'
-  req.uri = baseUri + '/do/find'
-  req.body = JSON.stringify({
-    table: 'users',
-    fields: ['_id'],
-    find: {email: {$regex: '^perftest' }}
+  var req = new Req({
+    uri: '/do/find',
+    body: {
+      table: 'users',
+      fields: ['_id'],
+      find: {email: {$regex: '^perftest' }}
+    }
   })
   request(req, function(err, res) {
     check(req, res)
@@ -110,17 +110,19 @@ exports.insert100Users = function(test) {
 }
 
 exports.find100Users = function(test) {
-  var 
-    timer = new Timer(), 
+  var
+    timer = new Timer(),
     cRecs = 0
   timer.expected = 60
-  req.method = 'post'
   req.uri = baseUri + '/do/find'
 
   findUser(100)
   function findUser(i) {
     if (!i--) return done(test, 'find100Users', timer, cRecs)
-    req.body = JSON.stringify({table:'users',find:{email:'perftestuser' + i + '@3meters.com'}})
+    var req = new Req({
+      uri: '/do/find',
+      body: {table: 'users', find: {email: 'perftestuser' + i + '@3meters.com'}}
+    })
     request(req, function(err, res) {
       check(req, res)
       if (res.body.count) cRecs += res.body.count
@@ -130,7 +132,7 @@ exports.find100Users = function(test) {
 }
 
 exports.findAndUpdate100Users = function(test) {
-  var 
+  var
     timer = new Timer(),
     cRecs = 0
   timer.expected = 120
@@ -139,11 +141,13 @@ exports.findAndUpdate100Users = function(test) {
   findAndUpdateUser(100)
   function findAndUpdateUser(i) {
     if (!i--) return done(test, 'findAndUpdate100Users', timer, cRecs)
-    req.uri = baseUri + '/do/find'
-    req.body = JSON.stringify({
-      table: 'users',
-      fields: ['_id'],
-      find: {email:'perftestuser' + i + '@3meters.com'}
+    var req = new Req({
+      uri: '/do/find',
+      body: {
+        table: 'users',
+        fields: ['_id'],
+        find: {email:'perftestuser' + i + '@3meters.com'}
+      }
     })
     request(req, function(err, res) {
       check(req, res)
@@ -174,11 +178,13 @@ exports.get100Entities = function (test) {
     var recNum = Math.floor(Math.random() * dbProfile.beacons * dbProfile.epb)
     var id = testUtil.genId('entities', recNum)
 
-    req.uri = baseUri + '/do/getEntities'
-    req.body = JSON.stringify({
-      entityIds:[id], 
-      eagerLoad:{children:true, comments:true}, 
-      options:{limit:500, skip:0, sort:{modifiedDate:-1}}
+    var req = new Req({
+      uri: '/do/getEntities',
+      body: {
+        entityIds:[id], 
+        eagerLoad:{children:true, comments:true}, 
+        options:{limit:500, skip:0, sort:{modifiedDate:-1}}
+      }
     })
     request(req, function(err, res) {
       check(req, res)
