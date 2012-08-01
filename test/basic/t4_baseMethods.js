@@ -19,9 +19,8 @@ var
   _exports = {}  // For commenting out tests
 
 
-exports.getSession = function(test) {
-  testUtil.getSession(function(err, session) {
-    if (err) throw err
+exports.getUserSession = function(test) {
+  testUtil.getUserSession(function(session) {
     userCred = 'user=' + session._owner + '&session=' + session.key
     test.done()
   })
@@ -29,8 +28,7 @@ exports.getSession = function(test) {
 
 
 exports.getAdminSession = function(test) {
-  testUtil.getSession(true, function(err, session) {
-    if (err) throw err
+  testUtil.getAdminSession(function(session) {
     adminCred = 'user=' + session._owner + '&session=' + session.key
     test.done()
   })
