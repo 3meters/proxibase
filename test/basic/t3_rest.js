@@ -22,9 +22,8 @@ var
   _exports = {}  // For commenting out tests
 
 
-exports.getSession = function(test) {
-  testUtil.getSession(function(err, session) {
-    if (err) throw err
+exports.getUserSession = function(test) {
+  testUtil.getUserSession(function(session) {
     userCred = 'user=' + session._owner + '&session=' + session.key
     test.done()
   })
@@ -200,8 +199,7 @@ exports.checkUpdatedDocDeleted = function(test) {
   })
 }
 
-
-exports.updateNonExistantDoc = function(test) {
+exports.cannotUpdateNonExistantDoc = function(test) {
   var req = new Req({
     uri: '/data/documents/ids:0000?' + userCred,
     body: {data: {name: 'I should fail'}}
@@ -212,16 +210,44 @@ exports.updateNonExistantDoc = function(test) {
   })
 }
 
-exports.canAddDocWithPreexitingId = function(test) {
+
+exports.canAddDocsWithPreexitingIds = function(test) {
   var req = new Req({
     uri: '/data/documents?' + userCred,
-    body: {data: {_id: '1234567', name: 'I have my own id'}}
+    body: {data: {_id: '1234', name: 'I have my own id'}}
   })
   request(req, function(err, res) {
     check(req, res, 201)
     assert(res.body.count === 1)
     assert(res.body.data && res.body.data._id)
-    assert(res.body.data._id === '1234567')
-    test.done()
+    assert(res.body.data._id === '1234')
+    var req2 = new Req({
+      uri: '/data/documents?' + userCred,
+      body: {data: {_id: '5678', name: 'I do too'}}
+    })
+    request(req2, function(err, res) {
+      check(req2, res, 201)
+      test.done()
+    })
   })
 }
+
+
+exports.userCannotDeleteWildcard = function(test) {
+  log('nyi')
+  test.done()
+}
+
+
+exports.userCanDeleteMultipleDocs = function(test) {
+  log('nyi')
+  test.done()
+}
+
+
+exports.adinCanDeleteWildcard = function(test) {
+  log('nyi')
+  test.done()
+}
+
+

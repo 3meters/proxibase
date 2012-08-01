@@ -50,48 +50,57 @@ var testUser = {
   password: 'foobar'
 }
 
-getSession = exports.getSession = function(asAdmin, fn) {
+var adminUser = {
+  email: 'admin',
+  password: 'admin'
+}
 
-  if (typeof(asAdmin) !== 'boolean') {
-    // asAdmin is optional, fn is required, shift
-    fn = asAdmin
-    asAdmin = false
+exports.getUserSession = function(user, fn) {
+  if (!fn) {
+    fn = user
+    user = testUser
   }
-  else {
-    if (asAdmin) {
-      testUser = {
-        email: 'admin',
-        password: 'admin'
-      }
-    }
+  getSession(user, false, fn)
+}
+
+
+exports.getAdminSession = function(user, fn) {
+  if (!fn) {
+    fn = user
+    user = adminUser
   }
+  getSession(user, true, fn) 
+}
+
+
+function getSession(user, asAdmin, fn) {
 
   var req = new Req({
     uri: '/auth/signin',
-    body: {user: {email: testUser.email, password: testUser.password}}
+    body: {user: user}
   })
 
   request(req, function(err, res) {
     if (err) throw (err) 
     if (res.statusCode >= 400) {
       if (asAdmin) throw new Error('Cannot sign in with default admin credentials')
-      // create test user
+      // create user
       var req = new Req({
         uri: '/user/create',
-        body: {data: testUser}
+        body: {data: user}
       })
       request(req, function(err, res) {
         if (err) throw err
         check(req, res, 201)
         assert(res.body.data._id)
-        testUser._id = res.body.data._id
-        return getSession(fn) // test user exists now, try again
+        user._id = res.body.data._id
+        return getSession(user, false, fn) // test user exists now, try again
       })
     }
     else {
       res.body = JSON.parse(res.body)
       assert(res.body.session)
-      fn(null, res.body.session)
+      fn(res.body.session)
     }
   })
 }

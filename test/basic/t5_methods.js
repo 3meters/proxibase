@@ -13,6 +13,8 @@ var
   dump = testUtil.dump,
   constants = require('../constants'),  
   dbProfile = constants.dbProfile.smokeTest,
+  userCred,
+  adminCred,
   testLatitude = 50,
   testLongitude = 50,
   testUser = {
@@ -83,28 +85,16 @@ exports.lookupVersion = function (test) {
   })
 }
 
-exports.createTestUser = function (test) {
-  var req = new Req({
-    uri: '/user/create',
-    body: {data: testUser}
-  })
-  request(req, function(err, res) {
-    check(req, res, 201)
-    assert(res.body.count === 1, dump(req, res))
-    assert(res.body.data && res.body.data._id && res.body.data._id === testUser._id, dump(req, res))
+exports.getUserSession = function (test) {
+  testUtil.getUserSession(testUser, function(session) {
+    userCred = 'user=' + session._owner + '&session=' + session.key
     test.done()
   })
 }
 
-exports.signinTestUser = function (test) {
-  var req = new Req({
-    uri: '/auth/signin', 
-    body: {user: {email: testUser.email, password: testUser.password}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.session, dump(req, res))
-    userCred = 'user=' + testUser._id + '&session=' + res.body.session.key
+exports.getAdminSession = function (test) {
+  testUtil.getAdminSession(function(session) {
+    adminCred = 'user=' + session._owner + '&session=' + session.key
     test.done()
   })
 }
@@ -221,7 +211,7 @@ exports.insertRootEntity = function (test) {
         longitude:testLongitude, _beacon:testBeacon._id},userId:testUser._id}
   })
   request(req, function(err, res) {
-    check(req, res)
+    check(req, res, 201)
     assert(res.body.count === 1, dump(req, res))
     assert(res.body.data && res.body.data._id, dump(req, res))
     test.done()
@@ -267,7 +257,7 @@ exports.checkInsertBeacon = function(test) {
 exports.cannotDeleteBeaconWhenNotSignedIn = function (test) {
   var req = new Req({
     method: 'delete',
-    uri: '/do/data/beacons/ids:' + testBeacon._id
+    uri: '/data/beacons/ids:' + testBeacon._id
   })
   request(req, function(err, res) {
     check(req, res, 401)
@@ -275,10 +265,21 @@ exports.cannotDeleteBeaconWhenNotSignedIn = function (test) {
   })
 }
 
-exports.deleteBeacon = function (test) {
+exports.userCannotDeleteBeaconSheCreated = function (test) {
   var req = new Req({
     method: 'delete',
-    uri: '/do/data/beacons/ids:' + testBeacon._id + '?' + userCred
+    uri: '/data/beacons/ids:' + testBeacon._id + '?' + userCred
+  })
+  request(req, function(err, res) {
+    check(req, res, 401)
+    test.done()
+  })
+}
+
+exports.adminCanDeleteBeaconUserCreated = function (test) {
+  var req = new Req({
+    method: 'delete',
+    uri: '/data/beacons/ids:' + testBeacon._id + '?' + adminCred
   })
   request(req, function(err, res) {
     check(req, res)
@@ -288,12 +289,9 @@ exports.deleteBeacon = function (test) {
 
 exports.checkInsertObservationForRootEntity = function(test) {
   var req = new Req({
-    uri: '/do/',
-    body: {}
+    uri: '/do/find',
+    body: {table:'observations',find:{_beacon:testBeacon._id,_entity:testEntity._id}}
   })
-  req.method = 'post'
-  req.body = JSON.stringify({table:'observations',find:{_beacon:testBeacon._id,_entity:testEntity._id}})
-  req.uri = baseUri + '/do/find'
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 1, dump(req, res))
@@ -303,14 +301,11 @@ exports.checkInsertObservationForRootEntity = function(test) {
 
 exports.insertComment = function (test) {
   var req = new Req({
-    uri: '/do/',
-    body: {}
+    uri: '/do/insertComment?' + userCred,
+    body: {entityId:testEntity._id,comment:testComment}
   })
-  req.method = 'post'
-  req.body = JSON.stringify({entityId:testEntity._id,comment:testComment})
-  req.uri = baseUri + '/do/insertComment'
   request(req, function(err, res) {
-    check(req, res)
+    check(req, res, 201)
     assert(res.body.count === 1, dump(req, res))
     test.done()
   })
@@ -318,12 +313,9 @@ exports.insertComment = function (test) {
 
 exports.checkInsertComment = function (test) {
   var req = new Req({
-    uri: '/do/',
-    body: {}
+    uri: '/do/getEntities',
+    body: {entityIds:[testEntity._id],eagerLoad:{children:true,comments:true}}
   })
-  req.method = 'post'
-  req.body = JSON.stringify({entityIds:[testEntity._id],eagerLoad:{children:true,comments:true}})
-  req.uri = baseUri + '/do/getEntities'
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 1, dump(req, res))
@@ -334,14 +326,11 @@ exports.checkInsertComment = function (test) {
 }
 
 exports.updateEntity = function (test) {
-  var req = new Req({
-    uri: '/do/',
-    body: {}
-  })
-  req.method = 'post'
   testEntity.title = 'Testing super candi'
-  req.body = JSON.stringify({entity:testEntity})
-  req.uri = baseUri + '/do/updateEntity'
+  var req = new Req({
+    uri: '/do/updateEntity?' + userCred,
+    body: {entity:testEntity}
+  })
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 1, dump(req, res))
@@ -352,11 +341,9 @@ exports.updateEntity = function (test) {
 
 exports.checkUpdateEntity = function (test) {
   var req = new Req({
-    uri: '/do/',
-    body: {}
+    method: 'get',
+    uri: '/data/entities/ids:' + testEntity._id
   })
-  req.method = 'get'
-  req.uri = baseUri + '/data/entities/ids:' + testEntity._id
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.data && res.body.data[0] && res.body.data[0].title === 'Testing super candi', dump(req, res))
@@ -366,18 +353,15 @@ exports.checkUpdateEntity = function (test) {
 
 exports.insertLink = function (test) {
   var req = new Req({
-    uri: '/do/',
-    body: {}
+    uri: '/data/links?' + userCred,
+    body: {data:testLink}
   })
   /*
    * Jayma: This doesn't fail but I can't find the inserted link document and 
    * the subsequent updateLink call fails because it can't find it.
    */
-  req.method = 'post'
-  req.body = JSON.stringify({data:testLink})
-  req.uri = baseUri + '/data/links'
   request(req, function(err, res) {
-    check(req, res)
+    check(req, res, 201)
     assert(res.body.count === 1, dump(req, res))
     assert(res.body.data && res.body.data._id && res.body.data._id === testLink._id, dump(req, res))
     test.done()
@@ -416,12 +400,9 @@ exports.checkUpdateLink = function (test) {
 
 exports.deleteEntity = function (test) {
   var req = new Req({
-    uri: '/do/',
-    body: {}
+    uri: '/do/deleteEntity?' + userCred,
+    body: {entityId:testEntity._id,deleteChildren:false}
   })
-  req.method = 'post'
-  req.body = JSON.stringify({entityId:testEntity._id,deleteChildren:false})
-  req.uri = baseUri + '/do/deleteEntity'
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 1, dump(req, res))
@@ -432,12 +413,9 @@ exports.deleteEntity = function (test) {
 
 exports.checkDeleteEntity = function(test) {
   var req = new Req({
-    uri: '/do/',
-    body: {}
+    uri: '/do/find',
+    body: {table:'entities',find:{_id:testEntity._id}}
   })
-  req.method = 'post'
-  req.body = JSON.stringify({table:'entities',find:{_id:testEntity._id}})
-  req.uri = baseUri + '/do/find'
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 0, dump(req, res))
@@ -447,12 +425,9 @@ exports.checkDeleteEntity = function(test) {
 
 exports.checkDeleteLink = function(test) {
   var req = new Req({
-    uri: '/do/',
-    body: {}
+    uri: '/do/find',
+    body: {table:'links',find:{_to:testBeacon._id,_from:testEntity._id}}
   })
-  req.method = 'post'
-  req.body = JSON.stringify({table:'links',find:{_to:testBeacon._id,_from:testEntity._id}})
-  req.uri = baseUri + '/do/find'
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 0, dump(req, res))
@@ -462,12 +437,9 @@ exports.checkDeleteLink = function(test) {
 
 exports.checkDeleteObservation = function(test) {
   var req = new Req({
-    uri: '/do/',
-    body: {}
+    uri: '/do/find',
+    body: {table:'observations',find:{_beacon:testBeacon._id,_entity:testEntity._id}}
   })
-  req.method = 'post'
-  req.body = JSON.stringify({table:'observations',find:{_beacon:testBeacon._id,_entity:testEntity._id}})
-  req.uri = baseUri + '/do/find'
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 0, dump(req, res))
