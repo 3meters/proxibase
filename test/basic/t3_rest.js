@@ -245,9 +245,22 @@ exports.userCanDeleteMultipleDocs = function(test) {
 }
 
 
-exports.adinCanDeleteWildcard = function(test) {
+exports.adminCanDeleteWildcard = function(test) {
   log('nyi')
   test.done()
 }
 
+exports.userCanCreateLinksToHisOwnRecords = function(test) {
+  log('nyi')
+  test.done()
+}
 
+exports.userCannotCreateLinksToLockedRecords = function(test) {
+  log('nyi')
+  test.done()
+}
+
+exports.userCannotCreateLinksToRecordsThatDoNotExist = function(test) {
+  log('nyi')
+  test.done()
+}
