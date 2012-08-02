@@ -73,6 +73,7 @@ var
   }
 
 
+
 // get version info and also make sure the server is responding
 exports.lookupVersion = function (test) {
   var req = new Req({
@@ -86,17 +87,15 @@ exports.lookupVersion = function (test) {
   })
 }
 
-exports.getUserSession = function (test) {
+
+// Get user and admin sessions and store the credentials in module globals
+exports.getSessions = function (test) {
   testUtil.getUserSession(testUser, function(session) {
     userCred = 'user=' + session._owner + '&session=' + session.key
-    test.done()
-  })
-}
-
-exports.getAdminSession = function (test) {
-  testUtil.getAdminSession(function(session) {
-    adminCred = 'user=' + session._owner + '&session=' + session.key
-    test.done()
+    testUtil.getAdminSession(function(session) {
+      adminCred = 'user=' + session._owner + '&session=' + session.key
+      test.done()
+    })
   })
 }
 

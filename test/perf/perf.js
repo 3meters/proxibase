@@ -11,6 +11,8 @@ var
   request = require('request'),
   testUtil = require('../util'),
   constants = require('../constants'),
+  userCred = '',
+  adminCred = '',
   getRec = constants.getDefaultRecord,
   dbProfile = constants.dbProfile.smokeTest,
   results = [],
@@ -21,13 +23,6 @@ var
   check = testUtil.check,
   dump = testUtil.dump,
   log = util.log
-
-
-exports.start = function(test) {
-  testTimer.expected = 6000
-  testTimer.start()
-  test.done()
-}
 
 
 // Process perf test results
@@ -52,33 +47,24 @@ function done(test, testName, timer, count) {
   test.done()
 }
 
-exports.cleanData = function(test) {
-  var timer = new util.Timer()
-  timer.expected = 10
-  var req = new Req({
-    uri: '/do/find',
-    body: {
-      table: 'users',
-      fields: ['_id'],
-      find: {email: {$regex: '^perftest' }}
-    }
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    // convert result from array of objects: [{ _id: id},...] to an array of ids: [id, id]
-    var ids = []
-    res.body.data.forEach(function(row) {
-      ids.push(row._id)
-    })
-    req.method = 'delete'
-    req.uri = baseUri + '/data/users'
-    req.body = JSON.stringify({ids: ids})
-    request(req, function(err, res) {
-      check(req, res)
-      done(test, 'cleanData', timer, res.body.count)
+// Get user session and store the credentials in a module global
+exports.getSessions = function (test) {
+  testUtil.getUserSession(function(session) {
+    userCred = 'user=' + session._owner + '&session=' + session.key
+    testUtil.getAdminSession(function(session) {
+      adminCred = 'user=' + session._owner + '&session=' + session.key
+      test.done()
     })
   })
 }
+
+// Start timer
+exports.start = function(test) {
+  testTimer.expected = 6000
+  testTimer.start()
+  test.done()
+}
+
 
 exports.insert100Users = function(test) {
   var
@@ -98,11 +84,12 @@ exports.insert100Users = function(test) {
     user.name = 'Perf Test User ' + i
     user.email = 'perftestuser' + i + '@3meters.com'
     user.password = 'foobar'
-    req.method = 'post'
-    req.body = JSON.stringify({data:user})
-    req.uri = baseUri + '/data/users'
+    var req = new Req({
+      uri: '/user/create',
+      body: {data: user}
+    })
     request(req, function(err, res) {
-      check(req, res)
+      check(req, res, 201)
       if (res.body.count) cRecs += res.body.count
       return insertUser(i)
     })
@@ -114,7 +101,6 @@ exports.find100Users = function(test) {
     timer = new Timer(),
     cRecs = 0
   timer.expected = 60
-  req.uri = baseUri + '/do/find'
 
   findUser(100)
   function findUser(i) {
@@ -136,7 +122,6 @@ exports.findAndUpdate100Users = function(test) {
     timer = new Timer(),
     cRecs = 0
   timer.expected = 120
-  req.method = 'post'
 
   findAndUpdateUser(100)
   function findAndUpdateUser(i) {
@@ -151,12 +136,14 @@ exports.findAndUpdate100Users = function(test) {
     })
     request(req, function(err, res) {
       check(req, res)
-      req.uri = baseUri + '/data/users/ids:' + res.body.data[0]._id
-      req.body = JSON.stringify({data:{location:'Updated Perfburg' + i + ', WA'}})
-      request(req, function(err, res) {
-        check(req, res)
+      var req2 = new Req({
+        uri: '/data/users/ids:' + res.body.data[0]._id + '?' + adminCred,
+        body: {data:{location:'Updated Perfburg' + i + ', WA'}}
+      })
+      request(req2, function(err, res) {
+        check(req2, res)
         if (res.body.count) cRecs += res.body.count
-        test.ok(res.body && res.body.count && res.body.count > 0, dump(req, res))
+        test.ok(res.body && res.body.count && res.body.count > 0, dump(req2, res))
         return findAndUpdateUser(i)
       })
     })
@@ -169,7 +156,6 @@ exports.get100Entities = function (test) {
     timer = new Timer(),
     cRecs = 0
   timer.expected = 300
-  req.method = 'post'
 
   getEntity(100)
 
@@ -196,11 +182,10 @@ exports.get100Entities = function (test) {
 }
 
 exports.getEntitiesFor100Beacons = function (test) {
-  var 
+  var
     timer = new Timer(),
     cRecs = 0
   timer.expected = 300
-  req.method = 'post'
 
   getEntitiesForBeacon(100)
 
@@ -208,12 +193,14 @@ exports.getEntitiesFor100Beacons = function (test) {
     if (!i--) return done(test, 'getEntitesFor100Beacons', timer, cRecs)
     var recNum = Math.floor(Math.random() * dbProfile.beacons)
     var id = testUtil.genBeaconId(recNum)
-    req.body = JSON.stringify({
-      beaconIdsNew:[id], 
-      eagerLoad:{ children:true, comments:false }, 
-      options:{ limit:500, skip:0, sort:{modifiedDate:-1} }
+    var req = new Req({
+      uri: '/do/getEntitiesForBeacons',
+      body: {
+        beaconIdsNew:[id],
+        eagerLoad:{ children:true, comments:false },
+        options:{ limit:500, skip:0, sort:{modifiedDate:-1} }
+      }
     })
-    req.uri = baseUri + '/do/getEntitiesForBeacons'
     request(req, function(err, res) {
       check(req, res)
       if (res.body.count) cRecs += ((res.body.count) + (res.body.count * dbProfile.spe))
@@ -229,7 +216,6 @@ exports.getEntitiesFor10x10Beacons = function (test) {
     cRecs = 0,
     batchSize = 10
   timer.expected = 300
-  req.method = 'post'
 
   getEntitiesForBeacon(dbProfile.beacons / batchSize)
 
@@ -243,12 +229,14 @@ exports.getEntitiesFor10x10Beacons = function (test) {
       var id = testUtil.genBeaconId(j)
       beaconIds.push(id)
     }
-    req.body = JSON.stringify({
-      beaconIdsNew:beaconIds, 
-      eagerLoad:{ children:true, comments:false }, 
-      options:{ limit:500, skip:0, sort:{modifiedDate:-1} }
+    var req = new Req({
+      uri: '/do/getEntitiesForBeacons',
+      body: {
+        beaconIdsNew:beaconIds, 
+        eagerLoad:{ children:true, comments:false }, 
+        options:{ limit:500, skip:0, sort:{modifiedDate:-1} }
+      }
     })
-    req.uri = baseUri + '/do/getEntitiesForBeacons'
     request(req, function(err, res) {
       check(req, res)
       test.ok(res.body.count === dbProfile.epb * batchSize, dump(req, res))
@@ -263,18 +251,19 @@ exports.getEntitiesFor10Users = function(test) {
     recordLimit = 300,
     cRecs = 0 
   timer.expected = 120
-  req.method = 'post'
 
   getEntitiesForUser(10)
 
   function getEntitiesForUser(i) {
     if (!i--) return done(test, 'getEntitiesFor10Users', timer, cRecs)
-    req.body = JSON.stringify({
-      userId:constants.uid1,
-      eagerLoad:{children:false, comments:false},
-      options:{limit:500, skip:0, sort:{modifiedDate:-1}}
+    var req = new Req({
+      uri: '/do/getEntitiesForUser',
+      body: {
+        userId:constants.uid1,
+        eagerLoad:{children:false, comments:false},
+        options:{limit:500, skip:0, sort:{modifiedDate:-1}}
+      }
     })
-    req.uri = baseUri + '/do/getEntitiesForUser'
     request(req, function(err, res) {
       check(req, res)
       if (res.body.count) cRecs += res.body.count
@@ -290,20 +279,21 @@ exports.getEntitiesNear100Locations = function (test) {
     timer = new Timer(),
     cRecs = 0
   timer.expected = 300
-  req.method = 'post'
 
   getEntitiesNearLocation(100)
 
   function getEntitiesNearLocation(i) {
     if (!i--) return done(test, 'getEntitiesNear100Locations', timer, cRecs)
-    req.body = JSON.stringify({
-      userId: constants.uid1,
-      latitude: constants.latitude,
-      longitude: constants.longitude,
-      radius: 0.00001,
-      options:{limit:500, skip:0, sort:{modifiedDate:-1}}
+    var req = new Req({
+      uri: '/do/getEntitiesNearLocation',
+      body: {
+        userId: constants.uid1,
+        latitude: constants.latitude,
+        longitude: constants.longitude,
+        radius: 0.00001,
+        options:{limit:500, skip:0, sort:{modifiedDate:-1}}
+      }
     })
-    req.uri = baseUri + '/do/getEntitiesNearLocation'
     request(req, function(err, res) {
       check(req, res)
       if (res.body.count) cRecs += res.body.count
@@ -312,8 +302,19 @@ exports.getEntitiesNear100Locations = function (test) {
   }
 }
 
-exports.cleanup = function(test) {
-  return exports.cleanData(test)
+exports.insert10Entities = function(test) {
+  log('nyi')
+  test.done()
+}
+
+exports.insert100ChildEntities = function(test) {
+  log('nyi')
+  test.done()
+}
+
+exports.insert100Comments = function(test) {
+  log('nyi')
+  test.done()
 }
 
 exports.finish = function(test) {
