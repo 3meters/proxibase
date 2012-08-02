@@ -20,7 +20,8 @@ var
   constants = require('../constants'),
   check = testUtil.check,
   dump = testUtil.dump,
-  req = testUtil.getDefaultReq(),
+  Req = testUtil.Req,
+  adminCred = '',
   testOauthId = {
     twitter: 'twitter:606624261'
   },
@@ -30,14 +31,24 @@ var
   log = require('../../lib/util').log
 
 
+// Get admin session and set credentials
+exports.getSession = function(test) {
+  testUtil.getAdminSession(function(session) {
+    adminCred = 'user=' + session._owner + '&session=' + session.key
+    test.done()
+  })
+}
+
+
 // Update the default user with the oauthId of our test user account on Twitter
 // This approximates a user updating their account and validating with a different
 // oauth provider
 
 exports.updateDefaultUserOauthId = function(test) {
-  req.method = 'post'
-  req.uri = baseUri + '/data/users/ids:' + constants.uid1
-  req.body = JSON.stringify({ data: {oauthId: testOauthId.twitter } })
+  var req = new Req({
+    uri: '/data/users/ids:' + constants.uid1 + '?' + adminCred,
+    body: {data: {oauthId: testOauthId.twitter}}
+  })
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.data.oauthId === testOauthId.twitter, dump(req, res))
@@ -182,9 +193,11 @@ function testProvider(options, callback) {
   // pretend we are a modern browser, facebook won't talk to us otherwise
   var userAgent = 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.2.13) Gecko/20101203 Firefox/3.6.13'
 
-  req.method = 'get'
-  req.headers = {'User-Agent': userAgent}
-  req.uri = options.oauthUri
+  var req = {
+    method: 'get',
+    headers: {'User-Agent': userAgent},
+    uri: options.oauthUri
+  }
   log('uri: ' + req.uri)
   request(req, function(err, res) {
 
