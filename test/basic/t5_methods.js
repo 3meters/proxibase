@@ -15,6 +15,7 @@ var
   dbProfile = constants.dbProfile.smokeTest,
   userCred,
   adminCred,
+  _exports = {}, // for commenting out tests
   testLatitude = 50,
   testLongitude = 50,
   testUser = {
@@ -299,7 +300,7 @@ exports.checkInsertObservationForRootEntity = function(test) {
   })
 }
 
-exports.insertComment = function (test) {
+exports.userCanCommentOnOwnEntity = function (test) {
   var req = new Req({
     uri: '/do/insertComment?' + userCred,
     body: {entityId:testEntity._id,comment:testComment}
