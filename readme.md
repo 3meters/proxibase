@@ -5,8 +5,14 @@ Web: https://www.proxibase.com
 
 API: https://api.proxibase.com
 
+## Users and Admins
+TODO:
+
+## Creating New Users
+TODO: 
+
 ## AUTHENTICATION
-Users can be authenticated locally with a password, or by a oauth provider such as Facebook, Twitter, or Google.  Their authentication source is stored in the users.authSource field which is required.  Valid values may be found in util.statics.authSources.  The users table now requires either a password or valid oauth credentials to be stored before a user record to be created.  The email field is now unique.
+Users can be authenticated locally with a password, or by a oauth provider such as Facebook, Twitter, or Google.  Their authentication source is stored in the users.authSource field which is required.  Valid values may be found in util.statics.authSources.  The users table now requires either a password or valid oauth credentials to be stored before a user record to be created.  User emails must be unique.
 
 ### Local
 If a new user is created with a password we assume the authSource is local.  We validate that the password is sufficiently strong before saving, and we save a one-way hash of the password the user entered.  See the users schema for the password rules and hash methods.
@@ -50,7 +56,7 @@ Sessions can be destroyed via
 
 User passwords can no longer be updated via the ordinary rest methods, but can only be changed via a new change password api:
 
-    /auth/changepw  
+    /user/changepw  
     method: post
     body: {
       user:{
@@ -82,21 +88,21 @@ meaning
 
     tableId.dateSince2000.secondsSinceMidnight.milliseconds.randomNumber
 
-### GET /tableName
+### GET /data/tableName
 Returns the table's first 1000 records unsorted.
 
-### GET /tableName/ids:id1,id2
+### GET /data/tableName/ids:id1,id2
 Returns records with the specified ids. Note the initial ids:  Do quote or put spaces betweeen the id parameters themselves.
 
-### GET /tableName/names:name1,name2
+### GET /data/tableName/names:name1,name2
 Returns records with the specified names. Note the initial names:  Do not quote or put spaces between the name parameters.  If the value of your name contains a comma, you cannot use this method to find it.  Use the do/find method in this case. 
 
-### GET /tablename/[ids:...|names:.../]childTable1,childTable2|*
+### GET /data/tablename/[ids:...|names:.../]childTable1,childTable2|*
 TEMPORARILY DISABLED
 
 Returns all records specified with subdocuments for each child table specified. The wildcard * returns all child documents.  All fields from child documents are returned.  The query limit is applied both to the main document array and to each of its child arrays. Filters only apply to the main document, not to the document's children.
 
-### GET /tablename/genid
+### GET /data/tablename/genid
 Generates a valid id for the table with the UTC timestamp of the request.  Useful if you want to make posts to mulitple tables with the primary and foreign keys preassigned.
 
 ### GET parameters
@@ -143,16 +149,16 @@ or
       ]
     }
 
-### POST /tablename
+### POST /data/tablename
 Inserts req.body.data or req.body.data[0] into the tablename table.  If a value for _id is specified it will be used, otherwise the server will generate a value for _id.  Only one record may be inserted per request. If you specifiy values for any of the system fields, those values will be stored.  If you do not the system will generates defaults for you.
 
-### POST /tablename/ids:id1
+### POST /data/tablename/ids:id1
 Updates the record with _id = id1 in tablename.  Non-system fields not inlucded in request.body.data or request.body.data[0] will not be modified.
 
-### DELETE /tablename/ids:id1,id2
+### DELETE /data/tablename/ids:id1,id2
 Deletes those records.
 
-### DELETE /tablename/ids:*
+### DELETE /data/tablename/ids:*
 Deletes all records in the table.
 
 <a name="webmethods"></a>
@@ -192,19 +198,32 @@ Updates every record in a table.  Usefull when you need to re-run triggers on al
 ## Wiki
 * (proxibase/wiki/)
 
+
 ## Todo
+
+### Components
+* Express
+* Node
+* Test new mongo driver
+
 ### Bugs
-* GET /data/tablename,foo
+
+### Models
+* Add schema checker to base.js
+* Broken links: prevent or garbage collect
+* Create user captcha
+
+### Custom Methods
+* Respect locked Entity on InsertEntity, UpdateEntity, DeleteEntity, InsertComment
+
+### Tests
+* Insert comments on others records
 
 ### Authentication
-* Validate user email
+* Validate user email workflow
 * Recover lost password workflow
 * Create user with oauth workflow
 * Oauth tests for Facebook and Google
-
-### Permissions
-* User permission checking API
-* User permission setting API
 
 ### Rate limiting
 * Map users to accounts
@@ -231,6 +250,7 @@ Updates every record in a table.  Usefull when you need to re-run triggers on al
 * saveAPI: convert to mongoskin
 
 ### Misc
+* scrub old style errors from custom methods
 * rationalize version migration into a command-linable pipeline
 * do version migration in place?
 
