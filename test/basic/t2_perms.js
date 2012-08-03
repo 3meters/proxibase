@@ -115,7 +115,6 @@ exports.user1CanUpdateOwnRecord = function (test) {
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.user)
-    assert(res.body.session)
     assert(res.body.data.location === 'Orlando')
     test.done()
   })

@@ -73,6 +73,11 @@ exports.getAdminSession = function(user, fn) {
 }
 
 
+/*
+ * Get a new session for a user, optionally as admin
+ * If the user does not exist in the system, create him first
+ * Perhaps rename ensureUserAndGetSession?
+ */
 function getSession(user, asAdmin, fn) {
 
   var req = new Req({

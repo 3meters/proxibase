@@ -214,8 +214,6 @@ exports.canValidateSession = function(test) {
     assert(res.body.user)
     assert(res.body.user._id === testUser._id)
     assert(res.body.user.name === testUser.name)
-    assert(res.body.session)
-    assert(res.body.session.key === session.key)
     test.done()
   })
 }
@@ -231,8 +229,6 @@ exports.canValidateSessionUsingParamsInBody = function(test) {
     assert(res.body.user)
     assert(res.body.user._id === testUser._id)
     assert(res.body.user.name === testUser.name)
-    assert(res.body.session)
-    assert(res.body.session.key === session.key)
     test.done()
   })
 }

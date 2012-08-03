@@ -6,14 +6,16 @@
 var
   assert = require('assert'),
   request = require('request'),
-  log = require('../../lib/util').log,
+  util = require('../../lib/util'),
+  log = util.log,
   testUtil = require('../util'),
   Req = testUtil.Req,
   check = testUtil.check,
   dump = testUtil.dump,
-  constants = require('../constants'),  
+  constants = require('../constants'),
   dbProfile = constants.dbProfile.smokeTest,
   userCred,
+  user2Cred,
   adminCred,
   _exports = {}, // for commenting out tests
   testLatitude = 50,
@@ -26,6 +28,12 @@ var
     imageUri : "resource:placeholder_user",
     location : "Testville, WA",
     isDeveloper : false
+  },
+  testUser2 = {
+    _id : "0000.111111.11111.111.222222",
+    name : "John Q Test2",
+    email : "johnqtest2@3meters.com",
+    password : "12345678"
   },
   testEntity = {
     _id : "0002.111111.11111.111.111111",
@@ -43,12 +51,13 @@ var
     root : true
   },
   testLink = {
-    _id : '0001.111111.11111.111.222222',
     _to : '0003:11:11:11:11:11:22',
-    _from : '0002.111111.11111.111.111111',
-    toTableId: 3,
-    fromTableId: 2
+    _from : '0002.111111.11111.111.111111'
   },
+  newTestLink = {
+    _to : '0002.111111.11111.111.111112',
+    _from : '0002.111111.11111.111.111111'
+  }
   testBeacon = {
     _id : '0003:11:11:11:11:11:11',
     label: 'Test Beacon Label',
@@ -73,7 +82,6 @@ var
   }
 
 
-
 // get version info and also make sure the server is responding
 exports.lookupVersion = function (test) {
   var req = new Req({
@@ -92,9 +100,12 @@ exports.lookupVersion = function (test) {
 exports.getSessions = function (test) {
   testUtil.getUserSession(testUser, function(session) {
     userCred = 'user=' + session._owner + '&session=' + session.key
-    testUtil.getAdminSession(function(session) {
-      adminCred = 'user=' + session._owner + '&session=' + session.key
-      test.done()
+    testUtil.getUserSession(testUser2, function(session) {
+      user2Cred = 'user=' + session._owner + '&session=' + session.key
+      testUtil.getAdminSession(function(session) {
+        adminCred = 'user=' + session._owner + '&session=' + session.key
+        test.done()
+      })
     })
   })
 }
@@ -250,6 +261,11 @@ exports.checkInsertBeacon = function(test) {
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 1, dump(req, res))
+    // Beacons should be owned by admin
+    assert(res.body.data[0]._owner === util.adminUser._id)
+    // Creator and modifier should be user who first added them
+    assert(res.body.data[0]._creator === testUser._id)
+    assert(res.body.data[0]._modifier === testUser._id)
     test.done()
   })
 }
@@ -295,6 +311,11 @@ exports.checkInsertObservationForRootEntity = function(test) {
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 1, dump(req, res))
+    // Observations should be owned by admin
+    assert(res.body.data[0]._owner === util.adminUser._id)
+    // Creator and modifier should be user who first added them
+    assert(res.body.data[0]._creator === testUser._id)
+    assert(res.body.data[0]._modifier === testUser._id)
     test.done()
   })
 }
@@ -321,6 +342,38 @@ exports.checkInsertComment = function (test) {
     assert(res.body.count === 1, dump(req, res))
     assert(res.body.data && res.body.data[0] && res.body.data[0].comments.length === 1, dump(req, res))
     assert(res.body.data && res.body.data[0] && res.body.data[0].commentCount === 1, dump(req, res))
+    test.done()
+  })
+}
+
+
+exports.user2CanCommentOnEntityOwnedByUser1 = function (test) {
+  testComment.description = "I am user2 and I luv user1"
+  var req = new Req({
+    uri: '/do/insertComment?' + user2Cred,
+    body: {entityId:testEntity._id,comment:testComment}
+  })
+  request(req, function(err, res) {
+    check(req, res, 201)
+    assert(res.body.count === 1, dump(req, res))
+    test.done()
+  })
+}
+
+exports.checkComments = function (test) {
+  var req = new Req({
+    uri: '/do/getEntities',
+    body: {entityIds:[testEntity._id],eagerLoad:{children:true,comments:true}}
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.count === 1, dump(req, res))
+    assert(res.body.data && res.body.data[0] && res.body.data[0].comments.length === 2, dump(req, res))
+    assert(res.body.data && res.body.data[0] && res.body.data[0].commentCount === 2, dump(req, res))
+    var comments = res.body.data[0].comments
+    // Comments are inserted at the beginning of the comments array
+    assert(comments[0]._creator === testUser2._id)
+    assert(comments[1]._creator === testUser._id)
     test.done()
   })
 }
@@ -356,28 +409,32 @@ exports.insertLink = function (test) {
     uri: '/data/links?' + userCred,
     body: {data:testLink}
   })
-  /*
-   * Jayma: This doesn't fail but I can't find the inserted link document and 
-   * the subsequent updateLink call fails because it can't find it.
-   */
   request(req, function(err, res) {
     check(req, res, 201)
-    assert(res.body.count === 1, dump(req, res))
-    assert(res.body.data && res.body.data._id && res.body.data._id === testLink._id, dump(req, res))
+    assert(res.body.count === 1 && res.body.data, dump(req, res))
+    testLink._id = res.body.data._id
     test.done()
   })
 }
 
-/*
-exports.updateLink = function (test) {
-  updateLink = {
-    _to : '0002.111111.11111.111.111112',
-    _from : '0002.111111.11111.111.111111'
-  }
+exports.checkInsertedLink = function(test) {
+  var req = new Req({
+    method: 'get',
+    uri: '/data/links/ids:' + testLink._id
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.data && res.body.data[0] && res.body.data[0]._id === testLink._id, dump(req, res))
+    test.done()
+  })
 
-  req.method = 'post'
-  req.body = JSON.stringify({link:updateLink, originalToId:'0002.111111.11111.111.111111'})
-  req.uri = baseUri + '/do/updateLink'
+}
+
+exports.updateLink = function (test) {
+  var req = new Req({
+    uri: '/do/updateLink?' + userCred,
+    body: {link:newTestLink, originalToId: testLink._to}
+  })
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 1, dump(req, res))
@@ -386,17 +443,17 @@ exports.updateLink = function (test) {
   })
 }
 
-exports.checkUpdateLink = function (test) {
-  req.method = 'post'
-  req.body = JSON.stringify({table:'links',find:{_to:testLink._to, _from:testLink._from}})
-  req.uri = baseUri + '/do/find'
+exports.checkUpdatedLink = function (test) {
+  var req = new Req({
+    uri: '/do/find',
+    body: {table:'links', find: {_to: newTestLink._to, _from: newTestLink._from}}
+  })
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 1, dump(req, res))
     test.done()
   })
 }
-*/
 
 exports.deleteEntity = function (test) {
   var req = new Req({
