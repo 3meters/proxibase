@@ -5,9 +5,10 @@
 var
   assert = require('assert'),
   request = require('request'),
-  log = require('../../lib/util').log,
+  util = require('../../lib/util'),
+  log = util.log,
   testUtil = require('../util'),
-  Req = testUtil.Req
+  Req = testUtil.Req,
   check = testUtil.check,
   dump = testUtil.dump,
   userCred = '',
@@ -15,15 +16,19 @@ var
     name: "Test Rest Doc 1",
     data: { foo: 'bar', number: 1 }
   },
+  testDoc1Saved = {},
   testDoc2 = {
     name: "Test Rest Doc 2",
     data: { foo: 'bar', number: 2 }
   },
+  userSession,
+  testStartTime = util.getTimeUTC(),
   _exports = {}  // For commenting out tests
 
 
 exports.getUserSession = function(test) {
   testUtil.getUserSession(function(session) {
+    userSession = session
     userCred = 'user=' + session._owner + '&session=' + session.key
     test.done()
   })
@@ -104,7 +109,7 @@ exports.canAddDocAsSingleElementArray = function(test) {
 }
 
 
-exports.findDocsByIdsWhenSignedIn = function(test) {
+exports.findDocsByIdAndCheckSysFields = function(test) {
   var req = new Req({
     method: 'get',
     uri: '/data/documents/ids:' + testDoc1._id + ',' + testDoc2._id + '?' + userCred
@@ -114,6 +119,11 @@ exports.findDocsByIdsWhenSignedIn = function(test) {
     assert(res.body.count === 2, dump(req, res))
     assert(res.body.data[0]._id === testDoc1._id, dump(req, res))
     assert(res.body.data[1].name === testDoc2.name, dump(req, res))
+    assert(res.body.data[0]._creator === userSession._owner)
+    assert(res.body.data[0]._owner === userSession._owner)
+    assert(res.body.data[0].createdDate > testStartTime)
+    assert(res.body.data[0].modifiedDate > testStartTime)
+    testDoc1Saved = res.body.data[0]
     test.done()
   })
 }
@@ -156,6 +166,7 @@ exports.checkUpdatedDoc = function(test) {
     check(req, res)
     assert(res.body.data && res.body.data[0])
     assert(res.body.data[0].name === 'Changed Name', dump(req, res))
+    assert(res.body.data[0].modifiedDate > testDoc1Saved.modifiedDate)
     test.done()
   })
 }
@@ -231,6 +242,24 @@ exports.canAddDocsWithPreexitingIds = function(test) {
     })
   })
 }
+
+exports.cannotLinkDocToBogusTableId = function(test) {
+  log('nyi')
+  test.done()
+}
+
+
+exports.canLinkDocs = function(test) {
+  log('nyi')
+  test.done()
+}
+
+
+exports.canDeleteDocLinks = function(test) {
+  log('nyi')
+  test.done()
+}
+
 
 
 exports.userCannotDeleteWildcard = function(test) {
