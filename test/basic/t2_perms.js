@@ -28,7 +28,8 @@ var
     data: { foo: 'bar' }
   },
   _exports = {},                    // for commenting out tests
-  log = require('../../lib/util').log
+  util = require('../../lib/util'),
+  log = util.log
 
 
 exports.signInAsAdmin = function(test) {
@@ -236,10 +237,34 @@ exports.user2CanCreateARecord = function(test) {
 }
 
 
+exports.user2CannotChangeOwnerOfHerOwnRecord = function(test) {
+  var req = new Req({
+    uri: '/data/documents/ids:' + doc1._id + '?' + user2Cred,
+    body: {data: {_owner: util.adminUser._id}}
+  })
+  request(req, function(err, res) {
+    check(req, res, 401)
+    test.done()
+  })
+}
+
+
 exports.adminCanUpdateOthersRecords = function(test) {
   var req = new Req({
     uri: '/data/documents/ids:' + doc1._id + '?' + adminCred,
     body: {data: {name: 'I can update any document I please'}}
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    test.done()
+  })
+}
+
+
+exports.adminCanChangeOwnerOfOthersRecords = function(test) {
+  var req = new Req({
+    uri: '/data/documents/ids:' + doc1._id + '?' + adminCred,
+    body: {data: {_owner: util.adminUser._id}}
   })
   request(req, function(err, res) {
     check(req, res)

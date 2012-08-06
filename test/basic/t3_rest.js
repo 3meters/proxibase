@@ -11,7 +11,10 @@ var
   Req = testUtil.Req,
   check = testUtil.check,
   dump = testUtil.dump,
-  userCred = '',
+  userSession,
+  userCred,
+  adminSession,
+  adminCred,
   testDoc1 = {
     name: "Test Rest Doc 1",
     data: { foo: 'bar', number: 1 }
@@ -21,7 +24,6 @@ var
     name: "Test Rest Doc 2",
     data: { foo: 'bar', number: 2 }
   },
-  userSession,
   testStartTime = util.getTimeUTC(),
   _exports = {}  // For commenting out tests
 
@@ -30,7 +32,11 @@ exports.getUserSession = function(test) {
   testUtil.getUserSession(function(session) {
     userSession = session
     userCred = 'user=' + session._owner + '&session=' + session.key
+    testUtil.getAdminSession(function(session) {
+      adminSession = session
+      adminCred = 'user=' + session._owner + '&session=' + session.key
     test.done()
+    })
   })
 }
 
@@ -166,6 +172,7 @@ exports.checkUpdatedDoc = function(test) {
     check(req, res)
     assert(res.body.data && res.body.data[0])
     assert(res.body.data[0].name === 'Changed Name', dump(req, res))
+    // Ensures modified date is getting set on update
     assert(res.body.data[0].modifiedDate > testDoc1Saved.modifiedDate)
     test.done()
   })
