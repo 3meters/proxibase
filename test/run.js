@@ -27,8 +27,8 @@ var
   cwd = process.cwd(),
   testServer,
   testServerStarted = false,
-  config = util.findConfig(configFile),
-  serverUrl = util.getRootUrl(config),
+  config = util.loadConfig(configFile),
+  serverUrl = config.service.url,
   log = util.log
 
 
@@ -56,8 +56,8 @@ if (cli.server) {
 else {
   if (cli.config) {
     configFile = cli.config
-    config = util.findConfig(configFile)
-    serverUrl = testUtil.serverUrl = util.getRootUrl(config)
+    config = util.loadConfig(configFile)
+    serverUrl = testUtil.serverUrl = config.service.url
   }
 }
 if (cli.testdir) testDirs = [cli.testdir]
