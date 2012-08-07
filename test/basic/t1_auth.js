@@ -281,6 +281,7 @@ exports.userCannotChangePasswordTooWeak = function(test) {
   })
 }
 
+
 exports.userCanChangePassword = function(test) {
   var req = new Req({
     uri: '/user/changepw?' + userCred,
@@ -363,5 +364,11 @@ exports.userCanSignOutViaGet = function(test) {
       test.done()
     })
   })
+}
+
+exports.resetPasswordEmailSends = function(test) {
+  // This may be unix-only
+  log('nyi')
+  test.done()
 }
 
