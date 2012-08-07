@@ -163,6 +163,16 @@ exports.authTwitter = function(test) {
 }
 
 
+exports.authFacebook = function(test) {
+  log('nyi')
+  test.done()
+}
+
+exports.authGoogle = function(test) {
+  log('nyi')
+  test.done()
+}
+
 // Authorize via Facebook
 _exports.authFacebook = function(test) {
 

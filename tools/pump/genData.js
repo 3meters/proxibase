@@ -97,7 +97,7 @@ function ensureAdminUser(callback) {
   util.ensureAdminUser(gdb, function(err, adminUser) {
     if (err) throw err
     if (!adminUser) throw new Error('Could not create admin user')
-    run(callback) 
+    run(callback)
   })
 }
 
@@ -144,7 +144,7 @@ function genBeacons() {
     beacon._id = testUtil.genBeaconId(i)
     beacon.ssid = beacon.ssid + ' ' + i
     beacon.bssid = beacon._id.substring(5)
-    beacon._owner = beacon._creator = beacon._modifier =
+    beacon._creator = beacon._modifier =
       testUtil.genId('users', Math.floor((i * options.users) / options.beacons))
     // Inch our way around the world
     beacon.latitude = (beacon.latitude + (i / 1000)) % 180
@@ -193,14 +193,14 @@ function genEntityRecords(count, isRoot) {
     newLink.fromTableId = tableIds['entities']
     if (isRoot) {
       // Set the owner fields
-      newEnt._owner = newEnt._creator = newEnt._modifier = testUtil.genId('users', ownerRecNum)
+      newEnt._creator = newEnt._modifier = testUtil.genId('users', ownerRecNum)
       // Link to beacon
       newLink._to = testUtil.genBeaconId(beaconNum)
       newLink.toTableId = tableIds['beacons']
     }
     else {
       // Set the owner fields
-      newEnt._owner = newEnt._creator = newEnt._modifier =
+      newEnt._creator = newEnt._modifier =
         testUtil.genId('users', Math.floor(ownerRecNum / options.spe))
       // Link to parent entity
       var parentRecNum = Math.floor(i / options.spe) // yeah, this is right
@@ -267,8 +267,10 @@ var saveTo = {
       var model = gdb.models[tableName]
 
       async.forEachSeries(table[tableName], saveRow, function(err) {
-        if (err) log('debug: err', err)
-        if (err) throw err
+        if (err) {
+          log('genData error:', err)
+          throw err
+        }
         log(table[tableName].length + ' ' + tableName)
         return callback()
       })
@@ -276,7 +278,7 @@ var saveTo = {
       function saveRow(row, callback) {
         var mongooseDoc = new model(row)
         mongooseDoc.__user = util.adminUser
-        if (row._owner) mongooseDoc.__user = {_id: row._owner, role: 'user'}
+        if (row._creator) mongooseDoc.__user = {_id: row._creator, role: 'user'}
         mongooseDoc.save(function(err) {
           return callback(err)
         })
