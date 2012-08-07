@@ -230,18 +230,20 @@ exports.cannotUpdateNonExistantDoc = function(test) {
 
 
 exports.canAddDocsWithPreexitingIds = function(test) {
+  var newDocId1 = '0005.060101.55664.234.11111'
+  var newDocId2 = '0005.060101.55664.234.22222'
   var req = new Req({
     uri: '/data/documents?' + userCred,
-    body: {data: {_id: '1234', name: 'I have my own id'}}
+    body: {data: {_id: newDocId1, name: 'I have my own id'}}
   })
   request(req, function(err, res) {
     check(req, res, 201)
     assert(res.body.count === 1)
     assert(res.body.data && res.body.data._id)
-    assert(res.body.data._id === '1234')
+    assert(res.body.data._id === newDocId1)
     var req2 = new Req({
       uri: '/data/documents?' + userCred,
-      body: {data: {_id: '5678', name: 'I do too'}}
+      body: {data: {_id: newDocId2, name: 'I do too'}}
     })
     request(req2, function(err, res) {
       check(req2, res, 201)
@@ -250,9 +252,28 @@ exports.canAddDocsWithPreexitingIds = function(test) {
   })
 }
 
+
+exports.cannotAddDocWithMissMatchedTableId = function(test) {
+  var req = new Req({
+    uri: '/data/documents?' + userCred,
+    body: {data: {_id: '0004.060101.55664.234.34567', name: 'I have my own id'}}
+  })
+  request(req, function(err, res) {
+    check(req, res, 400)
+    test.done()
+  })
+}
+
 exports.cannotLinkDocToBogusTableId = function(test) {
-  log('nyi')
-  test.done()
+  var req = new Req({
+    uri: '/data/links?' + userCred,
+    body: {data: {_from: testDoc1Saved._id,
+     _to: 'foo.120101.673423.654.23423'}}
+  })
+  request(req, function(err, res) {
+    check(req, res, 400)
+    test.done()
+  })
 }
 
 
