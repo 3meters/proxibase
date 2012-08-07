@@ -18,7 +18,8 @@ var
   userCred = '',
   session = {},
   _exports = {},                    // for commenting out tests
-  log = require('../../lib/util').log
+  util = require('../../lib/util'),
+  log = util.log
 
 
 exports.cannotAddUserWhenNotSignedIn = function(test) {
@@ -235,8 +236,21 @@ exports.canValidateSessionUsingParamsInBody = function(test) {
 
 
 exports.sessionParamsInQueryStringOverrideOnesInBody = function(test) {
-  console.error('nyi') 
-  test.done()
+  var req = new Req({
+    uri: '/do/find?user=' + session._owner + '&session=' + session.key,
+    body: {table: 'users', user: util.adminUser._id, session: session.key}
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    var req2 = new Req({
+      uri: '/do/find?user=' + util.adminUser._id + '&session=' + session.key,
+      body: {table: 'users', user: session._owner, session: session.key}
+    })
+    request(req2, function(err, res) {
+      check(req, res, 401)
+      test.done()
+    })
+  })
 }
 
 

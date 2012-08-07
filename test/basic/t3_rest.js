@@ -15,6 +15,7 @@ var
   userCred,
   adminSession,
   adminCred,
+  documentsSchemaId = 5,  // will break if we change schemaIds
   testDoc1 = {
     name: "Test Rest Doc 1",
     data: { foo: 'bar', number: 1 }
@@ -24,6 +25,7 @@ var
     name: "Test Rest Doc 2",
     data: { foo: 'bar', number: 2 }
   },
+  linkId,
   testStartTime = util.getTimeUTC(),
   _exports = {}  // For commenting out tests
 
@@ -205,7 +207,7 @@ exports.deleteUpdateDoc = function(test) {
 }
 
 
-exports.checkUpdatedDocDeleted = function(test) {
+exports.checkUpdatedDocDeletedThenAddBack = function(test) {
   var req = new Req({
     method: 'gET',
     uri: '/data/documents/ids:' + testDoc1._id + '?' + userCred
@@ -213,13 +215,21 @@ exports.checkUpdatedDocDeleted = function(test) {
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 0, dump(req, res))
-    test.done()
+    var req2 = new Req({
+      uri: '/data/documents?' + userCred,
+      body: {data: testDoc1}
+    })
+    request(req2, function(err, res) {
+      check(req, res, 201)
+      assert(res.body.data._id = testDoc1._id)
+      test.done()
+    })
   })
 }
 
 exports.cannotUpdateNonExistantDoc = function(test) {
   var req = new Req({
-    uri: '/data/documents/ids:0000?' + userCred,
+    uri: '/data/documents/ids:00005.002?' + userCred,
     body: {data: {name: 'I should fail'}}
   })
   request(req, function(err, res) {
@@ -267,7 +277,7 @@ exports.cannotAddDocWithMissMatchedTableId = function(test) {
 exports.cannotLinkDocToBogusTableId = function(test) {
   var req = new Req({
     uri: '/data/links?' + userCred,
-    body: {data: {_from: testDoc1Saved._id,
+    body: {data: {_from: testDoc1._id,
      _to: 'foo.120101.673423.654.23423'}}
   })
   request(req, function(err, res) {
@@ -277,47 +287,91 @@ exports.cannotLinkDocToBogusTableId = function(test) {
 }
 
 
-exports.canLinkDocs = function(test) {
-  log('nyi')
-  test.done()
+exports.userCanLinkDocs = function(test) {
+  var req = new Req({
+    uri: '/data/links?' + userCred,
+    body: {data: {_from: testDoc1._id,
+     _to: testDoc2._id}}
+  })
+  request(req, function(err, res) {
+    check(req, res, 201)
+    linkId = res.body.data._id
+    test.done()
+  })
 }
 
 
-exports.canDeleteDocLinks = function(test) {
-  log('nyi')
-  test.done()
+exports.checkLink = function(test) {
+  var req = new Req({
+    method: 'get',
+    uri: '/data/links/ids:' + linkId
+  })
+  request(req, function(err, res) {
+    check(req, res) 
+    assert(res.body.data[0]._from = testDoc1._id)
+    assert(res.body.data[0]._to = testDoc2._id)
+    assert(res.body.data[0].fromTableId = documentsSchemaId)
+    assert(res.body.data[0].toTableId = documentsSchemaId)
+    test.done()
+  })
+}
+
+
+exports.canDeleteLink = function(test) {
+  var req = new Req({
+    method: 'delete',
+    uri: '/data/links/ids:' + linkId + '?' + userCred
+  })
+  request(req, function(err, res) {
+    check(req, res) 
+    assert(res.body.count = 1)
+    test.done()
+  })
 }
 
 
 
-exports.userCannotDeleteWildcard = function(test) {
-  log('nyi')
-  test.done()
+exports.userCannotDeleteUsingWildcard = function(test) {
+  var req = new Req({
+    method: 'delete',
+    uri: '/data/documents/ids:*?' + userCred
+  })
+  request(req, function(err, res) {
+    check(req, res, 404) 
+    test.done()
+  })
 }
 
 
 exports.userCanDeleteMultipleDocs = function(test) {
-  log('nyi')
-  test.done()
+  var req = new Req({
+    method: 'delete',
+    uri: '/data/documents/ids:' + testDoc1._id + ',' + testDoc2._id + '?' + userCred
+  })
+  request(req, function(err, res) {
+    check(req, res) 
+    assert(res.body.count === 2) 
+    test.done()
+  })
 }
 
 
-exports.adminCanDeleteWildcard = function(test) {
-  log('nyi')
-  test.done()
+exports.adminCanDeleteUsingWildcard = function(test) {
+  var req = new Req({
+    method: 'delete',
+    uri: '/data/sessions/ids:*?' + adminCred
+  })
+  request(req, function(err, res) {
+    check(req, res) 
+    assert(res.body.count >= 3)
+    var req2 = new Req({
+      method: 'get',
+      uri: '/data/users?' + adminCred
+    })
+    request(req2, function(err, res) {
+      check(req, res, 401)  // because admin no longer has a valid session
+      test.done()
+    })
+  })
 }
 
-exports.userCanCreateLinksToHisOwnRecords = function(test) {
-  log('nyi')
-  test.done()
-}
-
-exports.userCannotCreateLinksToLockedRecords = function(test) {
-  log('nyi')
-  test.done()
-}
-
-exports.userCannotCreateLinksToRecordsThatDoNotExist = function(test) {
-  log('nyi')
-  test.done()
-}

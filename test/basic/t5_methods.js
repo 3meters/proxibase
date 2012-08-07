@@ -83,6 +83,7 @@ var
 
 
 // get version info and also make sure the server is responding
+// george:  I think this should be a server API rather than a db lookup
 exports.lookupVersion = function (test) {
   var req = new Req({
     uri: '/do/find',
@@ -503,3 +504,24 @@ exports.checkDeleteObservation = function(test) {
     test.done()
   })
 }
+
+exports.userCannotCommentOnLockedRecord = function(test) {
+  log('nyi')
+  test.done()
+}
+
+exports.userCannotLinkToLockedRecord = function(test) {
+  log('nyi')
+  test.done()
+}
+
+exports.adminCanCommentOnLockedRecord = function(test) {
+  log('nyi')
+  test.done()
+}
+
+exports.adminCanLinkToLockedRecord = function(test) {
+  log('nyi')
+  test.done()
+}
+
