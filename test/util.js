@@ -7,12 +7,11 @@ var
   request = require('request'),
   util = require('../lib/util'),
   constants = require('./constants'),
-  config = util.findConfig('configtest.js'),
-  serverUrl = util.getRootUrl(config)
+  config = util.findConfig('configtest.js')
 
 
 // Base Uri all test requests call, can be overridden by callers
-exports.serverUrl = serverUrl
+exports.serverUrl = util.getRootUrl(config)
 
 
 // Request options constructor
@@ -28,8 +27,8 @@ var Req = exports.Req = function(options) {
     this[key] = options[key]
   }
 
-  if (this.uri) this.uri = serverUrl + this.uri
-  else this.uri = serverUrl
+  if (this.uri) this.uri = exports.serverUrl + this.uri
+  else this.uri = exports.serverUrl
 
   this.method = this.method || 'post'
 
