@@ -6,24 +6,45 @@ Web: https://www.proxibase.com
 API: https://api.proxibase.com
 
 ## Users and Admins
-TODO:
+Each user account has a role.  The only valid roles are 'user', the default, and 'admin'.  When the server starts it checks for a user with _id 00000.000000.00000.000.00000.  If it does not exist the server creates the user with 
 
-## Creating New Users
-TODO: 
+    {
+      _id: '00000.000000.00000.000.00000',
+      email: 'admin',
+      name: 'admin',
+      role: 'admin',
+      password: 'admin'
+    }
+    
+Users or tests can log in with these credentials to perform administrative tasks.
+
+With a few exeptions, admins can perform any operation on the server that would be prevented by permissions.  Users, in general, can read everything, write records to most tables, and can update records that they own.  Users cannot update or delete records owned by other users.
+
+### Creating New Users
+See the guidelines for posting below, but the api is 
+
+    path: /user/create
+    method: post
+    body:  {data: {
+      email: <email>
+      password: <password>
+    }}
+
+all other fields are optional.  Note that user issuing this call does not need to be signed in.  We have a TODO to add a captcha feature to prevent robots from abusing this API.
 
 ## AUTHENTICATION
-Users can be authenticated locally with a password, or by a oauth provider such as Facebook, Twitter, or Google.  Their authentication source is stored in the users.authSource field which is required.  Valid values may be found in util.statics.authSources.  The users table now requires either a password or valid oauth credentials to be stored before a user record to be created.  User emails must be unique.
+Users can be authenticated locally with a password, or by a oauth provider such as Facebook, Twitter, or Google.  Their authentication source is stored in the users.authSource field which is required.  Valid values may be found in util.statics.authSources.  The users table now requires either a password or valid oauth credentials to be stored before a user record to be created, with the exception of the /user/create api described above.  User emails must be unique.
 
 ### Local
 If a new user is created with a password we assume the authSource is local.  We validate that the password is sufficiently strong before saving, and we save a one-way hash of the password the user entered.  See the users schema for the password rules and hash methods.
 
 Users sign in via a new api:
 
-    /auth/signin
+    path: /auth/signin
     method: post
     body: {
       user: {
-        name: (name or email will work, case-insensitive)
+        email: (case-insensitive)
         password: password  (case-sensitive)
       }
     }
@@ -47,16 +68,16 @@ If you pass invaild session credentials the request will fail with a 401 (not au
 
 Sessions can be destroyed via
 
-    /auth/signout
-    method: post
-    body: {
-      user: user._id
-      session: session.key
-    }
+    path: /auth/signout
+    method: get
+
+    with user and session passed in as query parameters
+
+### Passwords
 
 User passwords can no longer be updated via the ordinary rest methods, but can only be changed via a new change password api:
 
-    /user/changepw  
+    path: /user/changepw  
     method: post
     body: {
       user:{
@@ -70,7 +91,8 @@ User passwords can no longer be updated via the ordinary rest methods, but can o
 
 Signin via ouath like so:
 
-    /auth/signin/facebook|twitter|google
+    path: /auth/signin/facebook|twitter|google
+    method: get
 
 session management after a sucessful authentication is the same as with local authentication.  If the user authenticates via an oauth provider, we store their provider credentials and user key, allowing us to access their picture and other provider specific data (friends, followers, etc) on their behalf.  
 

@@ -17,6 +17,7 @@ var
   adminCred = '',
   userCred = '',
   session = {},
+  adminSession = {},
   _exports = {},                    // for commenting out tests
   util = require('../../lib/util'),
   log = util.log
@@ -43,6 +44,7 @@ exports.canSignInAsAdmin = function(test) {
     check(req, res)
     assert(res.body.user)
     assert(res.body.session)
+    adminSession = res.body.session
     // These credentials will be useds in subsequent tests
     adminCred = 'user=' + res.body.user._id + '&session=' + res.body.session.key
     test.done()
@@ -343,4 +345,21 @@ exports.annonymousUserCanCreateUserViaApi = function(test) {
   })
 }
 
+exports.userCanSignOutViaGet = function(test) {
+  var req = new Req({
+    uri: '/auth/signout?' + userCred,
+    method: 'get'
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    var req2 = new Req({
+      uri: '/data/users?' + userCred,
+      method: 'get'
+    })
+    request(req2, function(err, res) {
+      check(req, res, 401)
+      test.done()
+    })
+  })
+}
 
