@@ -2,7 +2,6 @@
   "name": "proxibase",
   "private": true,
   "description": "Proxibase service",
-  "version": "0.03.0000",
   "author": "George Snelling <george@3meters.com>",
 
   "contributors": [
