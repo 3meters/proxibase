@@ -30,7 +30,9 @@ See the guidelines for posting below, but the api is
       password: <password>
     }}
 
-all other fields are optional.  Note that user issuing this call does not need to be signed in.  We have a TODO to add a captcha feature to prevent robots from abusing this API.
+all other fields are optional.  Note that user issuing this call does not need to be signed in.  We have a TODO to add a captcha feature to prevent robots from abusing this API.  On successful account creation, the service signs in the user, creating a new session object.  The complete user and session object are returned to the caller.
+
+Note that on success this call sets return status code to 200, not 201 and one might expect.  This is due to doubleing us the signin call.  
 
 ## AUTHENTICATION
 Users can be authenticated locally with a password, or by a oauth provider such as Facebook, Twitter, or Google.  Their authentication source is stored in the users.authSource field which is required.  Valid values may be found in util.statics.authSources.  The users table now requires either a password or valid oauth credentials to be stored before a user record to be created, with the exception of the /user/create api described above.  User emails must be unique.

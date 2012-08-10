@@ -89,7 +89,7 @@ exports.insert100Users = function(test) {
       body: {data: user}
     })
     request(req, function(err, res) {
-      check(req, res, 201)
+      check(req, res)
       if (res.body.count) cRecs += res.body.count
       return insertUser(i)
     })

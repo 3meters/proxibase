@@ -96,10 +96,10 @@ function getSession(user, asAdmin, fn) {
       })
       request(req, function(err, res) {
         if (err) throw err
-        check(req, res, 201)
-        assert(res.body.data._id)
-        user._id = res.body.data._id
-        return getSession(user, false, fn) // test user exists now, try again
+        check(req, res)
+        assert(res.body.user)
+        assert(res.body.session)
+        fn(res.body.session)
       })
     }
     else {
