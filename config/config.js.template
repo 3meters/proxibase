@@ -16,7 +16,7 @@ module.exports = {
       caFilePath: null
     }
   },
-  log: 1,                                // 0, 1, 2  higher numbers mean more log output
+  log: 1,                                // 0, 1, 2, 3 higher numbers mean more log output
   perflog: '/var/log/prox/perf.csv',     // set to null to skip logging perf metrics
   db: {
     host: 'localhost',
