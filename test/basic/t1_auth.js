@@ -334,13 +334,15 @@ exports.userCannotAddUserViaRest = function(test) {
 exports.annonymousUserCanCreateUserViaApi = function(test) {
   var req = new Req({
     uri: '/user/create',
-    body: {data: {name: 'My Daddy Is A Robot', 
+    body: {data: {name: 'My Daddy May Be A Robot', 
       email: 'imaNewUser2@bar.com', 
       password: 'foobar'}
     }
   })
   request(req, function(err, res) {
-    check(req, res, 201)
+    check(req, res)
+    assert(res.body.user)
+    assert(res.body.session)
     test.done()
   })
 }
