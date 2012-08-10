@@ -41,6 +41,7 @@ cli
   .option('-s, --server <url>', 'Server url')
   .option('-t, --testdir <dir>', 'Test directory')
   .option('-b, --basic', 'Only run the basic tests')
+  .option('-n, --none', 'Do not run any tests -- just ensure the test db')
   .option('-l, --log <file>', 'Test server log file [' + logFile + ']')
   .parse(process.argv)
 
@@ -186,6 +187,7 @@ function ensureDb(options, callback) {
 
 
 function runTests() {
+  if (cli.none) finish()
   var dirs = testDirs
   if (cli.basic) dirs = basicDirs
   log('\nTesting: ' + serverUrl)
