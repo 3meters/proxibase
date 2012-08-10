@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# production proxibase startup script using nodemon
-# see https://github.com/remy/nodemon
+# Production proxibase startup script using nodemon
+# See https://github.com/remy/nodemon
 
 if [ ! $PROX ]; then
   PROX='/usr/local/prox'
@@ -11,15 +11,16 @@ if [ ! $PROXLOG ]; then
   PROXLOG='/var/log/prox/prox.log'
 fi
 
-# clean the existing log
-if [ "$1" = "-c" ]; then
+# Replace the existing log, must be the first argument
+if [ "$1" = "-r" ]; then
   rm $PROXLOG
+  shift
 fi
 
 echo "proxlog: $PROXLOG ..."
 
 cd $PROX
-nohup nodemon --watch ./lib --delay 1 ./prox.js >>$PROXLOG 2>&1 &
+nohup nodemon --watch ./lib --delay 2 ./prox.js $@ >>$PROXLOG 2>&1 &
 
 # TODO: we should capture the process ID and stash so we can kill it specifically later
 

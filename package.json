@@ -29,7 +29,7 @@
   },
 
   "repository": "git://github.com:georgesnelling/proxibase",
-  "main": "prox",
+  "main": "prox.js",
   "engines": { "node": ">= 0.6.9 < 7" }
 
 }
