@@ -12,7 +12,7 @@ var
 
 
 // Base Uri all test requests call, can be overridden by callers
-exports.serverUrl = util.getRootUrl(config)
+exports.serverUrl = config.service.url
 
 
 // Request options constructor
