@@ -68,17 +68,13 @@ module.exports = function(profile, callback) {
     db = mongoskin.db(dbUri + '?auto_reconnect')
     db.dropDatabase(function(err) {
       if (err) throw err
-      ensureIndices(config, function(err) {
-        if (err) throw err
-        ensureAdminUser(callback) 
-      })
+      initDatabase(config, callback)
     })
   }
 }
 
 // Ensure the database has the indexes defined by the service's models
-function ensureIndices(config, callback) {
-  log('Creating database and ensuring indeces')
+function initDatabase(config, callback) {
   goose.connect(config, function(err, connection) {
     if (err) throw err
     gdb = connection
@@ -87,20 +83,10 @@ function ensureIndices(config, callback) {
     gdb.models.users.find({_id:-1}, function(err) {
       if (err) throw err
       log('Database Ok\nSaving to database...')
-      return callback(err)
+      run(callback)
     })
   })
 }
-
-
-function ensureAdminUser(callback) {
-  util.ensureAdminUser(gdb, function(err, adminUser) {
-    if (err) throw err
-    if (!adminUser) throw new Error('Could not create admin user')
-    run(callback)
-  })
-}
-
 
 function run(callback) {
   genUsers()
