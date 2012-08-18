@@ -52,7 +52,7 @@ exports.canSignInAsAdmin = function(test) {
 }
 
 
-exports.cannotAddUserWithoutEmail = function(test) {
+exports.adminCannotAddUserWithoutEmail = function(test) {
   var req = new Req({
     uri: '/data/users?' + adminCred,
     body: {data: {name: 'bob', password: 'foobar'}}
@@ -65,7 +65,7 @@ exports.cannotAddUserWithoutEmail = function(test) {
 }
 
 
-exports.cannotAddUserWithoutPassword = function(test) {
+exports.adminCannotAddUserWithoutPassword = function(test) {
   var req = new Req({
     uri: '/data/users?' + adminCred,
     body: {data: {email: 'foo@bar.com'}}
@@ -92,7 +92,7 @@ exports.adminCanAddUserViaRest = function(test) {
 }
 
 
-exports.cannotAddUserWithDupeEmail = function(test) {
+exports.adminCannotAddUserWithDupeEmail = function(test) {
   var req = new Req({
     uri: '/data/users?' + adminCred,
     body: {data: testUser}
@@ -105,7 +105,7 @@ exports.cannotAddUserWithDupeEmail = function(test) {
 }
 
 
-exports.cannotSignInWithWrongFields = function(test) {
+exports.userCannotSignInWithWrongFields = function(test) {
   var req = new Req({
     uri: '/auth/signin',
     body: {user: {name: 'Not a user', password: 'password'}}
@@ -118,7 +118,7 @@ exports.cannotSignInWithWrongFields = function(test) {
 }
 
 
-exports.cannotSignInWithBadEmail = function(test) {
+exports.userCannotSignInWithBadEmail = function(test) {
   var req = new Req({
     uri: '/auth/signin',
     body: {user: {email: 'billy@notHere', password: 'wrong'}}
@@ -131,7 +131,7 @@ exports.cannotSignInWithBadEmail = function(test) {
 }
 
 
-exports.cannotSignInWithBadPassword = function(test) {
+exports.userCannotSignInWithBadPassword = function(test) {
   var req = new Req({
     uri: '/auth/signin',
     body: {user: {email: testUser.email, password: 'wrong'}}
@@ -144,7 +144,7 @@ exports.cannotSignInWithBadPassword = function(test) {
 }
 
 
-exports.canSignInAsUser = function(test) {
+exports.userCanSignIn = function(test) {
   var req = new Req({
     uri: '/auth/signin',
     body: {user: {email: testUser.email, password: testUser.password}}
@@ -164,7 +164,7 @@ exports.canSignInAsUser = function(test) {
 }
 
 
-exports.canSignInWithDifferentCasedEmail = function(test) {
+exports.userCanSignInWithDifferentCasedEmail = function(test) {
   var req = new Req({
     uri: '/auth/signin',
     body: {user: {email: testUser.email.toUpperCase(), password: testUser.password}}
@@ -181,7 +181,7 @@ exports.canSignInWithDifferentCasedEmail = function(test) {
 }
 
 
-exports.cannotValidateSessionWithBadUser = function(test) {
+exports.cannotValidateSessionWithBogusUser = function(test) {
   var req = new Req({
     method: 'get',
     uri: '/data/users?user=bogus&session=' + session.key
@@ -194,7 +194,7 @@ exports.cannotValidateSessionWithBadUser = function(test) {
 }
 
 
-exports.cannotValidateSessionWithBadKey = function(test) {
+exports.cannotValidateSessionWithBogusKey = function(test) {
   var req = new Req({
     method: 'get', 
     uri: '/data/users?user=' + session._owner + '&session=bogus'
@@ -210,7 +210,7 @@ exports.cannotValidateSessionWithBadKey = function(test) {
 exports.canValidateSession = function(test) {
   var req = new Req({
     method: 'get', 
-    uri: '/data/users?user=' + session._owner + '&session=' + session.key
+    uri: '/data/documents?user=' + session._owner + '&session=' + session.key
   })
   request(req, function(err, res) {
     check(req, res)
@@ -225,7 +225,7 @@ exports.canValidateSession = function(test) {
 exports.canValidateSessionUsingParamsInBody = function(test) {
   var req = new Req({
     uri: '/do/find',
-    body: {table: 'users', user: session._owner, session: session.key}
+    body: {table: 'documents', user: session._owner, session: session.key}
   })
   request(req, function(err, res) {
     check(req, res)
@@ -348,7 +348,7 @@ exports.annonymousUserCanCreateUserViaApi = function(test) {
   })
 }
 
-exports.userCanSignOutViaGet = function(test) {
+exports.userCanSignOut = function(test) {
   var req = new Req({
     uri: '/auth/signout?' + userCred,
     method: 'get'
