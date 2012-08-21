@@ -1,5 +1,6 @@
 {
   "name": "proxibase",
+  "version": "0.3.0",
   "private": true,
   "description": "Proxibase service",
   "author": "George Snelling <george@3meters.com>",
