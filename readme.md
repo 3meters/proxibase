@@ -174,16 +174,16 @@ or
     }
 
 ### POST /data/tablename
-Inserts req.body.data or req.body.data[0] into the tablename table.  If a value for _id is specified it will be used, otherwise the server will generate a value for _id.  Only one record may be inserted per request. If you specifiy values for any of the system fields, those values will be stored.  If you do not the system will generates defaults for you.
+Inserts req.body.data or req.body.data[0] into the tablename table.  If a value for _id is specified it will be used, otherwise the server will generate a value for _id.  Only one record may be inserted per request. If you specifiy values for any of the system fields, those values will be stored.  If you do not the system will generates defaults for you.  The return value is all fields of the newly created record inside a data tag.  If you just want the _id back, include request.body.terse = true in your request.
 
 ### POST /data/tablename/ids:id1
-Updates the record with _id = id1 in tablename.  Non-system fields not inlucded in request.body.data or request.body.data[0] will not be modified.
+Updates the record with _id = id1 in tablename.  Non-system fields not inlucded in request.body.data or request.body.data[0] will not be modified. The return value is all fields of the modified record inside a data tag.  If you just want the _id back, include request.body.terse = true in youir request.  
 
 ### DELETE /data/tablename/ids:id1,id2
 Deletes those records.
 
 ### DELETE /data/tablename/ids:*
-Deletes all records in the table.
+Deletes all records in the table (admins only)
 
 <a name="webmethods"></a>
 ## Custom Web Methods
