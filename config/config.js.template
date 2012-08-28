@@ -24,6 +24,8 @@ module.exports = {
     database: 'prox',                    // dev:prox test:smokeData stage:stage production:prox
     options: {
       auto_reconnect: true,
+      safe: true,
+      strict: false,
       poolSize: 3
     }
   },

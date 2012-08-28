@@ -92,6 +92,19 @@ exports.adminCanAddUserViaRest = function(test) {
 }
 
 
+exports.adminCannotChangeValidateDateViaRest = function(test) {
+  var req = new Req({
+    uri: '/data/users/ids:' + testUser._id + '?' + adminCred,
+    body: {data: {validationDate: util.getTimeUTC()}}
+  })
+  request(req, function(err, res) {
+    check(req, res, 403)  // forbidden
+    assert(res.body.error.code === 403.22)
+    test.done()
+  })
+}
+
+
 exports.adminCannotAddUserWithDupeEmail = function(test) {
   var req = new Req({
     uri: '/data/users?' + adminCred,
@@ -289,7 +302,16 @@ exports.userCanChangePassword = function(test) {
   })
   request(req, function(err, res) {
     check(req, res)
-    test.done()
+    var req2 = new Req({
+      uri: '/auth/signin',
+      body: {user: {email: testUser.email, password: 'newpassword'}}
+    })
+    request(req2, function(err, res) {
+      check(req2, res)
+      assert(res.body.user)
+      assert(res.body.session)
+      test.done()
+    })
   })
 }
 
@@ -340,13 +362,17 @@ exports.annonymousUserCanCreateUserViaApi = function(test) {
       password: 'foobar'}
     }
   })
+  // Signs the user in as well
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.user)
+    assert(!res.body.user.validationDate)
     assert(res.body.session)
     test.done()
   })
 }
+
+
 
 exports.userCanSignOut = function(test) {
   var req = new Req({
