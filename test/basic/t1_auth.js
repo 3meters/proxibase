@@ -11,7 +11,7 @@ var
   dump = testUtil.dump,
   testUser = {
     name: 'AuthTestUser',
-    email: 'authUser@bar.com',
+    email: 'authtest@3meters.com',
     password: 'foobar'
   }
   adminCred = '',
@@ -89,6 +89,15 @@ exports.adminCanAddUserViaRest = function(test) {
     testUser._id = res.body.data._id
     test.done()
   })
+}
+
+exports.userCanValidateEmail = function(test) {
+  // TODO: implement.  This will require the node imap module to log into
+  // the test user mail account, receive and parse the notification mail,
+  // send the get request embeded in the mail, and confirm that the 
+  // validation flag is properle set on the user record
+  log('nyi')
+  test.done()
 }
 
 
@@ -341,10 +350,24 @@ exports.adminCanChangeRoles = function(test) {
 }
 
 
+exports.changingEmailResetsValidationNotifyDate = function(test) {
+  var req = new Req({
+    uri: '/data/users/ids:' + testUser._id + '?' + userCred,
+    body: {data: {email: 'authtest3@3meters.com'}}
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    // TODO: check that validation mail was resent to new email address
+    assert(!res.body.data.validationNotifyDate)
+    test.done()
+  })
+}
+
+
 exports.userCannotAddUserViaRest = function(test) {
   var req = new Req({
     uri: '/data/users?' + userCred,
-    body: {data: {email: 'authNoRest@bar.com', password: 'foobar'}}
+    body: {data: {email: 'authNoRest@3meters.com', password: 'foobar'}}
   })
   request(req, function(err, res) {
     check(req, res, 401)
@@ -357,8 +380,8 @@ exports.userCannotAddUserViaRest = function(test) {
 exports.annonymousUserCanCreateUserViaApi = function(test) {
   var req = new Req({
     uri: '/user/create',
-    body: {data: {name: 'My Daddy May Be A Robot', 
-      email: 'imaNewUser2@bar.com', 
+    body: {data: {name: 'AuthTestUser2',
+      email: 'authtest2@3meters.com',
       password: 'foobar'}
     }
   })
@@ -371,7 +394,6 @@ exports.annonymousUserCanCreateUserViaApi = function(test) {
     test.done()
   })
 }
-
 
 
 exports.userCanSignOut = function(test) {
@@ -392,9 +414,4 @@ exports.userCanSignOut = function(test) {
   })
 }
 
-exports.resetPasswordEmailSends = function(test) {
-  // This may be unix-only
-  log('nyi')
-  test.done()
-}
 

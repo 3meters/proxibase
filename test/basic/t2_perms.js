@@ -15,12 +15,12 @@ var
   user2Cred = '',
   user1 = {
     name: 'Perm Test User 1',
-    email: 'permTestUser1@bar.com',
+    email: 'permtest1@3meters.com',
     password: 'foobar'
   },
   user2 = {
     name: 'Perm Test User 2',
-    email: 'permTestUser2@bar.com',
+    email: 'permtest2@3meters.com',
     password: 'foobar'
   },
   doc1 = {
@@ -50,13 +50,14 @@ exports.signInAsAdmin = function(test) {
 
 exports.addUser1 = function(test) {
   var req = new Req({
-    uri: '/data/users?' + adminCred,
-    body: {data:user1}
+    uri: '/user/create?' + adminCred,
+    body: {data: user1, noValidate: true}
   })
   request(req, function(err, res) {
-    check(req, res, 201)
-    assert(res.body.data && res.body.data._id)
-    user1._id = res.body.data._id
+    check(req, res)
+    assert(res.body.session)
+    assert(res.body.user && res.body.user._id)
+    user1._id = res.body.user._id
     test.done()
   })
 }
@@ -64,13 +65,14 @@ exports.addUser1 = function(test) {
 
 exports.addUser2 = function(test) {
   var req = new Req({
-    uri: '/data/users?' + adminCred,
-    body: {data:user2}
+    uri: '/user/create?' + adminCred,
+    body: {data: user2, noValidate: true}
   })
   request(req, function(err, res) {
-    check(req, res, 201)
-    assert(res.body.data && res.body.data._id)
-    user2._id = res.body.data._id
+    check(req, res)
+    assert(res.body.session)
+    assert(res.body.user && res.body.user._id)
+    user2._id = res.body.user._id
     test.done()
   })
 }
