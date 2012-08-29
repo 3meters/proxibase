@@ -45,8 +45,8 @@ var Req = exports.Req = function(options) {
 
 
 var testUser = {
-  name: 'Test User 0',
-  email: 'testuser0@bar.com',
+  name: 'Test User',
+  email: 'test@3meters.com',
   password: 'foobar'
 }
 
@@ -92,7 +92,7 @@ function getSession(user, asAdmin, fn) {
       // create user
       var req = new Req({
         uri: '/user/create',
-        body: {data: user}
+        body: {data: user, noValidate: true}
       })
       request(req, function(err, res) {
         if (err) throw err

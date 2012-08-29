@@ -75,6 +75,7 @@ exports.cannotPostWithMultipleArrayElements = function(test) {
 }
 
 
+// TODO: only enforced by REST.  Custom methods bypass
 exports.cannotPostWithNonSchemaFields = function(test) {
   var req = new Req({
     uri: '/data/documents?' + userCred,
