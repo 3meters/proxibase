@@ -6,13 +6,15 @@ var
   assert = require('assert'),
   request = require('request'),
   util = require('../lib/util'),
-  constants = require('./constants'),
-  config = util.loadConfig('configtest.js'),
-  serverUrl = config.service.url
+  constants = require('./constants')
+
+
+// Load the test config file
+util.loadConfig('configtest.js')
 
 
 // Base Uri all test requests call, can be overridden by callers
-exports.serverUrl = config.service.url
+exports.serverUrl = util.config.service.url
 
 
 // Request options constructor
