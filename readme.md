@@ -1,9 +1,9 @@
 # Proxibase
 Proxibase is the backing service for 3meters aircandi and related services
 
-Web: https://www.proxibase.com
+Web: https://www.aircandi.com
 
-API: https://api.proxibase.com
+API: https://api.aircandi.com
 
 ## Users and Admins
 Each user account has a role.  The only valid roles are 'user', the default, and 'admin'.  When the server starts it checks for a user with _id 00000.000000.00000.000.00000.  If it does not exist the server creates the user with 
@@ -99,7 +99,7 @@ Signin via ouath like so:
 session management after a sucessful authentication is the same as with local authentication.  If the user authenticates via an oauth provider, we store their provider credentials and user key, allowing us to access their picture and other provider specific data (friends, followers, etc) on their behalf.  
 
 ## REST API
-### GET https://api.proxibase.com/schema/<tableName>
+### GET https://api.aircandi.com/schema/<tableName>
 
 Returns a table's schema
 
@@ -187,7 +187,7 @@ Deletes all records in the table (admins only)
 
 <a name="webmethods"></a>
 ## Custom Web Methods
-[https://api.proxibase.com/do](https://api.proxibase.com/do)
+[https://api.aircandi.com/do](https://api.aircandi.com/do)
 
 Lists the web methods. POST to /do/methodName executes a method passing in the full request and response objects. The request body must be in JSON format. 
 

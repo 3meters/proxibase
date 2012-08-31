@@ -1,14 +1,14 @@
 
 Proxibase Tests
 
-Last Updated: 6/15/12
+Last Updated: 8/30/12
 
 The easiest way to run the tests is to make sure you have a configtest.js file
 in your $PROX directory. See config.js.template for settings that should
 change from the defaults The tests now automatically ensure they start using a
 clean generated database, and will start the test server automatically.
 
-The tests expect a database that is created from tools/genData.js.  Generally
+The tests expect a database that is created from tools/pump/genData.js.  Generally
 this is run infrequently, and saved as smokeDataTemplate in mongoose.  When
 the tests are run this is copied over smokeData.  If your template is stale,
 and doesn't match the current tests, simply drop the template like so:
@@ -30,9 +30,10 @@ Run the tests automatically
     cd $PROX/test
     node run
 
-The test server's output will be written to $PROX/test/testServer.log
+The test server's output will be written to testServer.log in the 
+current directory.
 
-see node testprox -h for addtional command line options
+see node $PROX/test/run -h for addtional command line options
 
 
 
@@ -58,6 +59,6 @@ see node prox -h for additional command line options
 $. Run the tests
 
     cd $PROX/test
-    nodeunit tests
+    nodeunit basic (or whatever test dir you want) 
 
 
