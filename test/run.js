@@ -20,15 +20,15 @@ var
   dbProfile = require('./constants').dbProfile,
   testUtil = require('./util'),
   configFile = 'configtest.js',
+  config,
   basicDirs = ['basic'],
-  testDirs = ['basic', 'oauth', 'perf'],
+  testDirs = ['basic', 'oauth', 'perf', 'admin'],
   logFile = 'testServer.log',
   logStream,
   cwd = process.cwd(),
   testServer,
   testServerStarted = false,
-  config = util.loadConfig(configFile),
-  serverUrl = config.service.url,
+  serverUrl,
   log = util.log
 
 
@@ -47,82 +47,27 @@ cli
 
 
 // Process command-line interface flags
+if (cli.testdir) testDirs = cli.testdir
+if (cli.log) logFile = cli.log
+
 if (cli.server) {
-  serverUrl = testUtil.serverUrl = cli.server
   // This option is used for running tests locally against a remote server
   // Assume it is already running and go
+  serverUrl = testUtil.serverUrl = cli.server
   return runTests()
 }
 else {
-  if (cli.config) {
-    configFile = cli.config
-    config = util.loadConfig(configFile)
-    serverUrl = testUtil.serverUrl = config.service.url
-  }
-}
-if (cli.testdir) testDirs = [cli.testdir]
-if (cli.log) logFile = cli.log
 
+  // Load the config file
+  util.loadConfig(cli.config || configFile)
+  config = util.config
+  serverUrl = testUtil.serverUrl = util.config.service.url
 
-// Make sure the right database exists and the test server is running
-ensureDb(dbProfile.smokeTest, function(err) {
-  if (err) throw err
-  ensureServer()
-})
-
-
-// Ensure the test server is running.  If not start one and pipe its log to a file
-function ensureServer() {
-
-  log('Checking for test server ' + serverUrl)
-
-  // Make sure the test server is running
-  req.get(serverUrl, function(err, res) {
-
-    if (err) { // Start the test server
-
-      // If not absolute path prepend the user's current directory
-      var first = logFile.charAt(0)
-      if (first != '/' && first != '\\' && first != '~') logFile = cwd + '/' + logFile
-      logStream = fs.createWriteStream(logFile)
-      logStream.write('\nTest Server Log')
-
-      log('Starting test server ' + serverUrl + ' using config ' + configFile)
-      log('Test server log: ' + logFile)
-      testServer = spawn('node', [__dirname + '/../prox', '--config', configFile])
-    }
-    else {  // Test server is already running
-      return runTests()
-    }
-
-    logStream.on('error', function(err) {
-      throw err
-    })
-
-    testServer.stdout.setEncoding('utf8')
-    testServer.stderr.setEncoding('utf8')
-
-    testServer.stderr.on('data', function(data) {
-      logStream.write(data)
-      util.logErr(data)
-    })
-
-    testServer.stderr.on('exit', function(code) {
-      util.logErr('Fatal: could not start test server. Code ' + code)
-      process.exit(code)
-    })
-
-    testServer.stdout.on('data', function(data) {
-      logStream.write(data)
-      // Parse output to see if sever is ready. Fragile!
-      if (data.indexOf('listen') >= 0) {
-        testServerStarted = true
-        req.get(serverUrl + '/data/users', function(err, res) {
-          if (err) throw err
-          if (res.statusCode !== 200) throw new Error('Could not get /data/users, aborting test')
-          return runTests()
-        })
-      }
+  // Make sure the right database exists and the test server is running
+  ensureDb(dbProfile.smokeTest, function(err) {
+    if (err) throw err
+    ensureServer(function() {
+      runTests()
     })
   })
 }
@@ -141,7 +86,8 @@ function ensureDb(options, callback) {
   var
     database = options.database,
     template = database + 'Template',
-    db = mongoskin.db(config.db.host + ':' + config.db.port +  '/' + database + '?auto_reconnect')
+    db = mongoskin.db(util.config.db.host + ':' + util.config.db.port +
+        '/' + database + '?auto_reconnect')
 
   db.dropDatabase(function(err, done) {
     if (err) throw err
@@ -180,6 +126,59 @@ function ensureDb(options, callback) {
           log('Database copied in ' + timer.read() + ' seconds')
           return callback()    // Finished
        })
+      }
+    })
+  })
+}
+
+
+// Ensure the test server is running.  If not start one and pipe its log to a file
+function ensureServer(callback) {
+
+  log('Checking for test server ' + serverUrl)
+
+  // Make sure the test server is running
+  req.get(serverUrl, function(err, res) {
+
+    if (err) { // Start the test server
+
+      // If not absolute path prepend the user's current directory
+      var first = logFile.charAt(0)
+      if (first != '/' && first != '\\' && first != '~') logFile = cwd + '/' + logFile
+      logStream = fs.createWriteStream(logFile)
+      logStream.write('\nTest Server Log')
+
+      log('Starting test server ' + serverUrl + ' using config ' + configFile)
+      log('Test server log: ' + logFile)
+      testServer = spawn('node', [__dirname + '/../prox', '--config', configFile])
+    }
+    else {  // Test server is already running
+      return callback()
+    }
+
+    logStream.on('error', function(err) {
+      throw err
+    })
+
+    testServer.stdout.setEncoding('utf8')
+    testServer.stderr.setEncoding('utf8')
+
+    testServer.stderr.on('data', function(data) {
+      logStream.write(data)
+      util.logErr(data)
+    })
+
+    testServer.stderr.on('exit', function(code) {
+      util.logErr('Fatal: could not start test server. Code ' + code)
+      process.exit(code)
+    })
+
+    testServer.stdout.on('data', function(data) {
+      logStream.write(data)
+      // Parse server stdout to see if server is ready. Fragile!
+      if (!testServerStarted && data.indexOf(config.service.name + ' listening') === 0) {
+        testServerStarted = true
+        return callback()
       }
     })
   })

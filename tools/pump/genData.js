@@ -34,6 +34,8 @@ var
 
 module.exports = function(profile, callback) {
 
+  util.loadConfig() // Use the default config
+
   startTime = new Date().getTime() // start program timer
 
   for (key in profile) {
@@ -50,7 +52,7 @@ module.exports = function(profile, callback) {
 
   else {
     // save to database
-    var config = util.loadConfig()            // Use the default server database connection
+    var config = util.config           // Use the default server database connection
     config.db.database = options.database     // Override database name
     var dbUri = config.db.host + ':' + config.db.port +  '/' + config.db.database
 
