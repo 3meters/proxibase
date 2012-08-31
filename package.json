@@ -22,7 +22,6 @@
     "nodemailer": "*",
     "request": "*",
     "authom": "*",
-    "jsdom": "*",
     "ejs": "*",
     "jade": "*",
     "stylus": "*"
