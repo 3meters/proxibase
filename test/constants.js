@@ -105,7 +105,7 @@ defaultRecord.beacons = {
 
 defaultRecord.entities = {
   _id: entityId,
-  type: 'com.proxibase.aircandi.candi.picture',
+  type: 'com.aircandi.candi.picture',
   label: 'Mona Lisa',
   title: 'Mona Lisa',
   subtitle: 'Leonardo daVinci',

@@ -42,7 +42,7 @@ var
     label : "Testing candi",
     signalFence : -100,
     title : "Testing candi",
-    type : "com.proxibase.aircandi.candi.picture",
+    type : "com.aircandi.candi.picture",
     visibility : "public",
     enabled : true,
     locked : false,
