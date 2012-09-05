@@ -16,6 +16,7 @@ var
   }
   adminCred = '',
   userCred = '',
+  userOldCred = '',
   session = {},
   adminSession = {},
   _exports = {},                    // for commenting out tests
@@ -319,8 +320,35 @@ exports.userCanChangePassword = function(test) {
       check(req2, res)
       assert(res.body.user)
       assert(res.body.session)
+      userOldCred = userCred
+      userCred = 'user=' + res.body.session._owner + '&session=' + res.body.session.key
+      assert(userCred != userOldCred)
       test.done()
     })
+  })
+}
+
+
+exports.changingPasswordDestroysOldSession = function(test) {
+  var req = new Req({
+    method: 'get',
+    uri: '/data/documents?' + userOldCred
+  })
+  request(req, function(err, res) {
+    check(req, res, 401)
+    test.done()
+  })
+}
+
+
+exports.changingPasswordsCreatesNewSession = function(test) {
+  var req = new Req({
+    method: 'get',
+    uri: '/data/documents?' + userCred
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    test.done()
   })
 }
 
@@ -359,6 +387,31 @@ exports.changingEmailResetsValidationNotifyDate = function(test) {
     check(req, res)
     // TODO: check that validation mail was resent to new email address
     assert(!res.body.data.validationNotifyDate)
+    test.done()
+  })
+}
+
+exports.changingEmailInvalidatesOldSession = function(test) {
+  var req = new Req({
+    method: 'get',
+    uri: '/data/documents?' + userCred,
+  })
+  request(req, function(err, res) {
+    check(req, res, 401)
+    assert(res.body.error.code === 401.1)
+    test.done()
+  })
+}
+
+exports.userCanSignInWithNewEmail = function(test) {
+  var req = new Req({
+    uri: '/auth/signin',
+    body: {user: {email: 'authtest3@3meters.com', password: 'newpassword'}}
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.session)
+    userCred = 'user=' + res.body.session._owner + '&session=' + res.body.session.key
     test.done()
   })
 }
