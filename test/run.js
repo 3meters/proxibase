@@ -47,7 +47,7 @@ cli
 
 
 // Process command-line interface flags
-if (cli.testdir) testDirs = cli.testdir
+if (cli.testdir) testDirs = [cli.testdir]
 if (cli.log) logFile = cli.log
 
 if (cli.server) {
