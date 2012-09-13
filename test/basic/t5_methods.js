@@ -18,8 +18,8 @@ var
   user2Cred,
   adminCred,
   _exports = {}, // for commenting out tests
-  testLatitude = 50,
-  testLongitude = 50,
+  testLatitude = 46.1,
+  testLongitude = 121.1,
   testUser = {
     _id : "0000.111111.11111.111.111111",
     name : "John Q Test",
@@ -65,11 +65,11 @@ var
     bssid: '11:11:11:11:11:11',
     beaconType: 'fixed',
     visibility: 'public',
-    accuracy : 30,
-    altitude : 0,
     latitude : testLatitude,
     longitude : testLongitude,
-    speed : 0,
+    altitude : 12,
+    accuracy : 30,
+    level: -80,
     loc : [testLongitude, testLatitude]
   },
   testComment = {
@@ -267,6 +267,35 @@ exports.checkInsertBeacon = function(test) {
     // Creator and modifier should be user who first added them
     assert(res.body.data[0]._creator === testUser._id)
     assert(res.body.data[0]._modifier === testUser._id)
+    test.done()
+  })
+}
+
+exports.getEntitiesForBeaconsLocationUpdate = function (test) {
+  var req = new Req({
+    uri: '/do/getEntitiesForBeacons',
+    body: {beaconIdsNew:[testBeacon._id]
+      , eagerLoad:{children:true,comments:false}
+      , beaconLevels:[-80]
+      , observation: {accuracy:30.0, latitude:47.1, longitude: -122.1, altitude: 12}
+    }
+  })
+  request(req, function(err, res) {
+    check(req, res, 200)
+    test.done()
+  })
+}
+
+exports.checkLocationUpdate = function (test) {
+  var req = new Req({
+    uri: '/do/find',
+    body: {table:'beacons', find:{ _id:testBeacon._id }}
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.count === 1, dump(req, res))
+    assert(res.body.data[0].latitude === 47.1)
+    assert(res.body.data[0].latitude === 122.1)
     test.done()
   })
 }
