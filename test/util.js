@@ -94,7 +94,7 @@ function getSession(user, asAdmin, fn) {
       // create user
       var req = new Req({
         uri: '/user/create',
-        body: {data: user, noValidate: true}
+        body: {data: user, noValidate: true, secret: 'larissa'},
       })
       request(req, function(err, res) {
         if (err) throw err

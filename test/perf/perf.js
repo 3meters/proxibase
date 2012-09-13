@@ -86,7 +86,7 @@ exports.insert100Users = function(test) {
     user.password = 'foobar'
     var req = new Req({
       uri: '/user/create',
-      body: {data: user, noValidate: true}
+      body: {data: user, noValidate: true, secret: 'larissa'},
     })
     request(req, function(err, res) {
       check(req, res)

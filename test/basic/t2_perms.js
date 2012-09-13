@@ -51,7 +51,7 @@ exports.signInAsAdmin = function(test) {
 exports.addUser1 = function(test) {
   var req = new Req({
     uri: '/user/create?' + adminCred,
-    body: {data: user1, noValidate: true}
+    body: {data: user1, noValidate: true, secret: 'larissa'},
   })
   request(req, function(err, res) {
     check(req, res)
@@ -66,7 +66,7 @@ exports.addUser1 = function(test) {
 exports.addUser2 = function(test) {
   var req = new Req({
     uri: '/user/create?' + adminCred,
-    body: {data: user2, noValidate: true}
+    body: {data: user2, noValidate: true, secret: 'larissa'}
   })
   request(req, function(err, res) {
     check(req, res)
