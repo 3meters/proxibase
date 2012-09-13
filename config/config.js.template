@@ -10,6 +10,7 @@ module.exports = {
     host: 'localhost',
     host_external: 'aircandi.com',
     port: 8043,                          // 8043:dev 8044:test 444:stage 443:production
+    newAccountSecret: 'larissa',
     ssl: {
       keyFilePath: './keys/dev/dev.pem',
       certFilePath: './keys/dev/dev.crt',

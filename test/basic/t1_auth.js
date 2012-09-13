@@ -430,12 +430,53 @@ exports.userCannotAddUserViaRest = function(test) {
 }
 
 
-exports.annonymousUserCanCreateUserViaApi = function(test) {
+exports.annonymousUserCannotCreateUserViaApiWithoutSecret = function(test) {
   var req = new Req({
     uri: '/user/create',
     body: {data: {name: 'AuthTestUser2',
       email: 'authtest2@3meters.com',
       password: 'foobar'}
+    }
+  })
+  // Signs the user in as well
+  request(req, function(err, res) {
+    check(req, res, 400)
+    assert(res.body.error.code === 400.1)
+    test.done()
+  })
+}
+
+
+exports.annonymousUserCannotCreateUserViaApiWithWrongSecret = function(test) {
+  var req = new Req({
+    uri: '/user/create',
+    body: {
+      data: {name: 'AuthTestUser2',
+        email: 'authtest2@3meters.com',
+        password: 'foobar'
+      },
+      secret: 'wrongsecret'
+    }
+  })
+  // Signs the user in as well
+  request(req, function(err, res) {
+    check(req, res, 401)
+    assert(res.body.error.code === 401.3)
+    test.done()
+  })
+}
+
+
+exports.annonymousUserCanCreateUserViaApi = function(test) {
+  var req = new Req({
+    uri: '/user/create',
+    body: {
+      data: {
+        name: 'AuthTestUser2',
+        email: 'authtest2@3meters.com',
+        password: 'foobar'
+      },
+      secret: 'larissa'
     }
   })
   // Signs the user in as well
