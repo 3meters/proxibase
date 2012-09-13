@@ -286,7 +286,9 @@ exports.getEntitiesForBeaconsLocationUpdate = function (test) {
   })
 }
 
-exports.checkLocationUpdate = function (test) {
+// Warning:  this is checking the results of a fire-and-forget
+//   updated, and may fail due to timing
+exports.checkBeaconLocationUpdate = function (test) {
   var req = new Req({
     uri: '/do/find',
     body: {table:'beacons', find:{ _id:testBeacon._id }}
@@ -295,7 +297,7 @@ exports.checkLocationUpdate = function (test) {
     check(req, res)
     assert(res.body.count === 1, dump(req, res))
     assert(res.body.data[0].latitude === 47.1)
-    assert(res.body.data[0].latitude === 122.1)
+    assert(res.body.data[0].longitude === -122.1)
     test.done()
   })
 }
@@ -553,4 +555,5 @@ exports.adminCanLinkToLockedRecord = function(test) {
   log('nyi')
   test.done()
 }
+
 
