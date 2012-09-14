@@ -1,6 +1,6 @@
 {
   "name": "proxibase",
-  "version": "v0.3.0006",
+  "version": "v0.3.7",
   "private": true,
   "description": "Proxibase Service",
   "author": "3meters Engineering <dev@3meters.com>",
@@ -11,7 +11,7 @@
   ],
 
   "dependencies": {
-    "express": "< 3.0",
+    "express": "*",
     "mongoose": "*",
     "mongoskin": "*",
     "underscore": "*",
@@ -20,10 +20,7 @@
     "async": "*",
     "nodemailer": "*",
     "request": "*",
-    "authom": "*",
-    "ejs": "*",
-    "jade": "*",
-    "stylus": "*"
+    "authom": "*"
   },
 
   "optionalDependencies": {
@@ -31,8 +28,7 @@
   },
 
   "repository": "git://github.com:3meters/proxibase",
-  "main": "prox.js",
-  "engines": { "node": "*" }
+  "main": "prox.js"
 
 }
 

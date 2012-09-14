@@ -4,7 +4,7 @@
 
 module.exports = {
   service: {
-    name: 'AirCandi',
+    name: 'CandiService',
     mode: 'development',                 // development | test | stage | production
     protocol: 'https',                   // https | http  (security tests require https)
     host: 'localhost',

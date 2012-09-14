@@ -22,8 +22,6 @@ echo "proxlog: $PROXLOG ..."
 cd $PROX
 nohup nodemon --watch ./lib --delay 2 ./prox.js $@ >>$PROXLOG 2>&1 &
 
-# TODO: we should capture the process ID and stash so we can kill it specifically later
-
 sleep 5
 cat $PROXLOG
 echo

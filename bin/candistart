@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Production aircandiweb startup script using nodemon
+# See https://github.com/remy/nodemon
+
+if [ ! $CANDI ]; then
+  CANDI='/usr/local/candi'
+fi
+
+if [ ! $CANDILOG ]; then
+  CANDILOG='/var/log/candi/candi.log'
+fi
+
+# Replace the existing log, must be the first argument
+if [ "$1" = "-r" ]; then
+  rm $CANDILOG
+  shift
+fi
+
+echo "candilog: $CANDILOG ..."
+
+cd $CANDI
+nohup nodemon --watch ./lib --delay 2 ./candi.js $@ >>$CANDILOG 2>&1 &
+
+sleep 5
+cat $CANDILOG
+echo
