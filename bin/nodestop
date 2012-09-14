@@ -4,7 +4,7 @@
 # Unix / Linux only 
 
 # get the process Ids of running node processes
-PIDS=`proxlook | awk '{print $1}'`
+PIDS=`nodelook | awk '{print $1}'`
 
 # if there are any kill them
 if [ "$PIDS" ]; then
