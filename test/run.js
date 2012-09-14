@@ -6,30 +6,30 @@
  */
 
 
-var
-  util = require('../lib/util'),
-  timer = new util.Timer(),
-  fs = require('fs'),
-  assert = require('assert'),
-  spawn = require('child_process').spawn,
-  cli = require('commander'),
-  reporter = require('nodeunit').reporters.default,
-  req = require('request'),
-  mongoskin = require('mongoskin'),
-  genData = require(__dirname + '/../tools/pump/genData'),
-  dbProfile = require('./constants').dbProfile,
-  testUtil = require('./util'),
-  configFile = 'configtest.js',
-  config,
-  basicDirs = ['basic'],
-  testDirs = ['basic', 'oauth', 'perf', 'admin'],
-  logFile = 'testServer.log',
-  logStream,
-  cwd = process.cwd(),
-  testServer,
-  testServerStarted = false,
-  serverUrl,
-  log = util.log
+
+var util = require('../lib/util')
+  , fs = require('fs')
+  , assert = require('assert')
+  , spawn = require('child_process').spawn
+  , cli = require('commander')
+  , reporter = require('nodeunit').reporters.default
+  , req = require('request')
+  , mongoskin = require('mongoskin')
+  , genData = require(__dirname + '/../tools/pump/genData')
+  , dbProfile = require('./constants').dbProfile
+  , testUtil = require('./util')
+  , configFile = 'configtest.js'
+  , basicDirs = ['basic']
+  , testDirs = ['basic', 'oauth', 'perf', 'admin']
+  , logFile = 'testServer.log'
+  , logStream
+  , cwd = process.cwd()
+  , testServer
+  , testServerStarted = false
+  , serverUrl
+  , config
+  , timer
+  , log
 
 
 // Nodeunit likes to be sitting above its test directories
@@ -58,9 +58,11 @@ if (cli.server) {
 }
 else {
 
-  // Load the config file
-  util.loadConfig(cli.config || configFile)
+  // Load the config file and extend Node's util
+  util.extend(cli.config || configFile)
   config = util.config
+  timer = new util.Timer()
+  log = util.log
   serverUrl = testUtil.serverUrl = util.config.service.url
 
   // Make sure the right database exists and the test server is running
@@ -176,8 +178,9 @@ function ensureServer(callback) {
     testServer.stdout.on('data', function(data) {
       logStream.write(data)
       // Parse server stdout to see if server is ready. Fragile!
-      if (!testServerStarted && data.indexOf(config.service.name + ' listening') === 0) {
+      if (!testServerStarted && data.indexOf(config.service.name + ' listening') >= 0) {
         testServerStarted = true
+        log('Starting the tests')
         return callback()
       }
     })
