@@ -4,37 +4,34 @@
  *   Silently overwrites existing files or tables
  */
 
-var
-  fs = require('fs'),
-  path = require('path'),
-  async = require('async'),
-  mongoskin = require('mongoskin'),
-  util = require('../../lib/util'),
-  log = util.log,
-  constants = require('../../test/constants'),
-  testUtil = require('../../test/util'),
-  tableIds = constants.tableIds,
-  goose = require('../../lib/db/goose'), // Wraps mongoose.js
-  table = {},                            // Map of tables to be generated
-  startTime,                             // Elapsed time counter
-  db,                                    // Mongoskin connection object
-  gdb,                                   // Mongoose connection object
-  save,                                  // Save function
-  options = {                            // Default options
-    users: 3,                            // Count of users
-    beacons: 3,                          // Count of beacons
-    epb: 5,                              // Entites per beacon
-    spe: 5,                              // Subentities (aka children) per beacon
-    cpe: 5,                              // Comments per entity
-    database: 'proxTest',                // Database name
-    validate: false,                     // Validate database data against mongoose schema
-    files: false,                        // Output to JSON files rather than to datbase
-    out: 'files'                         // File output directory
-  }
+var util = require('../../lib/util').extend()  // use the default config file
+  , fs = require('fs')
+  , path = require('path')
+  , async = require('async')
+  , mongoskin = require('mongoskin')
+  , log
+  , constants = require('../../test/constants')
+  , testUtil = require('../../test/util')
+  , tableIds = constants.tableIds
+  , goose = require('../../lib/db/goose') // Wraps mongoose.js
+  , table = {}                            // Map of tables to be generated
+  , startTime                             // Elapsed time counter
+  , db                                    // Mongoskin connection object
+  , gdb                                   // Mongoose connection object
+  , save                                  // Save function
+  , options = {                            // Default options
+      users: 3,                            // Count of users
+      beacons: 3,                          // Count of beacons
+      epb: 5,                              // Entites per beacon
+      spe: 5,                              // Subentities (aka children) per beacon
+      cpe: 5,                              // Comments per entity
+      database: 'proxTest',                // Database name
+      validate: false,                     // Validate database data against mongoose schema
+      files: false,                        // Output to JSON files rather than to datbase
+      out: 'files'                         // File output directory
+    }
 
 module.exports = function(profile, callback) {
-
-  util.loadConfig() // Use the default config
 
   startTime = new Date().getTime() // start program timer
 

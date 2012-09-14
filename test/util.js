@@ -2,15 +2,14 @@
  * Proxibase test util module
  */
 
-var
-  assert = require('assert'),
-  request = require('request'),
-  util = require('../lib/util'),
-  constants = require('./constants')
+var util = require('../lib/util')
+  , assert = require('assert')
+  , request = require('request')
+  , constants = require('./constants')
 
 
-// Load the test config file
-util.loadConfig('configtest.js')
+// Extend node's util with parameters from the test config file
+util.extend('configtest.js')
 
 
 // Base Uri all test requests call, can be overridden by callers
