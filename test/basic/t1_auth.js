@@ -237,7 +237,7 @@ exports.canValidateSession = function(test) {
   })
   request(req, function(err, res) {
     check(req, res)
-    assert(res.body.user)
+    assert(res.body.user, dump(req, res))
     assert(res.body.user._id === testUser._id)
     assert(res.body.user.name === testUser.name)
     test.done()
