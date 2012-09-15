@@ -4,7 +4,7 @@
  *   Silently overwrites existing files or tables
  */
 
-var util = require('../../lib/util').extend()  // use the default config file
+var util = require('../../lib/util')
   , fs = require('fs')
   , path = require('path')
   , async = require('async')

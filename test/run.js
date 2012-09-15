@@ -8,6 +8,8 @@
 
 
 var util = require('../lib/util')
+  , log = util.log
+  , timer = new util.Timer()
   , fs = require('fs')
   , assert = require('assert')
   , spawn = require('child_process').spawn
@@ -28,8 +30,6 @@ var util = require('../lib/util')
   , testServerStarted = false
   , serverUrl
   , config
-  , timer
-  , log
 
 
 // Nodeunit likes to be sitting above its test directories
@@ -59,11 +59,9 @@ if (cli.server) {
 else {
 
   // Load the config file and extend Node's util
-  util.extend(cli.config || configFile)
+  util.setConfig(cli.config || configFile)
   config = util.config
-  timer = new util.Timer()
-  log = util.log
-  serverUrl = testUtil.serverUrl = util.config.service.url
+  serverUrl = testUtil.serverUrl = config.service.url
 
   // Make sure the right database exists and the test server is running
   ensureDb(dbProfile.smokeTest, function(err) {

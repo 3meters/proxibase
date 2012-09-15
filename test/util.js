@@ -9,7 +9,7 @@ var util = require('../lib/util')
 
 
 // Extend node's util with parameters from the test config file
-util.extend('configtest.js')
+util.setConfig('configtest.js')
 
 
 // Base Uri all test requests call, can be overridden by callers
