@@ -9,7 +9,7 @@ var util = require('../../lib/util')
   , path = require('path')
   , async = require('async')
   , mongoskin = require('mongoskin')
-  , log
+  , log = util.log
   , constants = require('../../test/constants')
   , testUtil = require('../../test/util')
   , tableIds = constants.tableIds
