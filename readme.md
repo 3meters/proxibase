@@ -145,7 +145,10 @@ Returns sorted by name lower case ascending, age decending
 Returns only the first 30 records. Max 1000.
 
     ?skip=1000
-Skip the first 1000 records, used in conjection with sort and limit for paging
+Skip the first 1000 records. Use in conjection with sort and limit to provide paging.
+
+    ?count=ture
+Only return the count of the collection, not any of the data.  Limit, skip, and field paramters are ignored.
 
     ?lookups=true
 TEMPORARILY DISABLED
