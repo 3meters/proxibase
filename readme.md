@@ -138,8 +138,14 @@ Returns the records in the table found using mongodb's [advanced query syntax](h
     ?fields=_id,name,created
 Returns only the fields specified. _id is always returned. 
 
+    ?sort={"namelc":1, "age:-1"}
+Returns sorted by name lower case ascending, age decending
+
     ?limit=30
 Returns only the first 30 records. Max 1000.
+
+    ?skip=1000
+Skip the first 1000 records, used in conjection with sort and limit for paging
 
     ?lookups=true
 TEMPORARILY DISABLED
