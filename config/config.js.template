@@ -9,7 +9,7 @@ module.exports = {
     protocol: 'https',                   // https | http  (security tests require https)
     host: 'localhost',
     host_external: 'aircandi.com',
-    port: 8043,                          // 8043:dev 8044:test 444:stage 443:production
+    port: 6643,                          // 6643:dev 6644:test 644:stage 643:production
     newAccountSecret: 'larissa',
     ssl: {
       keyFilePath: './keys/dev/dev.pem',
@@ -17,7 +17,7 @@ module.exports = {
       caFilePath: null
     }
   },
-  log: 1,                                // 0, 1, 2, 3 higher numbers mean more log output
+  log: 1,                                // 0-3 higher numbers mean more log output
   perfLog: '/var/log/prox/perf.csv',     // set to null to skip logging perf metrics
   db: {
     host: 'localhost',
