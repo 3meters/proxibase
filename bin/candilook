@@ -3,5 +3,5 @@
 # Look for all running node candi procs on the box
 # Unix / Linux only
 
-ps ax | grep node.*candi | grep -v grep | grep -v candilook
+ps axw | grep node.*candi | grep -v grep | grep -v candilook
 
