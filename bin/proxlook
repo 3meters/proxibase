@@ -3,5 +3,5 @@
 # Look for all running node prox procs on the box
 # Unix / Linux only
 
-ps ax | grep node.*prox | grep -v grep | grep -v proxlook
+ps axw | grep node.*prox | grep -v grep | grep -v proxlook
 

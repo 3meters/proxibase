@@ -20,7 +20,7 @@ fi
 echo "candilog: $CANDILOG ..."
 
 cd $CANDI
-nohup nodemon --watch ./lib --delay 2 ./candi.js $@ >>$CANDILOG 2>&1 &
+nohup nodemon -L --watch ./lib --delay 2 ./candi.js $@ >>$CANDILOG 2>&1 &
 
 sleep 5
 cat $CANDILOG
