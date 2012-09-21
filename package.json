@@ -16,7 +16,7 @@
     "mongoose": "*",
     "mongoskin": "*",
     "underscore": "*",
-    "futures": "*",
+    "Array.prototype.forEachAsync": "*",
     "commander": "*",
     "nodeunit": "*",
     "async": "*",

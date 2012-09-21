@@ -22,6 +22,7 @@ cli
   .option('-v, --validate', 'validate database inserts against schema')
   .option('-f, --files', 'create files rather than update the database')
   .option('-o, --out <dir>', 'output directory for files [files]', String, 'files')
+  .option('-x, --exp ', 'Use experimental foreach')
   .parse(process.argv)
 
 genData(cli)
