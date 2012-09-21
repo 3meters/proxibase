@@ -8,6 +8,7 @@ var util = require('../../lib/util')
   , fs = require('fs')
   , path = require('path')
   , async = require('async')
+  , useFutures = false
   , mongoskin = require('mongoskin')
   , log = util.log
   , constants = require('../../test/constants')
@@ -19,17 +20,20 @@ var util = require('../../lib/util')
   , db                                    // Mongoskin connection object
   , gdb                                   // Mongoose connection object
   , save                                  // Save function
-  , options = {                            // Default options
-      users: 3,                            // Count of users
-      beacons: 3,                          // Count of beacons
-      epb: 5,                              // Entites per beacon
-      spe: 5,                              // Subentities (aka children) per beacon
-      cpe: 5,                              // Comments per entity
-      database: 'proxTest',                // Database name
-      validate: false,                     // Validate database data against mongoose schema
-      files: false,                        // Output to JSON files rather than to datbase
-      out: 'files'                         // File output directory
+  , options = {                           // Default options
+      users: 3,                           // Count of users
+      beacons: 3,                         // Count of beacons
+      epb: 5,                             // Entites per beacon
+      spe: 5,                             // Subentities (aka children) per beacon
+      cpe: 5,                             // Comments per entity
+      database: 'proxTest',               // Database name
+      validate: false,                    // Validate database data against mongoose schema
+      files: false,                       // Output to JSON files rather than to datbase
+      out: 'files',                       // File output directory
+      exp: false
     }
+
+require('Array.prototype.forEachAsync')
 
 module.exports = function(profile, callback) {
 
@@ -214,9 +218,15 @@ function saveAll(callback) {
   for (name in table) {
     tableNames.push(name)
   }
-  async.forEachSeries(tableNames, save, function(err) {
-    return callback(err)
-  })
+  if (options.exp) {
+    tableNames.forEachAsync(save)
+      .then(callback(err))
+  }
+  else {
+    async.forEachSeries(tableNames, save, function(err) {
+      return callback(err)
+    })
+  }
 }
 
 var saveTo = {
