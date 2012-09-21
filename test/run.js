@@ -110,7 +110,8 @@ function ensureDb(options, callback) {
         db.close()
         options.database = template
         options.validate = true         // Use mongoose and run schema validators on insert
-        genData(options, function() {
+        genData(options, function(err) {
+          if (err) throw err
           // Now try again with the template database in place
           options.database = database
           return ensureDb(options, callback)

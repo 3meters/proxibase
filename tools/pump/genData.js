@@ -8,7 +8,7 @@ var util = require('../../lib/util')
   , fs = require('fs')
   , path = require('path')
   , async = require('async')
-  , useFutures = false
+  , futures = require('futures')
   , mongoskin = require('mongoskin')
   , log = util.log
   , constants = require('../../test/constants')
@@ -33,7 +33,10 @@ var util = require('../../lib/util')
       exp: false
     }
 
-require('Array.prototype.forEachAsync')
+
+Array.prototype.forEachAsync = function(callback) {
+  return require('futures').forEachAsync(this, callback)
+}
 
 module.exports = function(profile, callback) {
 
@@ -98,7 +101,10 @@ function run(callback) {
   genEntities()
   genChildEntities()
   saveAll(function(err) {
-    if (err) throw err
+    if (err) {
+      if (callback) return callback(err)
+      else throw err
+    }
     if (!options.files) {
       db.close()
       gdb.close()
@@ -230,6 +236,7 @@ function saveAll(callback) {
 }
 
 var saveTo = {
+
   file:
     // save to a JSON file ready to load via push
     function (tableName, callback) {
@@ -238,6 +245,7 @@ var saveTo = {
       log(table[tableName].length + ' ' + tableName)
       return callback()
     },
+
   db:
     // save via mongoskin bypassing schema validation
     function (tableName, callback) {
@@ -245,7 +253,7 @@ var saveTo = {
 
       // save row-at-a-time because mongo chokes saving large arrays
       async.forEachSeries(table[tableName], saveRow, function(err) {
-        if (err) throw err
+        if (err) return callback(err)
         log(table[tableName].length + ' ' + tableName)
         return callback()
       })
@@ -256,6 +264,7 @@ var saveTo = {
         })
       }
     },
+
   dbValidate:
     // save via mongoose validating each record against mongoose schema
     function (tableName, callback) {
@@ -264,7 +273,7 @@ var saveTo = {
       async.forEachSeries(table[tableName], saveRow, function(err) {
         if (err) {
           log('genData error:', err)
-          throw err
+          return callback(err)
         }
         log(table[tableName].length + ' ' + tableName)
         return callback()
