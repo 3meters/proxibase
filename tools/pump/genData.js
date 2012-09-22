@@ -7,8 +7,6 @@
 var util = require('../../lib/util')
   , fs = require('fs')
   , path = require('path')
-  , async = require('async')
-  , futures = require('futures')
   , mongoskin = require('mongoskin')
   , log = util.log
   , constants = require('../../test/constants')
@@ -29,14 +27,9 @@ var util = require('../../lib/util')
       database: 'proxTest',               // Database name
       validate: false,                    // Validate database data against mongoose schema
       files: false,                       // Output to JSON files rather than to datbase
-      out: 'files',                       // File output directory
-      exp: false
+      out: 'files'                        // File output directory
     }
 
-
-Array.prototype.forEachAsync = function(callback) {
-  return require('futures').forEachAsync(this, callback)
-}
 
 module.exports = function(profile, callback) {
 
@@ -224,15 +217,13 @@ function saveAll(callback) {
   for (name in table) {
     tableNames.push(name)
   }
-  if (options.exp) {
-    tableNames.forEachAsync(save)
-      .then(callback(err))
-  }
-  else {
-    async.forEachSeries(tableNames, save, function(err) {
-      return callback(err)
-    })
-  }
+  tableNames.forEachAsync(save, callback)
+}
+
+function list(tableName, fn) {
+  log('tableName: ' + tableName)
+  log('fn: ' + fn)
+  fn()
 }
 
 var saveTo = {
@@ -252,7 +243,7 @@ var saveTo = {
       var collection = db.collection(tableName)
 
       // save row-at-a-time because mongo chokes saving large arrays
-      async.forEachSeries(table[tableName], saveRow, function(err) {
+      table[tableName].forEachAsync(saveRow, function(err) {
         if (err) return callback(err)
         log(table[tableName].length + ' ' + tableName)
         return callback()
@@ -270,7 +261,7 @@ var saveTo = {
     function (tableName, callback) {
       var model = gdb.models[tableName]
 
-      async.forEachSeries(table[tableName], saveRow, function(err) {
+      table[tableName].forEachAsync(saveRow, function(err) {
         if (err) {
           log('genData error:', err)
           return callback(err)
