@@ -16,7 +16,6 @@
     "mongoose": "*",
     "mongoskin": "*",
     "underscore": "*",
-    "futures": "*",
     "commander": "*",
     "nodeunit": "*",
     "async": "*",
