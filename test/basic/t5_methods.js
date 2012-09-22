@@ -50,6 +50,21 @@ var
     linkZoom : false,
     root : true
   },
+  testEntity2 = {
+    _id : "0002.111111.11111.111.111112",
+    imagePreviewUri : "https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
+    imageUri : "https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
+    label : "Testing candi 2",
+    signalFence : -100,
+    title : "Testing candi 2",
+    type : "com.aircandi.candi.picture",
+    visibility : "public",
+    enabled : true,
+    locked : false,
+    linkJavascriptEnabled : false,
+    linkZoom : false,
+    root : true
+  },
   testLink = {
     _to : '0003:11:11:11:11:11:22',
     _from : '0002.111111.11111.111.111111'
@@ -242,6 +257,34 @@ exports.checkInsertRootEntity = function(test) {
   })
 }
 
+exports.insertRootEntityBeaconAlreadyExists = function (test) {
+  var req = new Req({
+    uri: '/do/insertEntity?' + userCred,
+    body: {entity:testEntity2, beacon:testBeacon, 
+        link:{_to:testBeacon._id}, observation:{latitude:testLatitude, 
+        longitude:testLongitude, _beacon:testBeacon._id},userId:testUser._id}
+  })
+  request(req, function(err, res) {
+    check(req, res, 201)
+    assert(res.body.count === 1, dump(req, res))
+    assert(res.body.data && res.body.data._id, dump(req, res))
+    test.done()
+  })
+}
+
+exports.checkInsertEntityBeaconAlreadyExists = function(test) {
+  var req = new Req({
+    uri: '/do/find',
+    body: {table:'entities',find:{_id:testEntity2._id}}
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.count === 1, dump(req, res))
+    test.done()
+  })
+}
+
+
 exports.checkInsertLinkToRootEntity = function(test) {
   var req = new Req({
     uri: '/do/find',
@@ -249,7 +292,7 @@ exports.checkInsertLinkToRootEntity = function(test) {
   })
   request(req, function(err, res) {
     check(req, res)
-    assert(res.body.count === 1, dump(req, res))
+    assert(res.body.count === 2, dump(req, res))
     test.done()
   })
 }
