@@ -3,5 +3,5 @@
 # Look for all running node procs on the box
 # Unix / Linux only
 
-ps ax | grep node | grep -v grep | grep -v nodelook
+ps axw | grep node | grep -v grep | grep -v nodelook
 
