@@ -128,8 +128,8 @@ exports.getEntitiesLoadChildren = function (test) {
     var record = res.body.data[0]
     assert(record.children.length === dbProfile.spe, dump(req, res))
     assert(record.childCount === dbProfile.spe, dump(req, res))
-    assert(!record.parents, dump(req, res))
-    assert(record.parentCount === 0, dump(req, res))
+    //assert(!record.parents, dump(req, res))
+    //assert(record.parentCount === 0, dump(req, res))
     assert(record.comments.length === dbProfile.cpe, dump(req, res))
     assert(record.commentCount === dbProfile.cpe, dump(req, res))
     assert(record._beacon === constants.beaconId, dump(req, res))
@@ -140,27 +140,27 @@ exports.getEntitiesLoadChildren = function (test) {
   })
 }
 
-exports.getEntitiesLoadParents = function (test) {
-  /*
-   * We don't currently populate the smoke test data with any entities that have both
-   * a parent and children. We also don't have any entities with multiple parents.
-   */
-  var req = new Req({
-    uri: '/do/getEntities',
-    body: { entityIds:[constants.childEntityId], eagerLoad:{parents:true,children:false,comments:true} }
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 1, dump(req, res))
-    assert(res.body.data && res.body.data[0], dump(req, res))
-    var record = res.body.data[0]
-    assert(!record.children, dump(req, res))
-    assert(record.childCount === 0, dump(req, res))
-    assert(record.parents.length === 1, dump(req, res))
-    assert(record.parentCount === 1, dump(req, res))
-    test.done()
-  })
-}
+// exports.getEntitiesLoadParents = function (test) {
+//   /*
+//    * We don't currently populate the smoke test data with any entities that have both
+//    * a parent and children. We also don't have any entities with multiple parents.
+//    */
+//   var req = new Req({
+//     uri: '/do/getEntities',
+//     body: { entityIds:[constants.childEntityId], eagerLoad:{parents:true,children:false,comments:true} }
+//   })
+//   request(req, function(err, res) {
+//     check(req, res)
+//     assert(res.body.count === 1, dump(req, res))
+//     assert(res.body.data && res.body.data[0], dump(req, res))
+//     var record = res.body.data[0]
+//     assert(!record.children, dump(req, res))
+//     assert(record.childCount === 0, dump(req, res))
+//     assert(record.parents.length === 1, dump(req, res))
+//     assert(record.parentCount === 1, dump(req, res))
+//     test.done()
+//   })
+// }
 
 exports.getEntitiesForBeacons = function (test) {
   var req = new Req({
