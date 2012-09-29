@@ -376,3 +376,17 @@ exports.adminCanDeleteUsingWildcard = function(test) {
   })
 }
 
+exports.countByWorks = function(test) {
+  var req = new Req({
+    method: 'get',
+    uri: '/data/entities?countBy=_owner'
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    // These are based on data in template test database
+    assert(res.body.count >= 10)
+    assert(res.body.data[0].countBy === 300)
+    test.done()
+  })
+}
+
