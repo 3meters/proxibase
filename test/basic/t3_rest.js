@@ -121,7 +121,7 @@ exports.canAddDocAsSingleElementArray = function(test) {
 exports.findDocsByIdAndCheckSysFields = function(test) {
   var req = new Req({
     method: 'get',
-    uri: '/data/documents/ids:' + testDoc1._id + ',' + testDoc2._id + '?' + userCred
+    uri: '/data/documents/' + testDoc1._id + ',' + testDoc2._id + '?' + userCred
   })
   request(req, function(err, res) {
     check(req, res)
@@ -133,6 +133,31 @@ exports.findDocsByIdAndCheckSysFields = function(test) {
     assert(res.body.data[0].createdDate > testStartTime)
     assert(res.body.data[0].modifiedDate > testStartTime)
     testDoc1Saved = res.body.data[0]
+    test.done()
+  })
+}
+
+
+exports.findDocsByIdDeprecated = function(test) {
+  var req = new Req({
+    method: 'get',
+    uri: '/data/documents/ids:' + testDoc1._id + ',' + testDoc2._id + '?' + userCred
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.count === 2, dump(req, res))
+    test.done()
+  })
+}
+
+
+exports.findDocsByGetAndFindAndJson = function(test) {
+  var req = new Req({
+    method: 'get',
+    uri: '/data/documents?find={"_id":"' + testDoc1._id + '"}&' + userCred
+  })
+  request(req, function(err, res) {
+    check(req, res)
     test.done()
   })
 }
