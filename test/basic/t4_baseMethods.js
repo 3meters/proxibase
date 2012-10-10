@@ -42,6 +42,7 @@ exports.echo = function(test) {
   })
   request(req, function(err, res) {
     check(req, res)
+    delete (res.body.time)
     assert.deepEqual(req.body, res.body, dump(req, res))
     test.done()
   })
