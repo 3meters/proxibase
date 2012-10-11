@@ -232,7 +232,7 @@ exports.cannotValidateSessionWithBogusKey = function(test) {
 
 exports.canValidateSession = function(test) {
   var req = new Req({
-    method: 'get', 
+    method: 'get',
     uri: '/data/documents?user=' + session._owner + '&session=' + session.key
   })
   request(req, function(err, res) {
