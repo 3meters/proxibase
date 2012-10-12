@@ -1,7 +1,7 @@
 {
 
   "name": "proxibase",
-  "version": "v0.4.3",
+  "version": "v0.4.4",
   "private": true,
   "description": "Proxibase Service",
   "author": "3meters Engineering <dev@3meters.com>",
