@@ -5,6 +5,43 @@ Web: https://www.aircandi.com
 
 API: https://api.aircandi.com
 
+## Quick Reference
+
+Users sign in via :
+
+    path: /auth/signin
+    method: post
+    body: {
+      user: {
+        email: (case-insensitive)
+        password: password  (case-sensitive)
+      }
+    }
+
+Once signed in, pass user credentials on the URL like so:
+
+   ?user=<user._id>&session=<session.key>
+
+Find parameters:
+
+    path: /do/find,
+    method: post,
+    body: {
+      table|collection: collection1,
+      ids: [_id1, _id2],
+      names: [name1, name2],  // case-insensitive, all other finds are case-sensitive
+      fields: [field1,field2],
+      find: {name:"name1"},  // passthrough to mongo selector
+      children: ["childTable1","childTable2"], // temporarily disabled
+      lookups: true, // temporarily disabled
+      limit: 1000,
+      skip: 200,
+      sort: {field1:1, field2:-1},
+      count: true,
+      countBy:  field1
+    }
+
+
 ## Users and Admins
 Each user account has a role.  The only valid roles are 'user', the default, and 'admin'.  When the server starts it checks for a user with _id 00000.000000.00000.000.00000.  If it does not exist the server creates the user with 
 
@@ -40,7 +77,7 @@ Users can be authenticated locally with a password, or by a oauth provider such 
 ### Local
 If a new user is created with a password we assume the authSource is local.  We validate that the password is sufficiently strong before saving, and we save a one-way hash of the password the user entered.  See the users schema for the password rules and hash methods.
 
-Users sign in via a new api:
+Users sign in via :
 
     path: /auth/signin
     method: post
@@ -226,6 +263,21 @@ Updates every record in a table.  Usefull when you need to re-run triggers on al
       "table": "tableName",     // required
       "preserveModified, true   // optional, default true, if false the method will update the modified date
     }
+
+### Statitics
+Site statistics are acceessed via 
+
+    GET /stats
+
+This will return a list of supported stats.  For each stat
+
+    GET /stats/<stat>
+  
+will return a collection of the statistics.  These are ordinary monogodb collections.  In the database their names are prefixed by "stats_".  All the normal parameters to the rest GET API will work. (POST /do/find is nyi for statistics collections.)  These collections are static, and can be recomputed either by shell scripts or or demand by appending the query parameter:
+
+    ?refresh=true
+
+Refreshing statitics requires admin credentials since the operation can be expensive
 
 
 ## Wiki

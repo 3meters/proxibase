@@ -20,7 +20,7 @@ fi
 echo "proxlog: $PROXLOG ..."
 
 cd $PROX
-nohup nodemon -L --watch ./lib --delay 2 ./prox.js $@ >>$PROXLOG 2>&1 &
+nohup nodemon -L --watch ./lib --delay 2 --stack-trace-limit=200 ./prox.js $@ >>$PROXLOG 2>&1 &
 
 sleep 5
 cat $PROXLOG

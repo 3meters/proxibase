@@ -121,7 +121,7 @@ exports.canAddDocAsSingleElementArray = function(test) {
 exports.findDocsByIdAndCheckSysFields = function(test) {
   var req = new Req({
     method: 'get',
-    uri: '/data/documents/ids:' + testDoc1._id + ',' + testDoc2._id + '?' + userCred
+    uri: '/data/documents/' + testDoc1._id + ',' + testDoc2._id + '?' + userCred
   })
   request(req, function(err, res) {
     check(req, res)
@@ -137,6 +137,51 @@ exports.findDocsByIdAndCheckSysFields = function(test) {
   })
 }
 
+
+exports.findDocsByIdDeprecated = function(test) {
+  var req = new Req({
+    method: 'get',
+    uri: '/data/documents/ids:' + testDoc1._id + ',' + testDoc2._id + '?' + userCred
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.count === 2, dump(req, res))
+    test.done()
+  })
+}
+
+exports.findDocsByGetAndFindAndJson = function(test) {
+  var req = new Req({
+    method: 'get',
+    uri: '/data/documents?find={"_id":"' + testDoc1._id + '"}&' + userCred
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    test.done()
+  })
+}
+
+exports.findDocsByGetAndFindAndJsonFailsWithBadUserCred = function(test) {
+  var req = new Req({
+    method: 'get',
+    uri: '/data/documents?find={"_id":"' + testDoc1._id + '"}&' + userCred.slice(0, -1) // bogus session key
+  })
+  request(req, function(err, res) {
+    check(req, res, 401) // badAuth
+    test.done()
+  })
+}
+
+exports.findDocsByGetAndFindWithBadJson = function(test) {
+  var req = new Req({
+    method: 'get',
+    uri: '/data/documents?find={_id:"' + testDoc1._id + '"}&' + userCred
+  })
+  request(req, function(err, res) {
+    check(req, res, 400)
+    test.done()
+  })
+}
 
 _exports.findDocsByNameWhenNotSignedIn = function(test) {
   var req = new Req({
@@ -373,6 +418,20 @@ exports.adminCanDeleteUsingWildcard = function(test) {
       check(req, res, 401)  // because admin no longer has a valid session
       test.done()
     })
+  })
+}
+
+exports.countByWorks = function(test) {
+  var req = new Req({
+    method: 'get',
+    uri: '/data/entities?countBy=_owner'
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    // These are based on data in template test database
+    assert(res.body.count >= 10)
+    assert(res.body.data[0].countBy === 300)
+    test.done()
   })
 }
 
