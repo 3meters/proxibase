@@ -124,7 +124,9 @@ exports.staticsUpdateOnRefresh = function(test) {
     request(req2, function(err, res2){
       check(req2, res2)
       assert(res2.body.data.length)
-      assert(res2.body.data.length === (oldUserCount + 1))
+      if (res2.body.data.length !== (oldUserCount + 1)) {
+        log('did not pick up test user \n' +  dump(req2, res2))
+      }
       test.done()
     })
   })
