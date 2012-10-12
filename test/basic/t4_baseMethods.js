@@ -103,7 +103,7 @@ exports.findByNameCaseInsensitive = function(test) {
   })
   request(req, function(err, res) {
     check(req, res)
-    assert(res.body.data.length === 1 && res.body.count === 1)
+    assert(res.body.data.length === 1 && res.body.count === 1, dump(req, res))
     assert(res.body.data[0]._id === constants.uid1)
     test.done()
   })
