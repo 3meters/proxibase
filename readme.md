@@ -162,7 +162,7 @@ Returns records with the specified ids
 ### GET /data/\<collection\>?names:\<name1,name2\>
 Returns records with the specified names, case-insensitive.  If the names include spaces, use POST /do/find 
 
-### GET /data/tablename/genid
+### GET /data/\<collection\>/genid
 Generates a valid id for the table with the UTC timestamp of the request.  Useful if you want to make posts to mulitple tables with the primary and foreign keys preassigned.
 
     ?sort={"namelc":1, "age:-1"}
@@ -279,9 +279,10 @@ Refreshing statitics requires admin credentials since the operation can be expen
 ## Wiki
 * (proxibase/wiki/)
 
-## Todo
+## Bugs
+https://github.com/3meters/proxibase/issues?state=open
 
-### Bugs
+## Todo
 
 ### Models
 * Add schema checker to base.js
@@ -290,9 +291,6 @@ Refreshing statitics requires admin credentials since the operation can be expen
 
 ### Custom Methods
 * Respect locked Entity on InsertEntity, UpdateEntity, DeleteEntity, InsertComment
-
-### Tests
-* Insert comments on others records
 
 ### Authentication
 * Validate user email workflow
@@ -307,20 +305,10 @@ Refreshing statitics requires admin credentials since the operation can be expen
 * Rate limit posts
 * Lock / unlock account
 
-### Website
-* Read-only browse UI over tables
-* User profile update UI
-* My Candi UI
-
 ### Rest
 * get: lookups
 * get: field lists for lookups
-* get: children
-* get: fields lists for children
 * get: outer joins
-* get: child counts
-* get: table.childtable.childtable...
-* get: singleton get
 * post: insert array
 * saveAPI: convert to mongoskin
 
