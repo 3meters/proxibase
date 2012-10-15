@@ -137,7 +137,7 @@ exports.findAndUpdate100Users = function(test) {
     request(req, function(err, res) {
       check(req, res)
       var req2 = new Req({
-        uri: '/data/users/ids:' + res.body.data[0]._id + '?' + adminCred,
+        uri: '/data/users/' + res.body.data[0]._id + '?' + adminCred,
         body: {data:{location:'Updated Perfburg' + i + ', WA'}}
       })
       request(req2, function(err, res) {
@@ -167,8 +167,8 @@ exports.get100Entities = function (test) {
     var req = new Req({
       uri: '/do/getEntities',
       body: {
-        entityIds:[id], 
-        eagerLoad:{children:true, comments:true}, 
+        entityIds:[id],
+        eagerLoad:{children:true, comments:true},
         options:{limit:500, skip:0, sort:{modifiedDate:-1}}
       }
     })

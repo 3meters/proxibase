@@ -348,7 +348,7 @@ exports.checkBeaconLocationUpdate = function (test) {
 exports.cannotDeleteBeaconWhenNotSignedIn = function (test) {
   var req = new Req({
     method: 'delete',
-    uri: '/data/beacons/ids:' + testBeacon._id
+    uri: '/data/beacons/' + testBeacon._id
   })
   request(req, function(err, res) {
     check(req, res, 401)
@@ -359,7 +359,7 @@ exports.cannotDeleteBeaconWhenNotSignedIn = function (test) {
 exports.userCannotDeleteBeaconSheCreated = function (test) {
   var req = new Req({
     method: 'delete',
-    uri: '/data/beacons/ids:' + testBeacon._id + '?' + userCred
+    uri: '/data/beacons/' + testBeacon._id + '?' + userCred
   })
   request(req, function(err, res) {
     check(req, res, 401)
@@ -370,7 +370,7 @@ exports.userCannotDeleteBeaconSheCreated = function (test) {
 exports.adminCanDeleteBeaconUserCreated = function (test) {
   var req = new Req({
     method: 'delete',
-    uri: '/data/beacons/ids:' + testBeacon._id + '?' + adminCred
+    uri: '/data/beacons/' + testBeacon._id + '?' + adminCred
   })
   request(req, function(err, res) {
     check(req, res)
@@ -470,7 +470,7 @@ exports.updateEntity = function (test) {
 exports.checkUpdateEntity = function (test) {
   var req = new Req({
     method: 'get',
-    uri: '/data/entities/ids:' + testEntity._id
+    uri: '/data/entities/' + testEntity._id
   })
   request(req, function(err, res) {
     check(req, res)
@@ -495,7 +495,7 @@ exports.insertLink = function (test) {
 exports.checkInsertedLink = function(test) {
   var req = new Req({
     method: 'get',
-    uri: '/data/links/ids:' + testLink._id
+    uri: '/data/links/' + testLink._id
   })
   request(req, function(err, res) {
     check(req, res)
