@@ -32,9 +32,9 @@ find documents
       "names": [string],                  // case-insensitive
       "fields": [string],
       "find": {mongodb find expression},  // pass-through to mongodb, case-sensitive
-      "lookups": boolean,                 // temporarily disabled
+      "lookups": boolean,
       "limit": number,                    // default and max is 1000
-      "skip": number, 
+      "skip": number,
       "sort": {field1:1, field2:-1},
       "count": boolean,                   // returns no records, only count, limit and skip are ignored
       "countBy": fieldName                // returns count of collection grouped by any field
@@ -181,10 +181,7 @@ Only return the count of the collection, not any of the data.  Limit, skip, and 
 Returns the count of the colleciton grouped by fieldName
 
     ?lookups=true
-TEMPORARILY DISABLED
-
-Returns each document with its lookup fields fully populated. Default false.
-
+For each reference key of the form _key looks up the name property of the referenced collection and adds it as key.  For example document._owner with lookups=true will also include document.owner = 'Jay'
 
 ### POST Rules
 1. Set req.headers.content-type to 'application/json'
@@ -241,9 +238,9 @@ POST /do/find is the same as GET /data/<collection>, but with the paramters in t
       "names": [string],                  // case-insensitive
       "fields": [string],
       "find": {mongodb find expression},  // pass-through to mongodb, case-sensitive
-      "lookups": boolean,                 // temporarily disabled
+      "lookups": boolean,
       "limit": number,                    // default and max is 1000
-      "skip": number, 
+      "skip": number,
       "sort": {field1:1, field2:-1},
       "count": boolean,                   // returns no records, only count, limit and skip are ignored
       "countBy": fieldName                // returns count of collection grouped by any field
@@ -306,8 +303,6 @@ https://github.com/3meters/proxibase/issues?state=open
 * Lock / unlock account
 
 ### Rest
-* get: lookups
-* get: field lists for lookups
 * get: outer joins
 * post: insert array
 * saveAPI: convert to mongoskin
