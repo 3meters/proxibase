@@ -63,9 +63,9 @@ See the guidelines for posting below, the api is
       password: <password>
     }}
 
-all other fields are optional. Secret is currently a static string. Someday it may be provided by a captcha API.  On successful account creation, the service signs in the user, creating a new session object.  The complete user and session object are returned to the caller.
+All other fields are optional. Secret is currently a static string. Someday it may be provided by a captcha API.  On successful account creation, the service signs in the user, creating a new session object.  The complete user and session object are returned to the caller.
 
-Note that on success this call sets return status code to 200, not 201 and one might expect.  This is due to doubleing us the signin call.  
+Note that on success this call sets return status code to 200, not 201 and one might expect.  This is due to chaining the call to signin.  
 
 ## Authentication
 Users can be authenticated locally with a password or via a oauth provider such as Facebook, Twitter, or Google.  Their authentication source is stored in the users.authSource field which is required.  Valid values may be found in util.statics.authSources.  User emails must be unique.
@@ -94,12 +94,12 @@ or as fields in the body of a post like so:
     /do/find
     method: post
     body: = {
-      table:'users',
+      collection:'users',
       user: 0000.120628.57119.055.350009
       session: fb3f74034f591e3053e6e8617c46fb35
     }
 
-If you pass invaild session credentials the request will fail with a 401 (not authorized).  If they are valid, all responses will contain a user object that includes the user's id and name. Sessions are bound to a particular client IP address.  They expire after two weeks without use.
+If you pass invaild session credentials the request will fail with a 401 (not authorized).  If they are valid, all responses will contain a user object that includes the user's id and name. 
 
 Sessions can be destroyed via
 
@@ -172,6 +172,9 @@ Skip the first 1000 records. Use in conjection with sort and limit to provide pa
 
     ?count=ture
 Only return the count of the collection, not any of the data.  Limit, skip, and field paramters are ignored.
+
+    ?countBy=fieldName
+Returns the count of the colleciton grouped by fieldName
 
     ?lookups=true
 TEMPORARILY DISABLED
