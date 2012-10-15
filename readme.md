@@ -57,18 +57,18 @@ See the guidelines for posting below, the api is
 
     path: /user/create
     method: post
-    secret: \<secret\>
+    secret: <secret>
     body:  {data: {
       email: <email>
       password: <password>
     }}
 
-all other fields are optional. Secret is currently a static string. Later it will be provided by a captcha API.  On successful account creation, the service signs in the user, creating a new session object.  The complete user and session object are returned to the caller.
+all other fields are optional. Secret is currently a static string. Someday it may be provided by a captcha API.  On successful account creation, the service signs in the user, creating a new session object.  The complete user and session object are returned to the caller.
 
 Note that on success this call sets return status code to 200, not 201 and one might expect.  This is due to doubleing us the signin call.  
 
 ## AUTHENTICATION
-Users can be authenticated locally with a password, or by a oauth provider such as Facebook, Twitter, or Google.  Their authentication source is stored in the users.authSource field which is required.  Valid values may be found in util.statics.authSources.  User emails must be unique.
+Users can be authenticated locally with a password or via a oauth provider such as Facebook, Twitter, or Google.  Their authentication source is stored in the users.authSource field which is required.  Valid values may be found in util.statics.authSources.  User emails must be unique.
 
 ### Local
 If a new user is created with a password we assume the authSource is local.  We validate that the password is sufficiently strong before saving, and we save a one-way hash of the password the user entered.  See the users schema for the password rules and hash methods.
@@ -129,27 +129,27 @@ Signin via ouath like so:
     path: /auth/signin/facebook|twitter|google
     method: get
 
-session management after a sucessful authentication is the same as with local authentication.  If the user authenticates via an oauth provider, we store their provider credentials and user key, allowing us to access their picture and other provider specific data (friends, followers, etc) on their behalf.  
+Session management after a sucessful authentication is the same as with local authentication.  If the user authenticates via an oauth provider, we store their provider credentials and user key, allowing us to access their picture and other provider specific data (friends, followers, etc) on their behalf.  
 
-## REST API
-### GET https://api.aircandi.com/schema/<tableName>
+## Rest API: /data
+### GET /schema/\<collection\>
 
-Returns a table's schema
+Returns the collection's schema
 
 ### _id fields
-Every proxibase record has a an immutable _id field that is unique within proxiabse. _ids have this form, with dates and times represented in UTC: 
+Every record has a unique, immutable _id field of the form:
 
-    tabl.yymmdd.scnds.mil.random
+    clid.yymmdd.scnds.mil.random
 
 meaning
 
-    tableId.dateSince2000.secondsSinceMidnight.milliseconds.randomNumber
+    collectionId.dateSince2000.secondsSinceMidnight.milliseconds.randomNumber
 
-### GET /data/tableName
-Returns the table's first 1000 records unsorted.
+### GET /data/\<collection\>
+Returns the collection's first 1000 records unsorted.
 
-### GET /data/tableName/ids:id1,id2
-Returns records with the specified ids. Note the initial ids:  Do quote or put spaces betweeen the id parameters themselves.
+### GET /data/\<collection\>/\<id1\>,\<id2\>
+Returns records with the specified ids
 
 ### GET /data/tableName/names:name1,name2
 Returns records with the specified names. Note the initial names:  Do not quote or put spaces between the name parameters.  If the value of your name contains a comma, you cannot use this method to find it.  Use the do/find method in this case. 
