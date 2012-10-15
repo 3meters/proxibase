@@ -7,8 +7,10 @@ API: https://aircandi.com:643
 
 ## Quick Reference
 
-POST: /auth/signin
+sign in
 
+    path: /user/signin
+    method: POST
     body: {
       user: {
         email: (case-insensitive)
@@ -16,13 +18,15 @@ POST: /auth/signin
       }
     }
 
-authenticated user query params:
+send an authticated request
 
-    user=<user._id>&session=<session.key>
+    path:  ?user=<user._id>&session=<session.key>
 
-POST /do/find:
+find documents
 
-    {
+    path: /do/find
+    method: POST
+    body: {
       "collection|stat": string,          // base collection or statitistics collection
       "ids": [string],
       "names": [string],                  // case-insensitive
