@@ -38,7 +38,7 @@ exports.getSchemaPage = function(test) {
   var req = new Req({method: 'get', uri: '/schema'})
   request(req, function(err, res) {
     check(req, res)
-    assert(res.body && res.body.schema && res.body.schema.users, dump(req, res))
+    assert(res.body && res.body.schemas && res.body.schemas.users, dump(req, res))
     test.done()
   })
 }
