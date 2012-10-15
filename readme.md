@@ -67,7 +67,7 @@ all other fields are optional. Secret is currently a static string. Someday it m
 
 Note that on success this call sets return status code to 200, not 201 and one might expect.  This is due to doubleing us the signin call.  
 
-## AUTHENTICATION
+## Authentication
 Users can be authenticated locally with a password or via a oauth provider such as Facebook, Twitter, or Google.  Their authentication source is stored in the users.authSource field which is required.  Valid values may be found in util.statics.authSources.  User emails must be unique.
 
 ### Local
@@ -131,13 +131,17 @@ Signin via ouath like so:
 
 Session management after a sucessful authentication is the same as with local authentication.  If the user authenticates via an oauth provider, we store their provider credentials and user key, allowing us to access their picture and other provider specific data (friends, followers, etc) on their behalf.  
 
-## Rest API: /data
-### GET /schema/\<collection\>
+## Rest
+The system provides find, insert, update, and remove methods over the base mongodb collections via standard REST apis.  
 
+### GET /schema
+Returns the base collections
+
+### GET /schema/\<collection\>
 Returns the collection's schema
 
 ### _id fields
-Every record has a unique, immutable _id field of the form:
+Every document in every collection has a unique, immutable _id field of the form:
 
     clid.yymmdd.scnds.mil.random
 
@@ -151,25 +155,11 @@ Returns the collection's first 1000 records unsorted.
 ### GET /data/\<collection\>/\<id1\>,\<id2\>
 Returns records with the specified ids
 
-### GET /data/tableName/names:name1,name2
-Returns records with the specified names. Note the initial names:  Do not quote or put spaces between the name parameters.  If the value of your name contains a comma, you cannot use this method to find it.  Use the do/find method in this case. 
-
-### GET /data/tablename/[ids:...|names:.../]childTable1,childTable2|*
-TEMPORARILY DISABLED
-
-Returns all records specified with subdocuments for each child table specified. The wildcard * returns all child documents.  All fields from child documents are returned.  The query limit is applied both to the main document array and to each of its child arrays. Filters only apply to the main document, not to the document's children.
+### GET /data/\<collection\>?names:\<name1,name2\>
+Returns records with the specified names, case-insensitive.  If the names include spaces, use POST /do/find 
 
 ### GET /data/tablename/genid
 Generates a valid id for the table with the UTC timestamp of the request.  Useful if you want to make posts to mulitple tables with the primary and foreign keys preassigned.
-
-### GET parameters
-Place GET query parameters at the end of the URL beginning with a ?. Separate parameters with &. Parameter ordering does not matter.
-
-    ?find={"firstname":"John","lastname":{"$in":["Smith","Jones"]},"age":{"$lt":5}}
-Returns the records in the table found using mongodb's [advanced query syntax](http://www.mongodb.org/display/DOCS/Advanced+Queries). The value of find must be parsable JSON. The rest of the url need not.
-
-    ?fields=_id,name,created
-Returns only the fields specified. _id is always returned. 
 
     ?sort={"namelc":1, "age:-1"}
 Returns sorted by name lower case ascending, age decending
@@ -215,22 +205,21 @@ or
       ]
     }
 
-### POST /data/tablename
-Inserts req.body.data or req.body.data[0] into the tablename table.  If a value for _id is specified it will be used, otherwise the server will generate a value for _id.  Only one record may be inserted per request. If you specifiy values for any of the system fields, those values will be stored.  If you do not the system will generates defaults for you.  The return value is all fields of the newly created record inside a data tag.  If you just want the _id back, include request.body.terse = true in your request.
+### POST /data/\<collection\>
+Inserts req.body.data or req.body.data[0] into the collection.  If a value for _id is specified it will be used, otherwise the server will generate a value for _id.  Only one record may be inserted per request. If you specifiy values for any of the system fields, those values will be stored.  If you do not the system will generate defaults for you.  The return value is all fields of the newly created record inside a data tag. 
 
-### POST /data/tablename/ids:id1
-Updates the record with _id = id1 in tablename.  Non-system fields not inlucded in request.body.data or request.body.data[0] will not be modified. The return value is all fields of the modified record inside a data tag.  If you just want the _id back, include request.body.terse = true in youir request.  
+### POST /data/\<collection\>/\<id\>
+Updates the document with _id = id in collection.  Non-system fields not inlucded in request.body.data or request.body.data[0] will not be modified. The return value is all fields of the modified document inside a data tag.  
 
-### DELETE /data/tablename/ids:id1,id2
-Deletes those records.
+### DELETE /data/\<collection\>/\<id1,id2\>
+Deletes those records
 
-### DELETE /data/tablename/ids:*
-Deletes all records in the table (admins only)
+### DELETE /data/\<collection\>/*
+Deletes all records in the collection (admins only)
 
 <a name="webmethods"></a>
 ## Custom Web Methods
-[https://api.aircandi.com/do](https://api.aircandi.com/do)
-
+    /do
 Lists the web methods. POST to /do/methodName executes a method passing in the full request and response objects. The request body must be in JSON format. 
 
 ### POST /do/echo
@@ -253,14 +242,14 @@ POST /do/find is the same as GET /data/<collection>, but with the paramters in t
       "countBy": fieldName                // returns count of collection grouped by any field
     }
     
-The collection|table|stat property is required.  All others are optional. The value of the find property is passed through to mongodb unmodified, so it can be used to specify any clauses that mongodb supports.  See mongodb's [advanced query syntax](http://www.mongodb.org/display/DOCS/Advanced+Queries) for details. 
+The collection|stat property is required.  All others are optional.
 
 ### POST /do/touch
 Updates every record in a table.  Usefull when you need to re-run triggers on all records
 
     {
-      "table": "tableName",     // required
-      "preserveModified, true   // optional, default true, if false the method will update the modified date
+      "collection": <collection>,     // required
+      "preserveModified, boolean      // optional, default true, if false the method will update the modified date
     }
 
 <a name="stats">
