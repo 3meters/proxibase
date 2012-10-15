@@ -20,27 +20,24 @@ Users sign in via :
 
 Once signed in, pass user credentials on the URL like so:
 
-   ?user=<user._id>&session=<session.key>
+   ?user=\<user._id\>&session=\<session.key\>
 
 Find parameters:
 
-    path: /do/find,
-    method: post,
-    body: {
-      table|collection: collection1,
-      ids: [_id1, _id2],
-      names: [name1, name2],  // case-insensitive, all other finds are case-sensitive
-      fields: [field1,field2],
-      find: {name:"name1"},  // passthrough to mongo selector
-      children: ["childTable1","childTable2"], // temporarily disabled
-      lookups: true, // temporarily disabled
-      limit: 1000,
-      skip: 200,
-      sort: {field1:1, field2:-1},
-      count: true,
-      countBy:  field1
+    {
+      "table|collection|stat": "collection1|stat1",  // table is a deprecated synonymn for collection
+      "ids": ["_id1", "_id2"],
+      "names": ["name1", "name2"],    // case-insensitive search for name, all other finds are case-sensitive
+      "fields": ["field1","field2"],
+      "find": {name:"name1"},
+      "lookups": true,                // temporarily disabled
+      "limit": 25,                    // default and max is 1000
+      "skip": 100, 
+      "sort": {field1:1, field2:-1},
+      "count": true,                  // returns no records, only count, limit and skip are ignored
+      "countBy": "field1"             // expirimental.  returns count of collection grouped by any field
     }
-
+    
 
 ## Users and Admins
 Each user account has a role.  The only valid roles are 'user', the default, and 'admin'.  When the server starts it checks for a user with _id 00000.000000.00000.000.00000.  If it does not exist the server creates the user with 
@@ -58,21 +55,22 @@ Users or tests can log in with these credentials to perform administrative tasks
 With a few exeptions, admins can perform any operation on the server that would be prevented by permissions.  Users, in general, can read everything, write records to most tables, and can update records that they own.  Users cannot update or delete records owned by other users.
 
 ### Creating New Users
-See the guidelines for posting below, but the api is 
+See the guidelines for posting below, the api is 
 
     path: /user/create
     method: post
+    secret: \<secret\>
     body:  {data: {
       email: <email>
       password: <password>
     }}
 
-all other fields are optional.  Note that user issuing this call does not need to be signed in.  We have a TODO to add a captcha feature to prevent robots from abusing this API.  On successful account creation, the service signs in the user, creating a new session object.  The complete user and session object are returned to the caller.
+all other fields are optional. Secret is currently a static string. Later it will be provided by a captcha API.  On successful account creation, the service signs in the user, creating a new session object.  The complete user and session object are returned to the caller.
 
 Note that on success this call sets return status code to 200, not 201 and one might expect.  This is due to doubleing us the signin call.  
 
 ## AUTHENTICATION
-Users can be authenticated locally with a password, or by a oauth provider such as Facebook, Twitter, or Google.  Their authentication source is stored in the users.authSource field which is required.  Valid values may be found in util.statics.authSources.  The users table now requires either a password or valid oauth credentials to be stored before a user record to be created, with the exception of the /user/create api described above.  User emails must be unique.
+Users can be authenticated locally with a password, or by a oauth provider such as Facebook, Twitter, or Google.  Their authentication source is stored in the users.authSource field which is required.  Valid values may be found in util.statics.authSources.  User emails must be unique.
 
 ### Local
 If a new user is created with a password we assume the authSource is local.  We validate that the password is sufficiently strong before saving, and we save a one-way hash of the password the user entered.  See the users schema for the password rules and hash methods.
