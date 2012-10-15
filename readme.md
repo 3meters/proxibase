@@ -264,7 +264,8 @@ Updates every record in a table.  Usefull when you need to re-run triggers on al
       "preserveModified, true   // optional, default true, if false the method will update the modified date
     }
 
-### Statitics
+<a name="stats">
+### Statistics
 Site statistics are acceessed via 
 
     GET /stats
@@ -283,13 +284,7 @@ Refreshing statitics requires admin credentials since the operation can be expen
 ## Wiki
 * (proxibase/wiki/)
 
-
 ## Todo
-
-### Components
-* Express
-* Node
-* Test new mongo driver
 
 ### Bugs
 
