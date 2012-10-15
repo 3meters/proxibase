@@ -18,7 +18,7 @@ POST: /auth/signin
 
 authenticated user query params:
 
-    user=\<user._id\>&session=\<session.key\>
+    user=<user._id>&session=<session.key>
 
 POST /do/find:
 
@@ -50,7 +50,7 @@ Each user account has a role.  The only valid roles are 'user', the default, and
     
 Users or tests can log in with these credentials to perform administrative tasks.
 
-With a few exeptions, admins can perform any operation on the server that would be prevented by permissions.  Users, in general, can read everything, write records to most tables, and can update records that they own.  Users cannot update or delete records owned by other users.
+With a few exeptions, admins can perform any operation on the server that would be prevented by permissions.  Users, in general, can read everything, write records to most tables, and can update and remove records that they own.  Users cannot update or delete records owned by other users.
 
 ### Creating New Users
 See the guidelines for posting below, the api is 
