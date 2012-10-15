@@ -138,17 +138,6 @@ exports.findDocsByIdAndCheckSysFields = function(test) {
 }
 
 
-exports.findDocsByIdDeprecated = function(test) {
-  var req = new Req({
-    method: 'get',
-    uri: '/data/documents/' + testDoc1._id + ',' + testDoc2._id + '?' + userCred
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 2, dump(req, res))
-    test.done()
-  })
-}
 
 exports.findDocsByGetAndFindAndJson = function(test) {
   var req = new Req({
@@ -183,7 +172,7 @@ exports.findDocsByGetAndFindWithBadJson = function(test) {
   })
 }
 
-_exports.findDocsByNameWhenNotSignedIn = function(test) {
+exports.findDocsByNameWhenNotSignedIn = function(test) {
   var req = new Req({
     method: 'get',
     uri: '/data/documents?names=' + testDoc1.name.toUpperCase() + ',' + testDoc2.name
@@ -194,6 +183,22 @@ _exports.findDocsByNameWhenNotSignedIn = function(test) {
     test.done()
   })
 }
+
+exports.findWithLookups = function(test) {
+  var req = new Req({
+    method: 'get',
+    uri: '/data/documents?names=' + testDoc1.name + '&lookups=1'
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    var doc = res.body.data[0]
+    assert('Test User' === doc.owner, dump(req, res))
+    assert('Test User' === doc.creator, dump(req, res))
+    assert('Test User' === doc.modifier, dump(req, res))
+    test.done()
+  })
+}
+
 
 
 exports.updateDoc = function(test) {
