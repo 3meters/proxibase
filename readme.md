@@ -241,20 +241,23 @@ Lists the web methods. POST to /do/methodName executes a method passing in the f
 Returns request.body
 
 ### POST /do/find
-Is a way to do a GET on any table in the system, but with the paramters in the request body rather than on the query string. find expects request.body to contain JSON of this form:
+POST /do/find is the same as GET /data/<collection>, but with the paramters in the request body rather than on the query string, useful for complex queries. Request body should be JSON of this form:
 
     {
-      "table": "tableName",
+      "table|collection|stat": "collection|stat",  // table is a deprecated synonymn for collection
       "ids": ["_id1", "_id2"],
-      "names": ["name1", "name2"],
+      "names": ["name1", "name2"],    // case-insensitive search for name, all other finds are case-sensitive
       "fields": ["field1","field2"],
-      "find": {"name":"name1"},
-      "children": ["childTable1","childTable2"], // temporarily disabled
-      "lookups": true, // temporarily disabled
-      "limit": 25
+      "find": {name:"name1"},
+      "lookups": true,                // temporarily disabled
+      "limit": 25,                    // default and max is 1000
+      "skip": 100, 
+      "sort": {field1:1, field2:-1},
+      "count": true,                  // returns no records, only count, limit and skip are ignored
+      "countBy": "field1"             // expirimental.  returns count of collection grouped by any field
     }
 
-The table property is required.  All others are optional. The value of the find property is passed through to mongodb unmodified, so it can be used to specify any clauses that mongodb supports, including sorting, offset, etc.  See mongodb's [advanced query syntax](http://www.mongodb.org/display/DOCS/Advanced+Queries) for details. This may present a security problem, so will likely be removed once the public query syntax becomes more full-featured.
+The collection|table|stat property is required.  All others are optional. The value of the find property is passed through to mongodb unmodified, so it can be used to specify any clauses that mongodb supports.  See mongodb's [advanced query syntax](http://www.mongodb.org/display/DOCS/Advanced+Queries) for details. 
 
 ### POST /do/touch
 Updates every record in a table.  Usefull when you need to re-run triggers on all records
