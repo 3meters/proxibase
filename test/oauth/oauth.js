@@ -46,7 +46,7 @@ exports.getSession = function(test) {
 
 exports.updateDefaultUserOauthId = function(test) {
   var req = new Req({
-    uri: '/data/users/ids:' + constants.uid1 + '?' + adminCred,
+    uri: '/data/users/' + constants.uid1 + '?' + adminCred,
     body: {data: {oauthId: testOauthId.twitter}}
   })
   request(req, function(err, res) {

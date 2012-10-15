@@ -104,7 +104,7 @@ exports.userCanValidateEmail = function(test) {
 
 exports.adminCannotChangeValidateDateViaRest = function(test) {
   var req = new Req({
-    uri: '/data/users/ids:' + testUser._id + '?' + adminCred,
+    uri: '/data/users/' + testUser._id + '?' + adminCred,
     body: {data: {validationDate: util.getTimeUTC()}}
   })
   request(req, function(err, res) {
@@ -281,7 +281,7 @@ exports.sessionParamsInQueryStringOverrideOnesInBody = function(test) {
 
 exports.adminCannotChangePasswordDirectly = function(test) {
   var req = new Req({
-    uri: '/data/users/ids:' + testUser._id + '?' + adminCred,
+    uri: '/data/users/' + testUser._id + '?' + adminCred,
     body: {data: {password: 'newpass'}}
   })
   request(req, function(err, res) {
@@ -355,7 +355,7 @@ exports.changingPasswordsCreatesNewSession = function(test) {
 
 exports.userCannotChangeRoles = function(test) {
   var req = new Req({
-    uri: '/data/users/ids:' + testUser._id + '?' + userCred,
+    uri: '/data/users/' + testUser._id + '?' + userCred,
     body: {data: {role: 'admin'}}
   })
   request(req, function(err, res) {
@@ -368,7 +368,7 @@ exports.userCannotChangeRoles = function(test) {
 
 exports.adminCanChangeRoles = function(test) {
   var req = new Req({
-    uri: '/data/users/ids:' + testUser._id + '?' + adminCred,
+    uri: '/data/users/' + testUser._id + '?' + adminCred,
     body: {data: {role: 'lobster'}}
   })
   request(req, function(err, res) {
@@ -380,7 +380,7 @@ exports.adminCanChangeRoles = function(test) {
 
 exports.changingEmailResetsValidationNotifyDate = function(test) {
   var req = new Req({
-    uri: '/data/users/ids:' + testUser._id + '?' + userCred,
+    uri: '/data/users/' + testUser._id + '?' + userCred,
     body: {data: {email: 'authtest3@3meters.com'}}
   })
   request(req, function(err, res) {

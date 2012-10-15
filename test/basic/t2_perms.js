@@ -112,7 +112,7 @@ exports.signinUser2 = function(test) {
 
 exports.user1CanUpdateOwnRecord = function (test) {
   var req = new Req({
-    uri: '/data/users/ids:' + user1._id + '?' + user1Cred,
+    uri: '/data/users/' + user1._id + '?' + user1Cred,
     body: {data: {location: 'Orlando'}}
   })
   request(req, function(err, res) {
@@ -126,7 +126,7 @@ exports.user1CanUpdateOwnRecord = function (test) {
 
 exports.user1CannotUpdateUser2sRecord = function (test) {
   var req = new Req({
-    uri: '/data/users/ids:' + user2._id + '?' + user1Cred,
+    uri: '/data/users/' + user2._id + '?' + user1Cred,
     body: {data: {location: 'Denver'}}
   })
   request(req, function(err, res) {
@@ -165,7 +165,7 @@ exports.user1CanCreateARecord = function(test) {
 exports.user1OwnsRecordsHeCreates = function(test) {
   var req = new Req({
     method: 'get',
-    uri: '/data/documents/ids:' + doc1._id + '?' + user1Cred,
+    uri: '/data/documents/' + doc1._id + '?' + user1Cred,
   })
   request(req, function(err, res) {
     check(req, res)
@@ -177,7 +177,7 @@ exports.user1OwnsRecordsHeCreates = function(test) {
 
 exports.user2CannotUpdateUser1sRecords = function(test) {
   var req = new Req({
-    uri: '/data/documents/ids:' + doc1._id + '?' + user2Cred,
+    uri: '/data/documents/' + doc1._id + '?' + user2Cred,
     body: {data: {name: 'I updated your doc sucka'}}
   })
   request(req, function(err, res) {
@@ -190,7 +190,7 @@ exports.user2CannotUpdateUser1sRecords = function(test) {
 exports.user2CannotDeleteUser1sRecords = function(test) {
   var req = new Req({
     method: 'delete',
-    uri: '/data/documents/ids:' + doc1._id + '?' + user2Cred,
+    uri: '/data/documents/' + doc1._id + '?' + user2Cred,
   })
   request(req, function(err, res) {
     check(req, res, 401)
@@ -201,7 +201,7 @@ exports.user2CannotDeleteUser1sRecords = function(test) {
 
 exports.user1CanUpdateRecordsHeCreated = function(test) {
   var req = new Req({
-    uri: '/data/documents/ids:' + doc1._id + '?' + user1Cred,
+    uri: '/data/documents/' + doc1._id + '?' + user1Cred,
     body: {data: {name: 'I updated my own document'}}
   })
   request(req, function(err, res) {
@@ -214,7 +214,7 @@ exports.user1CanUpdateRecordsHeCreated = function(test) {
 exports.user1CanDeleteHisOwnRecords = function(test) {
   var req = new Req({
     method: 'delete',
-    uri: '/data/documents/ids:' + doc1._id + '?' + user1Cred,
+    uri: '/data/documents/' + doc1._id + '?' + user1Cred,
   })
   request(req, function(err, res) {
     check(req, res, 200)
@@ -241,7 +241,7 @@ exports.user2CanCreateARecord = function(test) {
 
 exports.user2CannotChangeOwnerOfHerOwnRecord = function(test) {
   var req = new Req({
-    uri: '/data/documents/ids:' + doc1._id + '?' + user2Cred,
+    uri: '/data/documents/' + doc1._id + '?' + user2Cred,
     body: {data: {_owner: util.adminUser._id}}
   })
   request(req, function(err, res) {
@@ -253,7 +253,7 @@ exports.user2CannotChangeOwnerOfHerOwnRecord = function(test) {
 
 exports.adminCanUpdateOthersRecords = function(test) {
   var req = new Req({
-    uri: '/data/documents/ids:' + doc1._id + '?' + adminCred,
+    uri: '/data/documents/' + doc1._id + '?' + adminCred,
     body: {data: {name: 'I can update any document I please'}}
   })
   request(req, function(err, res) {
@@ -265,7 +265,7 @@ exports.adminCanUpdateOthersRecords = function(test) {
 
 exports.adminCanChangeOwnerOfOthersRecords = function(test) {
   var req = new Req({
-    uri: '/data/documents/ids:' + doc1._id + '?' + adminCred,
+    uri: '/data/documents/' + doc1._id + '?' + adminCred,
     body: {data: {_owner: util.adminUser._id}}
   })
   request(req, function(err, res) {
@@ -277,7 +277,7 @@ exports.adminCanChangeOwnerOfOthersRecords = function(test) {
 exports.adminCanDeleteOthersRecords = function(test) {
   var req = new Req({
     method: 'delete',
-    uri: '/data/documents/ids:' + doc1._id + '?' + adminCred,
+    uri: '/data/documents/' + doc1._id + '?' + adminCred,
   })
   request(req, function(err, res) {
     check(req, res, 200)
