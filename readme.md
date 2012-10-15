@@ -114,7 +114,7 @@ Sessions can be destroyed via
 
 ### Passwords
 
-User passwords can no longer be updated via the ordinary rest methods, but can only be changed via a new change password api:
+User passwords cannot be updated via the ordinary rest methods, only via the change password api:
 
     path: /user/changepw  
     method: post
@@ -197,7 +197,7 @@ Returns each document with its lookup fields fully populated. Default false.
 1. Set req.headers.content-type to 'application/json'
 2. Make sure req.body is parsable json
 3. Write the data for the new object inside a data element in the request body.  The new element can either be a simple object or an array of objects.
-4. If you use an array, currently only one element is supported per post, but this may change in the future
+4. You may put your updated elements inside an array, however currently only one element is supported per post
 
 ie
 
@@ -274,7 +274,7 @@ This will return a list of supported stats.  For each stat
 
     GET /stats/<stat>
   
-will return a collection of the statistics.  These are ordinary monogodb collections.  In the database their names are prefixed by "stats_".  All the normal parameters to the rest GET API will work. (POST /do/find is nyi for statistics collections.)  These collections are static, and can be recomputed either by shell scripts or or demand by appending the query parameter:
+will return a collection of the statistics.  These are ordinary monogodb collections.  In the database their names are prefixed by "stats_".  All the normal parameters to the rest GET API will work.  POST /do/find works too using the body param stat: <stat>. All statistic collections are static, and must be recomputed to be current. To recompute a statistic, add the parameter 
 
     ?refresh=true
 
