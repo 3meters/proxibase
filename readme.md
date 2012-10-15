@@ -3,14 +3,12 @@ Proxibase is the backing service for 3meters aircandi and related services
 
 Web: https://www.aircandi.com
 
-API: https://api.aircandi.com
+API: https://aircandi.com:643
 
 ## Quick Reference
 
-Users sign in via :
+POST: /auth/signin
 
-    path: /auth/signin
-    method: post
     body: {
       user: {
         email: (case-insensitive)
@@ -18,24 +16,24 @@ Users sign in via :
       }
     }
 
-Once signed in, pass user credentials on the URL like so:
+authenticated user query params:
 
-   ?user=\<user._id\>&session=\<session.key\>
+    user=\<user._id\>&session=\<session.key\>
 
-Find parameters:
+POST /do/find:
 
     {
-      "table|collection|stat": "collection1|stat1",  // table is a deprecated synonymn for collection
-      "ids": ["_id1", "_id2"],
-      "names": ["name1", "name2"],    // case-insensitive search for name, all other finds are case-sensitive
-      "fields": ["field1","field2"],
-      "find": {name:"name1"},
-      "lookups": true,                // temporarily disabled
-      "limit": 25,                    // default and max is 1000
-      "skip": 100, 
+      "collection|stat": string,          // base collection or statitistics collection
+      "ids": [string],
+      "names": [string],                  // case-insensitive
+      "fields": [string],
+      "find": {mongodb find expression},  // pass-through to mongodb, case-sensitive
+      "lookups": boolean,                 // temporarily disabled
+      "limit": number,                    // default and max is 1000
+      "skip": number, 
       "sort": {field1:1, field2:-1},
-      "count": true,                  // returns no records, only count, limit and skip are ignored
-      "countBy": "field1"             // expirimental.  returns count of collection grouped by any field
+      "count": boolean,                   // returns no records, only count, limit and skip are ignored
+      "countBy": fieldName                // returns count of collection grouped by any field
     }
     
 
@@ -242,19 +240,19 @@ Returns request.body
 POST /do/find is the same as GET /data/<collection>, but with the paramters in the request body rather than on the query string, useful for complex queries. Request body should be JSON of this form:
 
     {
-      "table|collection|stat": "collection|stat",  // table is a deprecated synonymn for collection
-      "ids": ["_id1", "_id2"],
-      "names": ["name1", "name2"],    // case-insensitive search for name, all other finds are case-sensitive
-      "fields": ["field1","field2"],
-      "find": {name:"name1"},
-      "lookups": true,                // temporarily disabled
-      "limit": 25,                    // default and max is 1000
-      "skip": 100, 
+      "collection|stat": string,          // base collection or statitistics collection
+      "ids": [string],
+      "names": [string],                  // case-insensitive
+      "fields": [string],
+      "find": {mongodb find expression},  // pass-through to mongodb, case-sensitive
+      "lookups": boolean,                 // temporarily disabled
+      "limit": number,                    // default and max is 1000
+      "skip": number, 
       "sort": {field1:1, field2:-1},
-      "count": true,                  // returns no records, only count, limit and skip are ignored
-      "countBy": "field1"             // expirimental.  returns count of collection grouped by any field
+      "count": boolean,                   // returns no records, only count, limit and skip are ignored
+      "countBy": fieldName                // returns count of collection grouped by any field
     }
-
+    
 The collection|table|stat property is required.  All others are optional. The value of the find property is passed through to mongodb unmodified, so it can be used to specify any clauses that mongodb supports.  See mongodb's [advanced query syntax](http://www.mongodb.org/display/DOCS/Advanced+Queries) for details. 
 
 ### POST /do/touch
