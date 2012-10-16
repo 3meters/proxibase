@@ -135,6 +135,7 @@ Signin via ouath like so:
 
 Session management after a sucessful authentication is the same as with local authentication.  If the user authenticates via an oauth provider, we store their provider credentials and user key, allowing us to access their picture and other provider specific data (friends, followers, etc) on their behalf.  
 
+<a name="rest"></a>
 ## Rest
 The system provides find, insert, update, and remove methods over the base mongodb collections via standard REST apis.  
 
