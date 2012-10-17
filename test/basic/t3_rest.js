@@ -146,6 +146,7 @@ exports.findDocsByGetAndFindAndJson = function(test) {
   })
   request(req, function(err, res) {
     check(req, res)
+    assert(res.body.data.length === 1, dump(req, res))
     test.done()
   })
 }
