@@ -139,7 +139,7 @@ exports.statsPassThroughFindCriteria = function(test) {
   })
   request(req, function(err, res) {
     check(req, res)
-    assert(res.body.data.length === 1)
+    assert(res.body.data.length === 1, dump(req, res))
     test.done()
   })
 }
@@ -156,3 +156,17 @@ exports.statsLookupsWork = function(test) {
   })
 }
 
+exports.statsWorkFromDoFind = function(test) {
+  var req = new Req({
+    uri: '/do/find',
+    body: {
+      stat: 'usersByEntity',
+      ids: [userSession._owner]
+    }
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.data[0]._id === userSession._owner, dump(req, res))
+    test.done()
+  })
+}
