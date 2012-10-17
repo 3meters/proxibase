@@ -135,12 +135,11 @@ exports.staticsUpdateOnRefresh = function(test) {
 exports.statsPassThroughFindCriteria = function(test) {
   var req = new Req({
     method: 'get',
-    uri: '/stats/usersByEntity/' + userSession._owner + '?' + adminCred
+    uri: '/stats/usersByEntity?find={"_id":"' + userSession._owner + '"}'
   })
-  log('nyi')
-  test.done()
   request(req, function(err, res) {
     check(req, res)
+    assert(res.body.data.length === 1)
     test.done()
   })
 }
@@ -148,12 +147,11 @@ exports.statsPassThroughFindCriteria = function(test) {
 exports.statsLookupsWork = function(test) {
   var req = new Req({
     method: 'get',
-    uri: '/stats/usersByEntity/' + userSession._owner + '?' + adminCred
+    uri: '/stats/usersByEntity?find={"_id":"' + userSession._owner + '"}&lookups=true'
   })
-  log('nyi')
-  test.done()
   request(req, function(err, res) {
     check(req, res)
+    assert(res.body.data[0].name === 'Test User')
     test.done()
   })
 }
