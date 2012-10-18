@@ -28,7 +28,7 @@ var
   jQuerySrc = 'http://code.jquery.com/jquery-1.7.2.min.js',
   baseUri = testUtil.serverUrl,
   _exports = {}  // for commenting out tests
-  log = require('../../lib/util').log
+  log = require('util').log
 
 
 // Get admin session and set credentials

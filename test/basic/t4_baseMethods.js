@@ -6,7 +6,7 @@
 var
   request = require('request'),
   assert = require('assert'),
-  util = require('../../lib/util'),
+  util = require('util'),
   log = util.log,
   testUtil = require('../util'),
   Req = testUtil.Req,

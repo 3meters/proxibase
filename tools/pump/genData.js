@@ -4,7 +4,9 @@
  *   Silently overwrites existing files or tables
  */
 
-var util = require('../../lib/util')
+require('../../lib/extend') // load proxibase extensions
+
+var util = require('util')
   , fs = require('fs')
   , path = require('path')
   , mongoskin = require('mongoskin')

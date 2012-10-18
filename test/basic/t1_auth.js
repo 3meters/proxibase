@@ -20,7 +20,7 @@ var
   session = {},
   adminSession = {},
   _exports = {},                    // for commenting out tests
-  util = require('../../lib/util'),
+  util = require('util'),
   log = util.log
 
 
