@@ -2,7 +2,7 @@
  * Proxibase test util module
  */
 
-var util = require('../lib/util')
+var util = require('util')
   , assert = require('assert')
   , request = require('request')
   , constants = require('./constants')

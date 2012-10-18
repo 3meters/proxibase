@@ -9,7 +9,7 @@ var
   check = testUtil.check,
   dump = testUtil.dump,
   Req = testUtil.Req,
-  log = require('../../lib/util').log
+  log = require('util').log
 
 
 // Make sure server is alive and responding
