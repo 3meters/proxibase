@@ -5,7 +5,7 @@
 var
   assert = require('assert'),
   request = require('request'),
-  util = require('../../lib/util'),
+  util = require('util'),
   log = util.log,
   testUtil = require('../util'),
   Req = testUtil.Req,
@@ -138,17 +138,6 @@ exports.findDocsByIdAndCheckSysFields = function(test) {
 }
 
 
-exports.findDocsByIdDeprecated = function(test) {
-  var req = new Req({
-    method: 'get',
-    uri: '/data/documents/ids:' + testDoc1._id + ',' + testDoc2._id + '?' + userCred
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 2, dump(req, res))
-    test.done()
-  })
-}
 
 exports.findDocsByGetAndFindAndJson = function(test) {
   var req = new Req({
@@ -157,6 +146,7 @@ exports.findDocsByGetAndFindAndJson = function(test) {
   })
   request(req, function(err, res) {
     check(req, res)
+    assert(res.body.data.length === 1, dump(req, res))
     test.done()
   })
 }
@@ -183,10 +173,10 @@ exports.findDocsByGetAndFindWithBadJson = function(test) {
   })
 }
 
-_exports.findDocsByNameWhenNotSignedIn = function(test) {
+exports.findDocsByNameWhenNotSignedIn = function(test) {
   var req = new Req({
     method: 'get',
-    uri: '/data/documents/names:' + testDoc1.name.toUpperCase() + ',' + testDoc2.name
+    uri: '/data/documents?names=' + testDoc1.name.toUpperCase() + ',' + testDoc2.name
   })
   request(req, function(err, res) {
     check(req, res)
@@ -195,10 +185,26 @@ _exports.findDocsByNameWhenNotSignedIn = function(test) {
   })
 }
 
+exports.findWithLookups = function(test) {
+  var req = new Req({
+    method: 'get',
+    uri: '/data/documents?names=' + testDoc1.name + '&lookups=1'
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    var doc = res.body.data[0]
+    assert('Test User' === doc.owner, dump(req, res))
+    assert('Test User' === doc.creator, dump(req, res))
+    assert('Test User' === doc.modifier, dump(req, res))
+    test.done()
+  })
+}
+
+
 
 exports.updateDoc = function(test) {
   var req = new Req({
-    uri: '/data/documents/ids:' + testDoc1._id + '?' + userCred,
+    uri: '/data/documents/' + testDoc1._id + '?' + userCred,
     body: {data: {name: "Changed Name" } }
   })
   request(req, function(err, res) {
@@ -214,7 +220,7 @@ exports.updateDoc = function(test) {
 exports.checkUpdatedDoc = function(test) {
   var req = new Req({
     method: 'gET',
-    uri: '/data/documents/ids:' + testDoc1._id
+    uri: '/data/documents/' + testDoc1._id
   })
   request(req, function(err, res) {
     check(req, res)
@@ -229,7 +235,7 @@ exports.checkUpdatedDoc = function(test) {
 
 exports.cannotAddNonSchemaFieldsUsingUpdate = function(test) {
   var req = new Req({
-    uri: '/data/documents/ids:' + testDoc1._id + '?' + userCred,
+    uri: '/data/documents/' + testDoc1._id + '?' + userCred,
     body: {data: {myNewField: "Should fail" } }
   })
   request(req, function(err, res) {
@@ -243,7 +249,7 @@ exports.cannotAddNonSchemaFieldsUsingUpdate = function(test) {
 exports.deleteUpdateDoc = function(test) {
   var req = new Req({
     method: 'delete',
-    uri: '/data/documents/ids:' + testDoc1._id + '?' + userCred
+    uri: '/data/documents/' + testDoc1._id + '?' + userCred
   })
   request(req, function(err, res) {
     check(req, res)
@@ -256,7 +262,7 @@ exports.deleteUpdateDoc = function(test) {
 exports.checkUpdatedDocDeletedThenAddBack = function(test) {
   var req = new Req({
     method: 'gET',
-    uri: '/data/documents/ids:' + testDoc1._id + '?' + userCred
+    uri: '/data/documents/' + testDoc1._id + '?' + userCred
   })
   request(req, function(err, res) {
     check(req, res)
@@ -275,7 +281,7 @@ exports.checkUpdatedDocDeletedThenAddBack = function(test) {
 
 exports.cannotUpdateNonExistantDoc = function(test) {
   var req = new Req({
-    uri: '/data/documents/ids:00005.002?' + userCred,
+    uri: '/data/documents/00005.002?' + userCred,
     body: {data: {name: 'I should fail'}}
   })
   request(req, function(err, res) {
@@ -350,7 +356,7 @@ exports.userCanLinkDocs = function(test) {
 exports.checkLink = function(test) {
   var req = new Req({
     method: 'get',
-    uri: '/data/links/ids:' + linkId
+    uri: '/data/links/' + linkId
   })
   request(req, function(err, res) {
     check(req, res) 
@@ -366,7 +372,7 @@ exports.checkLink = function(test) {
 exports.canDeleteLink = function(test) {
   var req = new Req({
     method: 'delete',
-    uri: '/data/links/ids:' + linkId + '?' + userCred
+    uri: '/data/links/' + linkId + '?' + userCred
   })
   request(req, function(err, res) {
     check(req, res) 
@@ -380,7 +386,7 @@ exports.canDeleteLink = function(test) {
 exports.userCannotDeleteUsingWildcard = function(test) {
   var req = new Req({
     method: 'delete',
-    uri: '/data/documents/ids:*?' + userCred
+    uri: '/data/documents/*?' + userCred
   })
   request(req, function(err, res) {
     check(req, res, 404) 
@@ -392,7 +398,7 @@ exports.userCannotDeleteUsingWildcard = function(test) {
 exports.userCanDeleteMultipleDocs = function(test) {
   var req = new Req({
     method: 'delete',
-    uri: '/data/documents/ids:' + testDoc1._id + ',' + testDoc2._id + '?' + userCred
+    uri: '/data/documents/' + testDoc1._id + ',' + testDoc2._id + '?' + userCred
   })
   request(req, function(err, res) {
     check(req, res) 
@@ -405,7 +411,7 @@ exports.userCanDeleteMultipleDocs = function(test) {
 exports.adminCanDeleteUsingWildcard = function(test) {
   var req = new Req({
     method: 'delete',
-    uri: '/data/sessions/ids:*?' + adminCred
+    uri: '/data/sessions/*?' + adminCred
   })
   request(req, function(err, res) {
     check(req, res) 

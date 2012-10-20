@@ -2,7 +2,7 @@
  * Proxibase test util module
  */
 
-var util = require('../lib/util')
+var util = require('util')
   , assert = require('assert')
   , request = require('request')
   , constants = require('./constants')
@@ -149,7 +149,7 @@ var check = exports.check = function(req, res, code) {
   }
   if (res.body) {
     try { res.body = JSON.parse(res.body) }
-    catch (e) { throw e }
+    catch (e) { console.error(res.body); throw e }
   }
   assert(code === res.statusCode,
     dump(req, res, 'Bad statusCode: ' + res.statusCode + ' expected: ' + code))

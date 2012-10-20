@@ -28,7 +28,7 @@ var
   jQuerySrc = 'http://code.jquery.com/jquery-1.7.2.min.js',
   baseUri = testUtil.serverUrl,
   _exports = {}  // for commenting out tests
-  log = require('../../lib/util').log
+  log = require('util').log
 
 
 // Get admin session and set credentials
@@ -46,7 +46,7 @@ exports.getSession = function(test) {
 
 exports.updateDefaultUserOauthId = function(test) {
   var req = new Req({
-    uri: '/data/users/ids:' + constants.uid1 + '?' + adminCred,
+    uri: '/data/users/' + constants.uid1 + '?' + adminCred,
     body: {data: {oauthId: testOauthId.twitter}}
   })
   request(req, function(err, res) {
