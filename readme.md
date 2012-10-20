@@ -3,14 +3,14 @@ Proxibase is the backing service for 3meters aircandi and related services
 
 Web: https://www.aircandi.com
 
-API: https://api.aircandi.com
+API: https://aircandi.com:643
 
 ## Quick Reference
 
-Users sign in via :
+sign in
 
-    path: /auth/signin
-    method: post
+    path: /user/signin
+    method: POST
     body: {
       user: {
         email: (case-insensitive)
@@ -18,29 +18,28 @@ Users sign in via :
       }
     }
 
-Once signed in, pass user credentials on the URL like so:
+send an authticated request
 
-   ?user=<user._id>&session=<session.key>
+    path:  ?user=<user._id>&session=<session.key>
 
-Find parameters:
+find documents
 
-    path: /do/find,
-    method: post,
+    path: /do/find
+    method: POST
     body: {
-      table|collection: collection1,
-      ids: [_id1, _id2],
-      names: [name1, name2],  // case-insensitive, all other finds are case-sensitive
-      fields: [field1,field2],
-      find: {name:"name1"},  // passthrough to mongo selector
-      children: ["childTable1","childTable2"], // temporarily disabled
-      lookups: true, // temporarily disabled
-      limit: 1000,
-      skip: 200,
-      sort: {field1:1, field2:-1},
-      count: true,
-      countBy:  field1
+      "collection|stat": string,          // base collection or statitistics collection
+      "ids": [string],
+      "names": [string],                  // case-insensitive
+      "fields": [string],
+      "find": {mongodb find expression},  // pass-through to mongodb, case-sensitive
+      "lookups": boolean,
+      "limit": number,                    // default and max is 1000
+      "skip": number,
+      "sort": {field1:1, field2:-1},
+      "count": boolean,                   // returns no records, only count, limit and skip are ignored
+      "countBy": fieldName                // returns count of collection grouped by any field
     }
-
+    
 
 ## Users and Admins
 Each user account has a role.  The only valid roles are 'user', the default, and 'admin'.  When the server starts it checks for a user with _id 00000.000000.00000.000.00000.  If it does not exist the server creates the user with 
@@ -55,24 +54,25 @@ Each user account has a role.  The only valid roles are 'user', the default, and
     
 Users or tests can log in with these credentials to perform administrative tasks.
 
-With a few exeptions, admins can perform any operation on the server that would be prevented by permissions.  Users, in general, can read everything, write records to most tables, and can update records that they own.  Users cannot update or delete records owned by other users.
+With a few exeptions, admins can perform any operation on the server that would be prevented by permissions.  Users, in general, can read everything, write records to most tables, and can update and remove records that they own.  Users cannot update or delete records owned by other users.
 
 ### Creating New Users
-See the guidelines for posting below, but the api is 
+See the guidelines for posting below, the api is 
 
     path: /user/create
     method: post
+    secret: <secret>
     body:  {data: {
       email: <email>
       password: <password>
     }}
 
-all other fields are optional.  Note that user issuing this call does not need to be signed in.  We have a TODO to add a captcha feature to prevent robots from abusing this API.  On successful account creation, the service signs in the user, creating a new session object.  The complete user and session object are returned to the caller.
+All other fields are optional. Secret is currently a static string. Someday it may be provided by a captcha API.  On successful account creation, the service signs in the user, creating a new session object.  The complete user and session object are returned to the caller.
 
-Note that on success this call sets return status code to 200, not 201 and one might expect.  This is due to doubleing us the signin call.  
+Note that on success this call sets return status code to 200, not 201 and one might expect.  This is due to chaining the call to signin.  
 
-## AUTHENTICATION
-Users can be authenticated locally with a password, or by a oauth provider such as Facebook, Twitter, or Google.  Their authentication source is stored in the users.authSource field which is required.  Valid values may be found in util.statics.authSources.  The users table now requires either a password or valid oauth credentials to be stored before a user record to be created, with the exception of the /user/create api described above.  User emails must be unique.
+## Authentication
+Users can be authenticated locally with a password or via a oauth provider such as Facebook, Twitter, or Google.  Their authentication source is stored in the users.authSource field which is required.  Valid values may be found in util.statics.authSources.  User emails must be unique.
 
 ### Local
 If a new user is created with a password we assume the authSource is local.  We validate that the password is sufficiently strong before saving, and we save a one-way hash of the password the user entered.  See the users schema for the password rules and hash methods.
@@ -98,12 +98,12 @@ or as fields in the body of a post like so:
     /do/find
     method: post
     body: = {
-      table:'users',
+      collection:'users',
       user: 0000.120628.57119.055.350009
       session: fb3f74034f591e3053e6e8617c46fb35
     }
 
-If you pass invaild session credentials the request will fail with a 401 (not authorized).  If they are valid, all responses will contain a user object that includes the user's id and name. Sessions are bound to a particular client IP address.  They expire after two weeks without use.
+If you pass invaild session credentials the request will fail with a 401 (not authorized).  If they are valid, all responses will contain a user object that includes the user's id and name. 
 
 Sessions can be destroyed via
 
@@ -114,7 +114,7 @@ Sessions can be destroyed via
 
 ### Passwords
 
-User passwords can no longer be updated via the ordinary rest methods, but can only be changed via a new change password api:
+User passwords cannot be updated via the ordinary rest methods, only via the change password api:
 
     path: /user/changepw  
     method: post
@@ -133,47 +133,38 @@ Signin via ouath like so:
     path: /auth/signin/facebook|twitter|google
     method: get
 
-session management after a sucessful authentication is the same as with local authentication.  If the user authenticates via an oauth provider, we store their provider credentials and user key, allowing us to access their picture and other provider specific data (friends, followers, etc) on their behalf.  
+Session management after a sucessful authentication is the same as with local authentication.  If the user authenticates via an oauth provider, we store their provider credentials and user key, allowing us to access their picture and other provider specific data (friends, followers, etc) on their behalf.  
 
-## REST API
-### GET https://api.aircandi.com/schema/<tableName>
+<a name="rest"></a>
+## Rest
+The system provides find, insert, update, and remove methods over the base mongodb collections via standard REST apis.  
 
-Returns a table's schema
+### GET /schema
+Returns the base collections
+
+### GET /schema/\<collection\>
+Returns the collection's schema
 
 ### _id fields
-Every proxibase record has a an immutable _id field that is unique within proxiabse. _ids have this form, with dates and times represented in UTC: 
+Every document in every collection has a unique, immutable _id field of the form:
 
-    tabl.yymmdd.scnds.mil.random
+    clid.yymmdd.scnds.mil.random
 
 meaning
 
-    tableId.dateSince2000.secondsSinceMidnight.milliseconds.randomNumber
+    collectionId.dateSince2000.secondsSinceMidnight.milliseconds.randomNumber
 
-### GET /data/tableName
-Returns the table's first 1000 records unsorted.
+### GET /data/\<collection\>
+Returns the collection's first 1000 records unsorted.
 
-### GET /data/tableName/ids:id1,id2
-Returns records with the specified ids. Note the initial ids:  Do quote or put spaces betweeen the id parameters themselves.
+### GET /data/\<collection\>/\<id1\>,\<id2\>
+Returns records with the specified ids
 
-### GET /data/tableName/names:name1,name2
-Returns records with the specified names. Note the initial names:  Do not quote or put spaces between the name parameters.  If the value of your name contains a comma, you cannot use this method to find it.  Use the do/find method in this case. 
+### GET /data/\<collection\>?names:\<name1,name2\>
+Returns records with the specified names, case-insensitive.  If the names include spaces, use POST /do/find 
 
-### GET /data/tablename/[ids:...|names:.../]childTable1,childTable2|*
-TEMPORARILY DISABLED
-
-Returns all records specified with subdocuments for each child table specified. The wildcard * returns all child documents.  All fields from child documents are returned.  The query limit is applied both to the main document array and to each of its child arrays. Filters only apply to the main document, not to the document's children.
-
-### GET /data/tablename/genid
+### GET /data/\<collection\>/genid
 Generates a valid id for the table with the UTC timestamp of the request.  Useful if you want to make posts to mulitple tables with the primary and foreign keys preassigned.
-
-### GET parameters
-Place GET query parameters at the end of the URL beginning with a ?. Separate parameters with &. Parameter ordering does not matter.
-
-    ?find={"firstname":"John","lastname":{"$in":["Smith","Jones"]},"age":{"$lt":5}}
-Returns the records in the table found using mongodb's [advanced query syntax](http://www.mongodb.org/display/DOCS/Advanced+Queries). The value of find must be parsable JSON. The rest of the url need not.
-
-    ?fields=_id,name,created
-Returns only the fields specified. _id is always returned. 
 
     ?sort={"namelc":1, "age:-1"}
 Returns sorted by name lower case ascending, age decending
@@ -187,17 +178,17 @@ Skip the first 1000 records. Use in conjection with sort and limit to provide pa
     ?count=ture
 Only return the count of the collection, not any of the data.  Limit, skip, and field paramters are ignored.
 
+    ?countBy=fieldName
+Returns the count of the colleciton grouped by fieldName
+
     ?lookups=true
-TEMPORARILY DISABLED
-
-Returns each document with its lookup fields fully populated. Default false.
-
+For each reference key of the form _key looks up the name property of the referenced collection and adds it as key.  For example document._owner with lookups=true will also include document.owner = 'Jay'
 
 ### POST Rules
 1. Set req.headers.content-type to 'application/json'
 2. Make sure req.body is parsable json
 3. Write the data for the new object inside a data element in the request body.  The new element can either be a simple object or an array of objects.
-4. If you use an array, currently only one element is supported per post, but this may change in the future
+4. You may put your updated elements inside an array, however currently only one element is supported per post
 
 ie
 
@@ -219,52 +210,55 @@ or
       ]
     }
 
-### POST /data/tablename
-Inserts req.body.data or req.body.data[0] into the tablename table.  If a value for _id is specified it will be used, otherwise the server will generate a value for _id.  Only one record may be inserted per request. If you specifiy values for any of the system fields, those values will be stored.  If you do not the system will generates defaults for you.  The return value is all fields of the newly created record inside a data tag.  If you just want the _id back, include request.body.terse = true in your request.
+### POST /data/\<collection\>
+Inserts req.body.data or req.body.data[0] into the collection.  If a value for _id is specified it will be used, otherwise the server will generate a value for _id.  Only one record may be inserted per request. If you specifiy values for any of the system fields, those values will be stored.  If you do not the system will generate defaults for you.  The return value is all fields of the newly created record inside a data tag. 
 
-### POST /data/tablename/ids:id1
-Updates the record with _id = id1 in tablename.  Non-system fields not inlucded in request.body.data or request.body.data[0] will not be modified. The return value is all fields of the modified record inside a data tag.  If you just want the _id back, include request.body.terse = true in youir request.  
+### POST /data/\<collection\>/\<id\>
+Updates the document with _id = id in collection.  Non-system fields not inlucded in request.body.data or request.body.data[0] will not be modified. The return value is all fields of the modified document inside a data tag.  
 
-### DELETE /data/tablename/ids:id1,id2
-Deletes those records.
+### DELETE /data/\<collection\>/\<id1,id2\>
+Deletes those records
 
-### DELETE /data/tablename/ids:*
-Deletes all records in the table (admins only)
+### DELETE /data/\<collection\>/*
+Deletes all records in the collection (admins only)
 
 <a name="webmethods"></a>
 ## Custom Web Methods
-[https://api.aircandi.com/do](https://api.aircandi.com/do)
-
+    /do
 Lists the web methods. POST to /do/methodName executes a method passing in the full request and response objects. The request body must be in JSON format. 
 
 ### POST /do/echo
 Returns request.body
 
 ### POST /do/find
-Is a way to do a GET on any table in the system, but with the paramters in the request body rather than on the query string. find expects request.body to contain JSON of this form:
+POST /do/find is the same as GET /data/<collection>, but with the paramters in the request body rather than on the query string, useful for complex queries. Request body should be JSON of this form:
 
     {
-      "table": "tableName",
-      "ids": ["_id1", "_id2"],
-      "names": ["name1", "name2"],
-      "fields": ["field1","field2"],
-      "find": {"name":"name1"},
-      "children": ["childTable1","childTable2"], // temporarily disabled
-      "lookups": true, // temporarily disabled
-      "limit": 25
+      "collection|stat": string,          // base collection or statitistics collection
+      "ids": [string],
+      "names": [string],                  // case-insensitive
+      "fields": [string],
+      "find": {mongodb find expression},  // pass-through to mongodb, case-sensitive
+      "lookups": boolean,
+      "limit": number,                    // default and max is 1000
+      "skip": number,
+      "sort": {field1:1, field2:-1},
+      "count": boolean,                   // returns no records, only count, limit and skip are ignored
+      "countBy": fieldName                // returns count of collection grouped by any field
     }
-
-The table property is required.  All others are optional. The value of the find property is passed through to mongodb unmodified, so it can be used to specify any clauses that mongodb supports, including sorting, offset, etc.  See mongodb's [advanced query syntax](http://www.mongodb.org/display/DOCS/Advanced+Queries) for details. This may present a security problem, so will likely be removed once the public query syntax becomes more full-featured.
+    
+The collection|stat property is required.  All others are optional.
 
 ### POST /do/touch
 Updates every record in a table.  Usefull when you need to re-run triggers on all records
 
     {
-      "table": "tableName",     // required
-      "preserveModified, true   // optional, default true, if false the method will update the modified date
+      "collection": <collection>,     // required
+      "preserveModified, boolean      // optional, default true, if false the method will update the modified date
     }
 
-### Statitics
+<a name="stats">
+### Statistics
 Site statistics are acceessed via 
 
     GET /stats
@@ -273,7 +267,7 @@ This will return a list of supported stats.  For each stat
 
     GET /stats/<stat>
   
-will return a collection of the statistics.  These are ordinary monogodb collections.  In the database their names are prefixed by "stats_".  All the normal parameters to the rest GET API will work. (POST /do/find is nyi for statistics collections.)  These collections are static, and can be recomputed either by shell scripts or or demand by appending the query parameter:
+will return a collection of the statistics.  These are ordinary monogodb collections.  In the database their names are prefixed by "stats_".  All the normal parameters to the rest GET API will work.  POST /do/find works too using the body param stat: <stat>. All statistic collections are static, and must be recomputed to be current. To recompute a statistic, add the parameter 
 
     ?refresh=true
 
@@ -283,15 +277,10 @@ Refreshing statitics requires admin credentials since the operation can be expen
 ## Wiki
 * (proxibase/wiki/)
 
+## Bugs
+https://github.com/3meters/proxibase/issues?state=open
 
 ## Todo
-
-### Components
-* Express
-* Node
-* Test new mongo driver
-
-### Bugs
 
 ### Models
 * Add schema checker to base.js
@@ -300,9 +289,6 @@ Refreshing statitics requires admin credentials since the operation can be expen
 
 ### Custom Methods
 * Respect locked Entity on InsertEntity, UpdateEntity, DeleteEntity, InsertComment
-
-### Tests
-* Insert comments on others records
 
 ### Authentication
 * Validate user email workflow
@@ -317,20 +303,8 @@ Refreshing statitics requires admin credentials since the operation can be expen
 * Rate limit posts
 * Lock / unlock account
 
-### Website
-* Read-only browse UI over tables
-* User profile update UI
-* My Candi UI
-
 ### Rest
-* get: lookups
-* get: field lists for lookups
-* get: children
-* get: fields lists for children
 * get: outer joins
-* get: child counts
-* get: table.childtable.childtable...
-* get: singleton get
 * post: insert array
 * saveAPI: convert to mongoskin
 

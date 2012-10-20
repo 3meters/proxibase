@@ -5,7 +5,7 @@
 var
   assert = require('assert'),
   request = require('request'),
-  util = require('../../lib/util'),
+  util = require('util'),
   log = util.log,
   testUtil = require('../util'),
   Req = testUtil.Req,
@@ -135,12 +135,38 @@ exports.staticsUpdateOnRefresh = function(test) {
 exports.statsPassThroughFindCriteria = function(test) {
   var req = new Req({
     method: 'get',
-    uri: '/stats/usersByEntity/' + userSession._owner + '?' + adminCred
+    uri: '/stats/usersByEntity?find={"_id":"' + userSession._owner + '"}'
   })
   request(req, function(err, res) {
     check(req, res)
-    assert(res.body.data.length === 1)
+    assert(res.body.data.length === 1, dump(req, res))
     test.done()
   })
 }
 
+exports.statsLookupsWork = function(test) {
+  var req = new Req({
+    method: 'get',
+    uri: '/stats/usersByEntity?find={"_id":"' + userSession._owner + '"}&lookups=true'
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.data[0].name === 'Test User')
+    test.done()
+  })
+}
+
+exports.statsWorkFromDoFind = function(test) {
+  var req = new Req({
+    uri: '/do/find',
+    body: {
+      stat: 'usersByEntity',
+      ids: [userSession._owner]
+    }
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.data[0]._id === userSession._owner, dump(req, res))
+    test.done()
+  })
+}
