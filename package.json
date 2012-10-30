@@ -13,8 +13,9 @@
 
   "dependencies": {
     "express": "*",
-    "mongoose": "*",
+    "mongodb": "*",
     "mongoskin": "*",
+    "mongoose": "*",
     "underscore": "*",
     "commander": "*",
     "nodeunit": "*",
