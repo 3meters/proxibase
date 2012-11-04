@@ -170,10 +170,9 @@ function genEntityRecords(count, isRoot) {
 
 
     newEnt._id = testUtil.genId('entities', recNum)
-    newEnt.root = isRoot
-    newEnt.label = newEnt.title = isRoot ? 
-      newEnt.title + ' ' + (recNum + 1) :
-      newEnt.title + ' Child ' + (recNum + 1)
+    newEnt.name = isRoot ? 
+      newEnt.name + ' ' + (recNum + 1) :
+      newEnt.name + ' Child ' + (recNum + 1)
     table.entities.push(newEnt)
 
     // Link

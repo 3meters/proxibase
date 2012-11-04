@@ -227,16 +227,11 @@ function processEntities(iTable, cb) {
     // entitity fields
     if (c._parent) e._parent = c._parent;
     e.type = c.Type;
-    if (c.Label) e.name = c.Label;
-    if (c.Label) e.label = c.Label;
-    if (c.Title) e.title = c.Title;
+    if (c.name) e.name = c.name;
     if (c.Subtitle) e.subtitle = c.Subtitle;
     if (c.Description) e.description = c.Description;
-    if (c.ImageUri) e.imageUri = c.ImageUri;
-    if (c.ImagePreviewUri) e.imagePreviewUri = c.ImagePreviewUri;
-    if (c.LinkUri) e.linkUri = c.LinkUri;
-    if (c.LinkZoom != null) e.linkZoom = c.LinkZoom;
-    if (c.LinkJavascriptEnabled != null) e.linkJavascriptEnabled = c.LinkJavascriptEnabled;
+    if (c.Photo) e.photo = c.Photo;
+    if (c.PhotoPreview) e.photoPreview = c.PhotoPreview;
     if (c.SignalFence != null) e.signalFence = c.SignalFence; 
     if (c.Visibility != null) e.visibility = c.Visibility;
     if (c.Enabled != null) e.enabled = c.Enabled;
