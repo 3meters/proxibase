@@ -20,18 +20,14 @@ function getEntities() {
     for (var i = entities.length; i--;) {
 
       if (entities[i].type !== 'com.aircandi.candi.place') {
-        if (entities[i].linkPreviewUri) {
-          entities[i].photoPreview = {imageUri:entities[i].linkPreviewUri,format:'html',source:'aircandi'}
-          log('imagePreview updated to: ' + entities[i].photoPreview)
-        }
-        if (entities[i].linkUri) {
-          entities[i].photo = {imageUri:entities[i].linkUri,format:'html',source:'aircandi'}
-          log('imagePreview updated to: ' + entities[i].photo)
+        if (entities[i].photo && entities[i].photoPreview) {
+          if (entities[i].photo.prefix === entities[i].photoPreview.prefix) {
+            db.collection('entities').update({_id:entities[i]._id}, entities[i], {safe:true}, function(err) {
+              if (err) return(err)
+            })
+          }
         }
       }
-      db.collection('entities').update({_id:entities[i]._id}, entities[i], {safe:true}, function(err) {
-        if (err) return(err)
-      })
     }
   })
 }
