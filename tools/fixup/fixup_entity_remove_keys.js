@@ -21,9 +21,16 @@ function getEntities() {
     /* remove keys */
 
     for (var i = entities.length; i--;) {
-      db.collection('entities').update({_id:entities[i]._id}, {$unset: {title:1}}, {safe:true}, function(err) {
-        if (err) return(err)
-      })
+      if (entities[i].type !== 'com.aircandi.candi.place') {
+        if (entities[i].photo && entities[i].photoPreview) {
+          if (entities[i].photo.prefix === entities[i].photoPreview.prefix) {
+            db.collection('entities').update({_id:entities[i]._id}, {$unset: {'photoPreview':1}}, {safe:true}, function(err) {
+              if (err) return(err)
+            })
+          }
+        }
+      }
+
     }
 
 
