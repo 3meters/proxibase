@@ -106,8 +106,7 @@ defaultRecord.beacons = {
 defaultRecord.entities = {
   _id: entityId,
   type: 'com.aircandi.candi.picture',
-  label: 'Mona Lisa',
-  title: 'Mona Lisa',
+  name: 'Mona Lisa',
   subtitle: 'Leonardo daVinci',
   description: 'Mona Lisa (also known as La Gioconda or La Joconde) is a 16th-century portrait painted in oil on a poplar panel by Leonardo di ser Piero da Vinci during the Renaissance in Florence, Italy.',
   signalFence: -100,
@@ -118,14 +117,12 @@ defaultRecord.entities = {
     comments,
     comments
   ],
-  imagePreviewUri: 'https://s3.amazonaws.com/3meters_images/test_preview.jpg',
-  imageUri: 'https://s3.amazonaws.com/3meters_images/test_preview.jpg',
-  linkJavascriptEnabled: false,
-  linkZoom: false,
+  photoPreview: {imageUri:"https://s3.amazonaws.com/3meters_images/test_preview.jpg"},
+  photo: {imageUri:"https://s3.amazonaws.com/3meters_images/test_preview.jpg"},
+  place: {location:{lat:latitude,lng:longitude}},
   visibility: 'public',
   enabled: true,
-  locked: false,
-  root: root
+  locked: false
 }
 
 defaultRecord.observations = {

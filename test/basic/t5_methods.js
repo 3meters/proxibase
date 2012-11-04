@@ -37,33 +37,25 @@ var
   },
   testEntity = {
     _id : "0002.111111.11111.111.111111",
-    imagePreviewUri : "https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
-    imageUri : "https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
-    label : "Testing candi",
+    photoPreview: {imageUri:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg"},
+    photo: {imageUri:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg"},
     signalFence : -100,
-    title : "Testing candi",
+    name : "Testing candi",
     type : "com.aircandi.candi.picture",
     visibility : "public",
     enabled : true,
-    locked : false,
-    linkJavascriptEnabled : false,
-    linkZoom : false,
-    root : true
+    locked : false
   },
   testEntity2 = {
     _id : "0002.111111.11111.111.111112",
-    imagePreviewUri : "https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
-    imageUri : "https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
-    label : "Testing candi 2",
+    photoPreview: {imageUri:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg"},
+    photo: {imageUri:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg"},
     signalFence : -100,
-    title : "Testing candi 2",
+    name : "Testing candi 2",
     type : "com.aircandi.candi.picture",
     visibility : "public",
     enabled : true,
-    locked : false,
-    linkJavascriptEnabled : false,
-    linkZoom : false,
-    root : true
+    locked : false
   },
   testLink = {
     _to : '0003:11:11:11:11:11:22',
@@ -143,39 +135,12 @@ exports.getEntitiesLoadChildren = function (test) {
     var record = res.body.data[0]
     assert(record.children.length === dbProfile.spe, dump(req, res))
     assert(record.childCount === dbProfile.spe, dump(req, res))
-    //assert(!record.parents, dump(req, res))
-    //assert(record.parentCount === 0, dump(req, res))
     assert(record.comments.length === dbProfile.cpe, dump(req, res))
     assert(record.commentCount === dbProfile.cpe, dump(req, res))
-    assert(record._beacon === constants.beaconId, dump(req, res))
-    assert(record.location, dump(req, res))
-    assert(record.location.latitude, dump(req, res))
-    assert(record.location.longitude, dump(req, res))
+    assert(record.beaconLinks[0].beaconId === constants.beaconId, dump(req, res))
     test.done()
   })
 }
-
-// exports.getEntitiesLoadParents = function (test) {
-//   /*
-//    * We don't currently populate the smoke test data with any entities that have both
-//    * a parent and children. We also don't have any entities with multiple parents.
-//    */
-//   var req = new Req({
-//     uri: '/do/getEntities',
-//     body: { entityIds:[constants.childEntityId], eagerLoad:{parents:true,children:false,comments:true} }
-//   })
-//   request(req, function(err, res) {
-//     check(req, res)
-//     assert(res.body.count === 1, dump(req, res))
-//     assert(res.body.data && res.body.data[0], dump(req, res))
-//     var record = res.body.data[0]
-//     assert(!record.children, dump(req, res))
-//     assert(record.childCount === 0, dump(req, res))
-//     assert(record.parents.length === 1, dump(req, res))
-//     assert(record.parentCount === 1, dump(req, res))
-//     test.done()
-//   })
-// }
 
 exports.getEntitiesForBeacons = function (test) {
   var req = new Req({
@@ -218,23 +183,11 @@ exports.getEntitiesForUser = function (test) {
   })
 }
 
-exports.getEntitiesNearLocation = function (test) {
-  var req = new Req({
-    uri: '/do/getEntitiesNearLocation',
-    body: {userId:testUser._id,latitude:testLatitude,longitude:testLongitude,radius:0.00001}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 0, dump(req, res))
-    test.done()
-  })
-}
-
 exports.insertRootEntity = function (test) {
   var req = new Req({
     uri: '/do/insertEntity?' + userCred,
     body: {entity:testEntity, beacon:testBeacon, 
-        link:{_to:testBeacon._id}, observation:{latitude:testLatitude, 
+        link:{_to:testBeacon._id, plus:1}, observation:{latitude:testLatitude, 
         longitude:testLongitude, _beacon:testBeacon._id},userId:testUser._id}
   })
   request(req, function(err, res) {
@@ -454,7 +407,7 @@ exports.checkComments = function (test) {
 }
 
 exports.updateEntity = function (test) {
-  testEntity.title = 'Testing super candi'
+  testEntity.name = 'Testing super candi'
   var req = new Req({
     uri: '/do/updateEntity?' + userCred,
     body: {entity:testEntity}
@@ -474,7 +427,7 @@ exports.checkUpdateEntity = function (test) {
   })
   request(req, function(err, res) {
     check(req, res)
-    assert(res.body.data && res.body.data[0] && res.body.data[0].title === 'Testing super candi', dump(req, res))
+    assert(res.body.data && res.body.data[0] && res.body.data[0].name === 'Testing super candi', dump(req, res))
     test.done()
   })
 }
