@@ -22,13 +22,13 @@ function getEntities() {
 
     for (var i = entities.length; i--;) {
       if (entities[i].type !== 'com.aircandi.candi.place') {
-        if (entities[i].photo && entities[i].photoPreview) {
-          if (entities[i].photo.prefix === entities[i].photoPreview.prefix) {
-            db.collection('entities').update({_id:entities[i]._id}, {$unset: {'photoPreview':1}}, {safe:true}, function(err) {
+//        if (entities[i].photo && entities[i].photoPreview) {
+//          if (entities[i].photo.prefix === entities[i].photoPreview.prefix) {
+            db.collection('entities').update({_id:entities[i]._id}, {$unset: {'photoDetail':1}}, {safe:true}, function(err) {
               if (err) return(err)
             })
-          }
-        }
+        //   }
+        // }
       }
 
     }

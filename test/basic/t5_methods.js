@@ -37,7 +37,6 @@ var
   },
   testEntity = {
     _id : "0002.111111.11111.111.111111",
-    photoPreview: {imageUri:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg"},
     photo: {imageUri:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg"},
     signalFence : -100,
     name : "Testing candi",
@@ -48,7 +47,6 @@ var
   },
   testEntity2 = {
     _id : "0002.111111.11111.111.111112",
-    photoPreview: {imageUri:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg"},
     photo: {imageUri:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg"},
     signalFence : -100,
     name : "Testing candi 2",
