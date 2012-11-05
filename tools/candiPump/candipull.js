@@ -231,7 +231,6 @@ function processEntities(iTable, cb) {
     if (c.Subtitle) e.subtitle = c.Subtitle;
     if (c.Description) e.description = c.Description;
     if (c.Photo) e.photo = c.Photo;
-    if (c.PhotoPreview) e.photoPreview = c.PhotoPreview;
     if (c.SignalFence != null) e.signalFence = c.SignalFence; 
     if (c.Visibility != null) e.visibility = c.Visibility;
     if (c.Enabled != null) e.enabled = c.Enabled;
