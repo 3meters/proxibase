@@ -17,21 +17,14 @@ getEntities()
 function getEntities() {
   db.collection('entities').find().toArray(function(err, entities) {
     log('find returned ' + entities.length + ' entities')      
-
-    /* remove keys */
-
     for (var i = entities.length; i--;) {
-//        if (entities[i].photo && entities[i].photoPreview) {
-//          if (entities[i].photo.prefix === entities[i].photoPreview.prefix) {
-            db.collection('entities').update({_id:entities[i]._id}, {$unset: {'collection':1}}, {safe:true}, function(err) {
-              if (err) return(err)
-            })
-        //   }
-        // }
 
+      if (entities[i].type === 'com.aircandi.candi.place') {
+        db.collection('entities').remove({_id:entities[i]._id}, {safe:true}, function(err) {
+          if (err) return(err)
+        })
+      }
     }
-
-
   })
 }
 
