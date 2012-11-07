@@ -18,17 +18,13 @@ function getEntities() {
   db.collection('entities').find().toArray(function(err, entities) {
     log('find returned ' + entities.length + ' entities')      
     for (var i = entities.length; i--;) {
+      entities[i].isCollection = entities[i].collection
 
-      if (entities[i].type !== 'com.aircandi.candi.place') {
-        if (entities[i].photo && entities[i].photoDetail) {
-          entities[i].photo.detail = entities[i].photoDetail
           // if (entities[i].photo.prefix === entities[i].photoPreview.prefix) {
             db.collection('entities').update({_id:entities[i]._id}, entities[i], {safe:true}, function(err) {
               if (err) return(err)
             })
 //          }
-        }
-      }
     }
   })
 }
