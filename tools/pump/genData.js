@@ -14,11 +14,10 @@ var util = require('util')
   , constants = require('../../test/constants')
   , testUtil = require('../../test/util')
   , tableIds = constants.tableIds
-  , goose = require('../../lib/db/goose') // Wraps mongoose.js
+  , dblib = require('../../lib/db')       // Proxdb lib
   , table = {}                            // Map of tables to be generated
   , startTime                             // Elapsed time counter
   , db                                    // Mongoskin connection object
-  , gdb                                   // Mongoose connection object
   , save                                  // Save function
   , options = {                           // Default options
       users: 3,                           // Count of users
@@ -27,7 +26,7 @@ var util = require('util')
       spe: 5,                             // Subentities (aka children) per beacon
       cpe: 5,                             // Comments per entity
       database: 'proxTest',               // Database name
-      validate: false,                    // Validate database data against mongoose schema
+      validate: false,                    // Validate database data against schema
       files: false,                       // Output to JSON files rather than to datbase
       out: 'files'                        // File output directory
     }
@@ -56,7 +55,6 @@ module.exports = function(profile, callback) {
     var dbUri = config.db.host + ':' + config.db.port +  '/' + config.db.database
 
     if (options.validate) {
-      // save via mongoose
       log('Saving to database ' + dbUri + ' with validation')
       save = saveTo.dbValidate
     }
@@ -259,7 +257,7 @@ var saveTo = {
     },
 
   dbValidate:
-    // save via mongoose validating each record against mongoose schema
+    // save validating each record against its schema
     function (tableName, callback) {
       var model = gdb.models[tableName]
 
