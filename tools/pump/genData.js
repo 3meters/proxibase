@@ -34,6 +34,7 @@ var util = require('util')
 
 
 module.exports = function(profile, callback) {
+  callback = callback || console.error
 
   startTime = new Date().getTime() // start program timer
 
@@ -67,19 +68,16 @@ module.exports = function(profile, callback) {
     db = mongoskin.db(dbUri, config.db.options)
     db.dropDatabase(function(err) {
       if (err) throw err
-      initDatabase(config, callback)
+      dblib.init(config, function(err, proxdb) {
+        if (err) throw err
+        db.close()
+        db = proxdb
+        return run(callback)
+      })
     })
   }
 }
 
-// Ensure the database has the indexes defined by the service's models
-function initDatabase(config, callback) {
-  dblib.init(config, function(err, proxdb) {
-    if (err) throw err
-    db = proxdb
-    run(callback)
-  })
-}
 
 function run(callback) {
   genUsers()
@@ -88,14 +86,12 @@ function run(callback) {
   genEntities()
   genChildEntities()
   saveAll(function(err) {
-    if (err) {
-      if (callback) return callback(err)
-      else throw err
-    }
-    if (!options.files) db.close()
+    if (err) return callback(err)
+    // if (!options.files) db.close()
     var elapsedTime = ((new Date().getTime()) - startTime) / 1000
+    if (db) db.close()
     log('genData finished in ' + elapsedTime + ' seconds')
-    if (callback) return callback()
+    return callback()
   })
 }
 
