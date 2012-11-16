@@ -10,10 +10,11 @@ var util = require('util')
   , fs = require('fs')
   , path = require('path')
   , mongoskin = require('mongoskin')
+  , async = require('async')
   , log = util.log
   , constants = require('../../test/constants')
   , testUtil = require('../../test/util')
-  , tableIds = constants.tableIds
+  , tableIds = util.statics.collectionIds
   , dblib = require('../../lib/db')       // Proxdb lib
   , table = {}                            // Map of tables to be generated
   , startTime                             // Elapsed time counter
@@ -59,12 +60,11 @@ module.exports = function(profile, callback) {
       save = saveTo.dbValidate
     }
     else {
-      // save via mongoskin
       log('Saving to database ' + dbUri)
       save = saveTo.db
     }
 
-    db = mongoskin.db(dbUri + '?auto_reconnect')
+    db = mongoskin.db(dbUri, config.db.options)
     db.dropDatabase(function(err) {
       if (err) throw err
       initDatabase(config, callback)
@@ -74,16 +74,10 @@ module.exports = function(profile, callback) {
 
 // Ensure the database has the indexes defined by the service's models
 function initDatabase(config, callback) {
-  goose.connect(config, function(err, connection) {
+  dblib.init(config, function(err, proxdb) {
     if (err) throw err
-    gdb = connection
-    // When the following dummy query is fired mongoose.js will connect to the db and
-    // ensure that the indeces defined in prox/lib/models are defined in the database
-    gdb.models.users.find({_id:-1}, function(err) {
-      if (err) throw err
-      log('Database Ok\nSaving to database...')
-      run(callback)
-    })
+    db = proxdb
+    run(callback)
   })
 }
 
@@ -98,10 +92,7 @@ function run(callback) {
       if (callback) return callback(err)
       else throw err
     }
-    if (!options.files) {
-      db.close()
-      gdb.close()
-    }
+    if (!options.files) db.close()
     var elapsedTime = ((new Date().getTime()) - startTime) / 1000
     log('genData finished in ' + elapsedTime + ' seconds')
     if (callback) return callback()
@@ -217,7 +208,7 @@ function saveAll(callback) {
   for (name in table) {
     tableNames.push(name)
   }
-  tableNames.forEachAsync(save, callback)
+  async.forEachSeries(tableNames, save, callback)
 }
 
 function list(tableName, fn) {
@@ -238,12 +229,12 @@ var saveTo = {
     },
 
   db:
-    // save via mongoskin bypassing schema validation
+    // save without schema validation
     function (tableName, callback) {
       var collection = db.collection(tableName)
 
       // save row-at-a-time because mongo chokes saving large arrays
-      table[tableName].forEachAsync(saveRow, function(err) {
+      async.forEachSeries(table[tableName], saveRow, function(err) {
         if (err) return callback(err)
         log(table[tableName].length + ' ' + tableName)
         return callback()
@@ -257,24 +248,20 @@ var saveTo = {
     },
 
   dbValidate:
-    // save validating each record against its schema
+    // save with schema validation
     function (tableName, callback) {
-      var model = gdb.models[tableName]
+      var collection = db.collection(tableName)
 
-      table[tableName].forEachAsync(saveRow, function(err) {
-        if (err) {
-          log('genData error:', err)
-          return callback(err)
-        }
+      async.forEachSeries(table[tableName], saveRow, function(err) {
+        if (err) return callback(err)
         log(table[tableName].length + ' ' + tableName)
         return callback()
       })
 
       function saveRow(row, callback) {
-        var mongooseDoc = new model(row)
-        mongooseDoc.__user = util.adminUser
-        if (row._creator) mongooseDoc.__user = {_id: row._creator, role: 'user'}
-        mongooseDoc.save(function(err) {
+        var user = util.adminUser
+        if (row._creator) user = {_id: row._creator, role: 'user'}
+        collection.safeInsert(row, {user: user}, function(err) {
           return callback(err)
         })
       }

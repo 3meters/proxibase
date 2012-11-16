@@ -87,7 +87,7 @@ function ensureDb(options, callback) {
     database = options.database,
     template = database + 'Template',
     db = mongoskin.db(util.config.db.host + ':' + util.config.db.port +
-        '/' + database + '?auto_reconnect')
+        '/' + database, config.db.options)
 
   db.dropDatabase(function(err, done) {
     if (err) throw err
