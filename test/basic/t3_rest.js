@@ -196,7 +196,7 @@ exports.findDocsByNameWhenNotSignedIn = function(test) {
   })
 }
 
-_exports.findWithLookups = function(test) {
+exports.findWithLookups = function(test) {
   var req = new Req({
     method: 'get',
     uri: '/data/documents?names=' + testDoc1.name + '&lookups=1'
