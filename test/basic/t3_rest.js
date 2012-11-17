@@ -301,14 +301,14 @@ exports.userCannotUpdateNonExistantDoc = function(test) {
   })
 }
 
-_exports.adminCannotUpdateNonExistantDoc = function(test) {
+exports.adminCannotUpdateNonExistantDoc = function(test) {
   var req = new Req({
     uri: '/data/documents/00005.002?' + adminCred,
-    body: {data: {name: 'I should fail'}}
+    body: {data: {name: 'I should should not be saved'}}
   })
   request(req, function(err, res) {
-    check(req, res)  // not Found
-    assert(res.body.count === 0)
+    check(req, res)  // record should be not found, but query should return 200
+    assert(res.body.count === 0, dump(req, res))
     test.done()
   })
 }
@@ -450,7 +450,7 @@ exports.adminCanDeleteUsingWildcard = function(test) {
   })
 }
 
-_exports.countByWorks = function(test) {
+exports.countByWorks = function(test) {
   var req = new Req({
     method: 'get',
     uri: '/data/entities?countBy=_owner'
@@ -458,8 +458,8 @@ _exports.countByWorks = function(test) {
   request(req, function(err, res) {
     check(req, res)
     // These are based on data in template test database
-    assert(res.body.count >= 10)
-    assert(res.body.data[0].countBy === 300)
+    assert(res.body.count >= 10, dump(req, res))
+    assert(res.body.data[0].countBy === 300, dump(req, res))
     test.done()
   })
 }
