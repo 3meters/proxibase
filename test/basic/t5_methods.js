@@ -102,7 +102,7 @@ var
 exports.lookupVersion = function (test) {
   var req = new Req({
     uri: '/do/find',
-    body: {table:'documents',find:{type:'version',target:'aircandi'}}
+    body: {table:'documents',find:{type:'version',name:'aircandi'}}
   })
   request(req, function(err, res) {
     check(req, res)
