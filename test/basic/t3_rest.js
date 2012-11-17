@@ -117,6 +117,17 @@ exports.canAddDocAsSingleElementArray = function(test) {
   })
 }
 
+exports.cannotAddDocMissingRequiredField = function(test) {
+  var req = new Req({
+    uri: '/data/entities?' + userCred,
+    body: {data: {name: 'Test Entity Missing its type'}}
+  })
+  request(req, function(err, res) {
+    check(req, res, 400)
+    assert(res.body.error.code === 400.1) // missingParam
+    test.done()
+  })
+}
 
 exports.findDocsByIdAndCheckSysFields = function(test) {
   var req = new Req({
@@ -185,7 +196,7 @@ exports.findDocsByNameWhenNotSignedIn = function(test) {
   })
 }
 
-exports.findWithLookups = function(test) {
+_exports.findWithLookups = function(test) {
   var req = new Req({
     method: 'get',
     uri: '/data/documents?names=' + testDoc1.name + '&lookups=1'
@@ -279,13 +290,25 @@ exports.checkUpdatedDocDeletedThenAddBack = function(test) {
   })
 }
 
-exports.cannotUpdateNonExistantDoc = function(test) {
+exports.userCannotUpdateNonExistantDoc = function(test) {
   var req = new Req({
     uri: '/data/documents/00005.002?' + userCred,
     body: {data: {name: 'I should fail'}}
   })
   request(req, function(err, res) {
-    check(req, res, 404)
+    check(req, res, 401) // badAuth
+    test.done()
+  })
+}
+
+_exports.adminCannotUpdateNonExistantDoc = function(test) {
+  var req = new Req({
+    uri: '/data/documents/00005.002?' + adminCred,
+    body: {data: {name: 'I should fail'}}
+  })
+  request(req, function(err, res) {
+    check(req, res)  // not Found
+    assert(res.body.count === 0)
     test.done()
   })
 }
@@ -389,7 +412,7 @@ exports.userCannotDeleteUsingWildcard = function(test) {
     uri: '/data/documents/*?' + userCred
   })
   request(req, function(err, res) {
-    check(req, res, 404) 
+    check(req, res, 401) 
     test.done()
   })
 }
@@ -427,7 +450,7 @@ exports.adminCanDeleteUsingWildcard = function(test) {
   })
 }
 
-exports.countByWorks = function(test) {
+_exports.countByWorks = function(test) {
   var req = new Req({
     method: 'get',
     uri: '/data/entities?countBy=_owner'
