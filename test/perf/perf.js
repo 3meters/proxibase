@@ -23,6 +23,7 @@ var
   check = testUtil.check,
   dump = testUtil.dump,
   log = util.log
+  _exports = {} // for commenting out tests
 
 
 // Process perf test results
