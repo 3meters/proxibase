@@ -25,7 +25,7 @@ var
     name : "John Q Test",
     email : "johnqtest@3meters.com",
     password : "12345678",
-    imageUri : "resource:placeholder_user",
+    photo: {prefix:"resource:placeholder_user", format:"binary", sourceName:"aircandi"},
     location : "Testville, WA",
     isDeveloper : false
   },
@@ -57,11 +57,15 @@ var
   },
   testLink = {
     _to : '0003:11:11:11:11:11:22',
-    _from : '0002.111111.11111.111.111111'
+    _from : '0002.111111.11111.111.111111',
+    primary: true,
+    signal: -100
   },
   newTestLink = {
     _to : '0002.111111.11111.111.111112',
-    _from : '0002.111111.11111.111.111111'
+    _from : '0002.111111.11111.111.111111',
+    primary: true,
+    signal: -100
   }
   testBeacon = {
     _id : '0003:11:11:11:11:11:11',
@@ -184,8 +188,8 @@ exports.getEntitiesForUser = function (test) {
 exports.insertRootEntity = function (test) {
   var req = new Req({
     uri: '/do/insertEntity?' + userCred,
-    body: {entity:testEntity, beacon:testBeacon, 
-        link:{_to:testBeacon._id, plus:1}, observation:{latitude:testLatitude, 
+    body: {entity:testEntity, beacons:[testBeacon], 
+        links:[{_to:testBeacon._id, primary:true, signal:-100}], observation:{latitude:testLatitude, 
         longitude:testLongitude, _beacon:testBeacon._id},userId:testUser._id}
   })
   request(req, function(err, res) {
@@ -211,8 +215,8 @@ exports.checkInsertRootEntity = function(test) {
 exports.insertRootEntityBeaconAlreadyExists = function (test) {
   var req = new Req({
     uri: '/do/insertEntity?' + userCred,
-    body: {entity:testEntity2, beacon:testBeacon, 
-        link:{_to:testBeacon._id}, observation:{latitude:testLatitude, 
+    body: {entity:testEntity2, beacons:[testBeacon], 
+        links:[{_to:testBeacon._id, primary:true, signal:-100}], observation:{latitude:testLatitude, 
         longitude:testLongitude, _beacon:testBeacon._id},userId:testUser._id}
   })
   request(req, function(err, res) {
