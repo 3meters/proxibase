@@ -69,14 +69,16 @@ defaultRecord.users2 = {
 
 defaultRecord.documents = {
   _id: documentId,
-  major : 0,
-  minor : 1,
-  revision : 100,
-  target : 'aircandi',
+  name : 'aircandi',
   type : 'version',
-  updateRequired : true,
-  versionCode : 1,
-  versionName : '0.01.0100'
+  data: {
+    major : 0,
+    minor : 1,
+    revision : 100,
+    updateRequired : true,
+    versionCode : 1,
+    versionName : '0.01.0100'
+  }
 }
 
 comments = {
