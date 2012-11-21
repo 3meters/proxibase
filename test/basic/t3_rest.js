@@ -293,10 +293,10 @@ exports.checkUpdatedDocDeletedThenAddBack = function(test) {
 exports.userCannotUpdateNonExistantDoc = function(test) {
   var req = new Req({
     uri: '/data/documents/00005.002?' + userCred,
-    body: {data: {name: 'I should fail'}}
+    body: {data: {name: 'I should not be saved'}}
   })
   request(req, function(err, res) {
-    check(req, res, 401) // badAuth
+    check(req, res, 404)
     test.done()
   })
 }
@@ -307,8 +307,7 @@ exports.adminCannotUpdateNonExistantDoc = function(test) {
     body: {data: {name: 'I should should not be saved'}}
   })
   request(req, function(err, res) {
-    check(req, res)  // record should be not found, but query should return 200
-    assert(res.body.count === 0, dump(req, res))
+    check(req, res, 404)
     test.done()
   })
 }
@@ -412,7 +411,7 @@ exports.userCannotDeleteUsingWildcard = function(test) {
     uri: '/data/documents/*?' + userCred
   })
   request(req, function(err, res) {
-    check(req, res, 401) 
+    check(req, res, 404)
     test.done()
   })
 }
