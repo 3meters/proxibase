@@ -19,8 +19,7 @@ var
   testEntity = {
     name: "StatsTest Entity 1",
     type: "com.aircandi.candi.picture",
-    enabled : true,
-    root: true
+    enabled : true
   },
   testBeacon = {
     _id : '0003:11:11:11:11:11:11'  // left over by the methods test
