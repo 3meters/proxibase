@@ -9,7 +9,7 @@ require('../../lib/extend') // load proxibase extensions
 var util = require('util')
   , fs = require('fs')
   , path = require('path')
-  , mongoskin = require('mongoskin')
+  , mongo = require('mongodb')
   , async = require('async')
   , log = util.log
   , constants = require('../../test/constants')
@@ -18,7 +18,7 @@ var util = require('util')
   , dblib = require('../../lib/db')       // Proxdb lib
   , table = {}                            // Map of tables to be generated
   , startTime                             // Elapsed time counter
-  , db                                    // Mongoskin connection object
+  , db                                    // Mongodb connection object
   , save                                  // Save function
   , options = {                           // Default options
       users: 3,                           // Count of users
@@ -54,7 +54,7 @@ module.exports = function(profile, callback) {
     // save to database
     var config = util.config           // Use the default server database connection
     config.db.database = options.database     // Override database name
-    var dbUri = config.db.host + ':' + config.db.port +  '/' + config.db.database
+    var dbUri = 'mongodb://' + config.db.host + ':' + config.db.port +  '/' + config.db.database + '?safe=true'
 
     if (options.validate) {
       log('Saving to database ' + dbUri + ' with validation')
@@ -65,14 +65,17 @@ module.exports = function(profile, callback) {
       save = saveTo.db
     }
 
-    db = mongoskin.db(dbUri, config.db.options)
-    db.dropDatabase(function(err) {
-      if (err) throw err
-      dblib.init(config, function(err, proxdb) {
+    mongo.connect(dbUri, function(err, database) {
+      if (err) return callback(err)
+      db = database
+      db.dropDatabase(function(err) {
         if (err) throw err
-        db.close()
-        db = proxdb
-        return run(callback)
+        dblib.init(config, function(err, proxdb) {
+          if (err) throw err
+          db.close()
+          db = proxdb
+          return run(callback)
+        })
       })
     })
   }

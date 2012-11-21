@@ -16,7 +16,8 @@ var util = require('util')
   , cli = require('commander')
   , reporter = require('nodeunit').reporters.default
   , req = require('request')
-  , mongoskin = require('mongoskin')
+  , mongo = require('mongodb')
+  , adminDb
   , genData = require(__dirname + '/../tools/pump/genData')
   , dbProfile = require('./constants').dbProfile
   , testUtil = require('./util')
@@ -83,17 +84,27 @@ function ensureDb(options, callback) {
 
   assert(options && options.database, 'options.database is required')
 
-  var
-    database = options.database,
-    template = database + 'Template',
-    db = mongoskin.db(util.config.db.host + ':' + util.config.db.port +
-        '/' + database, config.db.options)
+  var database = options.database
+  var template = database + 'Template'
+    /*
+     * db = mongoskin.db(util.config.db.host, util.config.db.port +
+     * '/' + database, config.db.options)
+     */
+
+  var dbOptions = {
+    auto_reconnect: true,
+    safe: true
+  }
+
+  var server = new mongo.Server(config.db.host, config.db.port, dbOptions)
+  var db = new mongo.Db(options.database, server, {safe:true})
 
   db.dropDatabase(function(err, done) {
     if (err) throw err
 
     // See if template database exists
-    db.admin.listDatabases(function(err, results) {
+    adminDb = new mongo.Admin(db)
+    adminDb.listDatabases(function(err, results) {
       if (err) throw err
       if (!(results && results.databases)) throw new Error('Unexpected results from listDatabases')
 
@@ -121,7 +132,7 @@ function ensureDb(options, callback) {
       else {
         log('Copying database from ' + template)
         var timer = new util.Timer()
-        db.admin.command({copydb:1, fromdb:template, todb:database}, function(err, result) {
+        adminDb.command({copydb:1, fromdb:template, todb:database}, function(err, result) {
           if (err) throw err
           db.close()
           log('Database copied in ' + timer.read() + ' seconds')
