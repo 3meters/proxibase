@@ -275,30 +275,32 @@ exports.getEntitiesFor10Users = function(test) {
   }
 }
 
-exports.getEntitiesNear100Locations = function (test) {
+exports.getPlacesNear100Locations = function (test) {
   var 
     timer = new Timer(),
     cRecs = 0
   timer.expected = 300
 
-  getEntitiesNearLocation(100)
+  getPlacesNearLocation(100)
 
-  function getEntitiesNearLocation(i) {
-    if (!i--) return done(test, 'getEntitiesNear100Locations', timer, cRecs)
+  function getPlacesNearLocation(i) {
+    if (!i--) return done(test, 'getPlacesNear100Locations', timer, cRecs)
     var req = new Req({
-      uri: '/do/getEntitiesNearLocation',
+      uri: '/do/getPlacesNearLocation',
       body: {
         userId: constants.uid1,
         latitude: constants.latitude,
         longitude: constants.longitude,
         radius: 0.00001,
+        source: 'foursquare',
+        placesWithUriOnly: true,
         options:{limit:500, skip:0, sort:{modifiedDate:-1}}
       }
     })
     request(req, function(err, res) {
       check(req, res)
       if (res.body.count) cRecs += res.body.count
-      return getEntitiesNearLocation(i)
+      return getPlacesNearLocation(i)
     })
   }
 }

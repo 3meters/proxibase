@@ -50,7 +50,6 @@ defaultRecord.users = defaultRecord.users1 = {
   _id: uid1,
   name: 'Test User',
   email: 'test@3meters.com',
-  imageUri: 'https://twimg0-a.akamaihd.net/profile_images/2302466332/cartTostvine.jpg',
   location: 'Testville, WA',
   isDeveloper: false
 }
@@ -59,7 +58,6 @@ defaultRecord.users2 = {
   _id: uid2,
   name: 'Test User Dev',
   email: 'testdev@3meters.com',
-  imageUri: 'https://s3.amazonaws.com/3meters_images/test_user2.jpg',
   location: 'Testville, WA',
   password: password,
   isDeveloper: true
@@ -81,10 +79,9 @@ defaultRecord.documents = {
   }
 }
 
-comments = {
+var comment = {
   title : 'Worth the trip',
   description : 'Everyone makes a big fuss about it so I figured a letdown was inevitable but wow!',
-  imageUri : 'https://s3.amazonaws.com/3meters_images/test_user1.jpg',
   name : 'Test User',
   location : 'Testville, WA',
   createdDate : timeStampMs
@@ -112,12 +109,12 @@ defaultRecord.entities = {
   subtitle: 'Leonardo daVinci',
   description: 'Mona Lisa (also known as La Gioconda or La Joconde) is a 16th-century portrait painted in oil on a poplar panel by Leonardo di ser Piero da Vinci during the Renaissance in Florence, Italy.',
   signalFence: -100,
-  comments: [ 
-    comments,
-    comments,
-    comments,
-    comments,
-    comments
+  comments: [
+    comment,
+    comment,
+    comment,
+    comment,
+    comment
   ],
   photo: {imageUri:"https://s3.amazonaws.com/3meters_images/test_preview.jpg"},
   place: {location:{lat:latitude,lng:longitude}},
@@ -167,7 +164,7 @@ module.exports = {
   timeStampMs: timeStampMs,
   recordLimit: recordLimit,
   tableIds: _.clone(tableIds),
-  comments: _.clone(comments),
+  comment: _.clone(comment),
   dbProfile: _.clone(dbProfile)
 }
 module.exports.getDefaultRecord = function(tableName) {
