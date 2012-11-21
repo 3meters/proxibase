@@ -401,9 +401,9 @@ exports.checkComments = function (test) {
     assert(res.body.data && res.body.data[0] && res.body.data[0].comments.length === 2, dump(req, res))
     assert(res.body.data && res.body.data[0] && res.body.data[0].commentCount === 2, dump(req, res))
     var comments = res.body.data[0].comments
-    // Comments are inserted at the beginning of the comments array
-    assert(comments[0]._creator === testUser2._id)
-    assert(comments[1]._creator === testUser._id)
+    // Comments are appended to the end of the comments array
+    assert(comments[0]._creator === testUser._id)
+    assert(comments[1]._creator === testUser2._id)
     test.done()
   })
 }
