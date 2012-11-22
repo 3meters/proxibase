@@ -216,9 +216,7 @@ exports.getEntitiesForUser = function (test) {
 exports.insertEntity = function (test) {
   var req = new Req({
     uri: '/do/insertEntity?' + userCred,
-    body: {entity:testEntity, beacons:[testBeacon], 
-        links:[{_to:testBeacon._id, primary:true, signal:-100}], observation:{latitude:testLatitude, 
-        longitude:testLongitude, _beacon:testBeacon._id},userId:testUser._id}
+    body: {entity:testEntity, beacons:[testBeacon], primaryBeaconId:testBeacon._id}
   })
   request(req, function(err, res) {
     check(req, res, 201)
@@ -240,12 +238,34 @@ exports.checkInsertEntity = function(test) {
   })
 }
 
+exports.checkInsertEntityLogAction = function(test) {
+  var req = new Req({
+    uri: '/do/find',
+    body: {table:'actions',find:{_target:testEntity._id, type:'insert_entity'}}
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.count === 1, dump(req, res))
+    test.done()
+  })
+}
+
+exports.checkInsertLinkLogAction = function(test) {
+  var req = new Req({
+    uri: '/do/find',
+    body: {table:'actions',find:{type:'tune_link_primary'}}
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.count === 1, dump(req, res))
+    test.done()
+  })
+}
+
 exports.insertEntityBeaconAlreadyExists = function (test) {
   var req = new Req({
     uri: '/do/insertEntity?' + userCred,
-    body: {entity:testEntity2, beacons:[testBeacon], 
-        links:[{_to:testBeacon._id, primary:true, signal:-100}], observation:{latitude:testLatitude, 
-        longitude:testLongitude, _beacon:testBeacon._id},userId:testUser._id}
+    body: {entity:testEntity2, beacons:[testBeacon], primaryBeaconId:testBeacon._id}
   })
   request(req, function(err, res) {
     check(req, res, 201)
@@ -408,23 +428,6 @@ exports.adminCanDeleteBeaconUserCreated = function (test) {
   })
   request(req, function(err, res) {
     check(req, res)
-    test.done()
-  })
-}
-
-exports.checkInsertObservationForRootEntity = function(test) {
-  var req = new Req({
-    uri: '/do/find',
-    body: {table:'observations',find:{_beacon:testBeacon._id,_entity:testEntity._id}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 1, dump(req, res))
-    // Observations should be owned by admin
-    assert(res.body.data[0]._owner === util.adminUser._id)
-    // Creator and modifier should be user who first added them
-    assert(res.body.data[0]._creator === testUser._id)
-    assert(res.body.data[0]._modifier === testUser._id)
     test.done()
   })
 }
@@ -593,18 +596,6 @@ exports.checkDeleteLink = function(test) {
   var req = new Req({
     uri: '/do/find',
     body: {table:'links',find:{_to:testBeacon._id,_from:testEntity._id}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 0, dump(req, res))
-    test.done()
-  })
-}
-
-exports.checkDeleteObservation = function(test) {
-  var req = new Req({
-    uri: '/do/find',
-    body: {table:'observations',find:{_beacon:testBeacon._id,_entity:testEntity._id}}
   })
   request(req, function(err, res) {
     check(req, res)
