@@ -139,13 +139,12 @@ function genChildEntities(callback) {
   genEntityRecords(options.beacons * options.epb * options.spe, false)
 }
 
-// Makes entity, link, and observation records for parent entities (isRoot = true)
+// Makes entity and link records for parent entities (isRoot = true)
 //   or child entities (isRoot = false)
 function genEntityRecords(count, isRoot) {
 
   table.entities = table.entities || []
   table.links = table.links || []
-  table.observations = table.observations || []
 
   var countParents = options.beacons * options.epb // child Ids start after parent Ids
 
@@ -185,13 +184,6 @@ function genEntityRecords(count, isRoot) {
       newLink.toTableId = tableIds['entities']
     }
     table.links.push(newLink)
-
-    // Observation
-    var newObservation = constants.getDefaultRecord('observations')
-    newObservation._id = testUtil.genId('observations', recNum)
-    newObservation._beacon = testUtil.genBeaconId(beaconNum)
-    newObservation._entity = newEnt._id
-    table.observations.push(newObservation)
 
     // Comments
     newEnt.comments = []

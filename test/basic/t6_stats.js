@@ -108,8 +108,8 @@ exports.staticsUpdateOnRefresh = function(test) {
     uri: '/do/insertEntity?' + userCred,
     body: {
       entity:testEntity,
-      beacon:testBeacon,
-      link: {_to:testBeacon._id}
+      beacons:[testBeacon],
+      primaryBeaconId:testBeacon._id
     }
   })
   request(req, function(err, res) {
