@@ -17,6 +17,7 @@ var
   userCred,
   user2Cred,
   adminCred,
+  primaryLink,
   _exports = {}, // for commenting out tests
   testLatitude = 46.1,
   testLongitude = 121.1,
@@ -222,7 +223,18 @@ exports.insertEntity = function (test) {
     check(req, res, 201)
     assert(res.body.count === 1, dump(req, res))
     assert(res.body.data && res.body.data._id, dump(req, res))
-    test.done()
+
+    /* Find and store the primary link that was created by insertEntity */
+    var req2 = new Req({
+      uri: '/do/find',
+      body: {table:'links',find:{_to:testBeacon._id, _from:res.body.data._id, primary:true}}
+    })
+    request(req2, function(err, res) {
+      check(req2, res)
+      primaryLink = res.body.data
+      test.done()
+    })
+
   })
 }
 
@@ -253,7 +265,7 @@ exports.checkInsertEntityLogAction = function(test) {
 exports.checkInsertLinkLogAction = function(test) {
   var req = new Req({
     uri: '/do/find',
-    body: {table:'actions',find:{type:'tune_link_primary'}}
+    body: {table:'actions',find:{_target:primaryLink._id, type:'tune_link_primary'}}
   })
   request(req, function(err, res) {
     check(req, res)
@@ -381,8 +393,6 @@ exports.getEntitiesForBeaconsLocationUpdate = function (test) {
   })
 }
 
-
-
 // Warning:  this is checking the results of a fire-and-forget
 //   updated, and may fail due to timing
 exports.checkBeaconLocationUpdate = function (test) {
@@ -457,7 +467,6 @@ exports.checkInsertComment = function (test) {
     test.done()
   })
 }
-
 
 exports.user2CanCommentOnEntityOwnedByUser1 = function (test) {
   testComment.description = "I am user2 and I luv user1"
@@ -570,7 +579,7 @@ exports.checkUpdatedLink = function (test) {
 exports.deleteEntity = function (test) {
   var req = new Req({
     uri: '/do/deleteEntity?' + userCred,
-    body: {entityId:testEntity._id,deleteChildren:false}
+    body: {entityId:testEntity._id, deleteChildren:false}
   })
   request(req, function(err, res) {
     check(req, res)
@@ -595,7 +604,7 @@ exports.checkDeleteEntity = function(test) {
 exports.checkDeleteLink = function(test) {
   var req = new Req({
     uri: '/do/find',
-    body: {table:'links',find:{_to:testBeacon._id,_from:testEntity._id}}
+    body: {table:'links',find:{_to:testBeacon._id, _from:testEntity._id}}
   })
   request(req, function(err, res) {
     check(req, res)
@@ -603,6 +612,31 @@ exports.checkDeleteLink = function(test) {
     test.done()
   })
 }
+
+// exports.checkDeleteEntityLogActions = function(test) {
+//   var req = new Req({
+//     uri: '/do/find',
+//     body: {table:'actions',find:{_target:testEntity._id, type:'insert_entity'}}
+//   })
+//   request(req, function(err, res) {
+//     check(req, res)
+//     assert(res.body.count === 0, dump(req, res))
+//     test.done()
+//   })
+// }
+
+// exports.checkDeleteLinkLogActions = function(test) {
+//   var req = new Req({
+//     uri: '/do/find',
+//     body: {table:'actions',find:{_target:primaryLink._id, type:'tune_link_primary'}}
+//   })
+//   request(req, function(err, res) {
+//     check(req, res)
+//     assert(res.body.count === 0, dump(req, res))
+//     test.done()
+//   })
+// }
+
 
 exports.userCannotCommentOnLockedRecord = function(test) {
   log('nyi')
