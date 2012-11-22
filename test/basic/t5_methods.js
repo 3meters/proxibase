@@ -37,7 +37,7 @@ var
   },
   testEntity = {
     _id : "0002.111111.11111.111.111111",
-    photo: {imageUri:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg"},
+    photo: {prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", format:"binary", sourceName:"aircandi"},
     signalFence : -100,
     name : "Testing candi",
     type : "com.aircandi.candi.picture",
@@ -47,7 +47,7 @@ var
   },
   testEntity2 = {
     _id : "0002.111111.11111.111.111112",
-    photo: {imageUri:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg"},
+    photo: {prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", format:"binary", sourceName:"aircandi"},
     signalFence : -100,
     name : "Testing candi 2",
     type : "com.aircandi.candi.picture",
@@ -79,6 +79,34 @@ var
     altitude : 12,
     accuracy : 30,
     level: -80,
+    loc : [testLongitude, testLatitude]
+  },
+  testBeacon2 = {
+    _id : '0003:22:22:22:22:22:22',
+    label: 'Test Beacon Label 2',
+    ssid: 'Test Beacon 2',
+    bssid: '22:22:22:22:22:22',
+    beaconType: 'fixed',
+    visibility: 'public',
+    latitude : testLatitude,
+    longitude : testLongitude,
+    altitude : 12,
+    accuracy : 30,
+    level: -85,
+    loc : [testLongitude, testLatitude]
+  },
+  testBeacon3 = {
+    _id : '0003:33:33:33:33:33:33',
+    label: 'Test Beacon Label 3',
+    ssid: 'Test Beacon 3',
+    bssid: '33:33:33:33:33:33',
+    beaconType: 'fixed',
+    visibility: 'public',
+    latitude : testLatitude,
+    longitude : testLongitude,
+    altitude : 12,
+    accuracy : 30,
+    level: -95,
     loc : [testLongitude, testLatitude]
   },
   testComment = {
@@ -185,7 +213,7 @@ exports.getEntitiesForUser = function (test) {
   })
 }
 
-exports.insertRootEntity = function (test) {
+exports.insertEntity = function (test) {
   var req = new Req({
     uri: '/do/insertEntity?' + userCred,
     body: {entity:testEntity, beacons:[testBeacon], 
@@ -200,7 +228,7 @@ exports.insertRootEntity = function (test) {
   })
 }
 
-exports.checkInsertRootEntity = function(test) {
+exports.checkInsertEntity = function(test) {
   var req = new Req({
     uri: '/do/find',
     body: {table:'entities',find:{_id:testEntity._id}}
@@ -212,7 +240,7 @@ exports.checkInsertRootEntity = function(test) {
   })
 }
 
-exports.insertRootEntityBeaconAlreadyExists = function (test) {
+exports.insertEntityBeaconAlreadyExists = function (test) {
   var req = new Req({
     uri: '/do/insertEntity?' + userCred,
     body: {entity:testEntity2, beacons:[testBeacon], 
@@ -239,8 +267,7 @@ exports.checkInsertEntityBeaconAlreadyExists = function(test) {
   })
 }
 
-
-exports.checkInsertLinkToRootEntity = function(test) {
+exports.checkInsertLinkToEntity = function(test) {
   var req = new Req({
     uri: '/do/find',
     body: {table:'links',find:{_to:testBeacon._id}}
@@ -269,6 +296,56 @@ exports.checkInsertBeacon = function(test) {
   })
 }
 
+exports.extendEntities = function(test) {
+  var req = new Req({
+    uri: '/do/extendEntities?' + userCred,
+    body: {entityIds:[testEntity._id, testEntity2._id], beacons:[testBeacon, testBeacon2, testBeacon3],
+        primaryBeaconId:testBeacon2._id}
+  })
+  request(req, function(err, res) {
+    check(req, res, 200)
+    test.done()
+  })
+}
+
+exports.checkExtendEntityAddedBeacon2 = function(test) {
+  var req = new Req({
+    uri: '/do/find',
+    body: {table:'beacons', find:{_id:testBeacon2._id}}
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.count === 1, dump(req, res))
+    test.done()
+  })
+}
+
+exports.checkExtendEntityLinksFromEntity1 = function(test) {
+  var req = new Req({
+    uri: '/do/find',
+    body: {table:'links', find:{_from:testEntity._id}}
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.count === 3, dump(req, res))
+    test.done()
+  })
+}
+
+exports.checkExtendEntityLinkFromEntity1ToBeacon2 = function(test) {
+  var req = new Req({
+    uri: '/do/find',
+    body: {table:'links',find:{_to:testBeacon2._id, _from:testEntity._id}}
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.count === 1, dump(req, res))
+    assert(res.body.data[0].primary === true, dump(req, res))
+    assert(res.body.data[0].signal === testBeacon2.level, dump(req, res))
+    test.done()
+  })
+}
+
 exports.getEntitiesForBeaconsLocationUpdate = function (test) {
   var req = new Req({
     uri: '/do/getEntitiesForBeacons',
@@ -283,6 +360,8 @@ exports.getEntitiesForBeaconsLocationUpdate = function (test) {
     test.done()
   })
 }
+
+
 
 // Warning:  this is checking the results of a fire-and-forget
 //   updated, and may fail due to timing
