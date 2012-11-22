@@ -14,7 +14,6 @@ var
   entityId = '0002.' + timeStamp + '.000001',
   childEntityId = '0002.' + timeStamp + '.000501',
   documentId = '0005.' + timeStamp + '.000001',
-  observationId = '0007.' + timeStamp + '.000001',
   linkId = '0001.' + timeStamp + '.000001',
   latitude = 47,                                              // Nearby
   longitude = -122,
@@ -24,8 +23,7 @@ var
     links: 1,
     entities: 2,
     beacons: 3,
-    documents: 5,
-    observations: 7
+    documents: 5
   },
   recordLimit = 1000,
   defaultRecord = {},
@@ -123,18 +121,6 @@ defaultRecord.entities = {
   locked: false
 }
 
-defaultRecord.observations = {
-  _id: observationId,
-  _beacon : beaconId,
-  _entity : entityId,
-  accuracy : 30,
-  altitude : 0,
-  latitude : latitude,
-  longitude : longitude,
-  speed : 0,
-  loc : [longitude, latitude]
-}
-
 defaultRecord.links = {
   _id: linkId,
   toTableId : tableIds['beacons'],
@@ -156,7 +142,6 @@ module.exports = {
   entityId: entityId,
   childEntityId: childEntityId,
   documentId: documentId,
-  observationId: observationId,
   linkId: linkId,
   latitude: latitude,
   longitude: longitude,
