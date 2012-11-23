@@ -225,16 +225,16 @@ exports.insertEntity = function (test) {
     assert(res.body.data && res.body.data._id, dump(req, res))
 
     /* Find and store the primary link that was created by insertEntity */
-    var req2 = new Req({
+    req = new Req({
       uri: '/do/find',
       body: {table:'links',find:{_to:testBeacon._id, _from:res.body.data._id, primary:true}}
     })
-    request(req2, function(err, res) {
-      check(req2, res)
-      primaryLink = res.body.data
+    request(req, function(err, res) {
+      check(req, res)
+      assert(res.body.count === 1, dump(req, res))
+      primaryLink = res.body.data[0]
       test.done()
     })
-
   })
 }
 
@@ -604,7 +604,7 @@ exports.checkDeleteEntity = function(test) {
 exports.checkDeleteLink = function(test) {
   var req = new Req({
     uri: '/do/find',
-    body: {table:'links',find:{_to:testBeacon._id, _from:testEntity._id}}
+    body: {table:'links', find:{_to:testBeacon._id, _from:testEntity._id}}
   })
   request(req, function(err, res) {
     check(req, res)
@@ -613,30 +613,29 @@ exports.checkDeleteLink = function(test) {
   })
 }
 
-// exports.checkDeleteEntityLogActions = function(test) {
-//   var req = new Req({
-//     uri: '/do/find',
-//     body: {table:'actions',find:{_target:testEntity._id, type:'insert_entity'}}
-//   })
-//   request(req, function(err, res) {
-//     check(req, res)
-//     assert(res.body.count === 0, dump(req, res))
-//     test.done()
-//   })
-// }
+exports.checkDeleteEntityLogActions = function(test) {
+  var req = new Req({
+    uri: '/do/find',
+    body: {table:'actions', find:{_target:testEntity._id, type:'insert_entity'}}
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.count === 0, dump(req, res))
+    test.done()
+  })
+}
 
-// exports.checkDeleteLinkLogActions = function(test) {
-//   var req = new Req({
-//     uri: '/do/find',
-//     body: {table:'actions',find:{_target:primaryLink._id, type:'tune_link_primary'}}
-//   })
-//   request(req, function(err, res) {
-//     check(req, res)
-//     assert(res.body.count === 0, dump(req, res))
-//     test.done()
-//   })
-// }
-
+exports.checkDeleteLinkLogActions = function(test) {
+  var req = new Req({
+    uri: '/do/find',
+    body: {table:'actions', find:{_target:primaryLink._id, type:'tune_link_primary'}}
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.count === 0, dump(req, res))
+    test.done()
+  })
+}
 
 exports.userCannotCommentOnLockedRecord = function(test) {
   log('nyi')
@@ -657,5 +656,3 @@ exports.adminCanLinkToLockedRecord = function(test) {
   log('nyi')
   test.done()
 }
-
-
