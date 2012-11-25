@@ -21,6 +21,10 @@ var
   _exports = {}, // for commenting out tests
   testLatitude = 46.1,
   testLongitude = 121.1,
+  testLatitude2 = 46.15,
+  testLongitude2 = 121.1,
+  radiusTiny = (0.000001 / 3959),
+  radiusBig = (10 / 3959),
   testUser = {
     _id : "0000.111111.11111.111.111111",
     name : "John Q Test",
@@ -43,6 +47,7 @@ var
     name : "Testing candi",
     type : "com.aircandi.candi.picture",
     visibility : "public",
+    isCollection: false,
     enabled : true,
     locked : false
   },
@@ -51,8 +56,22 @@ var
     photo: {prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", format:"binary", sourceName:"aircandi"},
     signalFence : -100,
     name : "Testing candi 2",
-    type : "com.aircandi.candi.picture",
+    type : "com.aircandi.candi.place",
+    place: {location:{lat:testLatitude, lng:testLongitude}},
     visibility : "public",
+    isCollection: true,
+    enabled : true,
+    locked : false
+  },
+  testEntity3 = {
+    _id : "0002.111111.11111.111.111113",
+    photo: {prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", format:"binary", sourceName:"aircandi"},
+    signalFence : -100,
+    name : "Testing candi 3",
+    type : "com.aircandi.candi.place",
+    place: {location:{lat:testLatitude, lng:testLongitude}},
+    visibility : "public",
+    isCollection: true,
     enabled : true,
     locked : false
   },
@@ -327,6 +346,69 @@ exports.checkInsertBeacon = function(test) {
     test.done()
   })
 }
+
+exports.insertEntityWithNoLinks = function (test) {
+  var req = new Req({
+    uri: '/do/insertEntity?' + userCred,
+    body: {entity:testEntity3}
+  })
+  request(req, function(err, res) {
+    check(req, res, 201)
+    assert(res.body.count === 1, dump(req, res))
+    test.done()
+  })
+}
+
+exports.checkInsertEntityNoLinks = function(test) {
+  var req = new Req({
+    uri: '/do/find',
+    body: {table:'entities',find:{_id:testEntity3._id}}
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.count === 1, dump(req, res))
+    assert(res.body.data[0] && res.body.data[0].place, dump(req, res))
+    assert(res.body.data[0].place.location, dump(req, res))
+    assert(res.body.data[0].place.location.lat && res.body.data[0].place.location.lng, dump(req, res))
+    assert(res.body.data[0].loc, dump(req, res))
+    test.done()
+  })
+}
+
+exports.getEntitiesForBeaconsIncludingNoLinkBigRadius = function (test) {
+  var req = new Req({
+    uri: '/do/getEntitiesForBeacons',
+    body: {beaconIdsNew:[testBeacon._id]
+      , eagerLoad:{children:true,comments:false}
+      , observation:{latitude:testLatitude2, longitude:testLongitude2}
+      , radius: radiusBig 
+    }
+  })
+  request(req, function(err, res) {
+    check(req, res, 200)
+    assert(res.body.count === 3, dump(req, res))
+    assert(res.body.date, dump(req, res))
+    test.done()
+  })
+}
+
+exports.getEntitiesForBeaconsIncludingNoLinkTinyRadius = function (test) {
+  var req = new Req({
+    uri: '/do/getEntitiesForBeacons',
+    body: {beaconIdsNew:[testBeacon._id]
+      , eagerLoad:{children:true,comments:false}
+      , observation:{latitude:testLatitude2, longitude:testLongitude2}
+      , radius: radiusTiny
+    }
+  })
+  request(req, function(err, res) {
+    check(req, res, 200)
+    assert(res.body.count === 2, dump(req, res))
+    assert(res.body.date, dump(req, res))
+    test.done()
+  })
+}
+
 
 exports.extendEntities = function(test) {
   var req = new Req({
