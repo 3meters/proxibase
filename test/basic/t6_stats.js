@@ -169,3 +169,48 @@ exports.statsWorkFromDoFind = function(test) {
     test.done()
   })
 }
+
+exports.statsWorkFromDoFindWithRefresh = function(test) {
+  var req = new Req({
+    uri: '/do/find?' + adminCred,
+    body: {
+      stat: 'usersByEntity',
+      ids: [userSession._owner],
+      refresh: true
+    }
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.data[0]._id === userSession._owner, dump(req, res))
+    test.done()
+  })
+}
+
+exports.statsFromDoFindFailRefreshAsUser = function(test) {
+  var req = new Req({
+    uri: '/do/find?' + userCred,
+    body: {
+      stat: 'usersByEntity',
+      ids: [userSession._owner],
+      refresh: true
+    }
+  })
+  request(req, function(err, res) {
+    check(req, res, 401)
+    test.done()
+  })
+}
+
+exports.statsFailProperlyFromDoFind = function(test) {
+  var req = new Req({
+    uri: '/do/find',
+    body: {
+      stat: 'usersByEntityBogus',
+      ids: [userSession._owner]
+    }
+  })
+  request(req, function(err, res) {
+    check(req, res, 404)
+    test.done()
+  })
+}
