@@ -187,7 +187,7 @@ exports.getEntitiesLoadChildren = function (test) {
     assert(record.childCount === dbProfile.spe, dump(req, res))
     assert(record.comments.length === dbProfile.cpe, dump(req, res))
     assert(record.commentCount === dbProfile.cpe, dump(req, res))
-    assert(record.beaconLinks[0].beaconId === constants.beaconId, dump(req, res))
+    assert(record.links[0]._to === constants.beaconId, dump(req, res))
     test.done()
   })
 }
