@@ -22,7 +22,7 @@ var
     enabled : true
   },
   testBeacon = {
-    _id : '0003:11:11:11:11:11:11'  // left over by the methods test
+    bssid : '11:11:11:11:11:11'  // left over by the methods test
   }
   testStartTime = util.getTimeUTC(),
   _exports = {}  // For commenting out tests

@@ -430,24 +430,42 @@ exports.userCanDeleteMultipleDocs = function(test) {
 }
 
 
-exports.adminCanDeleteUsingWildcard = function(test) {
+exports.defaultsWork = function(test) {
+  var req = new Req({
+    uri: '/data/beacons?' + userCred,
+    body: {data: {
+      bssid: '01:10:11:22:44:66',
+      ssid: 'Rest test beacon'
+    }}
+  })
+  request(req, function(err, res){
+    check(req, res, 201)
+    assert(res.body.data.visibility === 'public')
+    test.done()
+  })
+}
+
+
+exports.adminCanDeleteAllUsingWildcard = function(test) {
   var req = new Req({
     method: 'delete',
-    uri: '/data/sessions/*?' + adminCred
+    uri: '/data/beacons/*?' + adminCred
   })
   request(req, function(err, res) {
-    check(req, res) 
-    assert(res.body.count >= 3)
+    check(req, res)
+    assert(res.body.count >= 1)
     var req2 = new Req({
       method: 'get',
-      uri: '/data/users?' + adminCred
+      uri: '/data/beacons?' + adminCred
     })
     request(req2, function(err, res) {
-      check(req, res, 401)  // because admin no longer has a valid session
+      check(req, res)
+      assert(res.body.data.length === 0)
       test.done()
     })
   })
 }
+
 
 exports.countByWorks = function(test) {
   var req = new Req({
