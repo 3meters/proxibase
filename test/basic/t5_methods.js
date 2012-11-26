@@ -192,9 +192,9 @@ exports.getEntitiesLoadChildren = function (test) {
   })
 }
 
-exports.getEntitiesForBeacons = function (test) {
+exports.getEntitiesForLocation = function (test) {
   var req = new Req({
-    uri: '/do/getEntitiesForBeacons',
+    uri: '/do/getEntitiesForLocation',
     body: {beaconIdsNew:[constants.beaconId],eagerLoad:{children:true,comments:false}}
   })
   request(req, function(err, res) {
@@ -205,9 +205,9 @@ exports.getEntitiesForBeacons = function (test) {
   })
 }
 
-exports.getEntitiesForBeaconsLimited = function (test) {
+exports.getEntitiesForLocationLimited = function (test) {
   var req = new Req({
-    uri: '/do/getEntitiesForBeacons',
+    uri: '/do/getEntitiesForLocation',
     body: {beaconIdsNew:[constants.beaconId], 
         eagerLoad:{ children:true,comments:false }, 
         options:{limit:3, skip:0, sort:{modifiedDate:-1}}}
@@ -375,9 +375,9 @@ exports.checkInsertEntityNoLinks = function(test) {
   })
 }
 
-exports.getEntitiesForBeaconsIncludingNoLinkBigRadius = function (test) {
+exports.getEntitiesForLocationIncludingNoLinkBigRadius = function (test) {
   var req = new Req({
-    uri: '/do/getEntitiesForBeacons',
+    uri: '/do/getEntitiesForLocation',
     body: {beaconIdsNew:[testBeacon._id]
       , eagerLoad:{children:true,comments:false}
       , observation:{latitude:testLatitude2, longitude:testLongitude2}
@@ -392,9 +392,9 @@ exports.getEntitiesForBeaconsIncludingNoLinkBigRadius = function (test) {
   })
 }
 
-exports.getEntitiesForBeaconsIncludingNoLinkTinyRadius = function (test) {
+exports.getEntitiesForLocationIncludingNoLinkTinyRadius = function (test) {
   var req = new Req({
-    uri: '/do/getEntitiesForBeacons',
+    uri: '/do/getEntitiesForLocation',
     body: {beaconIdsNew:[testBeacon._id]
       , eagerLoad:{children:true,comments:false}
       , observation:{latitude:testLatitude2, longitude:testLongitude2}
@@ -460,9 +460,9 @@ exports.checkExtendEntityLinkFromEntity1ToBeacon2 = function(test) {
   })
 }
 
-exports.getEntitiesForBeaconsLocationUpdate = function (test) {
+exports.getEntitiesForLocationWithLocationUpdate = function (test) {
   var req = new Req({
-    uri: '/do/getEntitiesForBeacons',
+    uri: '/do/getEntitiesForLocation',
     body: {beaconIdsNew:[testBeacon._id]
       , eagerLoad:{children:true,comments:false}
       , beaconLevels:[-80]
