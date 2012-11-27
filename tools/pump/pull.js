@@ -10,7 +10,6 @@
 
 var
   fs = require('fs'),
-  path = require('path'),
   program = require('commander'),
   req = require('request'),
   tables = [],
@@ -27,27 +26,22 @@ program
 
 switch(program.server) {
   case 'dev':
-    baseUri = 'https://api.localhost:8043'
+    baseUri = 'https://localhost:6643'
     break
   case 'prod':
-    baseUri = 'https://api.proxibase.com:443'
-    break
-  case 'uri':
-    baseUri = program.server
+    baseUri = 'https://api.aircandi.com:643'
     break
   default:
-    console.error('Invalid value for --server')
-    process.exit(1)
+    baseUri = program.server
 }
 
 // get table names from target server
 
-req.get(baseUri + '/__info', function (err, res) {
+req.get(baseUri + '/schema', function (err, res) {
   if (err) throw err
-  if (!res) throw new Error('No response')
   if (res.statusCode !== 200) throw new Error('Unexpected statusCode: ' + res.statusCode)
-  var tableMap = JSON.parse(res.body)
-  for (var tableName in tableMap) {
+  var body = JSON.parse(res.body)
+  for (var tableName in body.schemas) {
     tables.push(tableName)
   }
   pullTable(tables.length, done)
@@ -61,7 +55,8 @@ function pullTable(iTable, cb) {
   var options = {
     headers: { "content-type": "application/json" }
   }
-  options.uri =  baseUri + '/' + tableName
+  options.uri =  baseUri + '/data/' + tableName
+  console.log(options.uri)
   req.get(options, function(err, res) {
     if (err) throw err
     if (res.statusCode !== 200) throw new Error('Unexpected statusCode: ' + res.statusCode)
@@ -72,7 +67,7 @@ function pullTable(iTable, cb) {
 }
 
 function save(tbl, name) {
-  if (!path.existsSync(program.out)) fs.mkdirSync(program.out)
+  if (!fs.existsSync(program.out)) fs.mkdirSync(program.out)
   fs.writeFileSync(program.out + '/' + name + '.json', JSON.stringify(tbl))
 }
 
