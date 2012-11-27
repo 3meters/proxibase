@@ -8,18 +8,20 @@
  *    node push --help
  */
 
-var
-  fs = require('fs'),
-  path = require('path')
-  program = require('commander'),
-  req = require('request'),
-  log = require(__dirname + '/../../lib/util').log,
-  tables = [],
-  tableNames= [],
-  errors = []
+var fs = require('fs')
+var path = require('path')
+var program = require('commander')
+var req = require('request')
+var log = console.log
+var util = require('util')
+var testUtil = require('../../test/util')
+var tables = []
+var tableNames= []
+var errors = []
+var adminCred = ''
 
 program
-  .option('-s --server <dev>', 'push to server [dev|test|prod|prodtest|url]', String, 'dev')
+  .option('-s --server <dev>', 'push to server [dev|test|prod|prodtest|uri]', String, 'dev')
   .option('-i --in <files>', 'input direcotry [files]', String, 'files')
   .option('-q --quiet', 'do not log sucessful inserts')
   .parse(process.argv)
@@ -28,22 +30,27 @@ program
 
 switch(program.server) {
   case 'dev':
-    baseUri = 'https://api.localhost:8043'
+    baseUri = 'https://localhost:6643'
     break
   case 'test':
-    baseUri = 'https://api.localhost.com:8044'
+    baseUri = 'https://localhost.com:6644'
     break
   case 'prod':
-    baseUri = 'https://api.proxibase.com:443'
+    baseUri = 'https://api.aircandi.com:643'
     break
   case 'prodtest':
-    baseUri = 'https://api.proxibase.com:8044'
+    baseUri = 'https://api.aircandi.com:644'
   default:
     baseUri = program.server
 }
 
+
 readFiles(program.in)
-loadTable(0)
+testUtil.serverUrl = baseUri
+testUtil.getAdminSession(function(session) {
+  adminCred = 'user=' + session._owner + '&session=' + session.key
+  loadTable(0)
+})
 
 // synchronously read all json files from dir assuming dir and files are well-formed
 
@@ -72,13 +79,12 @@ function loadDoc(docs, iDoc, tableName, next) {
 
   var options = {}, statusMsg = ''
   options.headers = {"content-type":"application/json"}
-  options.uri = baseUri + '/' + tableName
+  options.uri = baseUri + '/data/' + tableName + '?' + adminCred
   options.body = JSON.stringify({ data: docs[iDoc] })
 
   req.post(options, function(err, res) {
     if (err) throw err
-    if (!res) throw new Error('No response')
-    if (res.statusCode !== 200) {
+    if (res.statusCode !== 201) {
       statusMsg = '  statusCode: ' + res.statusCode
       errors.push({
         statusCode: res.statusCode,
@@ -87,15 +93,23 @@ function loadDoc(docs, iDoc, tableName, next) {
         data: docs[iDoc],
         error: JSON.parse(res.body)
       })
+      log(util.inspect(errors, false, 5))
+      process.exit(1)
     }
-    if (!program.quiet) log(tableName + ': ' + iDoc + statusMsg, JSON.parse(res.body))
+    if (!program.quiet) {
+      log(tableName + ': ' + iDoc + statusMsg)
+      log(JSON.parse(res.body))
+    }
     iDoc++
     loadDoc(docs, iDoc, tableName, next) // recurse
   })
 }
 
 function done() {
-  if (errors.length) log('\nFinished with ' + errors.length + ' error(s)', errors, false, 5)
+  if (errors.length) {
+    log('\nFinished with ' + errors.length + ' error(s)')
+    log(errors)
+  }
   else log('\nFinished ok')
   process.exit(errors.length)
 }
