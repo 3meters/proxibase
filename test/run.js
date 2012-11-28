@@ -86,10 +86,6 @@ function ensureDb(options, callback) {
 
   var database = options.database
   var template = database + 'Template'
-    /*
-     * db = mongoskin.db(util.config.db.host, util.config.db.port +
-     * '/' + database, config.db.options)
-     */
 
   var dbOptions = {
     auto_reconnect: true,

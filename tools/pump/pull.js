@@ -61,6 +61,14 @@ function pullTable(iTable, cb) {
     if (err) throw err
     if (res.statusCode !== 200) throw new Error('Unexpected statusCode: ' + res.statusCode)
     var body = JSON.parse(res.body)
+    // Don't save admin user.  It is created by service on startup
+    if (tableName === 'users') {
+      var users = []
+      body.data.forEach(function(user) {
+        if (user._id !== '0000.000000.00000.000.000000') users.push(user)
+      })
+      body.data = users
+    }
     save(body.data, tableName)
     pullTable(iTable, cb)
   })
