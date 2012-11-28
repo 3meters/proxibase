@@ -24,7 +24,6 @@ program
   .option('-s --server <dev>', 'push to server [dev|test|prod|prodtest|uri]', String, 'dev')
   .option('-i --in <files>', 'input direcotry [files]', String, 'files')
   .option('-v --validate <validate>', 'validate data on insert, sets sys fields')
-  .option('-q --quiet', 'do not log sucessful inserts')
   .parse(process.argv)
 
 // set server URI baseed on command line switch.  default is local dev machine
@@ -67,16 +66,18 @@ function readFiles(dir) {
 
 function loadTable(iTable) {
   if (iTable >= tables.length) return done() // break recursion
-  log('loading ' + tableNames[iTable])
-  loadDoc(tables[iTable], 0, tableNames[iTable], function() {
+  loadDoc(tables[iTable], 0, 0, tableNames[iTable], function() {
     iTable++
     loadTable(iTable) // recurse
   })
 }
 
-function loadDoc(docs, iDoc, tableName, next) {
+function loadDoc(docs, iDoc, cLoaded, tableName, next) {
 
-  if (iDoc >= docs.length) return next() // break recursion
+  if (iDoc >= docs.length) {
+    log(tableName + ': ' + cLoaded)
+    return next() // break recursion
+  }
 
   var options = {}, statusMsg = ''
   options.headers = {"content-type":"application/json"}
@@ -90,7 +91,8 @@ function loadDoc(docs, iDoc, tableName, next) {
 
   req.post(options, function(err, res) {
     if (err) throw err
-    if (res.statusCode !== 201) {
+    if (res.statusCode === 201) cLoaded++
+    else {
       statusMsg = '  statusCode: ' + res.statusCode
       errors.push({
         statusCode: res.statusCode,
@@ -100,19 +102,15 @@ function loadDoc(docs, iDoc, tableName, next) {
         error: JSON.parse(res.body)
       })
     }
-    if (!program.quiet) {
-      log(tableName + ': ' + iDoc + statusMsg)
-      log(JSON.parse(res.body))
-    }
     iDoc++
-    loadDoc(docs, iDoc, tableName, next) // recurse
+    loadDoc(docs, iDoc, cLoaded, tableName, next) // recurse
   })
 }
 
 function done() {
   if (errors.length) {
-    log('\nFinished with ' + errors.length + ' error(s)')
-    log(errors)
+    console.error('\nFinished with ' + errors.length + ' error(s)')
+    console.error(util.inspect(errors, false, 5))
   }
   else log('\nFinished ok')
   process.exit(errors.length)
