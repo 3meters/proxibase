@@ -28,6 +28,9 @@ switch(program.server) {
   case 'dev':
     baseUri = 'https://localhost:6643'
     break
+  case 'test':
+    baseUri = 'https://localhost:6644'
+    break
   case 'prod':
     baseUri = 'https://api.aircandi.com:643'
     break
@@ -56,7 +59,6 @@ function pullTable(iTable, cb) {
     headers: { "content-type": "application/json" }
   }
   options.uri =  baseUri + '/data/' + tableName
-  console.log(options.uri)
   req.get(options, function(err, res) {
     if (err) throw err
     if (res.statusCode !== 200) throw new Error('Unexpected statusCode: ' + res.statusCode)
@@ -70,6 +72,8 @@ function pullTable(iTable, cb) {
       body.data = users
     }
     save(body.data, tableName)
+    console.log(tableName + ': ' + body.data.length)
+    if (body.more) console.log('Warning: did not fetch all records')
     pullTable(iTable, cb)
   })
 }
