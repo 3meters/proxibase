@@ -23,6 +23,7 @@ var adminCred = ''
 program
   .option('-s --server <dev>', 'push to server [dev|test|prod|prodtest|uri]', String, 'dev')
   .option('-i --in <files>', 'input direcotry [files]', String, 'files')
+  .option('-v --validate <validate>', 'validate data on insert, sets sys fields')
   .option('-q --quiet', 'do not log sucessful inserts')
   .parse(process.argv)
 
@@ -80,7 +81,12 @@ function loadDoc(docs, iDoc, tableName, next) {
   var options = {}, statusMsg = ''
   options.headers = {"content-type":"application/json"}
   options.uri = baseUri + '/data/' + tableName + '?' + adminCred
-  options.body = JSON.stringify({ data: docs[iDoc] })
+  var body = {
+    data: docs[iDoc],
+    skipValidation: true
+  }
+  if (program.validate) delete body.skipValidation
+  options.body = JSON.stringify(body)
 
   req.post(options, function(err, res) {
     if (err) throw err
