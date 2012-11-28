@@ -93,8 +93,6 @@ function loadDoc(docs, iDoc, tableName, next) {
         data: docs[iDoc],
         error: JSON.parse(res.body)
       })
-      log(util.inspect(errors, false, 5))
-      process.exit(1)
     }
     if (!program.quiet) {
       log(tableName + ': ' + iDoc + statusMsg)
