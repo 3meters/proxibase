@@ -37,12 +37,14 @@ var util = require('util')
 process.chdir(__dirname)
 
 
+// Command line interface
 cli
   .option('-c, --config <file>', 'Config file [configtest.js]')
   .option('-s, --server <url>', 'Server url')
   .option('-t, --testdir <dir>', 'Test directory')
   .option('-b, --basic', 'Only run the basic tests')
   .option('-n, --none', 'Do not run any tests -- just ensure the test db')
+  .option('-g, --generate', 'generate a fresh template test db from code')
   .option('-l, --log <file>', 'Test server log file [' + logFile + ']')
   .parse(process.argv)
 
@@ -95,48 +97,61 @@ function ensureDb(options, callback) {
   var server = new mongo.Server(config.db.host, config.db.port, dbOptions)
   var db = new mongo.Db(options.database, server, {safe:true})
 
-  db.dropDatabase(function(err, done) {
-    if (err) throw err
-
-    // See if template database exists
-    adminDb = new mongo.Admin(db)
-    adminDb.listDatabases(function(err, results) {
+  // Drop template database if directed to by command line flag then run again
+  if (cli.generate) {
+    var templateServer = new mongo.Server(config.db.host, config.db.port, dbOptions)
+    var templateDb = new mongo.Db(template, templateServer, {safe:true})
+    templateDb.dropDatabase(function(err, results) {
       if (err) throw err
-      if (!(results && results.databases)) throw new Error('Unexpected results from listDatabases')
+      delete cli.generate
+      return ensureDb(options, callback)
+    })
+  }
 
-      var templateExists = false
-      results.databases.forEach(function(db) {
-        if (db.name === template) {
-          templateExists = true
-          return
+  else {
+    db.dropDatabase(function(err, done) {
+      if (err) throw err
+
+      // See if template database exists
+      adminDb = new mongo.Admin(db)
+      adminDb.listDatabases(function(err, results) {
+        if (err) throw err
+        if (!(results && results.databases)) throw new Error('Unexpected results from listDatabases')
+
+        var templateExists = false
+        results.databases.forEach(function(db) {
+          if (db.name === template) {
+            templateExists = true
+            return
+          }
+        })
+
+        if (!templateExists) {
+          log('Creating new template database ' + template)
+          db.close()
+          options.database = template
+          options.validate = true         // Run schema validators on insert
+          genData(options, function(err) {
+            if (err) throw err
+            // Now try again with the template database in place
+            options.database = database
+            return ensureDb(options, callback)
+          })
+        }
+
+        else {
+          log('Copying database from ' + template)
+          var timer = new util.Timer()
+          adminDb.command({copydb:1, fromdb:template, todb:database}, function(err, result) {
+            if (err) throw err
+            db.close()
+            log('Database copied in ' + timer.read() + ' seconds')
+            return callback()    // Finished
+         })
         }
       })
-
-      if (!templateExists) {
-        log('Creating new template database ' + template)
-        db.close()
-        options.database = template
-        options.validate = true         // Run schema validators on insert
-        genData(options, function(err) {
-          if (err) throw err
-          // Now try again with the template database in place
-          options.database = database
-          return ensureDb(options, callback)
-        })
-      }
-
-      else {
-        log('Copying database from ' + template)
-        var timer = new util.Timer()
-        adminDb.command({copydb:1, fromdb:template, todb:database}, function(err, result) {
-          if (err) throw err
-          db.close()
-          log('Database copied in ' + timer.read() + ' seconds')
-          return callback()    // Finished
-       })
-      }
     })
-  })
+  }
 }
 
 

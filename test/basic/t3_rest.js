@@ -512,28 +512,6 @@ exports.adminsCanSkipSafeUpdate = function(test) {
     test.done()
   })
 }
-
-exports.adminCanDeleteAllUsingWildcard = function(test) {
-  var req = new Req({
-    method: 'delete',
-    uri: '/data/beacons/*?' + adminCred
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count >= 1)
-    var req2 = new Req({
-      method: 'get',
-      uri: '/data/beacons?' + adminCred
-    })
-    request(req2, function(err, res) {
-      check(req, res)
-      assert(res.body.data.length === 0)
-      test.done()
-    })
-  })
-}
-
-
 exports.countByWorks = function(test) {
   var req = new Req({
     method: 'get',
@@ -547,4 +525,28 @@ exports.countByWorks = function(test) {
     test.done()
   })
 }
+
+// This has to be the last test because all subsequent logins will fail
+// since it deletes all the sessions
+exports.adminCanDeleteAllUsingWildcard = function(test) {
+  var req = new Req({
+    method: 'delete',
+    uri: '/data/sessions/*?' + adminCred
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.count >= 1)
+    var req2 = new Req({
+      method: 'get',
+      uri: '/data/sessions'
+    })
+    request(req2, function(err, res) {
+      check(req, res)
+      assert(res.body.data.length === 0)
+      test.done()
+    })
+  })
+}
+
+
 
