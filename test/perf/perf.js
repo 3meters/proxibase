@@ -182,20 +182,20 @@ exports.get100Entities = function (test) {
   }
 }
 
-exports.getEntitiesFor100Beacons = function (test) {
+exports.getEntitiesForLocation100Beacons = function (test) {
   var
     timer = new Timer(),
     cRecs = 0
   timer.expected = 300
 
-  getEntitiesForBeacon(100)
+  getEntitiesForLocation(100)
 
-  function getEntitiesForBeacon(i) {
-    if (!i--) return done(test, 'getEntitesFor100Beacons', timer, cRecs)
+  function getEntitiesForLocation(i) {
+    if (!i--) return done(test, 'getEntitiesForLocation100Beacons', timer, cRecs)
     var recNum = Math.floor(Math.random() * dbProfile.beacons)
     var id = testUtil.genBeaconId(recNum)
     var req = new Req({
-      uri: '/do/getEntitiesForBeacons',
+      uri: '/do/getEntitiesForLocation',
       body: {
         beaconIdsNew:[id],
         eagerLoad:{ children:true, comments:false },
@@ -206,22 +206,22 @@ exports.getEntitiesFor100Beacons = function (test) {
       check(req, res)
       if (res.body.count) cRecs += ((res.body.count) + (res.body.count * dbProfile.spe))
       test.ok(res.body.count === dbProfile.epb, dump(req, res))
-      getEntitiesForBeacon(i)
+      getEntitiesForLocation(i)
     })
   }
 }
 
-exports.getEntitiesFor10x10Beacons = function (test) {
+exports.getEntitiesForLocation10x10Beacons = function (test) {
   var 
     timer = new Timer(),
     cRecs = 0,
     batchSize = 10
   timer.expected = 300
 
-  getEntitiesForBeacon(dbProfile.beacons / batchSize)
+  getEntitiesForLocation(dbProfile.beacons / batchSize)
 
-  function getEntitiesForBeacon(i) {
-    if (!i--) return done(test, 'getEntitesFor10x10Beacons', timer, cRecs)
+  function getEntitiesForLocation(i) {
+    if (!i--) return done(test, 'getEntitiesForLocation10x10Beacons', timer, cRecs)
     var beaconRecNumStart = (i + 1) * batchSize  
     var beaconRecNumEnd = beaconRecNumStart - batchSize
     var beaconIds = []
@@ -231,7 +231,7 @@ exports.getEntitiesFor10x10Beacons = function (test) {
       beaconIds.push(id)
     }
     var req = new Req({
-      uri: '/do/getEntitiesForBeacons',
+      uri: '/do/getEntitiesForLocation',
       body: {
         beaconIdsNew:beaconIds, 
         eagerLoad:{ children:true, comments:false }, 
@@ -242,10 +242,99 @@ exports.getEntitiesFor10x10Beacons = function (test) {
       check(req, res)
       test.ok(res.body.count === dbProfile.epb * batchSize, dump(req, res))
       if (res.body.count) cRecs += ((res.body.count) + (res.body.count * dbProfile.spe))
-      getEntitiesForBeacon(i)
+      getEntitiesForLocation(i)
     })
   }
 }
+
+_exports.getEntitiesByLocationOnly = function (test) {
+  var
+    timer = new Timer(),
+    cRecs = 0
+  timer.expected = 300
+
+  getEntitiesForLocation(100)
+
+  function getEntitiesForLocation(i) {
+    if (!i--) return done(test, 'getEntitiesByLocationOnly', timer, cRecs)
+    var recNum = Math.floor(Math.random() * dbProfile.beacons)
+    var id = testUtil.genBeaconId(recNum)
+    var req = new Req({
+      uri: '/do/getEntitiesForLocation',
+      body: {
+        observation: { accuracy:20, latitude:47.5935851, longitude:-122.1596039 },
+        radius: 0.00006314726,
+        eagerLoad:{ children:true, comments:false },
+        options:{ limit:500, skip:0, sort:{modifiedDate:-1} }
+      }
+    })
+    request(req, function(err, res) {
+      check(req, res)
+      if (res.body.count) cRecs += ((res.body.count) + (res.body.count * dbProfile.spe))
+      test.ok(res.body.count === dbProfile.epb, dump(req, res))
+      getEntitiesForLocation(i)
+    })
+  }
+}
+
+_exports.getEntitiesByLocationWithBeaconUpgrade = function (test) {
+  var
+    timer = new Timer(),
+    cRecs = 0
+  timer.expected = 300
+
+  getEntitiesForLocation(100)
+
+  function getEntitiesForLocation(i) {
+    if (!i--) return done(test, 'getEntitiesByLocationWithBeaconUpgrade', timer, cRecs)
+    var recNum = Math.floor(Math.random() * dbProfile.beacons)
+    var id = testUtil.genBeaconId(recNum)
+    var req = new Req({
+      uri: '/do/getEntitiesForLocation',
+      body: {
+        beaconIdsNew:beaconIds, 
+        observation: { accuracy:20, latitude:47.5935851, longitude:-122.1596039 },
+        radius: 0.00006314726,
+        eagerLoad:{ children:true, comments:false },
+        options:{ limit:500, skip:0, sort:{modifiedDate:-1} }
+      }
+    })
+    request(req, function(err, res) {
+      check(req, res)
+      if (res.body.count) cRecs += ((res.body.count) + (res.body.count * dbProfile.spe))
+      test.ok(res.body.count === dbProfile.epb, dump(req, res))
+      getEntitiesForLocation(i)
+    })
+  }
+}
+
+_exports.getUsers = function (test) {
+  var
+    timer = new Timer(),
+    cRecs = 0
+  timer.expected = 300
+
+  getEntitiesForLocation(100)
+
+  function getUsers(i) {
+    if (!i--) return done(test, 'getUsers', timer, cRecs)
+    var recNum = Math.floor(Math.random() * dbProfile.beacons)
+    var id = testUtil.genBeaconId(recNum)
+    var req = new Req({
+      uri: '/do/getUser',
+      body: {
+        userId:'xxxxxxxxxxxxxxxxxx'
+      }
+    })
+    request(req, function(err, res) {
+      check(req, res)
+      if (res.body.count) cRecs += ((res.body.count) + (res.body.count * dbProfile.spe))
+      test.ok(res.body.count === dbProfile.epb, dump(req, res))
+      getUsers(i)
+    })
+  }
+}
+
 
 exports.getEntitiesFor10Users = function(test) {
   var timer = new Timer(),
