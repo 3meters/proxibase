@@ -313,8 +313,8 @@ exports.adminCannotUpdateNonExistantDoc = function(test) {
 
 
 exports.canAddDocsWithPreexitingIds = function(test) {
-  var newDocId1 = '0005.060101.55664.234.11111'
-  var newDocId2 = '0005.060101.55664.234.22222'
+  var newDocId1 = '0007.060101.55664.234.11111'
+  var newDocId2 = '0007.060101.55664.234.22222'
   var req = new Req({
     uri: '/data/documents?' + userCred,
     body: {data: {_id: newDocId1, name: 'I have my own id'}}
@@ -339,7 +339,7 @@ exports.canAddDocsWithPreexitingIds = function(test) {
 exports.cannotAddDocWithMissMatchedTableId = function(test) {
   var req = new Req({
     uri: '/data/documents?' + userCred,
-    body: {data: {_id: '0004.060101.55664.234.34567', name: 'I have my own id'}}
+    body: {data: {_id: '0005.060101.55664.234.34567', name: 'My id points to the wrong collection'}}
   })
   request(req, function(err, res) {
     check(req, res, 400)
@@ -383,8 +383,8 @@ exports.checkLink = function(test) {
     check(req, res) 
     assert(res.body.data[0]._from = testDoc1._id)
     assert(res.body.data[0]._to = testDoc2._id)
-    assert(res.body.data[0].fromTableId = documentsSchemaId)
-    assert(res.body.data[0].toTableId = documentsSchemaId)
+    assert(res.body.data[0].fromCollectionId = documentsSchemaId)
+    assert(res.body.data[0].toCollectionId = documentsSchemaId)
     test.done()
   })
 }

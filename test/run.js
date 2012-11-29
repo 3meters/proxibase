@@ -188,7 +188,6 @@ function ensureServer(callback) {
 
     testServer.stderr.on('data', function(data) {
       logStream.write(data)
-      util.logErr(data)
     })
 
     testServer.stderr.on('exit', function(code) {

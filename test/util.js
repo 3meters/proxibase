@@ -163,7 +163,7 @@ var check = exports.check = function(req, res, code) {
 exports.genBeaconId = function(recNum) {
   var id = pad(recNum + 1, 12)
   id = delineate(id, 2, ':')
-  var prefix = pad(tableIds.beacons, 4) + ':' // TODO: change to '.'
+  var prefix = tableIds.beacons + '.'
   return  prefix + id
 }
 
@@ -180,11 +180,11 @@ var delineate = exports.delineate = function(s, freq, sep) {
 
 
 // Make a standard _id field for a table with recNum as the last id element
-var genId = exports.genId = function(tableName, recNum) {
-  assert((typeof tableIds[tableName] === 'number'), 'Invalid table name ' + tableName)
-  tablePrefix = pad(tableIds[tableName], 4)
+var genId = exports.genId = function(collectionName, recNum) {
+  var collectionId = util.statics.collectionIds[collectionName]
+  assert(collectionId, 'Invalid collection name')
   recNum = pad(recNum + 1, 6)
-  return tablePrefix + '.' + constants.timeStamp + '.' + recNum
+  return collectionId + '.' + constants.timeStamp + '.' + recNum
 }
 
 
