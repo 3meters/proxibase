@@ -1,21 +1,23 @@
-/*
+/**
  * migrate proxibase database from version 4 to version 5
  *
  * reads json files from ./old containing all data from version 4
  * writes json files to ./new containing all transformed data for verstion 5
  *
- * Since this is a file-to-file transform, all calls are synchronous
+ * Purpose:  remap all ids from old collection prefixes to new
  *
+ * Since this is a file-to-file transform, all calls are synchronous.  The entire
+ * db is read into RAM brute force, so this won't work for real production data
+ * but seems to work fine for small data sets.
  */
 
 
 var fs = require('fs')
 var req = require('request')
 var util = require('util')
-var log = util.log
-var typeOf = util.typeOf
 
 if (!util.truthy) require('../../../lib/extend') // Use proxibase extensions
+var log = util.log
 
 var oldIds = [
   '0000', // users
@@ -48,10 +50,7 @@ var tables = {
   actions: true
 }
 
-var tables = {
-  entities: true
-}
-
+// Load the whole db into memory
 function read() {
   for (var tableName in tables) {
     try {
@@ -63,7 +62,8 @@ function read() {
   }
 }
 
-function fix(field) {
+// If the field's value looks like a proxibase id swap the old prefix for the new
+function fixField(field) {
   if (util.typeOf(field) !== 'string') return field
   oldIds.some(function(id, i) {
     if (field.indexOf(id) === 0) {
@@ -74,35 +74,46 @@ function fix(field) {
   return field
 }
 
-function transform() {
+function transformIds() {
   for (var tableName in tables) {
     tables[tableName].forEach(function(row) {
       for (var fieldName in row) {
-        if (util.typeOf(row[fieldName]) === 'array') {
-          row[fieldName].forEach(function(subField) {
-            log(subField)
-            subField = fix(subField)
-            log(subField)
+        if (util.typeOf(row[fieldName]) === 'array') { // mongoose array field, e.g. entities.comments
+          row[fieldName].forEach(function(subRow) {
+            for (var subRowFieldName in subRow) {
+              subRow[subRowFieldName] = fixField(subRow[subRowFieldName])
+            }
           })
         }
-        else {
-          row[fieldName] = fix(row[fieldName])
+        else { // regular field
+          row[fieldName] = fixField(row[fieldName])
         }
       }
     })
   }
 }
 
+// Fixup, rename, and retype the links tableIds to collectionIds
+function fixLinkTargets() {
+  tables['links'].forEach(function(row) {
+    row.toCollectionId = row._to.slice(0,4)
+    row.fromCollectionId = row._from.slice(0,4)
+    delete row.toTableId
+    delete row.fromTableId
+  })
+
+}
+
 function write() {
   for(var tableName in tables) {
     fs.writeFileSync('./new/' + tableName + '.json', JSON.stringify(tables[tableName]))
+    log(tables[tableName].length + ' ' + tableName)
   }
 }
 
 
 read()
-transform()
+transformIds()
+fixLinkTargets()
 write()
-process.exit(0)
-
 
