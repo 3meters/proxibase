@@ -26,7 +26,7 @@ var
   radiusTiny = (0.000001 / 3959),
   radiusBig = (10 / 3959),
   testUser = {
-    _id : "0000.111111.11111.111.111111",
+    _id : "0001.111111.11111.111.111111",
     name : "John Q Test",
     email : "johnqtest@3meters.com",
     password : "12345678",
@@ -35,13 +35,13 @@ var
     isDeveloper : false
   },
   testUser2 = {
-    _id : "0000.111111.11111.111.222222",
+    _id : "0001.111111.11111.111.222222",
     name : "John Q Test2",
     email : "johnqtest2@3meters.com",
     password : "12345678"
   },
   testEntity = {
-    _id : "0002.111111.11111.111.111111",
+    _id : "0004.111111.11111.111.111111",
     photo: {prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", format:"binary", sourceName:"aircandi"},
     signalFence : -100,
     name : "Testing candi",
@@ -52,7 +52,7 @@ var
     locked : false
   },
   testEntity2 = {
-    _id : "0002.111111.11111.111.111112",
+    _id : "0004.111111.11111.111.111112",
     photo: {prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", format:"binary", sourceName:"aircandi"},
     signalFence : -100,
     name : "Testing candi 2",
@@ -64,7 +64,7 @@ var
     locked : false
   },
   testEntity3 = {
-    _id : "0002.111111.11111.111.111113",
+    _id : "0004.111111.11111.111.111113",
     photo: {prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", format:"binary", sourceName:"aircandi"},
     signalFence : -100,
     name : "Testing candi 3",
@@ -76,19 +76,19 @@ var
     locked : false
   },
   testLink = {
-    _to : '0003:11:11:11:11:11:22',
-    _from : '0002.111111.11111.111.111111',
+    _to : '0008.11:11:11:11:11:22',
+    _from : '0004.111111.11111.111.111111',
     primary: true,
     signal: -100
   },
   newTestLink = {
-    _to : '0002.111111.11111.111.111112',
-    _from : '0002.111111.11111.111.111111',
+    _to : '0004.111111.11111.111.111112',
+    _from : '0004.111111.11111.111.111111',
     primary: true,
     signal: -100
   }
   testBeacon = {
-    _id : '0003:11:11:11:11:11:11',
+    _id : '0008.11:11:11:11:11:11',
     label: 'Test Beacon Label',
     ssid: 'Test Beacon',
     bssid: '11:11:11:11:11:11',
@@ -102,7 +102,7 @@ var
     loc : [testLongitude, testLatitude]
   },
   testBeacon2 = {
-    _id : '0003:22:22:22:22:22:22',
+    _id : '0008.22:22:22:22:22:22',
     label: 'Test Beacon Label 2',
     ssid: 'Test Beacon 2',
     bssid: '22:22:22:22:22:22',
@@ -116,7 +116,7 @@ var
     loc : [testLongitude, testLatitude]
   },
   testBeacon3 = {
-    _id : '0003:33:33:33:33:33:33',
+    _id : '0008.33:33:33:33:33:33',
     label: 'Test Beacon Label 3',
     ssid: 'Test Beacon 3',
     bssid: '33:33:33:33:33:33',

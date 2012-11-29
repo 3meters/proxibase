@@ -166,13 +166,13 @@ function genEntityRecords(count, isRoot) {
     newLink = constants.getDefaultRecord('links')
     newLink._id = testUtil.genId('links', recNum)
     newLink._from = newEnt._id
-    newLink.fromTableId = tableIds['entities']
+    newLink.fromCollectionId = tableIds['entities']
     if (isRoot) {
       // Set the owner fields
       newEnt._creator = newEnt._modifier = testUtil.genId('users', ownerRecNum)
       // Link to beacon
       newLink._to = testUtil.genBeaconId(beaconNum)
-      newLink.toTableId = tableIds['beacons']
+      newLink.toCollectionId = tableIds['beacons']
     }
     else {
       // Set the owner fields
@@ -181,7 +181,7 @@ function genEntityRecords(count, isRoot) {
       // Link to parent entity
       var parentRecNum = Math.floor(i / options.spe) // yeah, this is right
       newLink._to = testUtil.genId('entities', parentRecNum)
-      newLink.toTableId = tableIds['entities']
+      newLink.toCollectionId = tableIds['entities']
     }
     table.links.push(newLink)
 

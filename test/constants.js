@@ -19,11 +19,11 @@ var
   longitude = -122,
   password = 'password',
   tableIds = {
-    users: 1,
-    links: 5,
-    entities: 4,
-    beacons: 8,
-    documents: 7
+    users: '0001',
+    links: '0005',
+    entities: '0004',
+    beacons: '0008',
+    documents: '0007'
   },
   recordLimit = 1000,
   defaultRecord = {},
@@ -122,8 +122,8 @@ defaultRecord.entities = {
 
 defaultRecord.links = {
   _id: linkId,
-  toTableId : tableIds['beacons'],
-  fromTableId : tableIds['entities'],
+  toCollectionId : tableIds['beacons'],
+  fromCollectionId : tableIds['entities'],
   _to : beaconId,
   _from : entityId
 }
