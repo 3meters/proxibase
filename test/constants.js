@@ -7,23 +7,23 @@ var
   _ = require('underscore'),                                  // For cloning objects
   timeStamp = '010101.00000.555',                             // Jan 1 2000 + 555 miliseconds
   timeStampMs = new Date(2001, 0, 1, 0, 0, 0, 555).getTime()  // Same but in milliseconds
-  uid1 = '0000.' + timeStamp + '.000001',                     // Standard user
-  uid2 = '0000.' + timeStamp + '.000002',                     // Dev user
+  uid1 = '0001.' + timeStamp + '.000001',                     // Standard user
+  uid2 = '0001.' + timeStamp + '.000002',                     // Dev user
   bssid = '00:00:00:00:00:01',
-  beaconId = '0003:' + bssid,                                 // TODO: Change : to .
-  entityId = '0002.' + timeStamp + '.000001',
-  childEntityId = '0002.' + timeStamp + '.000501',
-  documentId = '0005.' + timeStamp + '.000001',
-  linkId = '0001.' + timeStamp + '.000001',
+  beaconId = '0008.' + bssid,
+  entityId = '0004.' + timeStamp + '.000001',
+  childEntityId = '0004.' + timeStamp + '.000501',
+  documentId = '0007.' + timeStamp + '.000001',
+  linkId = '0005.' + timeStamp + '.000001',
   latitude = 47,                                              // Nearby
   longitude = -122,
   password = 'password',
   tableIds = {
-    users: 0,
-    links: 1,
-    entities: 2,
-    beacons: 3,
-    documents: 5
+    users: 1,
+    links: 5,
+    entities: 4,
+    beacons: 8,
+    documents: 7
   },
   recordLimit = 1000,
   defaultRecord = {},

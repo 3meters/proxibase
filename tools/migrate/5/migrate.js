@@ -101,8 +101,16 @@ function fixLinkTargets() {
     delete row.toTableId
     delete row.fromTableId
   })
-
 }
+
+// Fixup, rename, and retype action targetTableId to targetCollectionId
+function fixActionTargets() {
+  tables['actions'].forEach(function(row) {
+    row.targetCollectionId = row._target.slice(0,4)
+    delete row.targetTableId
+  })
+}
+
 
 function write() {
   for(var tableName in tables) {
@@ -115,5 +123,6 @@ function write() {
 read()
 transformIds()
 fixLinkTargets()
+fixActionTargets()
 write()
 
