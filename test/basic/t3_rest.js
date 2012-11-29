@@ -2,32 +2,31 @@
  *  Proxibase rest basic test
  */
 
-var
-  assert = require('assert'),
-  request = require('request'),
-  util = require('util'),
-  log = util.log,
-  testUtil = require('../util'),
-  Req = testUtil.Req,
-  check = testUtil.check,
-  dump = testUtil.dump,
-  userSession,
-  userCred,
-  adminSession,
-  adminCred,
-  documentsSchemaId = 5,  // will break if we change schemaIds
-  testDoc1 = {
-    name: "Test Rest Doc 1",
-    data: { foo: 'bar', number: 1 }
-  },
-  testDoc1Saved = {},
-  testDoc2 = {
-    name: "Test Rest Doc 2",
-    data: { foo: 'bar', number: 2 }
-  },
-  linkId,
-  testStartTime = util.getTimeUTC(),
-  _exports = {}  // For commenting out tests
+var assert = require('assert')
+var request = require('request')
+var util = require('util')
+var log = util.log
+var testUtil = require('../util')
+var Req = testUtil.Req
+var check = testUtil.check
+var dump = testUtil.dump
+var userSession
+var userCred
+var adminSession
+var adminCred
+var documentsSchemaId = 5  // will break if we change schemaIds
+var testDoc1 = {
+  name: 'Test Rest Doc 1',
+  data: { foo: 'bar', number: 1 }
+}
+var testDoc1Saved = {}
+var testDoc2 = {
+  name: 'Test Rest Doc 2',
+  data: { foo: 'bar', number: 2 }
+}
+var linkId
+var testStartTime = util.getTimeUTC()
+var _exports = {}  // For commenting out tests
 
 
 exports.getUserSession = function(test) {
@@ -62,9 +61,9 @@ exports.cannotPostWithMultipleArrayElements = function(test) {
     uri: '/data/documents?' + userCred,
     body: {data: [
       {
-        name: "RestTestMultiDoc0",
+        name: 'RestTestMultiDoc0',
       },{
-        name: "RestTestMultiDoc1",
+        name: 'RestTestMultiDoc1',
       }
     ]}
   })
@@ -216,7 +215,7 @@ exports.findWithLookups = function(test) {
 exports.updateDoc = function(test) {
   var req = new Req({
     uri: '/data/documents/' + testDoc1._id + '?' + userCred,
-    body: {data: {name: "Changed Name" } }
+    body: {data: {name: 'Changed Name' } }
   })
   request(req, function(err, res) {
     check(req, res)
@@ -247,7 +246,7 @@ exports.checkUpdatedDoc = function(test) {
 exports.cannotAddNonSchemaFieldsUsingUpdate = function(test) {
   var req = new Req({
     uri: '/data/documents/' + testDoc1._id + '?' + userCred,
-    body: {data: {myNewField: "Should fail" } }
+    body: {data: {myNewField: 'Should fail' } }
   })
   request(req, function(err, res) {
     check(req, res, 400)
@@ -445,28 +444,74 @@ exports.defaultsWork = function(test) {
   })
 }
 
-
-exports.adminCanDeleteAllUsingWildcard = function(test) {
+exports.usersCannotSkipSafeInsert = function(test) {
   var req = new Req({
-    method: 'delete',
-    uri: '/data/beacons/*?' + adminCred
+    uri: '/data/beacons?' + userCred,
+    body: {
+      data: {
+        bssid: '01:10:11:22:44:88',
+        bogusField: 'I am a bogus field'
+      },
+      skipValidation: true 
+    }
   })
   request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count >= 1)
-    var req2 = new Req({
-      method: 'get',
-      uri: '/data/beacons?' + adminCred
-    })
-    request(req2, function(err, res) {
-      check(req, res)
-      assert(res.body.data.length === 0)
-      test.done()
-    })
+    check(req, res, 401)
+    test.done()
   })
 }
 
+exports.adminsCanSkipSafeInsert = function(test) {
+  var req = new Req({
+    uri: '/data/beacons?' + adminCred,
+    body: {
+      data: {
+        _id: 'bogusid1',
+        bogusField: 'I am a bogus field'
+      },
+      skipValidation: true
+    }
+  })
+  request(req, function(err, res) {
+    check(req, res, 201)
+    assert(res.body.data.bogusField, dump(req, res))
+    test.done()
+  })
+}
 
+exports.usersCannotSkipSafeUpdate = function(test) {
+  var req = new Req({
+    uri: '/data/beacons/bogusid1?' + userCred,
+    body: {
+      data: {
+        bogusField2: 'I am a bogus field too'
+      },
+      skipValidation: true
+    }
+  })
+  request(req, function(err, res) {
+    check(req, res, 401)
+    test.done()
+  })
+}
+
+exports.adminsCanSkipSafeUpdate = function(test) {
+  var req = new Req({
+    uri: '/data/beacons/bogusid1?' + adminCred,
+    body: {
+      data: {
+        bogusField2: 'I am a bogus field too'
+      },
+      skipValidation: true
+    }
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.count === 1, dump(req, res))
+    assert(res.body.data === 1, dump(req, res)) // unsafe update does not return updated record
+    test.done()
+  })
+}
 exports.countByWorks = function(test) {
   var req = new Req({
     method: 'get',
@@ -480,4 +525,28 @@ exports.countByWorks = function(test) {
     test.done()
   })
 }
+
+// This has to be the last test because all subsequent logins will fail
+// since it deletes all the sessions
+exports.adminCanDeleteAllUsingWildcard = function(test) {
+  var req = new Req({
+    method: 'delete',
+    uri: '/data/sessions/*?' + adminCred
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.count >= 1)
+    var req2 = new Req({
+      method: 'get',
+      uri: '/data/sessions'
+    })
+    request(req2, function(err, res) {
+      check(req, res)
+      assert(res.body.data.length === 0)
+      test.done()
+    })
+  })
+}
+
+
 

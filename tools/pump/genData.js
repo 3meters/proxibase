@@ -188,7 +188,7 @@ function genEntityRecords(count, isRoot) {
     // Comments
     newEnt.comments = []
     for (var j = 0; j < options.cpe; j++) {
-      newEnt.comments.push(constants.comments)
+      newEnt.comments.push(constants.comment)
     }
   }
 }
