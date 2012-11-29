@@ -61,8 +61,6 @@ defaultRecord.users2 = {
   isDeveloper: true
 }
 
-
-
 defaultRecord.documents = {
   _id: documentId,
   name : 'aircandi',
@@ -78,6 +76,7 @@ defaultRecord.documents = {
 }
 
 var comment = {
+  _creator: uid1,
   title : 'Worth the trip',
   description : 'Everyone makes a big fuss about it so I figured a letdown was inevitable but wow!',
   name : 'Test User',
