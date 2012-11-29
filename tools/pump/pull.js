@@ -10,7 +10,6 @@
 
 var
   fs = require('fs'),
-  path = require('path'),
   program = require('commander'),
   req = require('request'),
   tables = [],
@@ -27,27 +26,25 @@ program
 
 switch(program.server) {
   case 'dev':
-    baseUri = 'https://api.localhost:8043'
+    baseUri = 'https://localhost:6643'
+    break
+  case 'test':
+    baseUri = 'https://localhost:6644'
     break
   case 'prod':
-    baseUri = 'https://api.proxibase.com:443'
-    break
-  case 'uri':
-    baseUri = program.server
+    baseUri = 'https://api.aircandi.com:643'
     break
   default:
-    console.error('Invalid value for --server')
-    process.exit(1)
+    baseUri = program.server
 }
 
 // get table names from target server
 
-req.get(baseUri + '/__info', function (err, res) {
+req.get(baseUri + '/schema', function (err, res) {
   if (err) throw err
-  if (!res) throw new Error('No response')
   if (res.statusCode !== 200) throw new Error('Unexpected statusCode: ' + res.statusCode)
-  var tableMap = JSON.parse(res.body)
-  for (var tableName in tableMap) {
+  var body = JSON.parse(res.body)
+  for (var tableName in body.schemas) {
     tables.push(tableName)
   }
   pullTable(tables.length, done)
@@ -61,18 +58,28 @@ function pullTable(iTable, cb) {
   var options = {
     headers: { "content-type": "application/json" }
   }
-  options.uri =  baseUri + '/' + tableName
+  options.uri =  baseUri + '/data/' + tableName
   req.get(options, function(err, res) {
     if (err) throw err
     if (res.statusCode !== 200) throw new Error('Unexpected statusCode: ' + res.statusCode)
     var body = JSON.parse(res.body)
+    // Don't save admin user.  It is created by service on startup
+    if (tableName === 'users') {
+      var users = []
+      body.data.forEach(function(user) {
+        if (user._id !== '0000.000000.00000.000.000000') users.push(user)
+      })
+      body.data = users
+    }
     save(body.data, tableName)
+    console.log(tableName + ': ' + body.data.length)
+    if (body.more) console.log('Warning: did not fetch all records')
     pullTable(iTable, cb)
   })
 }
 
 function save(tbl, name) {
-  if (!path.existsSync(program.out)) fs.mkdirSync(program.out)
+  if (!fs.existsSync(program.out)) fs.mkdirSync(program.out)
   fs.writeFileSync(program.out + '/' + name + '.json', JSON.stringify(tbl))
 }
 

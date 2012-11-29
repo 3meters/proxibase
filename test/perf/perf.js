@@ -275,7 +275,8 @@ exports.getEntitiesFor10Users = function(test) {
   }
 }
 
-exports.getPlacesNear100Locations = function (test) {
+// Makes an external call -- not appropriate for perf test
+_exports.getPlacesNear100Locations = function (test) {
   var 
     timer = new Timer(),
     cRecs = 0
