@@ -16,14 +16,32 @@ var
   adminSession,
   adminCred,
   oldUserCount,
+  testLatitude = 46.1,
+  testLongitude = -121.1,
   testEntity = {
     name: "StatsTest Entity 1",
     type: "com.aircandi.candi.picture",
     enabled : true
   },
   testBeacon = {
-    bssid : '11:11:11:11:11:11'  // left over by the methods test
-  }
+    label: 'Test Beacon Label',
+    ssid: 'Test Beacon',
+    bssid: '11:11:11:11:11:11',
+    beaconType: 'fixed',
+    visibility: 'public',
+    latitude : testLatitude,
+    longitude : testLongitude,
+    altitude : 12,
+    accuracy : 30,
+    level: -80,
+    loc : [testLongitude, testLatitude]
+  },
+  testObservation = {
+      latitude : testLatitude,
+      longitude : testLongitude,
+      altitude : 100,
+      accuracy : 50.0
+  },
   testStartTime = util.getTimeUTC(),
   _exports = {}  // For commenting out tests
 
@@ -109,7 +127,8 @@ exports.staticsUpdateOnRefresh = function(test) {
     body: {
       entity:testEntity,
       beacons:[testBeacon],
-      primaryBeaconId:testBeacon._id
+      primaryBeaconId:testBeacon._id,
+      observation:testObservation
     }
   })
   request(req, function(err, res) {
