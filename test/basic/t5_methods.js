@@ -20,9 +20,9 @@ var
   primaryLink,
   _exports = {}, // for commenting out tests
   testLatitude = 46.1,
-  testLongitude = 121.1,
-  testLatitude2 = 46.15,
-  testLongitude2 = 121.1,
+  testLongitude = -121.1,
+  testLatitude2 = 47.1,
+  testLongitude2 = -122.1,   
   radiusTiny = (0.000001 / 3959),
   radiusBig = (10 / 3959),
   testUser = {
@@ -128,6 +128,24 @@ var
     accuracy : 30,
     level: -95,
     loc : [testLongitude, testLatitude]
+  },
+  testObservation = {
+      latitude : testLatitude,
+      longitude : testLongitude,
+      altitude : 100,
+      accuracy : 50.0
+  },
+  testObservation2 = {
+      latitude : testLatitude2,
+      longitude : testLongitude2,
+      altitude : 12,
+      accuracy : 30.0
+  },
+  testObservation3 = {
+      latitude : 46.15,
+      longitude : -121.1,
+      altitude : 12,
+      accuracy : 30.0
   },
   testComment = {
       title : "Test Comment",
@@ -236,7 +254,12 @@ exports.getEntitiesForUser = function (test) {
 exports.insertEntity = function (test) {
   var req = new Req({
     uri: '/do/insertEntity?' + userCred,
-    body: {entity:testEntity, beacons:[testBeacon], primaryBeaconId:testBeacon._id}
+    body: {
+      entity:testEntity, 
+      beacons:[testBeacon], 
+      primaryBeaconId:testBeacon._id,
+      observation:testObservation
+    }
   })
   request(req, function(err, res) {
     check(req, res, 201)
@@ -296,7 +319,12 @@ exports.checkInsertLinkLogAction = function(test) {
 exports.insertEntityBeaconAlreadyExists = function (test) {
   var req = new Req({
     uri: '/do/insertEntity?' + userCred,
-    body: {entity:testEntity2, beacons:[testBeacon], primaryBeaconId:testBeacon._id}
+    body: {
+      entity:testEntity2, 
+      beacons:[testBeacon], 
+      primaryBeaconId:testBeacon._id,
+      observation:testObservation
+    }
   })
   request(req, function(err, res) {
     check(req, res, 201)
@@ -350,7 +378,10 @@ exports.checkInsertBeacon = function(test) {
 exports.insertEntityWithNoLinks = function (test) {
   var req = new Req({
     uri: '/do/insertEntity?' + userCred,
-    body: {entity:testEntity3}
+    body: {
+      entity:testEntity3,
+      observation:testObservation
+    }
   })
   request(req, function(err, res) {
     check(req, res, 201)
@@ -378,10 +409,11 @@ exports.checkInsertEntityNoLinks = function(test) {
 exports.getEntitiesForLocationIncludingNoLinkBigRadius = function (test) {
   var req = new Req({
     uri: '/do/getEntitiesForLocation',
-    body: {beaconIdsNew:[testBeacon._id]
-      , eagerLoad:{children:true,comments:false}
-      , observation:{latitude:testLatitude2, longitude:testLongitude2}
-      , radius: radiusBig 
+    body: {
+      beaconIdsNew:[testBeacon._id], 
+      eagerLoad:{children:true,comments:false}, 
+      observation:testObservation3, 
+      radius: radiusBig 
     }
   })
   request(req, function(err, res) {
@@ -395,10 +427,11 @@ exports.getEntitiesForLocationIncludingNoLinkBigRadius = function (test) {
 exports.getEntitiesForLocationIncludingNoLinkTinyRadius = function (test) {
   var req = new Req({
     uri: '/do/getEntitiesForLocation',
-    body: {beaconIdsNew:[testBeacon._id]
-      , eagerLoad:{children:true,comments:false}
-      , observation:{latitude:testLatitude2, longitude:testLongitude2}
-      , radius: radiusTiny
+    body: {
+      beaconIdsNew:[testBeacon._id], 
+      eagerLoad:{children:true,comments:false}, 
+      observation:testObservation3, 
+      radius: radiusTiny
     }
   })
   request(req, function(err, res) {
@@ -409,12 +442,15 @@ exports.getEntitiesForLocationIncludingNoLinkTinyRadius = function (test) {
   })
 }
 
-
 exports.extendEntities = function(test) {
   var req = new Req({
     uri: '/do/extendEntities?' + userCred,
-    body: {entityIds:[testEntity._id, testEntity2._id], beacons:[testBeacon, testBeacon2, testBeacon3],
-        primaryBeaconId:testBeacon2._id}
+    body: {
+      entityIds:[testEntity._id, testEntity2._id], 
+      beacons:[testBeacon, testBeacon2, testBeacon3], 
+      primaryBeaconId:testBeacon2._id,
+      observation:testObservation
+    }
   })
   request(req, function(err, res) {
     check(req, res, 200)
@@ -466,7 +502,7 @@ exports.getEntitiesForLocationWithLocationUpdate = function (test) {
     body: {beaconIdsNew:[testBeacon._id]
       , eagerLoad:{children:true,comments:false}
       , beaconLevels:[-80]
-      , observation: {accuracy:30.0, latitude:47.1, longitude: -122.1, altitude: 12}
+      , observation:testObservation2
     }
   })
   request(req, function(err, res) {
@@ -661,7 +697,10 @@ exports.checkUpdatedLink = function (test) {
 exports.deleteEntity = function (test) {
   var req = new Req({
     uri: '/do/deleteEntity?' + userCred,
-    body: {entityId:testEntity._id, deleteChildren:false}
+    body: {
+      entityId:testEntity._id, 
+      deleteChildren:false
+    }
   })
   request(req, function(err, res) {
     check(req, res)
