@@ -169,7 +169,7 @@ function ensureServer(callback) {
       var first = logFile.charAt(0)
       if (first != '/' && first != '\\' && first != '~') logFile = cwd + '/' + logFile
       logStream = fs.createWriteStream(logFile)
-      logStream.write('\nTest Server Log')
+      logStream.write('\nTest Server Log\n')
 
       log('Starting test server ' + serverUrl + ' using config ' + configFile)
       log('Test server log: ' + logFile)
