@@ -1,7 +1,7 @@
 {
 
   "name": "proxibase",
-  "version": "v0.5.0",
+  "version": "0.5.0",
   "private": true,
   "description": "Proxibase Service",
   "author": "3meters Engineering <dev@3meters.com>",
@@ -21,7 +21,8 @@
     "nodemailer": "*",
     "request": "*",
     "authom": "*",
-    "cheerio": "*"
+    "cheerio": "*",
+    "semver": "*"
   },
 
   "optionalDependencies": {
