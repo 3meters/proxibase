@@ -231,12 +231,15 @@ function finish(err) {
   }
   try {
     if (testServer) {
-      testServer.kill()
-      logStream.destroySoon()
+      setTimeout(function() {
+        logStream.destroySoon()
+        testServer.kill()
+      }, 500) // wait for the log to catch up
     }
     process.chdir(cwd)
   }
   catch (e) {
+    log('Error trying to kill test server: ' + e.stack || e)
     // Give up
   }
   log('Tests finished in ' + timer.read() + ' seconds')
