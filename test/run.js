@@ -27,7 +27,7 @@ var util = require('util')
   , logFile = 'testServer.log'
   , logStream
   , cwd = process.cwd()
-  , testServer
+  , testServer = null
   , testServerStarted = false
   , serverUrl
   , config
@@ -224,24 +224,13 @@ process.on('uncaughtException', function(err) {
 
 
 function finish(err) {
-  var status = 0
-  if (err) {
-    status = err.code || 1
-    console.error(err.stack || err)
-  }
-  try {
-    if (testServer) {
-      setTimeout(function() {
-        logStream.destroySoon()
-        testServer.kill()
-      }, 500) // wait for the log to catch up
-    }
-    process.chdir(cwd)
-  }
-  catch (e) {
-    log('Error trying to kill test server: ' + e.stack || e)
-    // Give up
-  }
+  process.chdir(cwd)
+  if (err) console.error(err.stack || err)
   log('Tests finished in ' + timer.read() + ' seconds')
-  process.exit(status)
+  if (testServer) {
+    logStream.destroySoon()
+    setTimeout(function() {
+      testServer.kill()
+    }, 500) // wait for the log to catch up
+  }
 }
