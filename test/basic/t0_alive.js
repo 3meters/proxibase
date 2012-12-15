@@ -84,7 +84,7 @@ exports.speakSpanishToMe = function(test) {
   request(req, function(err, res) {
     check(req, res, 404)
     assert(res.body.error, dump(req, res))
-    assert(res.body.error.message === 'No se ha encontrado') // see lib/httperr.js
+    assert(res.body.error.message === 'No se ha encontrado') // see lib/extend/error.js
     test.done()
   })
 }
