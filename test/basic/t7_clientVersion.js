@@ -103,3 +103,13 @@ exports.canRefreshVersionUpdatedViaDatabase = function(test) {
   test.done()
 }
 
+exports.badVersionFailsProperly = function(test) {
+  log('nyi')
+  test.done()
+}
+
+exports.upgradeVersionHintWorks = function(test) {
+  log('nyi')
+  test.done()
+}
+
