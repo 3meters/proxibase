@@ -161,12 +161,12 @@ var
 // george:  I think this should be a server API rather than a db lookup
 exports.lookupVersion = function (test) {
   var req = new Req({
-    uri: '/do/find',
-    body: {table:'documents',find:{type:'version',name:'aircandi'}}
+    method: 'get',
+    uri: '/client'
   })
   request(req, function(err, res) {
     check(req, res)
-    assert(res.body.count === 1, dump(req, res))
+    assert(res.body.data.version, dump(req, res))
     test.done()
   })
 }
