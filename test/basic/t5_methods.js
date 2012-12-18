@@ -156,22 +156,6 @@ var
       _creator : testUser._id
   }
 
-
-// get version info and also make sure the server is responding
-// george:  I think this should be a server API rather than a db lookup
-exports.lookupVersion = function (test) {
-  var req = new Req({
-    method: 'get',
-    uri: '/client'
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.data.version, dump(req, res))
-    test.done()
-  })
-}
-
-
 // Get user and admin sessions and store the credentials in module globals
 exports.getSessions = function (test) {
   testUtil.getUserSession(testUser, function(session) {
