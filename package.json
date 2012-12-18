@@ -21,8 +21,7 @@
     "nodemailer": "*",
     "request": "*",
     "authom": "*",
-    "cheerio": "*",
-    "semver": "*"
+    "cheerio": "*"
   },
 
   "optionalDependencies": {
