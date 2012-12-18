@@ -14,7 +14,7 @@ module.exports = {
     ssl: {
       keyFilePath: './keys/dev/dev.pem',
       certFilePath: './keys/dev/dev.crt',
-      caFilePath: null
+      caFilePath: null,
     }
   },
   log: 1,                                // 0-3 higher numbers mean more log output
@@ -23,13 +23,9 @@ module.exports = {
     host: 'localhost',
     port: 27017,
     database: 'prox',                    // dev:prox test:smokeData stage:stage production:prox
-    options: {
-      safe: true,
-      auto_reconnect: true
-    }
   },
   notify: {
     onStart: false,
-    to: 'pager2010@3meters.com'
-  }
+    to: 'pager2010@3meters.com',
+  },
 }
