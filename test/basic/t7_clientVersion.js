@@ -9,6 +9,8 @@ var log = util.log
 var testUtil = require('../util')
 var Req = testUtil.Req
 var check = testUtil.check
+var treq = testUtil.treq
+var tok = testUtil.tok
 var dump = testUtil.dump
 var constants = require('../constants')
 var dbProfile = constants.dbProfile.smokeTest
@@ -98,11 +100,6 @@ exports.canSetVersion = function(test) {
   })
 }
 
-exports.canRefreshVersionUpdatedViaDatabase = function(test) {
-  log('nyi')
-  test.done()
-}
-
 exports.badMajorVersionFailsProperly = function(test) {
   var req = new Req({
     method: 'get',
@@ -140,12 +137,10 @@ exports.upgradeVersionHintWorks = function(test) {
 }
 
 exports.currentVersionSuccedesQuietly = function(test) {
-  var req = new Req({
+  treq({
     method: 'get',
     uri: '/?version=1.2.3'
-  })
-  request(req, function(err, res) {
-    check(req, res)  // success
+  }, function(err, res) {
     assert((typeof res.body.upgrade === 'undefined'))
     test.done()
   })
@@ -163,3 +158,49 @@ exports.futureVersionSuccedesQuietly = function(test) {
   })
 }
 
+//
+// Tests updating the version doc through the database then 
+// updating the server's cached client version id via 
+// get /client?refresh=true
+//
+exports.canRefreshVersionViaDatabaseAndRefreshParam = function(test) {
+  var req = new Req({
+    uri: '/data/documents/' + util.statics.clientVersion._id + '?' + adminCred,
+    body: {
+      data: {
+        data: {
+          updateUri: updateUri,
+          version: '2.3.4'
+        }
+      }
+    }
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    req = new Req({
+      method: 'get',
+      uri: '/'
+    })
+    request(req, function(err, res) {
+      check(req, res)
+      assert(res.body.clientVersion === '1.2.3', dump(req, res))  // not refreshed
+      req = new Req({
+        method: 'get',
+        uri: '/client?refresh=true'
+      })
+      request(req, function(err, res) {
+        check(req, res)
+        assert(res.body.data.version === '2.3.4', dump(req, res))
+        req = new Req({
+          method: 'get',
+          uri: '/'
+        })
+        request(req, function(err, res) {
+          check(req, res)
+          assert(res.body.clientVersion === '2.3.4', dump(req, res)) // global config var has been refreshed
+          test.done()
+        })
+      })
+    })
+  })
+}
