@@ -3,9 +3,9 @@
  */
 
 var util = require('util')
-  , assert = require('assert')
-  , request = require('request')
-  , constants = require('./constants')
+var assert = require('assert')
+var request = require('request')
+var constants = require('./constants')
 
 
 // Load the proxibase extensions if they haven't already been loaded
@@ -45,6 +45,36 @@ var Req = exports.Req = function(options) {
   this.headers = {"content-type":"application/json"}
   if (!this.method) this.method = 'get'
 
+}
+
+// Assert wrapper that calls dump automatically on failure
+var tok = exports.tok = function(expr, msg) {
+  return function() {
+    // assert(expr, msg)
+    assert(expr, dump(this.req, this.res, msg))
+  }
+}
+
+
+// Wrapper wrapper
+var treq = exports.treq = function(options, statusCode, cb) {
+  if (arguments.length < 3 && (typeof statusCode === 'function')) {
+    // status code not included, shift left and set default
+    cb = statusCode
+    statusCode = 200
+  }
+  cb.prototype.foo = function(m) {
+    console.log('foo: ' + m)
+  }
+  var req = new Req(options)
+  request(req, function(err, res) {
+    check(req, res, statusCode)
+    cb(err, res)
+
+    function ok(expr, msg) {
+      assert(expr, dump(req, res, msg))
+    }
+  })
 }
 
 
