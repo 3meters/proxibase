@@ -103,13 +103,63 @@ exports.canRefreshVersionUpdatedViaDatabase = function(test) {
   test.done()
 }
 
-exports.badVersionFailsProperly = function(test) {
-  log('nyi')
-  test.done()
+exports.badMajorVersionFailsProperly = function(test) {
+  var req = new Req({
+    method: 'get',
+    uri: '/?version=0.9.5'
+  })
+  request(req, function(err, res) {
+    check(req, res, 400)
+    assert(res.body.error.code === 400.4, dump(req, res)) // badVersion
+    test.done()
+  })
+}
+
+exports.badMinorVersionFailsProperly = function(test) {
+  var req = new Req({
+    method: 'get',
+    uri: '/?version=1.1.5'
+  })
+  request(req, function(err, res) {
+    check(req, res, 400)
+    assert(res.body.error.code === 400.4) // badVersion
+    test.done()
+  })
 }
 
 exports.upgradeVersionHintWorks = function(test) {
-  log('nyi')
-  test.done()
+  var req = new Req({
+    method: 'get',
+    uri: '/?version=1.2.0'
+  })
+  request(req, function(err, res) {
+    check(req, res)  // success
+    assert(res.body.upgrade === true) //
+    test.done()
+  })
+}
+
+exports.currentVersionSuccedesQuietly = function(test) {
+  var req = new Req({
+    method: 'get',
+    uri: '/?version=1.2.3'
+  })
+  request(req, function(err, res) {
+    check(req, res)  // success
+    assert((typeof res.body.upgrade === 'undefined'))
+    test.done()
+  })
+}
+
+exports.futureVersionSuccedesQuietly = function(test) {
+  var req = new Req({
+    method: 'get',
+    uri: '/?version=1.2.9'
+  })
+  request(req, function(err, res) {
+    check(req, res)  // success
+    assert((typeof res.body.upgrade === 'undefined'))
+    test.done()
+  })
 }
 
