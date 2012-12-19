@@ -84,7 +84,7 @@ module.exports = function(profile, callback) {
 
 function run(callback) {
   genUsers()
-  genDocuments()
+  // genDocuments()  now added by server startup code
   genBeacons()
   genEntities()
   genChildEntities()
