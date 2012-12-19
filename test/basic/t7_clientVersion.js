@@ -9,8 +9,6 @@ var log = util.log
 var testUtil = require('../util')
 var Req = testUtil.Req
 var check = testUtil.check
-var treq = testUtil.treq
-var tok = testUtil.tok
 var dump = testUtil.dump
 var constants = require('../constants')
 var dbProfile = constants.dbProfile.smokeTest
@@ -137,10 +135,11 @@ exports.upgradeVersionHintWorks = function(test) {
 }
 
 exports.currentVersionSuccedesQuietly = function(test) {
-  treq({
+  var req = new Req({
     method: 'get',
     uri: '/?version=1.2.3'
-  }, function(err, res) {
+  })
+  request(req, function(err, res) {
     assert((typeof res.body.upgrade === 'undefined'))
     test.done()
   })
