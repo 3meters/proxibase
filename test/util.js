@@ -47,24 +47,27 @@ var Req = exports.Req = function(options) {
 
 }
 
+
+exports.T = function() {
+  return {
+    req: treq,
+    ok: tok
+  }
+}
+
 // Assert wrapper that calls dump automatically on failure
-var tok = exports.tok = function(expr, msg) {
+var tok = function(expr, msg) {
   return function() {
-    // assert(expr, msg)
     assert(expr, dump(this.req, this.res, msg))
   }
 }
 
-
 // Wrapper wrapper
-var treq = exports.treq = function(options, statusCode, cb) {
+var treq = function(options, statusCode, cb) {
   if (arguments.length < 3 && (typeof statusCode === 'function')) {
     // status code not included, shift left and set default
     cb = statusCode
     statusCode = 200
-  }
-  cb.prototype.foo = function(m) {
-    console.log('foo: ' + m)
   }
   var req = new Req(options)
   request(req, function(err, res) {

@@ -2,14 +2,15 @@
  *  Proxibase alive test
  */
 
-var
-  assert = require('assert'),
-  request = require('request'),
-  testUtil = require('../util'),
-  check = testUtil.check,
-  dump = testUtil.dump,
-  Req = testUtil.Req,
-  log = require('util').log
+var assert = require('assert')
+var request = require('request')
+var testUtil = require('../util')
+var check = testUtil.check
+var dump = testUtil.dump
+var t = testUtil.T
+var Req = testUtil.Req
+var log = require('util').log
+var _exports = {}
 
 
 // Make sure server is alive and responding
@@ -17,6 +18,12 @@ exports.getIndexPage = function(test) {
   var req = new Req({method: 'get'})
   request(req, function(err, res) {
     check(req, res)
+    test.done()
+  })
+}
+
+_exports.foo = function(test) {
+  t.req({method: 'get'}, 200, function(err, res) {
     test.done()
   })
 }
