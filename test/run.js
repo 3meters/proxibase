@@ -228,8 +228,8 @@ function finish(err) {
   if (err) console.error(err.stack || err)
   log('Tests finished in ' + timer.read() + ' seconds')
   if (testServer) {
-    logStream.end('\n============\nTest server killed by test runner\n')
     setTimeout(function() {
+      logStream.write('\n============\nTest server killed by test runner\n')
       testServer.kill()
     }, 500) // wait for the log to catch up
   }
