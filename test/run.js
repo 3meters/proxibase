@@ -191,7 +191,7 @@ function ensureServer(callback) {
     })
 
     testServer.stderr.on('exit', function(code) {
-      util.logErr('Fatal: could not start test server. Code ' + code)
+      console.error('Fatal: could not start test server. Code ' + code)
       process.exit(code)
     })
 
@@ -228,7 +228,7 @@ function finish(err) {
   if (err) console.error(err.stack || err)
   log('Tests finished in ' + timer.read() + ' seconds')
   if (testServer) {
-    logStream.destroySoon()
+    logStream.end('\n============\nTest server killed by test runner\n')
     setTimeout(function() {
       testServer.kill()
     }, 500) // wait for the log to catch up

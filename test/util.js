@@ -3,6 +3,7 @@
  */
 
 var util = require('util')
+var log = util.log
 var assert = require('assert')
 var request = require('request')
 var constants = require('./constants')
@@ -47,8 +48,21 @@ var Req = exports.Req = function(options) {
 
 }
 
-
+//
+// Experimental test class that shares the most recent
+// request and response with the assert wrapper
+//
+//   var t = require('util').T()
+//
+//exports.mytest = function(test)
+//   t.req(options, statusCode, function(err, res) {
+//      t.ok(false)
+//      test.done()
+//   }
+//}
 exports.T = function() {
+  var _req = {}
+  var _res = {}
   return {
     req: treq,
     ok: tok
@@ -57,9 +71,7 @@ exports.T = function() {
 
 // Assert wrapper that calls dump automatically on failure
 var tok = function(expr, msg) {
-  return function() {
-    assert(expr, dump(this.req, this.res, msg))
-  }
+  assert(expr, dump(_req, _res, msg))
 }
 
 // Wrapper wrapper
@@ -70,13 +82,11 @@ var treq = function(options, statusCode, cb) {
     statusCode = 200
   }
   var req = new Req(options)
+  _req = req
   request(req, function(err, res) {
+    _res = res
     check(req, res, statusCode)
     cb(err, res)
-
-    function ok(expr, msg) {
-      assert(expr, dump(req, res, msg))
-    }
   })
 }
 
