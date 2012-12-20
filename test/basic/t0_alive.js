@@ -7,7 +7,7 @@ var request = require('request')
 var testUtil = require('../util')
 var check = testUtil.check
 var dump = testUtil.dump
-var t = testUtil.T
+var t = testUtil.T()
 var Req = testUtil.Req
 var log = require('util').log
 var _exports = {}
@@ -22,8 +22,8 @@ exports.getIndexPage = function(test) {
   })
 }
 
-_exports.foo = function(test) {
-  t.req({method: 'get'}, 200, function(err, res) {
+exports.getIndexPage2 = function(test) {
+  t.req({method: 'get'}, function(err, res) {
     test.done()
   })
 }
@@ -35,6 +35,13 @@ exports.getDataPage = function(test) {
   request(req, function(err, res) {
     check(req, res)
     assert(res.body && res.body.data && res.body.data.users, dump(req, res))
+    test.done()
+  })
+}
+
+exports.getDataPage2 = function(test) {
+  t.req({method: 'get', uri: '/data'}, function(err, res) {
+    t.ok(res.body && res.body.data && res.body.data.users)
     test.done()
   })
 }
