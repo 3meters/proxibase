@@ -40,8 +40,8 @@ exports.getDataPage = function(test) {
 }
 
 exports.getDataPage2 = function(test) {
-  t.req({method: 'get', uri: '/data'}, function(err, res) {
-    t.ok(res.body && res.body.data && res.body.data.users)
+  t.get({uri: '/data'}, function(err, res) {
+    t.assert(res.body && res.body.data && res.body.data.users)
     test.done()
   })
 }

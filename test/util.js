@@ -54,24 +54,48 @@ var Req = exports.Req = function(options) {
 //
 //   var t = require('util').T()
 //
-//exports.mytest = function(test)
-//   t.req(options, statusCode, function(err, res) {
-//      t.ok(false)
+// exports.mytest = function(test)
+//   var options = { uri: '/data/users' }
+//   t.get(options, 200, function(err, res) {
+//      t.ok(res.body.data.count)
 //      test.done()
 //   }
-//}
+// }
+//
 exports.T = function() {
   var _req = {}
   var _res = {}
   return {
     req: treq,
-    ok: tok
+    get: tget,
+    post: tpost,
+    delete: tdelete,
+    ok: tok,
+    assert: tok
   }
 }
 
 // Assert wrapper that calls dump automatically on failure
 var tok = function(expr, msg) {
   assert(expr, dump(_req, _res, msg))
+}
+
+// get request
+var tget = function(options, statusCode, cb) {
+  options.method = 'get'
+  treq.apply(this, arguments)
+}
+
+// post request
+var tpost = function(options, statusCode, cb) {
+  options.method = 'post'
+  treq.apply(this, arguments)
+}
+
+// delete request
+var tdelete = function(options, statusCode, cb) {
+  options.method = 'delete'
+  treq.apply(this, arguments)
 }
 
 // Wrapper wrapper
@@ -82,14 +106,13 @@ var treq = function(options, statusCode, cb) {
     statusCode = 200
   }
   var req = new Req(options)
-  _req = req
+  _req = req // for debugging asserts
   request(req, function(err, res) {
-    _res = res
+    _res = res // for debugging asserts
     check(req, res, statusCode)
     cb(err, res)
   })
 }
-
 
 var testUser = {
   name: 'Test User',
