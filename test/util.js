@@ -107,10 +107,10 @@ var treq = function(options, statusCode, cb) {
   }
   var req = new Req(options)
   _req = req // for debugging asserts
-  request(req, function(err, res) {
+  request(req, function(err, res, body) {
     _res = res // for debugging asserts
     check(req, res, statusCode)
-    cb(err, res)
+    cb(err, res, body)
   })
 }
 
@@ -190,12 +190,12 @@ var dump = exports.dump = function(req, res, msg) {
   out += '\nreq.uri: ' + req.uri
 
   if (req.body) {
-    out += '\nreq.body:\n' + util.inspect(req.body) + '\n'
+    out += '\nreq.body:\n' + util.inspect(req.body, false, 10) + '\n'
   }
 
   if (res.statusCode) out += '\n\nres.statusCode: ' + res.statusCode + '\n'
 
-  out += 'res.body:\n' + util.inspect(res.body)
+  out += 'res.body:\n' + util.inspect(res.body, false, 10)
 
   // util.inspect converts all our newlines to the literal '\n'
   // this next line converts them back for proper display on the console
