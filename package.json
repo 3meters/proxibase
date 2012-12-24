@@ -21,7 +21,8 @@
     "nodemailer": "*",
     "request": "*",
     "authom": "*",
-    "cheerio": "*"
+    "cheerio": "*",
+    "factual-api": "*"
   },
 
   "optionalDependencies": {
