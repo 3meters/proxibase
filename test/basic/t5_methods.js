@@ -391,42 +391,6 @@ exports.checkInsertEntityNoLinks = function(test) {
   })
 }
 
-exports.suggestSources = function(test) {
-  t.post({
-    uri: '/do/suggestSources', 
-    body: {sources: [{source: 'website', id: 'http://www.massenamodern.com'}]}
-  },
-  function(err, res) {
-    t.assert(res.body.sources.length === 1) // returns only the new suggested sources
-    t.assert(res.body.sources[0].source === 'twitter')
-    t.assert(res.body.sources[0].id === '@massenamodern')
-    test.done()
-  })
-}
-
-exports.insertEntitySuggestSources = function(test) {
-  var body = {
-    suggestSources: true,
-    entity: util.clone(testEntity3),
-  }
-  body.entity._id = '0004.111111.11111.111.111114'
-  body.entity.name = 'Test Entity Suggest Sources'
-  body.entity.sources = [{
-    source: 'website',
-    id: 'http://www.massenamodern.com'
-  }]
-  t.post({uri: '/do/insertEntity?' + userCred, body: body}, 201,
-    function(err, res, body) {
-      t.assert(res.body.data.sources)
-      var sources = res.body.data.sources
-      t.assert(sources.length === 2) // appends the new sources to the ones in the request
-      t.assert(sources[1].source === 'twitter')
-      t.assert(sources[1].id === '@massenamodern')
-      test.done()
-    }
-  )
-}
-
 exports.getEntitiesForLocationIncludingNoLinkBigRadius = function (test) {
   var req = new Req({
     uri: '/do/getEntitiesForLocation',
@@ -439,7 +403,7 @@ exports.getEntitiesForLocationIncludingNoLinkBigRadius = function (test) {
   })
   request(req, function(err, res) {
     check(req, res, 200)
-    assert(res.body.count === 4, dump(req, res))
+    assert(res.body.count === 3, dump(req, res))
     assert(res.body.date, dump(req, res))
     test.done()
   })
