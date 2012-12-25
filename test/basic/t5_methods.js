@@ -394,11 +394,11 @@ exports.checkInsertEntityNoLinks = function(test) {
 exports.suggestSources = function(test) {
   t.post({
     uri: '/do/suggestSources', 
-    body: {sources: [{type: 'website', id: 'http://www.massenamodern.com'}]}
+    body: {sources: [{source: 'website', id: 'http://www.massenamodern.com'}]}
   },
   function(err, res) {
     t.assert(res.body.sources.length === 1) // returns only the new suggested sources
-    t.assert(res.body.sources[0].type === 'twitter')
+    t.assert(res.body.sources[0].source === 'twitter')
     t.assert(res.body.sources[0].id === '@massenamodern')
     test.done()
   })
@@ -412,7 +412,7 @@ exports.insertEntitySuggestSources = function(test) {
   body.entity._id = '0004.111111.11111.111.111114'
   body.entity.name = 'Test Entity Suggest Sources'
   body.entity.sources = [{
-    type: 'website',
+    source: 'website',
     id: 'http://www.massenamodern.com'
   }]
   t.post({uri: '/do/insertEntity?' + userCred, body: body}, 201,
@@ -420,7 +420,7 @@ exports.insertEntitySuggestSources = function(test) {
       t.assert(res.body.data.sources)
       var sources = res.body.data.sources
       t.assert(sources.length === 2) // appends the new sources to the ones in the request
-      t.assert(sources[1].type === 'twitter')
+      t.assert(sources[1].source === 'twitter')
       t.assert(sources[1].id === '@massenamodern')
       test.done()
     }
