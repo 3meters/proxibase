@@ -82,8 +82,8 @@ exports.insertEntitySuggestSources = function(test) {
   }]
   t.post({uri: '/do/insertEntity?' + userCred, body: body}, 201,
     function(err, res, body) {
-      t.assert(res.body.data.sources)
-      var sources = res.body.data.sources
+      t.assert(res.body.data[0].sources)
+      var sources = res.body.data[0].sources
       t.assert(sources.length === 2) // appends the new sources to the ones in the request
       t.assert(sources[1].source === 'twitter')
       t.assert(sources[1].id === '@massenamodern')
@@ -103,8 +103,8 @@ exports.insertPlaceEntitySuggestSourcesFromFactual = function(test) {
   }]
   t.post({uri: '/do/insertEntity?' + userCred, body: body}, 201,
     function(err, res, body) {
-      t.assert(res.body.data.sources)
-      var sources = res.body.data.sources
+      t.assert(res.body.data[0].sources)
+      var sources = res.body.data[0].sources
       t.assert(sources.length > 10) // appends the new sources to the ones in the request
       // TODO: check for specific source
       // TODO: add website to sources and then check for dupes

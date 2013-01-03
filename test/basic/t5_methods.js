@@ -249,7 +249,7 @@ exports.insertEntity = function (test) {
   request(req, function(err, res) {
     check(req, res, 201)
     assert(res.body.count === 1, dump(req, res))
-    assert(res.body.data && res.body.data._id, dump(req, res))
+    assert(res.body.data && res.body.data[0]._id, dump(req, res))
 
     /* Find and store the primary link that was created by insertEntity */
     req = new Req({
@@ -280,7 +280,7 @@ exports.checkInsertEntity = function(test) {
 exports.checkInsertEntityLogAction = function(test) {
   var req = new Req({
     uri: '/do/find',
-    body: {table:'actions',find:{_target:testEntity._id, type:'insert_entity'}}
+    body: {table:'actions',find:{_target:testEntity._id, type:'insert_entity_picture'}}
   })
   request(req, function(err, res) {
     check(req, res)
@@ -292,7 +292,7 @@ exports.checkInsertEntityLogAction = function(test) {
 exports.checkInsertLinkLogAction = function(test) {
   var req = new Req({
     uri: '/do/find',
-    body: {table:'actions',find:{_target:primaryLink._id, type:'tune_link_primary'}}
+    body: {table:'actions',find:{_target:primaryLink._id, type:'link_browse'}}
   })
   request(req, function(err, res) {
     check(req, res)
@@ -314,7 +314,7 @@ exports.insertEntityBeaconAlreadyExists = function (test) {
   request(req, function(err, res) {
     check(req, res, 201)
     assert(res.body.count === 1, dump(req, res))
-    assert(res.body.data && res.body.data._id, dump(req, res))
+    assert(res.body.data && res.body.data[0]._id, dump(req, res))
     test.done()
   })
 }
@@ -427,14 +427,15 @@ exports.getEntitiesForLocationIncludingNoLinkTinyRadius = function (test) {
   })
 }
 
-exports.extendEntities = function(test) {
+exports.trackEntityBrowse = function(test) {
   var req = new Req({
-    uri: '/do/extendEntities?' + userCred,
+    uri: '/do/trackEntity?' + userCred,
     body: {
-      entityIds:[testEntity._id, testEntity2._id], 
+      entityId:testEntity._id, 
       beacons:[testBeacon, testBeacon2, testBeacon3], 
       primaryBeaconId:testBeacon2._id,
-      observation:testObservation
+      observation:testObservation,
+      actionType:'browse'
     }
   })
   request(req, function(err, res) {
@@ -443,7 +444,7 @@ exports.extendEntities = function(test) {
   })
 }
 
-exports.checkExtendEntityAddedBeacon2 = function(test) {
+exports.checkTrackEntityBrowseAddedBeacon2 = function(test) {
   var req = new Req({
     uri: '/do/find',
     body: {table:'beacons', find:{_id:testBeacon2._id}}
@@ -455,10 +456,10 @@ exports.checkExtendEntityAddedBeacon2 = function(test) {
   })
 }
 
-exports.checkExtendEntityLinksFromEntity1 = function(test) {
+exports.checkTrackEntityBrowseLinksFromEntity1 = function(test) {
   var req = new Req({
     uri: '/do/find',
-    body: {table:'links', find:{_from:testEntity._id}}
+    body: {table:'links', find:{_from:testEntity._id, type:'browse'}}
   })
   request(req, function(err, res) {
     check(req, res)
@@ -467,10 +468,53 @@ exports.checkExtendEntityLinksFromEntity1 = function(test) {
   })
 }
 
-exports.checkExtendEntityLinkFromEntity1ToBeacon2 = function(test) {
+exports.checkTrackEntityBrowseLinkFromEntity1ToBeacon2 = function(test) {
   var req = new Req({
     uri: '/do/find',
-    body: {table:'links',find:{_to:testBeacon2._id, _from:testEntity._id}}
+    body: {table:'links',find:{_to:testBeacon2._id, _from:testEntity._id, type:'browse'}}
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.count === 1, dump(req, res))
+    assert(res.body.data[0].primary === true, dump(req, res))
+    assert(res.body.data[0].signal === testBeacon2.level, dump(req, res))
+    test.done()
+  })
+}
+
+exports.trackEntityProximity = function(test) {
+  var req = new Req({
+    uri: '/do/trackEntity?' + userCred,
+    body: {
+      entityId:testEntity._id, 
+      beacons:[testBeacon, testBeacon2, testBeacon3], 
+      primaryBeaconId:testBeacon2._id,
+      observation:testObservation,
+      actionType:'proximity'
+    }
+  })
+  request(req, function(err, res) {
+    check(req, res, 200)
+    test.done()
+  })
+}
+
+exports.checkTrackEntityProximityLinksFromEntity1 = function(test) {
+  var req = new Req({
+    uri: '/do/find',
+    body: {table:'links', find:{_from:testEntity._id, type:'proximity'}}
+  })
+  request(req, function(err, res) {
+    check(req, res)
+    assert(res.body.count === 3, dump(req, res))
+    test.done()
+  })
+}
+
+exports.checkTrackEntityProximityLinkFromEntity1ToBeacon2 = function(test) {
+  var req = new Req({
+    uri: '/do/find',
+    body: {table:'links',find:{_to:testBeacon2._id, _from:testEntity._id, type:'proximity'}}
   })
   request(req, function(err, res) {
     check(req, res)
