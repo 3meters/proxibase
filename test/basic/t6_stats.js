@@ -134,7 +134,7 @@ exports.staticsUpdateOnRefresh = function(test) {
   request(req, function(err, res) {
     check(req, res, 201)
     assert(res.body.count === 1, dump(req, res))
-    assert(res.body.data && res.body.data._id, dump(req, res))
+    assert(res.body.data && res.body.data[0]._id, dump(req, res))
     var req2 = new Req({
       method: 'get',
       uri: '/stats/usersByEntity?refresh=true&' + adminCred

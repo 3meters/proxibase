@@ -136,8 +136,8 @@ exports.findDocsByIdAndCheckSysFields = function(test) {
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count === 2, dump(req, res))
-    assert(res.body.data[0]._id === testDoc1._id, dump(req, res))
-    assert(res.body.data[1].name === testDoc2.name, dump(req, res))
+    assert((res.body.data[0]._id === testDoc1._id || res.body.data[1]._id === testDoc1._id), dump(req, res))
+    assert((res.body.data[0].name === testDoc2.name || res.body.data[1].name === testDoc2.name), dump(req, res))
     assert(res.body.data[0]._creator === userSession._owner)
     assert(res.body.data[0]._owner === userSession._owner)
     assert(res.body.data[0].createdDate > testStartTime)
