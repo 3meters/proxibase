@@ -495,7 +495,10 @@ exports.trackEntityProximity = function(test) {
   })
   request(req, function(err, res) {
     check(req, res, 200)
-    test.done()
+    // give the fire-and-forget query some time to finish writing
+    setTimeout(function() {
+      test.done()
+    }, 200)
   })
 }
 
