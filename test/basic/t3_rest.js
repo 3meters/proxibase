@@ -10,6 +10,7 @@ var testUtil = require('../util')
 var Req = testUtil.Req
 var check = testUtil.check
 var dump = testUtil.dump
+var t = testUtil.T() // newfangled test harness
 var userSession
 var userCred
 var adminSession
@@ -238,6 +239,16 @@ exports.checkUpdatedDoc = function(test) {
     assert(res.body.data[0].name === 'Changed Name', dump(req, res))
     // Ensures modified date is getting set on update
     assert(res.body.data[0].modifiedDate > testDoc1Saved.modifiedDate)
+    test.done()
+  })
+}
+
+exports.settingFieldsToNullUnsetsThem = function(test) {
+  t.post({
+    uri: '/data/documents/' + testDoc1._id + '?' + userCred,
+    body: {data: {data: null} }
+  }, function(err, res) {
+    t.assert(util.type(res.body.data.data === 'undefined'))
     test.done()
   })
 }
