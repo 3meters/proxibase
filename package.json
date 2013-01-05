@@ -25,10 +25,6 @@
     "factual-api": "*"
   },
 
-  "optionalDependencies": {
-    "jsdom": "*"
-  },
-
   "repository": "git://github.com:3meters/proxibase",
   "main": "prox.js"
 
