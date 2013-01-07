@@ -1,9 +1,9 @@
 /*
- *  Proxibase suggest api tests
+ *  Proxibase external service provider tests
  *
  *     These tests are not stubbed, but make internet calls based on random 
  *     web pages and services existing on the web.  Fine to move out of basic once
- *     feature area is stable.  
+ *     feature area is stable.
  */
 
 var util = require('util')
@@ -33,13 +33,28 @@ var _exports = {} // for commenting out tests
 
 
 // Get user and admin sessions and store the credentials in module globals
-exports.getSessions = function (test) {
+exports.getSessions = function(test) {
   testUtil.getUserSession(function(session) {
     userCred = 'user=' + session._owner + '&session=' + session.key
     testUtil.getAdminSession(function(session) {
       adminCred = 'user=' + session._owner + '&session=' + session.key
       test.done()
     })
+  })
+}
+
+exports.getPlacesNearLocation = function(test) {
+  t.post({
+    uri: '/do/getPlacesNearLocation',
+    body: {
+      latitude: 47.6521,
+      longitude: -122.3530,   // The Ballroom, Fremont, Seattle
+      source: 'foursquare',
+      placesWithUriOnly: true,
+    }
+  }, function(err, res) {
+    t.assert(res.body.data.length > 5)
+    test.done()
   })
 }
 
