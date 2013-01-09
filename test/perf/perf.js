@@ -383,7 +383,6 @@ _exports.getPlacesNear100Locations = function (test) {
         longitude: constants.longitude,
         radius: 0.00001,
         source: 'foursquare',
-        placesWithUriOnly: true,
         options:{limit:500, skip:0, sort:{modifiedDate:-1}}
       }
     })
