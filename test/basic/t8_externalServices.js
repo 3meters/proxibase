@@ -43,7 +43,7 @@ exports.getSessions = function(test) {
   })
 }
 
-exports.getPlacesNearLocation = function(test) {
+exports.getPlacesNearLocationFoursquare = function(test) {
   t.post({
     uri: '/do/getPlacesNearLocation',
     body: {
@@ -57,6 +57,24 @@ exports.getPlacesNearLocation = function(test) {
     test.done()
   })
 }
+
+exports.getPlacesNearLocationFactual = function(test) {
+  t.post({
+    uri: '/do/getPlacesNearLocation',
+    body: {
+      latitude: 47.6521,
+      longitude: -122.3530,   // The Ballroom, Fremont, Seattle
+      source: 'factual',
+      placesWithUriOnly: true,
+    }
+  }, function(err, res) {
+    t.assert(res.body.data.length > 5)
+    test.done()
+  })
+}
+
+// TODO: test excludePlaceIds
+// TODO: test placesWithUriOnly
 
 exports.suggestSourcesFromWebsite = function(test) {
   t.post({
