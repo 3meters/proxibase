@@ -4,33 +4,33 @@
  *   Silently overwrites existing files or tables
  */
 
-require('../../lib/extend') // load proxibase extensions
+require('../../lib/utils') // load proxibase extentions to node util
 
 var util = require('util')
-  , fs = require('fs')
-  , path = require('path')
-  , mongo = require('mongodb')
-  , async = require('async')
-  , log = util.log
-  , constants = require('../../test/constants')
-  , testUtil = require('../../test/util')
-  , tableIds = util.statics.collectionIds
-  , dblib = require('../../lib/db')       // Proxdb lib
-  , table = {}                            // Map of tables to be generated
-  , startTime                             // Elapsed time counter
-  , db                                    // Mongodb connection object
-  , save                                  // Save function
-  , options = {                           // Default options
-      users: 3,                           // Count of users
-      beacons: 3,                         // Count of beacons
-      epb: 5,                             // Entites per beacon
-      spe: 5,                             // Subentities (aka children) per beacon
-      cpe: 5,                             // Comments per entity
-      database: 'proxTest',               // Database name
-      validate: false,                    // Validate database data against schema
-      files: false,                       // Output to JSON files rather than to datbase
-      out: 'files'                        // File output directory
-    }
+var fs = require('fs')
+var path = require('path')
+var mongo = require('mongodb')
+var async = require('async')
+var log = util.log
+var constants = require('../../test/constants')
+var testUtil = require('../../test/util')
+var tableIds = util.statics.collectionIds
+var dblib = require('../../lib/db')       // Proxdb lib
+var table = {}                            // Map of tables to be generated
+var startTime                             // Elapsed time counter
+var db                                    // Mongodb connection object
+var save                                  // Save function
+var options = {                           // Default options
+  users: 3,                           // Count of users
+  beacons: 3,                         // Count of beacons
+  epb: 5,                             // Entites per beacon
+  spe: 5,                             // Subentities (aka children) per beacon
+  cpe: 5,                             // Comments per entity
+  database: 'proxTest',               // Database name
+  validate: false,                    // Validate database data against schema
+  files: false,                       // Output to JSON files rather than to datbase
+  out: 'files'                        // File output directory
+}
 
 
 module.exports = function(profile, callback) {
