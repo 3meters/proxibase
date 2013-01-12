@@ -6,6 +6,8 @@ old
 .monitor
 crash.js
 *.log
+*.crt
+*.db
 
 /test/oauth/*.html
 /perf.csv
