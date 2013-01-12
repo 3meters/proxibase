@@ -50,7 +50,6 @@ exports.getPlacesNearLocationFoursquare = function(test) {
       latitude: 47.6521,
       longitude: -122.3530,   // The Ballroom, Fremont, Seattle
       source: 'foursquare',
-      placesWithUriOnly: true,
     }
   }, function(err, res) {
     t.assert(res.body.data.length > 5)
@@ -65,7 +64,6 @@ exports.getPlacesNearLocationFactual = function(test) {
       latitude: 47.6521,
       longitude: -122.3530,   // The Ballroom, Fremont, Seattle
       source: 'factual',
-      placesWithUriOnly: true,
     }
   }, function(err, res) {
     t.assert(res.body.data.length > 5)
@@ -74,7 +72,6 @@ exports.getPlacesNearLocationFactual = function(test) {
 }
 
 // TODO: test excludePlaceIds
-// TODO: test placesWithUriOnly
 
 exports.suggestSourcesFromWebsite = function(test) {
   t.post({
