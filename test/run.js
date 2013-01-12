@@ -5,32 +5,32 @@
  *   usage:  node run
  */
 
-require('../lib/extend') // load proxibase extensions
+require('../lib/utils') // load proxibase extensions
 
 var util = require('util')
-  , log = util.log
-  , timer = new util.Timer()
-  , fs = require('fs')
-  , assert = require('assert')
-  , spawn = require('child_process').spawn
-  , cli = require('commander')
-  , reporter = require('nodeunit').reporters.default
-  , req = require('request')
-  , mongo = require('mongodb')
-  , adminDb
-  , genData = require(__dirname + '/../tools/pump/genData')
-  , dbProfile = require('./constants').dbProfile
-  , testUtil = require('./util')
-  , configFile = 'configtest.js'
-  , basicDirs = ['basic']
-  , testDirs = ['basic', 'oauth', 'perf', 'admin']
-  , logFile = 'testServer.log'
-  , logStream
-  , cwd = process.cwd()
-  , testServer = null
-  , testServerStarted = false
-  , serverUrl
-  , config
+var log = util.log
+var timer = new util.Timer()
+var fs = require('fs')
+var assert = require('assert')
+var spawn = require('child_process').spawn
+var cli = require('commander')
+var reporter = require('nodeunit').reporters.default
+var req = require('request')
+var mongo = require('mongodb')
+var adminDb
+var genData = require(__dirname + '/../tools/pump/genData')
+var dbProfile = require('./constants').dbProfile
+var testUtil = require('./util')
+var configFile = 'configtest.js'
+var basicDirs = ['basic']
+var testDirs = ['basic', 'oauth', 'perf', 'admin']
+var logFile = 'testServer.log'
+var logStream
+var cwd = process.cwd()
+var testServer = null
+var testServerStarted = false
+var serverUrl
+var config
 
 
 // Nodeunit likes to be sitting above its test directories
