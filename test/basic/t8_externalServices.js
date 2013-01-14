@@ -92,7 +92,7 @@ exports.suggestFactualSourcesFromFoursquareId = function(test) {
     body: {sources: [{source: 'foursquare', id: '4abebc45f964a520a18f20e3'}]} // Seattle Ballroom in Fremont
   },
   function(err, res) {
-    t.assert(res.body.sources.length > 10)
+    t.assert(res.body.sources.length > 3)
     // Check no dupe of original source
     res.body.sources.forEach(function(source) {
       t.assert(!(source.source == 'foursquare' && source.id == '4abebc45f964a520a18f20e3'))
@@ -135,7 +135,7 @@ exports.insertPlaceEntitySuggestSourcesFromFactual = function(test) {
     function(err, res, body) {
       t.assert(res.body.data[0].sources)
       var sources = res.body.data[0].sources
-      t.assert(sources.length > 10) // appends the new sources to the ones in the request
+      t.assert(sources.length > 3) // appends the new sources to the ones in the request
       // TODO: check for specific source
       // TODO: add website to sources and then check for dupes
       test.done()
