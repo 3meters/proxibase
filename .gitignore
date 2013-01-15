@@ -8,6 +8,8 @@ crash.js
 *.log
 *.crt
 *.db
+*.csv
+
 
 /test/oauth/*.html
 /perf.csv
