@@ -9,7 +9,7 @@ var fs = require('fs')
 var async = require('async')
 var path = require('path')
 var dir = '../../assets/img/categories/foursquare'
-var sizes = ['88', 'bg_88']
+var sizes = ['_88', '_bg_88']
 
 
 function start() {
@@ -48,7 +48,7 @@ function scarfIcons(icons) {
 
 
 function getIcon(icon, cb) {
-  var fileName = icon.id + '_' + icon.size + icon.suffix
+  var fileName = icon.id + icon.size + icon.suffix
   request.get(icon.uri)
     .pipe(fs.createWriteStream(path.join(dir, fileName))
       .on('error', function(err) {return cb(err)})
