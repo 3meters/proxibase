@@ -11,6 +11,6 @@ test-basic:
 	node test/run --basic
 
 test-all:
-	node test/run
+	node test/run --generate
 
 .PHONY: test test-basic test-all
