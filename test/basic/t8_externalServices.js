@@ -91,9 +91,9 @@ exports.suggestSourcesFromWebsite = function(test) {
     body: {sources: [{source: 'website', id: 'http://www.massenamodern.com'}]}
   },
   function(err, res) {
-    t.assert(res.body.sources.length === 1) // returns only the new suggested sources
-    t.assert(res.body.sources[0].source === 'twitter')
-    t.assert(res.body.sources[0].id === '@massenamodern')
+    t.assert(res.body.data.length === 1) // returns only the new suggested sources
+    t.assert(res.body.data[0].source === 'twitter')
+    t.assert(res.body.data[0].id === '@massenamodern')
     test.done()
   })
 }
@@ -105,9 +105,9 @@ exports.suggestSourcesFromWebsite2 = function(test) {
     body: {sources: [{source: 'website', id: 'http://www.3pubs.com/Latona.html'}]}
   },
   function(err, res) {
-    t.assert(res.body.sources.length > 1)
-    t.assert(res.body.sources[0].source === 'email')
-    t.assert(res.body.sources[0].id === 'latona@3pubs.com')
+    t.assert(res.body.data.length > 1)
+    t.assert(res.body.data[0].source === 'email')
+    t.assert(res.body.data[0].id === 'latona@3pubs.com')
     test.done()
   })
 }
@@ -118,9 +118,9 @@ exports.suggestFactualSourcesFromFoursquareId = function(test) {
     body: {sources: [{source: 'foursquare', id: '4abebc45f964a520a18f20e3'}]} // Seattle Ballroom in Fremont
   },
   function(err, res) {
-    t.assert(res.body.sources.length > 3)
+    t.assert(res.body.data.length > 3)
     // Check no dupe of original source
-    res.body.sources.forEach(function(source) {
+    res.body.data.forEach(function(source) {
       t.assert(!(source.source == 'foursquare' && source.id == '4abebc45f964a520a18f20e3'))
     })
     test.done()
