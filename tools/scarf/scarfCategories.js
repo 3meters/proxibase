@@ -82,11 +82,11 @@ function getFactualCats() {
 function parse(categories) {
   var names = []
   var icons = []
-  innerParse(categories)
-  function innerParse(categories) {
+  innerParse(null, categories)
+  function innerParse(parent, categories) {
     categories.forEach(function(category) {
-      if (category.categories) innerParse(category.categories) // recurse
-      names.push({id: category.id, name: category.name})
+      if (category.categories) innerParse(category, category.categories) // recurse
+      names.push({id: category.id, name: category.name, parentId: parent.id, parentName: parent.name})
       sizes.forEach(function(size) {
         icons.push({
           id: category.id,
