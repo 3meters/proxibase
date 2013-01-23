@@ -1,5 +1,5 @@
 /**
- * get categories images and load them into the file tree
+ * Generate proxibase categories
  */
 
 var util = require('../../lib/utils')   // load proxibase util extensions
