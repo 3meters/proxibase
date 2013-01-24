@@ -16,7 +16,7 @@ var cats4s = 'cats4s.csv'
 var catsFact = 'catsFact.csv'
 var catsCandi = 'catsCandi.csv'
 var catMap = 'categorymap.csv'
-var sizes = ['_88', '_bg_88'] // the first is the default
+var sizes = ['88', 'bg_88'] // the first is the default
 
 
 // Command line interface
@@ -52,23 +52,24 @@ function getfoursquareCats() {
 
   })
 
-  var foursquareCats = {cats: [], names: [], icons: []}
+  var foursquareCats = {names: [], icons: []}
   call.foursquare({path: 'categories', logReq: true}, function(err, res) {
     if (err) throw err
-    foursquareCats = parse4sCats(res.body.response.categories)
+    var cats = res.body.response.categories
+    foursquareCats = parse4sCats(cats)
     log('Writing ' + catsJson)
-    fs.writeFileSync(catsJson, JSON.stringify(foursquareCats.cats))
+    fs.writeFileSync(catsJson, JSON.stringify(cats))
     log('Writing ' + cats4s)
     writeCsvFile(cats4s, foursquareCats.names, function(err) {
       if (err) throw err
-      if (cli.icons) scarfIcons(foursquareCats.icons)
-      else getFactualCats()
+      scarfIcons(foursquareCats.icons)
     })
   })
 }
 
 
 function scarfIcons(icons) {
+  if (!cli.icons) return getFactualCats()
   log('Scarfing ' + icons.length + ' icons: ')
   async.forEachSeries(icons, getIcon, function(err) {
     if (err) throw err
@@ -78,7 +79,8 @@ function scarfIcons(icons) {
 
 
 function getIcon(icon, cb) {
-  var fileName = icon.id + icon.size + icon.suffix
+  var fileName = icon.id + '_' + icon.size + icon.suffix
+  // TODO:  check for a 200 reqest status before piping to write stream
   request.get(icon.uri)
     .pipe(fs.createWriteStream(path.join(iconDir4s, fileName))
       .on('error', function(err) {return cb(err)})
@@ -126,8 +128,8 @@ function mapIcons() {
       var idfact = cols[0]
       var id4s = cols[2]
       fs.linkSync(
-        path.join(iconDir4s, id4s + size + suffix),
-        path.join(iconDirFact, idfact + size + suffix)
+        path.join(iconDir4s, id4s + '_' + size + suffix),
+        path.join(iconDirFact, idfact + '_' + size + suffix)
       )
     })
   })
@@ -136,23 +138,14 @@ function mapIcons() {
 
 
 function parse4sCats(categories) {
-  var cats = []
   var names = []
   var icons = []
   parseCats(null, categories)
 
   function parseCats(parent, categories) {
     categories.forEach(function(category) {
-      // create a slimmed down version for persisting
-      var cat = {
-        id: category.id,
-        name: category.name,
-        categories: []
-      }
-      if (parent) parent.categories.push(cat)
-      else cats.push(cat)
       if (category.categories && category.categories.length) {
-        parseCats(cat, category.categories) // recurse
+        parseCats(categories, category.categories) // recurse
       }
       // Parse the names for the csv output file
       var name = {id: category.id, name: category.name}
@@ -170,9 +163,13 @@ function parse4sCats(categories) {
           uri: category.icon.prefix + size + category.icon.suffix
         })
       })
+      // Prune properties we don't use
+      delete category.pluralName
+      delete category.shortName
+      delete category.icon
     })
   }
-  return {cats: cats, names: names, icons: icons}
+  return {names: names, icons: icons}
 }
 
 
