@@ -43,6 +43,19 @@ exports.getSessions = function(test) {
   })
 }
 
+exports.getPlaceCategories = function(test) {
+  t.post({
+    uri: '/do/getPlaceCategories',
+    body: {}
+  }, function(err, res) {
+    var cats = res.body.data
+    t.assert(cats && cats.length > 5)
+    t.assert(cats[0].icon.length > 20)
+    // TODO:  run a reqest on the icon and confirm that it is a valid png
+    test.done()
+  })
+}
+
 exports.getPlacesNearLocationFoursquare = function(test) {
   t.post({
     uri: '/do/getPlacesNearLocation',
