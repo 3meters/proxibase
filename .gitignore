@@ -10,7 +10,7 @@ crash.js
 *.db
 *.csv
 !/assets
-!/tools/scarf/*.csv
+!/tools/categories
 
 
 /test/oauth/*.html
