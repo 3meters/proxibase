@@ -11,10 +11,12 @@ var async = require('async')
 var path = require('path')
 var iconDir4s = '../../assets/img/categories/foursquare'
 var iconDirFact = '../../assets/img/categories/factual'
+var catsJson = '../../assets/categories.json'
 var cats4s = 'cats4s.csv'
 var catsFact = 'catsFact.csv'
+var catsCandi = 'catsCandi.csv'
 var catMap = 'categorymap.csv'
-var sizes = ['_88', '_bg_88']
+var sizes = ['_88', '_bg_88'] // the first is the default
 
 
 // Command line interface
@@ -27,6 +29,7 @@ function start() {
   log('Deleting old files')
   try {fs.unlinkSync(cats4s)} catch(e) {log(e.message)}
   try {fs.unlinkSync(catsFact)} catch(e) {log(e.message)}
+  try {fs.unlinkSync(catsJson)} catch(e) {log(e.message)}
   var fileNames = fs.readdirSync(iconDirFact)
   fileNames.forEach(function(fileName) {
     fs.unlinkSync(path.join(iconDirFact, fileName))
@@ -42,15 +45,21 @@ function start() {
 
 
 function getfoursquareCats() {
-  var foursquareCats = {
-    names: [],
-    icons: []
-  }
+  var str = fs.readFileSync(catsCandi, 'utf8')
+  var candi = str.split('/n')
+  candi.forEach(function(line) {
+    var row = line.split(',')
+
+  })
+
+  var foursquareCats = {cats: [], names: [], icons: []}
   call.foursquare({path: 'categories', logReq: true}, function(err, res) {
     if (err) throw err
-    log('Writing foursquareCats.csv')
     foursquareCats = parse4sCats(res.body.response.categories)
-    writeFile(foursquareCats.names, cats4s, function(err) {
+    log('Writing ' + catsJson)
+    fs.writeFileSync(catsJson, JSON.stringify(foursquareCats.cats))
+    log('Writing ' + cats4s)
+    writeCsvFile(cats4s, foursquareCats.names, function(err) {
       if (err) throw err
       if (cli.icons) scarfIcons(foursquareCats.icons)
       else getFactualCats()
@@ -98,7 +107,7 @@ function getFactualCats() {
       factualNames.push(cat)
     }
     log('Writing factual categories')
-    writeFile(factualNames, catsFact, function(err) {
+    writeCsvFile(catsFact, factualNames, function(err) {
       if (err) throw err
       mapIcons()
     })
@@ -127,18 +136,32 @@ function mapIcons() {
 
 
 function parse4sCats(categories) {
+  var cats = []
   var names = []
   var icons = []
-  innerParse(null, categories)
-  function innerParse(parent, categories) {
+  parseCats(null, categories)
+
+  function parseCats(parent, categories) {
     categories.forEach(function(category) {
-      if (category.categories) innerParse(category, category.categories) // recurse
-      var cat = {id: category.id, name: category.name}
-      if (parent) {
-        cat.parentId = parent.id
-        cat.parentName = parent.name
+      // create a slimmed down version for persisting
+      var cat = {
+        id: category.id,
+        name: category.name,
+        categories: []
       }
-      names.push(cat)
+      if (parent) parent.categories.push(cat)
+      else cats.push(cat)
+      if (category.categories && category.categories.length) {
+        parseCats(cat, category.categories) // recurse
+      }
+      // Parse the names for the csv output file
+      var name = {id: category.id, name: category.name}
+      if (parent) {
+        name.parentId = parent.id
+        name.parentName = parent.name
+      }
+      names.push(name)
+      // Extract the icon map to the assets file
       sizes.forEach(function(size) {
         icons.push({
           id: category.id,
@@ -149,11 +172,11 @@ function parse4sCats(categories) {
       })
     })
   }
-  return {names: names, icons: icons}
+  return {cats: cats, names: names, icons: icons}
 }
 
 
-function writeFile(names, fileName, cb) {
+function writeCsvFile(fileName, names, cb) {
   var ws = fs.createWriteStream(path.join(__dirname, fileName))
   names.forEach(function(name) {
     ws.write(name.id + ',' + name.name + ',')
