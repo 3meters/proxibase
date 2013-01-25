@@ -40,18 +40,20 @@ function start() {
       fs.unlinkSync(path.join(iconDir4s, fileName))
     })
   }
-  getfoursquareCats()
+  getCandiCats()
 }
 
-
-function getfoursquareCats() {
+function getCandiCats() {
   var str = fs.readFileSync(catsCandi, 'utf8')
   var candi = str.split('/n')
   candi.forEach(function(line) {
     var row = line.split(',')
-
+    // TODO: implement
   })
+  getfoursquareCats()
+}
 
+function getfoursquareCats() {
   var foursquareCats = {names: [], icons: []}
   call.foursquare({path: 'categories', logReq: true}, function(err, res) {
     if (err) throw err
@@ -101,7 +103,7 @@ function getFactualCats() {
     for (var key in body) {
       var cat = {
         id: key,
-        name: body[key].labels.en,
+        name: body[key].labels.en.replace(/\,/g, ' and'), // we make csv files
       }
       if (body[key].parents && body[key].parents.length) {
         cat.parentId = body[key].parents[0] // Just the first one now
@@ -117,6 +119,7 @@ function getFactualCats() {
 }
 
 function mapIcons() {
+  return finish() //TODO undo short circuit
   log('Mapping factual icons to foursquare icons')
   var suffix = '.png'
   var str = fs.readFileSync(catMap, 'utf8')
@@ -145,7 +148,7 @@ function parse4sCats(categories) {
   function parseCats(parent, categories) {
     categories.forEach(function(category) {
       if (category.categories && category.categories.length) {
-        parseCats(categories, category.categories) // recurse
+        parseCats(category, category.categories) // recurse
       }
       // Parse the names for the csv output file
       var name = {id: category.id, name: category.name}
