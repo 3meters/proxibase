@@ -7,16 +7,17 @@ var call = util.callService
 var request = require('request')
 var cli = require('commander')
 var fs = require('fs')
+var xl = require('xlsx')
 var async = require('async')
 var path = require('path')
-var iconDir4s = '../../assets/img/categories/foursquare'
-var iconDirFact = '../../assets/img/categories/factual'
+var iconDir = '../../assets/img/categories'
 var catsJson = '../../assets/categories.json'
 var cats4s = 'cats4s.csv'
 var catsFact = 'catsFact.csv'
 var catsCandi = 'catsCandi.csv'
 var catMap = 'categorymap.csv'
 var sizes = ['88', 'bg_88'] // the first is the default
+var wb = null
 
 
 // Command line interface
@@ -40,18 +41,30 @@ function start() {
       fs.unlinkSync(path.join(iconDir4s, fileName))
     })
   }
-  getCandiCats()
+
+  // This is a very low-level parser for xlsx files, but it was the
+  // best I could find.  One would think something like the work below should
+  // be built in, but perhaps he's just doing a building block module
+  wb = xl.readFile('categorymap.xlsx')
+  wb.SheetNames.forEach(function(name) {
+    var sheet = wb.Sheets[name]
+    if (sheet['!ref']) {  // cell that contains xls best guess of the active range
+      var rows = []
+      var r = xl.utils.decode_range(sheet['!ref']);
+      for (var R = r.s.r; R <= r.e.r; ++R) {
+        var row = []
+        for (var C = r.s.c; C <= r.e.c; ++C) {
+          var val = sheet[xl.utils.encode_cell({c:C, r:R})]
+          if (val && val.v) row.push(val.v)
+          else row.push('')
+        }
+        rows.push(row)
+      }
+    }
+    sheet.data = rows
+  })
 }
 
-function getCandiCats() {
-  var str = fs.readFileSync(catsCandi, 'utf8')
-  var candi = str.split('/n')
-  candi.forEach(function(line) {
-    var row = line.split(',')
-    // TODO: implement
-  })
-  getfoursquareCats()
-}
 
 function getfoursquareCats() {
   var foursquareCats = {names: [], icons: []}
