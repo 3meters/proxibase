@@ -1,16 +1,18 @@
 config*.js
+crash.js
 node_modules
 old
 *.json
-!package.json
 .monitor
-crash.js
 *.log
 *.crt
 *.db
 *.csv
-!/assets
-!/tools/categories
+~*
+
+!package.json
+!categories.json
+!/assets/
 
 
 /test/oauth/*.html
