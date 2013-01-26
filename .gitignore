@@ -8,12 +8,11 @@ old
 *.crt
 *.db
 *.csv
-~$*
+~*
 
 !package.json
 !categories.json
 !/assets/
-!/tools/categories/
 
 
 /test/oauth/*.html
