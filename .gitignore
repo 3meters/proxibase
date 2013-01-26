@@ -10,8 +10,8 @@ old
 *.csv
 
 !package.json
-!/assets/
-!/tools/categories/
+!assets/
+!tools/categories/
 
 
 /test/oauth/*.html
