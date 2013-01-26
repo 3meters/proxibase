@@ -11,13 +11,15 @@ var xl = require('xlsx')
 var async = require('async')
 var path = require('path')
 var iconDir = '../../assets/img/categories'
-var catsJson = '../../assets/categories.json'
-var cats4s = 'cats4s.csv'
-var catsFact = 'catsFact.csv'
-var catsCandi = 'catsCandi.csv'
-var catMap = 'categorymap.csv'
+var catsJsonFile = '../../assets/categories.json'
+var catMapper = 'categorymap.xlsx'
+var cats4sFile = 'cats4s.csv'
+var catsFactFile = 'catsFact.csv'
+var catsCandi = []
+var suffix = '.png'
+var providers = ['factual', 'google']
 var sizes = ['88', 'bg_88'] // the first is the default
-var wb = null
+var wb = null // Excel workbook
 
 
 // Command line interface
@@ -27,25 +29,33 @@ cli
 
 
 function start() {
-  log('Deleting old files')
-  try {fs.unlinkSync(cats4s)} catch(e) {log(e.message)}
-  try {fs.unlinkSync(catsFact)} catch(e) {log(e.message)}
-  try {fs.unlinkSync(catsJson)} catch(e) {log(e.message)}
-  var fileNames = fs.readdirSync(iconDirFact)
-  fileNames.forEach(function(fileName) {
-    fs.unlinkSync(path.join(iconDirFact, fileName))
-  })
-  if (cli.icons) {
-    var fileNames = fs.readdirSync(iconDir4s)
+
+  function deleteAllFiles(dir) {
+    var fileNames = fs.readdirSync(dir)
     fileNames.forEach(function(fileName) {
-      fs.unlinkSync(path.join(iconDir4s, fileName))
+      try {fs.unlinkSync(path.join(dir, fileName))} catch(e) {} // swallow errors
     })
+  }
+
+  log('Deleting old files')
+  try {fs.unlinkSync(cats4sFile)} catch(e) {}
+  try {fs.unlinkSync(catsFactFile)} catch(e) {}
+  try {fs.unlinkSync(catsJsonFile)} catch(e) {}
+
+  providers.forEach(function(provider) {
+    deleteAllFiles(path.join(iconDir, provider))
+  })
+
+  if (cli.icons) {
+    deleteAllFiles(path.join(iconDir, 'foursquare'))
+    deleteAllFiles(iconDir)
   }
 
   // This is a very low-level parser for xlsx files, but it was the
   // best I could find.  One would think something like the work below should
   // be built in, but perhaps he's just doing a building block module
-  wb = xl.readFile('categorymap.xlsx')
+  log('Reading ' + catMapper)
+  wb = xl.readFile(catMapper)
   wb.SheetNames.forEach(function(name) {
     var sheet = wb.Sheets[name]
     if (sheet['!ref']) {  // cell that contains xls best guess of the active range
@@ -63,49 +73,89 @@ function start() {
     }
     sheet.data = rows
   })
+  getCandiCats()
 }
 
+// Transform the human written candi categorys in the mapper spreadsheet
+// into an array of nested categories using the same shape as foursquare
+// Only supports one level of category nesting, and parents must come first
+function getCandiCats() {
+  var map = {}
+  wb.Sheets['candi'].data.forEach(function(row) {
+    var cat = {
+      id: row[0],
+      name: row[1],
+      categories: [],
+    }
+    var parent = row[2]
+    if (!parent) map[cat.id] = cat
+    else map[parent].categories.push(cat)
+  })
+  for (key in map) { catsCandi.push(map[key]) }
+  getFoursquareCats()
+}
 
-function getfoursquareCats() {
+function getFoursquareCats() {
   var foursquareCats = {names: [], icons: []}
   call.foursquare({path: 'categories', logReq: true}, function(err, res) {
     if (err) throw err
     var cats = res.body.response.categories
+
     foursquareCats = parse4sCats(cats)
-    log('Writing ' + catsJson)
-    fs.writeFileSync(catsJson, JSON.stringify(cats))
-    log('Writing ' + cats4s)
-    writeCsvFile(cats4s, foursquareCats.names, function(err) {
+    log('Writing ' + catsJsonFile)
+    fs.writeFileSync(catsJsonFile, JSON.stringify(cats.concat(catsCandi)))
+    log('Writing ' + cats4sFile)
+    writeCsvFile(cats4sFile, foursquareCats.names, function(err) {
       if (err) throw err
-      scarfIcons(foursquareCats.icons)
+      scarfFoursquareIcons(foursquareCats.icons)
     })
   })
 }
-
-
-function scarfIcons(icons) {
-  if (!cli.icons) return getFactualCats()
-  log('Scarfing ' + icons.length + ' icons: ')
-  async.forEachSeries(icons, getIcon, function(err) {
-    if (err) throw err
-    getFactualCats()
-  })
-}
-
 
 function getIcon(icon, cb) {
   var fileName = icon.id + '_' + icon.size + icon.suffix
   // TODO:  check for a 200 reqest status before piping to write stream
   request.get(icon.uri)
-    .pipe(fs.createWriteStream(path.join(iconDir4s, fileName))
+    .pipe(fs.createWriteStream(path.join(iconDir, fileName))
       .on('error', function(err) {return cb(err)})
       .on('close', function() {
         log(fileName)
+        fs.linkSync(
+          path.join(iconDir, fileName),
+          path.join(iconDir, 'foursquare', fileName)
+        )
         return cb()
       })
     )
 }
 
+function scarfFoursquareIcons(icons) {
+  if (!cli.icons) return getFactualCats()
+  log('Scarfing ' + icons.length + ' icons: ')
+  async.forEachSeries(icons, getIcon, function(err) {
+    if (err) throw err
+    linkCandiIcons()
+  })
+}
+
+function linkCandiIcons() {
+  var sheet = wb.Sheets['map_candi_foursquare']
+  sheet.data.forEach(function(row) {
+    sizes.forEach(function(size) {
+      var idCandi = row[0]
+      var id4s = row[2]
+      fs.linkSync(
+        path.join(iconDir, id4s + '_' + size + suffix),
+        path.join(iconDir, idCandi + '_' + size + suffix)
+      )
+    })
+  })
+  getFactualCats()
+}
+
+
+// This is a non-used intermediate file.  Copy paste it into the spreadsheet
+// If factual changes their categories enough to warrant remapping
 function getFactualCats() {
   var factualNames = []
   var uri = 'https://raw.github.com/Factual/places/master/categories/factual_taxonomy.json'
@@ -123,35 +173,32 @@ function getFactualCats() {
       }
       factualNames.push(cat)
     }
-    log('Writing factual categories')
-    writeCsvFile(catsFact, factualNames, function(err) {
+    log('Writing ' + catsFactFile)
+    writeCsvFile(catsFactFile, factualNames, function(err) {
       if (err) throw err
       mapIcons()
     })
   })
 }
 
-function mapIcons() {
-  return finish() //TODO undo short circuit
-  log('Mapping factual icons to foursquare icons')
-  var suffix = '.png'
-  var str = fs.readFileSync(catMap, 'utf8')
-  var lines = str.split('\r')
 
-  sizes.forEach(function(size) {
-    lines.forEach(function(line) {
-      var cols = line.split(',')
-      var idfact = cols[0]
-      var id4s = cols[2]
-      fs.linkSync(
-        path.join(iconDir4s, id4s + '_' + size + suffix),
-        path.join(iconDirFact, idfact + '_' + size + suffix)
-      )
+function mapIcons() {
+  providers.forEach(function(provider) {
+    log('Mapping ' + provider + ' icons to foursquare icons')
+    var sheet = wb.Sheets['map_' + provider + '_foursquare']
+    sheet.data.forEach(function(row) {
+      sizes.forEach(function(size) {
+        var iconName = row[0] + '_' + size + suffix
+        var iconName4s = row[2] + '_' + size + suffix
+        fs.linkSync(
+          path.join(iconDir, iconName4s),
+          path.join(iconDir, provider, iconName)
+        )
+      })
     })
   })
   finish()
 }
-
 
 function parse4sCats(categories) {
   var names = []
