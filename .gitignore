@@ -9,8 +9,8 @@ crash.js
 *.crt
 *.db
 *.csv
-!/assets
-!/tools/categories
+!assets
+!tools/categories
 
 
 /test/oauth/*.html

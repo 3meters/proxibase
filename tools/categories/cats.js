@@ -11,7 +11,8 @@ var xl = require('xlsx')
 var async = require('async')
 var path = require('path')
 var iconDir = '../../assets/img/categories'
-var catsJsonFile = '../../assets/categories.json'
+var assetsDir = '../../assets'
+var catsJsonFile = 'categories.json'
 var catMapper = 'categorymap.xlsx'
 var cats4sFile = 'cats4s.csv'
 var catsFactFile = 'catsFact.csv'
@@ -41,6 +42,7 @@ function start() {
   try {fs.unlinkSync(cats4sFile)} catch(e) {}
   try {fs.unlinkSync(catsFactFile)} catch(e) {}
   try {fs.unlinkSync(catsJsonFile)} catch(e) {}
+  try {fs.unlinkSync(path.join(assetsDir, catsJsonFile))} catch(e) {}
 
   providers.forEach(function(provider) {
     deleteAllFiles(path.join(iconDir, provider))
@@ -102,8 +104,10 @@ function getFoursquareCats() {
     var cats = res.body.response.categories
 
     foursquareCats = parse4sCats(cats)
+    cats = cats.concat(catsCandi) // graft in our own categories
     log('Writing ' + catsJsonFile)
-    fs.writeFileSync(catsJsonFile, JSON.stringify(cats.concat(catsCandi)))
+    fs.writeFileSync(catsJsonFile, JSON.stringify(cats))
+    fs.writeFileSync(path.join(assetsDir, catsJsonFile), JSON.stringify(cats))
     log('Writing ' + cats4sFile)
     writeCsvFile(cats4sFile, foursquareCats.names, function(err) {
       if (err) throw err
