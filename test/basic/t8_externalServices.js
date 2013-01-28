@@ -43,11 +43,8 @@ exports.getSessions = function(test) {
   })
 }
 
-exports.getPlaceCategories = function(test) {
-  t.post({
-    uri: '/do/getPlaceCategories',
-    body: {}
-  }, function(err, res) {
+exports.getCategories = function(test) {
+  t.get({uri: '/categories'}, function(err, res) {
     var cats = res.body.data
     t.assert(cats && cats.length > 5)
     t.assert(cats[0].icon.length > 20)
