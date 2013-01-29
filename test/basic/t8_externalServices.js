@@ -113,7 +113,7 @@ exports.suggestSourcesFromWebsite = function(test) {
   function(err, res) {
     t.assert(res.body.data.length === 1) // returns only the new suggested sources
     t.assert(res.body.data[0].source === 'twitter')
-    t.assert(res.body.data[0].id === '@massenamodern')
+    t.assert(res.body.data[0].id === 'massenamodern')
     test.done()
   })
 }
@@ -162,7 +162,7 @@ exports.insertEntitySuggestSources = function(test) {
       var sources = res.body.data[0].sources
       t.assert(sources.length === 2) // appends the new sources to the ones in the request
       t.assert(sources[1].source === 'twitter')
-      t.assert(sources[1].id === '@massenamodern')
+      t.assert(sources[1].id === 'massenamodern')
       test.done()
     }
   )
