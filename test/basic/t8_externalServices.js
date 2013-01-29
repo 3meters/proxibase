@@ -178,7 +178,7 @@ exports.insertPlaceEntitySuggestSourcesFromFactual = function(test) {
     id: '4abebc45f964a520a18f20e3' // Seattle Ballroom 
   }]
   t.post({uri: '/do/insertEntity?' + userCred, body: body}, 201,
-    function(err, res, body) {
+    function(err, res) {
       t.assert(res.body.data[0].sources)
       var sources = res.body.data[0].sources
       t.assert(sources.length > 3) // appends the new sources to the ones in the request
