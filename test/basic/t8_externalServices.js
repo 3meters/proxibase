@@ -53,6 +53,16 @@ exports.getCategories = function(test) {
   })
 }
 
+exports.getSources = function(test) {
+  t.get({uri: '/sources'}, function(err, res) {
+    var sources = res.body.data
+    t.assert(sources && sources.length > 5)
+    t.assert(sources[0].icon.length > 20)
+    // TODO:  run a reqest on the icon and confirm that it is a valid png
+    test.done()
+  })
+}
+
 exports.getPlacesNearLocationFoursquare = function(test) {
   t.post({
     uri: '/do/getPlacesNearLocation',
