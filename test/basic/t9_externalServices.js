@@ -119,19 +119,6 @@ exports.suggestSourcesFromWebsite = function(test) {
 }
 
 
-exports.suggestSourcesFromWebsite2 = function(test) {
-  t.post({
-    uri: '/do/suggestSources',
-    body: {sources: [{source: 'website', id: 'http://www.3pubs.com/Latona.html'}]}
-  },
-  function(err, res) {
-    t.assert(res.body.data.length > 1)
-    t.assert(res.body.data[0].source === 'email')
-    t.assert(res.body.data[0].id === 'latona@3pubs.com')
-    test.done()
-  })
-}
-
 exports.suggestFactualSourcesFromFoursquareId = function(test) {
   t.post({
     uri: '/do/suggestSources',
