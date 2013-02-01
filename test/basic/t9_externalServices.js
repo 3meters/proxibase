@@ -75,10 +75,16 @@ exports.getPlacesNearLocationFoursquare = function(test) {
       limit: 10,
     }
   }, function(err, res) {
-    t.assert(res.body.data.length === 10)
-    t.assert(res.body.data[0].place)
-    t.assert(res.body.data[0].place.category)
-    t.assert(res.body.data[0].place.category.name)
+    var places = res.body.data
+    t.assert(places.length === 10)
+    t.assert(places[0].place)
+    t.assert(places[0].place.category)
+    t.assert(places[0].place.category.name)
+    var sources = places[0].sources
+    t.assert(sources)
+    t.assert(sources.length)
+    var source = sources[0]
+    t.assert(source.source && source.icon && (source.url || source.id))
     test.done()
   })
 }
@@ -95,13 +101,51 @@ exports.getPlacesNearLocationFactual = function(test) {
       limit: 10,
     }
   }, function(err, res) {
-    t.assert(res.body.data.length === 10)
-    t.assert(res.body.data[0].place)
-    t.assert(res.body.data[0].place.category)
-    t.assert(res.body.data[0].place.category.name)
-    test.done()
+    var places = res.body.data
+    t.assert(places.length === 10)
+    t.assert(places[0].place)
+    t.assert(places[0].place.category)
+    t.assert(places[0].place.category.name)
+    var roxys = places.filter(function(e) {
+      return (e._id === 'fdf4b14d-93d7-4ada-8bef-19add2fa9b15')
+    })
+    t.assert(roxys.length === 1)
+    insertEnt(roxys[0])
   })
+
+  // Insert the roxy diner and make sure her sources come out right
+  function insertEnt(roxy) {
+    var ent = {
+      signalFence : -100,
+      name : roxy.name,
+      type : "com.aircandi.candi.place",
+      place: {location:{lat:roxy.place.location.lat, lng:roxy.place.location.lng}},
+      sources: roxy.sources,
+      visibility : "public",
+      isCollection: true,
+      enabled : true,
+      locked : false,
+    }
+    t.post({
+      uri: '/do/insertEntity?' + userCred,
+      body: {
+        entity: ent,
+        suggestSources: true
+      }
+    }, 201, function(err, res) {
+      t.assert(res.body.data.length)
+      var sources = res.body.data[0].sources
+      t.assert(sources && sources.length >= 2) // a website and a twitter account
+      sources.forEach(function(source) {
+        t.assert(source.id || source.url)
+        t.assert(source.origin && source.icon && source.name && source.source)
+        t.assert(source.source !== 'factual')
+      })
+      test.done()
+    })
+  }
 }
+
 
 // TODO: test excludePlaceIds
 
@@ -170,7 +214,6 @@ exports.insertPlaceEntitySuggestSourcesFromFactual = function(test) {
       var sources = res.body.data[0].sources
       t.assert(sources.length > 3) // appends the new sources to the ones in the request
       // TODO: check for specific source
-      // TODO: add website to sources and then check for dupes
       test.done()
     }
   )
