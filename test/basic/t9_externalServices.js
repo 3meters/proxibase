@@ -76,7 +76,7 @@ exports.getPlacesNearLocationFoursquare = function(test) {
     }
   }, function(err, res) {
     var places = res.body.data
-    log('foursquare', places)
+    // log('foursquare', places)
     t.assert(places.length === 10)
     t.assert(places[0].place)
     t.assert(places[0].place.category)
@@ -103,7 +103,7 @@ exports.getPlacesNearLocationFactual = function(test) {
     }
   }, function(err, res) {
     var places = res.body.data
-    log('factual', places)
+    // log('factual', places)
     t.assert(places.length === 10)
     t.assert(places[0].place)
     t.assert(places[0].place.category)
