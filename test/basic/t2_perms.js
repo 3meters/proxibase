@@ -124,7 +124,7 @@ exports.user1CanUpdateOwnRecord = function (test) {
 }
 
 
-exports.user1CannotUpdateUser2sRecord = function (test) {
+exports.user1CannotUpdateUser2sRecord = function(test) {
   var req = new Req({
     uri: '/data/users/' + user2._id + '?' + user1Cred,
     body: {data: {location: 'Denver'}}

@@ -32,6 +32,9 @@ exports.checkTwitter = function(test) {
     t.assert(res.body.data.length === 1)
     t.assert(res.body.data[0].source === 'twitter')
     t.assert(res.body.data[0].id === 'bob')
+    t.assert(res.body.data[0].name === '@bob')
+    t.assert(res.body.data[0].packageName === 'com.twitter.android')
+    t.assert(res.body.data[0].icon.indexOf('twitter.png') > 0)
     test.done()
   })
 }
