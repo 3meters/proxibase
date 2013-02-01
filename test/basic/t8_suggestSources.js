@@ -23,7 +23,7 @@ exports.getSessions = function(test) {
   })
 }
 
-exports.checkTwitter = function(test) {
+exports.checkTwitterUrls = function(test) {
   t.post({
     uri: '/do/suggestSources',
     body: {sources: [{source: 'website', id: serviceUri + '/test/twitter.html'}]}
@@ -39,7 +39,7 @@ exports.checkTwitter = function(test) {
   })
 }
 
-exports.checkFacebook = function(test) {
+exports.checkFacebookUrls = function(test) {
   t.post({
     uri: '/do/suggestSources',
     body: {sources: [{source: 'website', id: serviceUri + '/test/facebook.html'}]}
@@ -61,7 +61,7 @@ exports.checkFacebook = function(test) {
   })
 }
 
-exports.checkEmail = function(test) {
+exports.checkEmailUrls = function(test) {
   t.post({
     uri: '/do/suggestSources',
     body: {sources: [{source: 'website', id: serviceUri + '/test/email.html'}]}
@@ -74,3 +74,21 @@ exports.checkEmail = function(test) {
   })
 }
 
+exports.compareFoursquareToFactual = function(test) {
+  t.post({
+    uri: '/do/suggestSources',
+    body: {sources: [{source: 'foursquare', id: '4abebc45f964a520a18f20e3'}]}  // Seattle Ballroom 
+  },
+  function(err, res) {
+    var sources4s = res.body.data
+    t.assert(sources4s.length > 3)
+    t.post({
+      uri: '/do/suggestSources',
+      body: {sources: [{source: 'factual', id: 'a10ad88f-c26c-42bb-99c6-10233f59d2d8'}]}  // Seattle Ballroom
+    }, function(err, res) {
+      var sourcesFact = res.body.data
+      t.assert(sourcesFact.length > 3)
+      t.assert(sourcesFact.length === sources4s.length)
+    })
+  })
+}
