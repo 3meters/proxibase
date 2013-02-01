@@ -236,6 +236,23 @@ exports.getEntitiesForUser = function (test) {
   })
 }
 
+
+exports.cannotInsertEntityNotLoggedIn = function (test) {
+  var req = new Req({
+    uri: '/do/insertEntity',
+    body: {
+      entity:testEntity, 
+      beacons:[testBeacon], 
+      primaryBeaconId:testBeacon._id,
+      observation:testObservation
+    }
+  })
+  request(req, function(err, res) {
+    check(req, res, 401)
+    test.done()
+  })
+}
+
 exports.insertEntity = function (test) {
   var req = new Req({
     uri: '/do/insertEntity?' + userCred,
