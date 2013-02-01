@@ -45,18 +45,23 @@ exports.checkFacebookUrls = function(test) {
     body: {sources: [{source: 'website', id: serviceUri + '/test/facebook.html'}]}
   },
   function(err, res) {
-    var data = res.body.data
-    t.assert(data.length === 2)
-    t.assert(data[0].source === 'facebook')
+    var sources = res.body.data
+    t.assert(sources.length === 3)
     // make a map of the results array by id
-    var sources = {}
-    data.forEach(function(elem) {
-      sources[elem.id] = elem
+    var map = {}
+    sources.forEach(function(source) {
+      t.assert(source.id)
+      t.assert(source.source === 'facebook')
+      t.assert(source.origin === 'website')
+      t.assert(source.icon)
+      t.assert(source.packageName)
+      map[source.id] = source
     })
-    t.assert(Object.keys(sources).length === data.length)  // no dupes by id
-    t.assert(sources['george.snelling'])
-    t.assert(sources['george.snelling'].name === 'George Snelling')
-    t.assert(sources['GetLuckyStrike'])
+    t.assert(Object.keys(map).length === sources.length)  // no dupes by id
+    t.assert(map['george.snelling'])
+    t.assert(map['george.snelling'].name === 'George Snelling')
+    t.assert(map['GetLuckyStrike'])
+    t.assert(map['papamurphyspizza'])
     test.done()
   })
 }
