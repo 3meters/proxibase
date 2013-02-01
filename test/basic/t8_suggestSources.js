@@ -74,7 +74,7 @@ exports.checkEmailUrls = function(test) {
   })
 }
 
-exports.compareFoursquareToFactual = function(test) {
+_exports.compareFoursquareToFactual = function(test) {
   t.post({
     uri: '/do/suggestSources',
     body: {sources: [{source: 'foursquare', id: '4abebc45f964a520a18f20e3'}]}  // Seattle Ballroom 
