@@ -76,6 +76,7 @@ exports.getPlacesNearLocationFoursquare = function(test) {
     }
   }, function(err, res) {
     var places = res.body.data
+    log('foursquare', places)
     t.assert(places.length === 10)
     t.assert(places[0].place)
     t.assert(places[0].place.category)
@@ -102,12 +103,13 @@ exports.getPlacesNearLocationFactual = function(test) {
     }
   }, function(err, res) {
     var places = res.body.data
+    log('factual', places)
     t.assert(places.length === 10)
     t.assert(places[0].place)
     t.assert(places[0].place.category)
     t.assert(places[0].place.category.name)
     var roxys = places.filter(function(e) {
-      return (e._id === 'fdf4b14d-93d7-4ada-8bef-19add2fa9b15')
+      return (e._id === 'fdf4b14d-93d7-4ada-8bef-19add2fa9b15') // Roxy's Diner
     })
     t.assert(roxys.length === 1)
     insertEnt(roxys[0])
