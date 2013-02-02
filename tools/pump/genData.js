@@ -4,14 +4,11 @@
  *   Silently overwrites existing files or tables
  */
 
-require('../../lib/utils') // load proxibase extentions to node util
-
-var util = require('util')
+var util = require('../../lib/utils') // load proxibase extentions to node util
 var fs = require('fs')
 var path = require('path')
 var mongo = require('mongodb')
 var async = require('async')
-var log = util.log
 var constants = require('../../test/constants')
 var testUtil = require('../../test/util')
 var tableIds = util.statics.collectionIds

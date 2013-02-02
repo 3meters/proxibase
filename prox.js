@@ -3,4 +3,4 @@
  */
 
 process.chdir(__dirname)
-module.exports = require('./lib/main')
+module.exports = require('./lib/server.js')

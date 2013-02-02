@@ -13,7 +13,7 @@ old
 !package.json
 !categories.json
 !/assets/
-
+!/lib/node_modules
 
 /test/oauth/*.html
 /perf.csv

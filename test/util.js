@@ -2,7 +2,7 @@
  * Proxibase test util module
  */
 
-var util = require('util')
+var util = require('../lib/utils')
 var log = util.log
 var assert = require('assert')
 var request = require('request')
