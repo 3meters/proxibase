@@ -5,8 +5,7 @@
  *   usage:  node run
  */
 
-var util = require('../lib/utils') // load proxibase extensions
-var log = util.log
+var util = require('utils') // load proxibase extensions
 var timer = new util.Timer()
 var fs = require('fs')
 var assert = require('assert')

@@ -27,7 +27,7 @@ var testOauthId = {
 var jQuerySrc = 'http://code.jquery.com/jquery-1.7.2.min.js'
 var baseUri = testUtil.serverUrl
 var _exports = {}  // for commenting out tests
-var log = require('util').log
+var log = require('utils').log
 
 
 // Get admin session and set credentials
