@@ -6,6 +6,7 @@ var
   assert = require('assert'),
   request = require('request'),
   testUtil = require('../util'),
+  t = testUtil.T(),
   Req = testUtil.Req,
   check = testUtil.check,
   dump = testUtil.dump,
@@ -489,6 +490,22 @@ exports.annonymousUserCanCreateUserViaApi = function(test) {
   })
 }
 
+exports.annonymousUserCannotCreateUserViaApiWithoutWhitelistedEmail = function(test) {
+  t.post({
+    uri: '/user/create',
+    body: {
+      data: {
+        name: 'AuthTestUserShouldFail',
+        email: 'authBest@3meters.com',
+        password: 'foobar'
+      },
+      secret: 'larissa'
+    }
+  }, 401, function(err, res) {
+    t.assert(res.body.error.message.indexOf('support@') >0)
+    test.done()
+  })
+}
 
 exports.userCanSignOut = function(test) {
   var req = new Req({

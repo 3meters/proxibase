@@ -9,10 +9,7 @@ var request = require('request')
 var constants = require('./constants')
 
 
-// Load the proxibase extensions if they haven't already been loaded
-if (!util.truthy) require('../lib/utils')
-
-// Extend node's util with parameters from the test config file
+assert(util.truthy, 'The proxibase utils are not loaded properly, bailing')
 util.setConfig('configtest.js')
 
 

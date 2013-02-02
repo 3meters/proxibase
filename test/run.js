@@ -59,7 +59,7 @@ if (cli.server) {
 }
 else {
 
-  // Load the config file and extend Node's util
+  // Load the config file
   util.setConfig(cli.config || configFile)
   config = util.config
   serverUrl = testUtil.serverUrl = config.service.url
@@ -102,7 +102,8 @@ function ensureDb(options, callback) {
     templateDb.dropDatabase(function(err, results) {
       if (err) throw err
       delete cli.generate
-      return ensureDb(options, callback)
+      templateDb.close()
+      ensureDb(options, callback)
     })
   }
 
