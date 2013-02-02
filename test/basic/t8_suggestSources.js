@@ -79,6 +79,19 @@ exports.checkEmailUrls = function(test) {
   })
 }
 
+
+exports.checkBogusSources = function(test) {
+  t.post({
+    uri: '/do/suggestSources',
+    body: {sources: [{source: 'foursquare', url: 'http://www.google.com'}]}
+  },
+  function(err, res) {
+    t.assert(res.body.data.length === 0)
+    test.done()
+  })
+}
+
+
 _exports.compareFoursquareToFactual = function(test) {
   t.post({
     uri: '/do/suggestSources',
