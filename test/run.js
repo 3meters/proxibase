@@ -6,6 +6,7 @@
  */
 
 var util = require('utils') // load proxibase extensions
+var log = util.log
 var timer = new util.Timer()
 var fs = require('fs')
 var assert = require('assert')
