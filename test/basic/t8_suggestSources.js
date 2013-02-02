@@ -92,10 +92,10 @@ exports.checkBogusSources = function(test) {
 }
 
 
-_exports.compareFoursquareToFactual = function(test) {
+exports.compareFoursquareToFactual = function(test) {
   t.post({
     uri: '/do/suggestSources',
-    body: {sources: [{source: 'foursquare', id: '4abebc45f964a520a18f20e3'}]}  // Seattle Ballroom 
+    body: {sources: [{source: 'foursquare', id: '4abebc45f964a520a18f20e3'}]}  // Seattle Ballroom
   },
   function(err, res) {
     var sources4s = res.body.data
@@ -106,7 +106,8 @@ _exports.compareFoursquareToFactual = function(test) {
     }, function(err, res) {
       var sourcesFact = res.body.data
       t.assert(sourcesFact.length > 3)
-      t.assert(sourcesFact.length === sources4s.length)
+      t.assert(sourcesFact.length === sources4s.length + 1) // factual will add the 4s entry
+      test.done()
     })
   })
 }
