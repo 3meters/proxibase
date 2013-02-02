@@ -64,6 +64,7 @@ exports.getSources = function(test) {
 }
 
 exports.getPlacesNearLocationFoursquare = function(test) {
+  var ballRoomId = '4abebc45f964a520a18f20e3'
   t.post({
     uri: '/do/getPlacesNearLocation',
     body: {
@@ -73,19 +74,23 @@ exports.getPlacesNearLocationFoursquare = function(test) {
       meters: 100,
       includeRaw: false,
       limit: 10,
+      excludePlaceIds: [ballRoomId], // The Ballroom's 4sId
     }
   }, function(err, res) {
     var places = res.body.data
-    // log('foursquare', places)
-    t.assert(places.length === 10)
-    t.assert(places[0].place)
-    t.assert(places[0].place.category)
-    t.assert(places[0].place.category.name)
-    var sources = places[0].sources
-    t.assert(sources)
-    t.assert(sources.length)
-    var source = sources[0]
-    t.assert(source.source && source.icon && (source.url || source.id))
+    t.assert(places.length === 9) // arguably a bug, the exclude process happens after the query
+    places.forEach(function(place) {
+      t.assert(place._id)
+      t.assert(place._id !== ballRoomId)
+      t.assert(place.place)
+      t.assert(place.place.category)
+      t.assert(place.place.category.name)
+      var sources = place.sources
+      t.assert(sources)
+      t.assert(sources.length)
+      var source = sources[0]
+      t.assert(source.source && source.icon && (source.url || source.id))
+    })
     test.done()
   })
 }
