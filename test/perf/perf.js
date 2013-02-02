@@ -16,7 +16,7 @@ var
   getRec = constants.getDefaultRecord,
   dbProfile = constants.dbProfile.smokeTest,
   results = [],
-  util = require('util'),
+  util = require('utils'),
   Timer = util.Timer,
   testTimer = new Timer,
   Req = testUtil.Req,

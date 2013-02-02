@@ -28,7 +28,7 @@ var
     data: { foo: 'bar' }
   },
   _exports = {},                    // for commenting out tests
-  util = require('util'),
+  util = require('utils'),
   log = util.log
 
 

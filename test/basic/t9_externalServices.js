@@ -6,7 +6,7 @@
  *     feature area is stable.
  */
 
-var util = require('util')
+var util = require('utils')
 var log = util.log
 var testUtil = require('../util')
 var t = testUtil.T()  // newfangled test helper
