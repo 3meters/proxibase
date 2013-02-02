@@ -5,6 +5,7 @@
  */
 
 var util = require('../../lib/utils') // load proxibase extentions to node util
+var log = util.log
 var fs = require('fs')
 var path = require('path')
 var mongo = require('mongodb')
