@@ -96,6 +96,9 @@ exports.getPlacesNearLocationFoursquare = function(test) {
 }
 
 exports.getPlacesNearLocationFactual = function(test) {
+  var ballRoomId = 'a10ad88f-c26c-42bb-99c6-10233f59d2d8'
+  var roxyId = 'fdf4b14d-93d7-4ada-8bef-19add2fa9b15' // Roxy's Diner
+  var foundRoxy = false
   t.post({
     uri: '/do/getPlacesNearLocation',
     body: {
@@ -105,14 +108,18 @@ exports.getPlacesNearLocationFactual = function(test) {
       meters: 100,
       includeRaw: false,
       limit: 10,
+      excludePlaceIds: [ballRoomId]
     }
   }, function(err, res) {
     var places = res.body.data
-    // log('factual', places)
-    t.assert(places.length === 10)
-    t.assert(places[0].place)
-    t.assert(places[0].place.category)
-    t.assert(places[0].place.category.name)
+    t.assert(places.length === 9)
+    places.forEach(function(place) {
+      t.assert(place._id)
+      t.assert(place._id !== ballRoomId)
+      t.assert(place.place)
+      t.assert(place.place.category)
+      t.assert(place.place.category.name)
+    })
     var roxys = places.filter(function(e) {
       return (e._id === 'fdf4b14d-93d7-4ada-8bef-19add2fa9b15') // Roxy's Diner
     })
