@@ -72,13 +72,23 @@ exports.checkEmailUrls = function(test) {
     body: {sources: [{source: 'website', id: serviceUri + '/test/email.html'}]}
   },
   function(err, res) {
-    t.assert(res.body.data.length === 1) // returns only the new suggested sources
+    t.assert(res.body.data.length === 1)
     t.assert(res.body.data[0].source === 'email')
     t.assert(res.body.data[0].id === 'george@3meters.com')
     test.done()
   })
 }
 
+exports.checkEmailUrlsWithGet = function(test) {
+  t.get({uri:'/do/suggestSources?sources[0][source]=website&sources[0][id]=' +
+        serviceUri + '/test/email.html'},
+  function(err, res) {
+    t.assert(res.body.data.length === 1)
+    t.assert(res.body.data[0].source === 'email')
+    t.assert(res.body.data[0].id === 'george@3meters.com')
+    test.done()
+  })
+}
 
 exports.checkBogusSources = function(test) {
   t.post({
