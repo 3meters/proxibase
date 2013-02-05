@@ -3,24 +3,22 @@
 # Production proxibase startup script using nodemon
 # See https://github.com/remy/nodemon
 
-if [ ! $PROX ]; then
-  PROX='/usr/local/prox'
-fi
-
-if [ ! $PROXLOG ]; then
-  PROXLOG='/var/log/prox/prox.log'
-fi
+PROX='/usr/local/prox'
+PROXLOG='/var/log/prox/prox.log'
+ERRLOG='/var/log/prox/proxerr.log'
 
 # Replace the existing log, must be the first argument
 if [ "$1" = "-r" ]; then
   rm $PROXLOG
+  rm $ERRLOG
   shift
 fi
 
-echo "proxlog: $PROXLOG ..."
+echo "proxerr.log: $ERRLOG"
+echo "prox.log: $PROXLOG ..."
 
 cd $PROX
-nohup nodemon -L --watch ./lib --delay 2 --stack-trace-limit=200 ./prox.js $@ >>$PROXLOG 2>&1 &
+nohup nodemon -L --watch ./lib --delay 2 --stack-trace-limit=200 ./prox.js $@ >>$PROXLOG 2>>$ERRLOG &
 
 sleep 5
 cat $PROXLOG
