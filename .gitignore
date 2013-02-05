@@ -13,6 +13,7 @@ old
 !package.json
 !categories.json
 !/assets/
+!/assets/proxerr.log
 !/lib/node_modules
 !/test/node_modules
 
