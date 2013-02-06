@@ -455,6 +455,25 @@ exports.defaultsWork = function(test) {
   })
 }
 
+exports.anonCannotReadSystemCollections = function(test) {
+  t.get({uri: '/data/sessions'}, 401, function(err, res) {
+    test.done()
+  })
+}
+
+exports.userCannotReadSystemCollections = function(test) {
+  t.get({uri: '/data/sessions?' + userCred}, 401, function(err, res) {
+    test.done()
+  })
+}
+
+exports.admiCanReadSystemCollections = function(test) {
+  t.get({uri: '/data/sessions?' + adminCred}, function(err, res) {
+    t.assert(res.body.data.length)
+    test.done()
+  })
+}
+
 exports.usersCannotSkipSafeInsert = function(test) {
   var req = new Req({
     uri: '/data/beacons?' + userCred,
@@ -547,17 +566,7 @@ exports.adminCanDeleteAllUsingWildcard = function(test) {
   request(req, function(err, res) {
     check(req, res)
     assert(res.body.count >= 1)
-    var req2 = new Req({
-      method: 'get',
-      uri: '/data/sessions'
-    })
-    request(req2, function(err, res) {
-      check(req, res)
-      assert(res.body.data.length === 0)
-      test.done()
-    })
+    test.done()
   })
 }
-
-
 
