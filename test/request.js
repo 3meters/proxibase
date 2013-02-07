@@ -1,8 +1,14 @@
 /**
+ * Experimental: 
+ *
  * This is a shim that converts requests expected by mikael's request module
  * into the format expected by TJ's superagent module.
  *
  * It sneaks into the module namespace via a symlink in test/node_modules.
+ * if the symlink /test/node_modules/request.js links to this file, 
+ * then all files that say var request = require('request') will point here
+ * If the symlink does not exist, then those files will point to the version 
+ * of request known by npm aka https://github.com/mikeal/request
  */
 
 var superagent = require('superagent')
