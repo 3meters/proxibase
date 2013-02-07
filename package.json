@@ -20,6 +20,7 @@
     "async": "*",
     "nodemailer": "*",
     "superagent": "*",
+    "request": "*",
     "authom": "*",
     "cheerio": "*",
     "fbgraph": "*",

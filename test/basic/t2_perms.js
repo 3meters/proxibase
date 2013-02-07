@@ -4,12 +4,8 @@
  */
 
 var
-  assert = require('assert'),
-  request = require('request'),
   testUtil = require('../util'),
-  Req = testUtil.Req,
-  check = testUtil.check,
-  dump = testUtil.dump,
+  t = testUtil.treq,
   adminCred = '',
   user1Cred = '',
   user2Cred = '',
@@ -33,192 +29,158 @@ var
 
 
 exports.signInAsAdmin = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/auth/signin',
     body: {user: {email: 'admin', password: 'admin'}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.user)
-    assert(res.body.session)
+  }, function(err, res, body) {
+    t.assert(body.user)
+    t.assert(body.session)
     // These credentials will be useds in subsequent tests
-    adminCred = 'user=' + res.body.user._id + '&session=' + res.body.session.key
+    adminCred = 'user=' + body.user._id + '&session=' + body.session.key
     test.done()
   })
 }
 
 
 exports.addUser1 = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/user/create?' + adminCred,
     body: {data: user1, noValidate: true, secret: 'larissa'},
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.session)
-    assert(res.body.user && res.body.user._id)
-    user1._id = res.body.user._id
+  }, function(err, res, body) {
+    t.assert(body.session)
+    t.assert(body.user && body.user._id)
+    user1._id = body.user._id
     test.done()
   })
 }
 
 
 exports.addUser2 = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/user/create?' + adminCred,
     body: {data: user2, noValidate: true, secret: 'larissa'}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.session)
-    assert(res.body.user && res.body.user._id)
-    user2._id = res.body.user._id
+  }, function(err, res, body) {
+    t.assert(body.session)
+    t.assert(body.user && body.user._id)
+    user2._id = body.user._id
     test.done()
   })
 }
 
 
 exports.signinUser1 = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/auth/signin',
     body: {user: {email: user1.email, password: user1.password}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.user)
-    assert(res.body.session)
+  }, function(err, res, body) {
+    t.assert(body.user)
+    t.assert(body.session)
     // These credentials will be useds in subsequent tests
-    user1Cred = 'user=' + res.body.user._id + '&session=' + res.body.session.key
+    user1Cred = 'user=' + body.user._id + '&session=' + body.session.key
     test.done()
   })
 }
 
 
 exports.signinUser2 = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/auth/signin',
     body: {user: {email: user2.email, password: user2.password}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.user)
-    assert(res.body.session)
+  }, function(err, res, body) {
+    t.assert(body.user)
+    t.assert(body.session)
     // These credentials will be useds in subsequent tests
-    user2Cred = 'user=' + res.body.user._id + '&session=' + res.body.session.key
+    user2Cred = 'user=' + body.user._id + '&session=' + body.session.key
     test.done()
   })
 }
 
 
 exports.user1CanUpdateOwnRecord = function (test) {
-  var req = new Req({
+  t.post({
     uri: '/data/users/' + user1._id + '?' + user1Cred,
     body: {data: {location: 'Orlando'}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.user)
-    assert(res.body.data.location === 'Orlando')
+  }, function(err, res, body) {
+    t.assert(body.user)
+    t.assert(body.data.location === 'Orlando')
     test.done()
   })
 }
 
 
 exports.user1CannotUpdateUser2sRecord = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/users/' + user2._id + '?' + user1Cred,
     body: {data: {location: 'Denver'}}
-  })
-  request(req, function(err, res) {
-    check(req, res, 401)
+  }, 401, function(err, res, body) {
     test.done()
   })
 }
 
 
 exports.cannotAddRecordsWhenNotSignedIn = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/documents',
     body: {data: doc1}
-  })
-  request(req, function(err, res) {
-    check(req, res, 401)
+  }, 401, function(err, res, body) {
     test.done()
   })
 }
 
 
 exports.user1CanCreateARecord = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/documents' + '?' + user1Cred,
     body: {data: doc1}
-  })
-  request(req, function(err, res) {
-    check(req, res, 201)
-    assert(res.body.data._id)
-    doc1._id = res.body.data._id
+  }, 201, function(err, res, body) {
+    t.assert(body.data._id)
+    doc1._id = body.data._id
     test.done()
   })
 }
 
 
 exports.user1OwnsRecordsHeCreates = function(test) {
-  var req = new Req({
-    method: 'get',
-    uri: '/data/documents/' + doc1._id + '?' + user1Cred,
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.data._owner = user1._id)
+  t.get('/data/documents/' + doc1._id + '?' + user1Cred,
+  function(err, res, body) {
+    t.assert(body.data._owner = user1._id)
     test.done()
   })
 }
 
 
 exports.user2CannotUpdateUser1sRecords = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/documents/' + doc1._id + '?' + user2Cred,
     body: {data: {name: 'I updated your doc sucka'}}
-  })
-  request(req, function(err, res) {
-    check(req, res, 401)
+  }, 401, function(err, res, body) {
     test.done()
   })
 }
 
 
 exports.user2CannotDeleteUser1sRecords = function(test) {
-  var req = new Req({
-    method: 'delete',
-    uri: '/data/documents/' + doc1._id + '?' + user2Cred,
-  })
-  request(req, function(err, res) {
-    check(req, res, 401)
+  t.del({uri: '/data/documents/' + doc1._id + '?' + user2Cred}, 401,
+  function(err, res) {
     test.done()
   })
 }
 
 
 exports.user1CanUpdateRecordsHeCreated = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/documents/' + doc1._id + '?' + user1Cred,
     body: {data: {name: 'I updated my own document'}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
+  }, function(err, res, body) {
     test.done()
   })
 }
 
 
 exports.user1CanDeleteHisOwnRecords = function(test) {
-  var req = new Req({
-    method: 'delete',
-    uri: '/data/documents/' + doc1._id + '?' + user1Cred,
-  })
-  request(req, function(err, res) {
-    check(req, res, 200)
-    assert(res.body.count && res.body.count === 1)
+  t.del({uri: '/data/documents/' + doc1._id + '?' + user1Cred},
+  function(err, res, body) {
+    t.assert(body.count && body.count === 1)
     test.done()
   })
 }
@@ -226,65 +188,49 @@ exports.user1CanDeleteHisOwnRecords = function(test) {
 
 exports.user2CanCreateARecord = function(test) {
   delete doc1._id
-  var req = new Req({
+  t.post({
     uri: '/data/documents' + '?' + user2Cred,
     body: {data: doc1}
-  })
-  request(req, function(err, res) {
-    check(req, res, 201)
-    assert(res.body.data._id)
-    doc1._id = res.body.data._id
+  }, 201, function(err, res, body) {
+    t.assert(body.data._id)
+    doc1._id = body.data._id
     test.done()
   })
 }
 
 
 exports.user2CannotChangeOwnerOfHerOwnRecord = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/documents/' + doc1._id + '?' + user2Cred,
     body: {data: {_owner: util.adminUser._id}}
-  })
-  request(req, function(err, res) {
-    check(req, res, 401)
+  }, 401, function(err, res, body) {
     test.done()
   })
 }
 
 
 exports.adminCanUpdateOthersRecords = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/documents/' + doc1._id + '?' + adminCred,
     body: {data: {name: 'I can update any document I please'}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
+  }, function(err, res, body) {
     test.done()
   })
 }
 
-
 exports.adminCanChangeOwnerOfOthersRecords = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/documents/' + doc1._id + '?' + adminCred,
     body: {data: {_owner: util.adminUser._id}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
+  }, function(err, res, body) {
     test.done()
   })
 }
 
 exports.adminCanDeleteOthersRecords = function(test) {
-  var req = new Req({
-    method: 'delete',
-    uri: '/data/documents/' + doc1._id + '?' + adminCred,
-  })
-  request(req, function(err, res) {
-    check(req, res, 200)
-    assert(res.body.count && res.body.count === 1)
+  t.del({uri: '/data/documents/' + doc1._id + '?' + adminCred}, 
+  function(err, res, body) {
+    t.assert(body.count && body.count === 1)
     test.done()
   })
 }
-
-
-

@@ -6,7 +6,7 @@ var util = require('utils')
 var log = util.log
 var testUtil = require('../util')
 var serviceUri = util.config.service.uri
-var t = testUtil.T()  // newfangled test helper
+var t = testUtil.treq  // newfangled test helper
 var userCred
 var adminCred
 var _exports = {} // for commenting out tests

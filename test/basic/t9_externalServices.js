@@ -9,7 +9,7 @@
 var util = require('utils')
 var log = util.log
 var testUtil = require('../util')
-var t = testUtil.T()  // newfangled test helper
+var t = testUtil.treq  // newfangled test helper
 var userCred
 var adminCred
 var testLatitude = 46.1
@@ -220,7 +220,7 @@ exports.insertPlaceEntitySuggestSourcesFromFactual = function(test) {
   }
   body.entity.sources = [{
     source: 'foursquare',
-    id: '4abebc45f964a520a18f20e3' // Seattle Ballroom 
+    id: '4abebc45f964a520a18f20e3' // Seattle Ballroom
   }]
   t.post({uri: '/do/insertEntity?' + userCred, body: body}, 201,
     function(err, res) {
@@ -231,4 +231,14 @@ exports.insertPlaceEntitySuggestSourcesFromFactual = function(test) {
       test.done()
     }
   )
+}
+
+exports.getPlacePhotos = function(test) {
+  t.post({
+    uri: '/do/getPlacePhotos',
+    body: {source: 'foursquare', sourceId: '4abebc45f964a520a18f20e3'}
+  }, function(err, res, body) {
+    t.assert(body.data.length > 10)
+    test.done()
+  })
 }
