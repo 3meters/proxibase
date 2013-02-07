@@ -5,7 +5,7 @@
 var util = require('utils')
 var log = util.log
 var assert = require('assert')
-var request = require('request')
+var request = require('request') // this is sneakily swapped out by superagent. see request.js
 var constants = require('./constants')
 
 
@@ -170,7 +170,10 @@ function getSession(user, asAdmin, fn) {
       })
     }
     else {
-      res.body = JSON.parse(res.body)
+      if (res.body && util.type(res.body) === 'string') {
+        try { res.body = JSON.parse(res.body) }
+        catch (e) { throw e }
+      }
       assert(res.body.session)
       fn(res.body.session)
     }
@@ -213,7 +216,7 @@ var check = exports.check = function(req, res, code) {
     try { req.body = JSON.parse(req.body) }
     catch (e) { } // we allow non-JSON in request body
   }
-  if (res.body) {
+  if (res.body && (util.type(res.body) === 'string')) {
     try { res.body = JSON.parse(res.body) }
     catch (e) { console.error(res.body); throw e }
   }
