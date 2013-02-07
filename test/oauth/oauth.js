@@ -199,8 +199,9 @@ function testProvider(options, callback) {
       // If we find them, we get a 200 and create or update a session
       // If we don't find them, we get a 406
 
-      request.get(proxAuthRedirectUrl).end(function(err, res) {
-        check(req, res)
+      request.get(proxAuthRedirectUrl)
+        .end(function(err, res) {
+        check({}, res)
         callback()
       })
     })
