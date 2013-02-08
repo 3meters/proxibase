@@ -111,7 +111,7 @@ function TestRequest() {
   }
 
   // public methods
-  return {
+  var public = {
     req: treq,
     get: tget,
     post: tpost,
@@ -120,6 +120,7 @@ function TestRequest() {
     ok: tok,
     assert: tok
   }
+  return public
 }
 
 exports.T = TestRequest
