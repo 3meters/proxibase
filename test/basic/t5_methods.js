@@ -1,161 +1,154 @@
-
-/*
+/**
  *  Proxibase custom methods test
  */
 
-var
-  assert = require('assert'),
-  request = require('request'),
-  util = require('utils'),
-  log = util.log,
-  testUtil = require('../util'),
-  t = testUtil.T(),  // newfangled test helper
-  Req = testUtil.Req,
-  check = testUtil.check,
-  dump = testUtil.dump,
-  constants = require('../constants'),
-  dbProfile = constants.dbProfile.smokeTest,
-  userCred,
-  user2Cred,
-  adminCred,
-  primaryLink,
-  _exports = {}, // for commenting out tests
-  testLatitude = 46.1,
-  testLongitude = -121.1,
-  testLatitude2 = 47.1,
-  testLongitude2 = -122.1,   
-  radiusTiny = (0.000001 / 3959),
-  radiusBig = (10 / 3959),
-  testUser = {
-    _id : "0001.111111.11111.111.111111",
-    name : "John Q Test",
-    email : "johnqtest@3meters.com",
-    password : "12345678",
-    photo: {prefix:"resource:placeholder_user", format:"binary", sourceName:"aircandi"},
-    location : "Testville, WA",
-    isDeveloper : false
-  },
-  testUser2 = {
-    _id : "0001.111111.11111.111.222222",
-    name : "John Q Test2",
-    email : "johnqtest2@3meters.com",
-    password : "12345678"
-  },
-  testEntity = {
-    _id : "0004.111111.11111.111.111111",
-    photo: {prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", format:"binary", sourceName:"aircandi"},
-    signalFence : -100,
-    name : "Testing candi",
-    type : "com.aircandi.candi.picture",
-    visibility : "public",
-    isCollection: false,
-    enabled : true,
-    locked : false
-  },
-  testEntity2 = {
-    _id : "0004.111111.11111.111.111112",
-    photo: {prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", format:"binary", sourceName:"aircandi"},
-    signalFence : -100,
-    name : "Testing candi 2",
-    type : "com.aircandi.candi.place",
-    place: {location:{lat:testLatitude, lng:testLongitude}},
-    visibility : "public",
-    isCollection: true,
-    enabled : true,
-    locked : false
-  },
-  testEntity3 = {
-    _id : "0004.111111.11111.111.111113",
-    photo: {prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", format:"binary", sourceName:"aircandi"},
-    signalFence : -100,
-    name : "Testing candi 3",
-    type : "com.aircandi.candi.place",
-    place: {location:{lat:testLatitude, lng:testLongitude}},
-    visibility : "public",
-    isCollection: true,
-    enabled : true,
-    locked : false
-  },
-  testLink = {
-    _to : '0008.11:11:11:11:11:22',
-    _from : '0004.111111.11111.111.111111',
-    primary: true,
-    signal: -100
-  },
-  newTestLink = {
-    _to : '0004.111111.11111.111.111112',
-    _from : '0004.111111.11111.111.111111',
-    primary: true,
-    signal: -100
-  }
-  testBeacon = {
-    _id : '0008.11:11:11:11:11:11',
-    label: 'Test Beacon Label',
-    ssid: 'Test Beacon',
-    bssid: '11:11:11:11:11:11',
-    beaconType: 'fixed',
-    visibility: 'public',
-    latitude : testLatitude,
-    longitude : testLongitude,
-    altitude : 12,
-    accuracy : 30,
-    level: -80,
-    loc : [testLongitude, testLatitude]
-  },
-  testBeacon2 = {
-    _id : '0008.22:22:22:22:22:22',
-    label: 'Test Beacon Label 2',
-    ssid: 'Test Beacon 2',
-    bssid: '22:22:22:22:22:22',
-    beaconType: 'fixed',
-    visibility: 'public',
-    latitude : testLatitude,
-    longitude : testLongitude,
-    altitude : 12,
-    accuracy : 30,
-    level: -85,
-    loc : [testLongitude, testLatitude]
-  },
-  testBeacon3 = {
-    _id : '0008.33:33:33:33:33:33',
-    label: 'Test Beacon Label 3',
-    ssid: 'Test Beacon 3',
-    bssid: '33:33:33:33:33:33',
-    beaconType: 'fixed',
-    visibility: 'public',
-    latitude : testLatitude,
-    longitude : testLongitude,
-    altitude : 12,
-    accuracy : 30,
-    level: -95,
-    loc : [testLongitude, testLatitude]
-  },
-  testObservation = {
-      latitude : testLatitude,
-      longitude : testLongitude,
-      altitude : 100,
-      accuracy : 50.0
-  },
-  testObservation2 = {
-      latitude : testLatitude2,
-      longitude : testLongitude2,
-      altitude : 12,
-      accuracy : 30.0
-  },
-  testObservation3 = {
-      latitude : 46.15,
-      longitude : -121.1,
-      altitude : 12,
-      accuracy : 30.0
-  },
-  testComment = {
-      title : "Test Comment",
-      description : "Test comment, much ado about nothing.",
-      name : "John Q Test",
-      location : "Testville, WA",
-      imageUri : "resource:placeholder_user",
-      _creator : testUser._id
-  }
+var util = require('utils')
+var log = util.log
+var testUtil = require('../util')
+var t = testUtil.treq
+var constants = require('../constants')
+var dbProfile = constants.dbProfile.smokeTest
+var userCred
+var user2Cred
+var adminCred
+var primaryLink
+var _exports = {} // for commenting out tests
+var testLatitude = 46.1
+var testLongitude = -121.1
+var testLatitude2 = 47.1
+var testLongitude2 = -122.1
+var radiusTiny = (0.000001 / 3959)
+var radiusBig = (10 / 3959)
+var testUser = {
+  _id : "0001.111111.11111.111.111111",
+  name : "John Q Test",
+  email : "johnqtest@3meters.com",
+  password : "12345678",
+  photo: {prefix:"resource:placeholder_user", format:"binary", sourceName:"aircandi"},
+  location : "Testville, WA",
+  isDeveloper : false
+}
+var testUser2 = {
+  _id : "0001.111111.11111.111.222222",
+  name : "John Q Test2",
+  email : "johnqtest2@3meters.com",
+  password : "12345678"
+}
+var testEntity = {
+  _id : "0004.111111.11111.111.111111",
+  photo: {prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", format:"binary", sourceName:"aircandi"},
+  signalFence : -100,
+  name : "Testing candi",
+  type : "com.aircandi.candi.picture",
+  visibility : "public",
+  isCollection: false,
+  enabled : true,
+  locked : false
+}
+var testEntity2 = {
+  _id : "0004.111111.11111.111.111112",
+  photo: {prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", format:"binary", sourceName:"aircandi"},
+  signalFence : -100,
+  name : "Testing candi 2",
+  type : "com.aircandi.candi.place",
+  place: {location:{lat:testLatitude, lng:testLongitude}},
+  visibility : "public",
+  isCollection: true,
+  enabled : true,
+  locked : false
+}
+var testEntity3 = {
+  _id : "0004.111111.11111.111.111113",
+  photo: {prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", format:"binary", sourceName:"aircandi"},
+  signalFence : -100,
+  name : "Testing candi 3",
+  type : "com.aircandi.candi.place",
+  place: {location:{lat:testLatitude, lng:testLongitude}},
+  visibility : "public",
+  isCollection: true,
+  enabled : true,
+  locked : false
+}
+var testLink = {
+  _to : '0008.11:11:11:11:11:22',
+  _from : '0004.111111.11111.111.111111',
+  primary: true,
+  signal: -100
+}
+var newTestLink = {
+  _to : '0004.111111.11111.111.111112',
+  _from : '0004.111111.11111.111.111111',
+  primary: true,
+  signal: -100
+}
+var testBeacon = {
+  _id : '0008.11:11:11:11:11:11',
+  label: 'Test Beacon Label',
+  ssid: 'Test Beacon',
+  bssid: '11:11:11:11:11:11',
+  beaconType: 'fixed',
+  visibility: 'public',
+  latitude : testLatitude,
+  longitude : testLongitude,
+  altitude : 12,
+  accuracy : 30,
+  level: -80,
+  loc : [testLongitude, testLatitude]
+}
+var testBeacon2 = {
+  _id : '0008.22:22:22:22:22:22',
+  label: 'Test Beacon Label 2',
+  ssid: 'Test Beacon 2',
+  bssid: '22:22:22:22:22:22',
+  beaconType: 'fixed',
+  visibility: 'public',
+  latitude : testLatitude,
+  longitude : testLongitude,
+  altitude : 12,
+  accuracy : 30,
+  level: -85,
+  loc : [testLongitude, testLatitude]
+}
+var testBeacon3 = {
+  _id : '0008.33:33:33:33:33:33',
+  label: 'Test Beacon Label 3',
+  ssid: 'Test Beacon 3',
+  bssid: '33:33:33:33:33:33',
+  beaconType: 'fixed',
+  visibility: 'public',
+  latitude : testLatitude,
+  longitude : testLongitude,
+  altitude : 12,
+  accuracy : 30,
+  level: -95,
+  loc : [testLongitude, testLatitude]
+}
+var testObservation = {
+  latitude : testLatitude,
+  longitude : testLongitude,
+  altitude : 100,
+  accuracy : 50.0
+}
+var testObservation2 = {
+  latitude : testLatitude2,
+  longitude : testLongitude2,
+  altitude : 12,
+  accuracy : 30.0
+}
+var testObservation3 = {
+  latitude : 46.15,
+  longitude : -121.1,
+  altitude : 12,
+  accuracy : 30.0
+}
+var testComment = {
+  title : "Test Comment",
+  description : "Test comment, much ado about nothing.",
+  name : "John Q Test",
+  location : "Testville, WA",
+  imageUri : "resource:placeholder_user",
+  _creator : testUser._id
+}
 
 // Get user and admin sessions and store the credentials in module globals
 exports.getSessions = function (test) {
@@ -176,69 +169,61 @@ exports.getEntitiesLoadChildren = function (test) {
    * We don't currently populate the smoke test data with any entities that have
    * both a parent and children.
    */
-  var req = new Req({
+  t.post({
     uri: '/do/getEntities',
     body: {entityIds: [constants.entityId], 
         eagerLoad: {parents: false, children: true, comments: true}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 1, dump(req, res))
-    assert(res.body.data && res.body.data[0], dump(req, res))
-    var record = res.body.data[0]
-    assert(record.children.length === dbProfile.spe, dump(req, res))
-    assert(record.childCount === dbProfile.spe, dump(req, res))
-    assert(record.comments.length === dbProfile.cpe, dump(req, res))
-    assert(record.commentCount === dbProfile.cpe, dump(req, res))
-    assert(record.links[0]._to === constants.beaconId, dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data[0])
+    var record = body.data[0]
+    t.assert(record.children.length === dbProfile.spe)
+    t.assert(record.childCount === dbProfile.spe)
+    t.assert(record.comments.length === dbProfile.cpe)
+    t.assert(record.commentCount === dbProfile.cpe)
+    t.assert(record.links[0]._to === constants.beaconId)
     test.done()
   })
 }
 
 exports.getEntitiesForLocation = function (test) {
-  var req = new Req({
+  t.post({
     uri: '/do/getEntitiesForLocation',
     body: {beaconIdsNew:[constants.beaconId],eagerLoad:{children:true,comments:false}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === dbProfile.epb, dump(req, res))
-    assert(res.body.date, dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.count === dbProfile.epb)
+    t.assert(body.date)
     test.done()
   })
 }
 
 exports.getEntitiesForLocationLimited = function (test) {
-  var req = new Req({
+  t.post({
     uri: '/do/getEntitiesForLocation',
     body: {beaconIdsNew:[constants.beaconId], 
         eagerLoad:{ children:true,comments:false }, 
         options:{limit:3, skip:0, sort:{modifiedDate:-1}}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 3, dump(req, res))
-    assert(res.body.more === true, dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.count === 3)
+    t.assert(body.more === true)
     test.done()
   })
 }
 
 exports.getEntitiesForUser = function (test) {
-  var req = new Req({
+  t.post({
     uri: '/do/getEntitiesForUser',
     body: {userId:constants.uid1, eagerLoad:{children:false,comments:false}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === Math.min(constants.recordLimit,
-        dbProfile.beacons * dbProfile.epb / dbProfile.users), dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.count === Math.min(constants.recordLimit,
+        dbProfile.beacons * dbProfile.epb / dbProfile.users))
     test.done()
   })
 }
 
 
 exports.cannotInsertEntityNotLoggedIn = function (test) {
-  var req = new Req({
+  t.post({
     uri: '/do/insertEntity',
     body: {
       entity:testEntity, 
@@ -246,15 +231,13 @@ exports.cannotInsertEntityNotLoggedIn = function (test) {
       primaryBeaconId:testBeacon._id,
       observation:testObservation
     }
-  })
-  request(req, function(err, res) {
-    check(req, res, 401)
+  }, 401, function(err, res, body) {
     test.done()
   })
 }
 
 exports.insertEntity = function (test) {
-  var req = new Req({
+  t.post({
     uri: '/do/insertEntity?' + userCred,
     body: {
       entity:testEntity, 
@@ -262,64 +245,54 @@ exports.insertEntity = function (test) {
       primaryBeaconId:testBeacon._id,
       observation:testObservation
     }
-  })
-  request(req, function(err, res) {
-    check(req, res, 201)
-    assert(res.body.count === 1, dump(req, res))
-    assert(res.body.data && res.body.data[0]._id, dump(req, res))
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data[0]._id)
 
     /* Find and store the primary link that was created by insertEntity */
-    req = new Req({
+    t.post({
       uri: '/do/find',
-      body: {table:'links',find:{_to:testBeacon._id, _from:res.body.data._id, primary:true}}
-    })
-    request(req, function(err, res) {
-      check(req, res)
-      assert(res.body.count === 1, dump(req, res))
-      primaryLink = res.body.data[0]
+      body: {table:'links',find:{_to:testBeacon._id, _from:body.data._id, primary:true}}
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+      primaryLink = body.data[0]
       test.done()
     })
   })
 }
 
 exports.checkInsertEntity = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/do/find',
     body: {table:'entities',find:{_id:testEntity._id}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 1, dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
     test.done()
   })
 }
 
 exports.checkInsertEntityLogAction = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/do/find',
     body: {table:'actions',find:{_target:testEntity._id, type:'insert_entity_picture'}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 1, dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
     test.done()
   })
 }
 
 exports.checkInsertLinkLogAction = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/do/find',
     body: {table:'actions',find:{_target:primaryLink._id, type:'link_browse'}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 1, dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
     test.done()
   })
 }
 
 exports.insertEntityBeaconAlreadyExists = function (test) {
-  var req = new Req({
+  t.post({
     uri: '/do/insertEntity?' + userCred,
     body: {
       entity:testEntity2, 
@@ -327,89 +300,77 @@ exports.insertEntityBeaconAlreadyExists = function (test) {
       primaryBeaconId:testBeacon._id,
       observation:testObservation
     }
-  })
-  request(req, function(err, res) {
-    check(req, res, 201)
-    assert(res.body.count === 1, dump(req, res))
-    assert(res.body.data && res.body.data[0]._id, dump(req, res))
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data[0]._id)
     test.done()
   })
 }
 
 exports.checkInsertEntityBeaconAlreadyExists = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/do/find',
     body: {table:'entities',find:{_id:testEntity2._id}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 1, dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
     test.done()
   })
 }
 
 exports.checkInsertLinkToEntity = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/do/find',
     body: {table:'links',find:{_to:testBeacon._id}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 2, dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.count === 2)
     test.done()
   })
 }
 
 exports.checkInsertBeacon = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/do/find',
     body: {table:'beacons', find:{ _id:testBeacon._id }}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 1, dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
     // Beacons should be owned by admin
-    assert(res.body.data[0]._owner === util.adminUser._id)
+    t.assert(body.data[0]._owner === util.adminUser._id)
     // Creator and modifier should be user who first added them
-    assert(res.body.data[0]._creator === testUser._id)
-    assert(res.body.data[0]._modifier === testUser._id)
+    t.assert(body.data[0]._creator === testUser._id)
+    t.assert(body.data[0]._modifier === testUser._id)
     test.done()
   })
 }
 
 exports.insertEntityWithNoLinks = function (test) {
-  var req = new Req({
+  t.post({
     uri: '/do/insertEntity?' + userCred,
     body: {
       entity:testEntity3,
       observation:testObservation
     }
-  })
-  request(req, function(err, res) {
-    check(req, res, 201)
-    assert(res.body.count === 1, dump(req, res))
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
     test.done()
   })
 }
 
 exports.checkInsertEntityNoLinks = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/do/find',
     body: {table:'entities',find:{_id:testEntity3._id}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 1, dump(req, res))
-    assert(res.body.data[0] && res.body.data[0].place, dump(req, res))
-    assert(res.body.data[0].place.location, dump(req, res))
-    assert(res.body.data[0].place.location.lat && res.body.data[0].place.location.lng, dump(req, res))
-    assert(res.body.data[0].loc, dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data[0] && body.data[0].place)
+    t.assert(body.data[0].place.location)
+    t.assert(body.data[0].place.location.lat && body.data[0].place.location.lng)
+    t.assert(body.data[0].loc)
     test.done()
   })
 }
 
 exports.getEntitiesForLocationIncludingNoLinkBigRadius = function (test) {
-  var req = new Req({
+  t.post({
     uri: '/do/getEntitiesForLocation',
     body: {
       beaconIdsNew:[testBeacon._id], 
@@ -417,17 +378,15 @@ exports.getEntitiesForLocationIncludingNoLinkBigRadius = function (test) {
       observation:testObservation3, 
       radius: radiusBig 
     }
-  })
-  request(req, function(err, res) {
-    check(req, res, 200)
-    assert(res.body.count === 3, dump(req, res))
-    assert(res.body.date, dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.count === 3)
+    t.assert(body.date)
     test.done()
   })
 }
 
 exports.getEntitiesForLocationIncludingNoLinkTinyRadius = function (test) {
-  var req = new Req({
+  t.post({
     uri: '/do/getEntitiesForLocation',
     body: {
       beaconIdsNew:[testBeacon._id], 
@@ -435,17 +394,15 @@ exports.getEntitiesForLocationIncludingNoLinkTinyRadius = function (test) {
       observation:testObservation3, 
       radius: radiusTiny
     }
-  })
-  request(req, function(err, res) {
-    check(req, res, 200)
-    assert(res.body.count === 2, dump(req, res))
-    assert(res.body.date, dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.count === 2)
+    t.assert(body.date)
     test.done()
   })
 }
 
 exports.trackEntityBrowse = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/do/trackEntity?' + userCred,
     body: {
       entityId:testEntity._id, 
@@ -454,53 +411,45 @@ exports.trackEntityBrowse = function(test) {
       observation:testObservation,
       actionType:'browse'
     }
-  })
-  request(req, function(err, res) {
-    check(req, res, 200)
+  }, function(err, res, body) {
     test.done()
   })
 }
 
 exports.checkTrackEntityBrowseAddedBeacon2 = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/do/find',
     body: {table:'beacons', find:{_id:testBeacon2._id}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 1, dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
     test.done()
   })
 }
 
 exports.checkTrackEntityBrowseLinksFromEntity1 = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/do/find',
     body: {table:'links', find:{_from:testEntity._id, type:'browse'}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 3, dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.count === 3)
     test.done()
   })
 }
 
 exports.checkTrackEntityBrowseLinkFromEntity1ToBeacon2 = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/do/find',
     body: {table:'links',find:{_to:testBeacon2._id, _from:testEntity._id, type:'browse'}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 1, dump(req, res))
-    assert(res.body.data[0].primary === true, dump(req, res))
-    assert(res.body.data[0].signal === testBeacon2.level, dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data[0].primary === true)
+    t.assert(body.data[0].signal === testBeacon2.level)
     test.done()
   })
 }
 
 exports.trackEntityProximity = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/do/trackEntity?' + userCred,
     body: {
       entityId:testEntity._id, 
@@ -509,9 +458,7 @@ exports.trackEntityProximity = function(test) {
       observation:testObservation,
       actionType:'proximity'
     }
-  })
-  request(req, function(err, res) {
-    check(req, res, 200)
+  }, function(err, res, body) {
     // give the fire-and-forget query some time to finish writing
     setTimeout(function() {
       test.done()
@@ -520,42 +467,36 @@ exports.trackEntityProximity = function(test) {
 }
 
 exports.checkTrackEntityProximityLinksFromEntity1 = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/do/find',
     body: {table:'links', find:{_from:testEntity._id, type:'proximity'}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 3, dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.count === 3)
     test.done()
   })
 }
 
 exports.checkTrackEntityProximityLinkFromEntity1ToBeacon2 = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/do/find',
     body: {table:'links',find:{_to:testBeacon2._id, _from:testEntity._id, type:'proximity'}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 1, dump(req, res))
-    assert(res.body.data[0].primary === true, dump(req, res))
-    assert(res.body.data[0].signal === testBeacon2.level, dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data[0].primary === true)
+    t.assert(body.data[0].signal === testBeacon2.level)
     test.done()
   })
 }
 
 exports.getEntitiesForLocationWithLocationUpdate = function (test) {
-  var req = new Req({
+  t.post({
     uri: '/do/getEntitiesForLocation',
     body: {beaconIdsNew:[testBeacon._id]
       , eagerLoad:{children:true,comments:false}
       , beaconLevels:[-80]
       , observation:testObservation2
     }
-  })
-  request(req, function(err, res) {
-    check(req, res, 200)
+  }, function(err, res, body) {
     test.done()
   })
 }
@@ -563,246 +504,203 @@ exports.getEntitiesForLocationWithLocationUpdate = function (test) {
 // Warning:  this is checking the results of a fire-and-forget
 //   updated, and may fail due to timing
 exports.checkBeaconLocationUpdate = function (test) {
-  var req = new Req({
+  t.post({
     uri: '/do/find',
     body: {table:'beacons', find:{ _id:testBeacon._id }}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 1, dump(req, res))
-    assert(res.body.data[0].latitude === 47.1)
-    assert(res.body.data[0].longitude === -122.1)
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data[0].latitude === 47.1)
+    t.assert(body.data[0].longitude === -122.1)
     test.done()
   })
 }
 
 exports.cannotDeleteBeaconWhenNotSignedIn = function (test) {
-  var req = new Req({
-    method: 'delete',
+  t.del({
     uri: '/data/beacons/' + testBeacon._id
-  })
-  request(req, function(err, res) {
-    check(req, res, 401)
+  }, 401, function(err, res, body) {
     test.done()
   })
 }
 
 exports.userCannotDeleteBeaconSheCreated = function (test) {
-  var req = new Req({
-    method: 'delete',
+  t.del({
     uri: '/data/beacons/' + testBeacon._id + '?' + userCred
-  })
-  request(req, function(err, res) {
-    check(req, res, 401)
+  }, 401, function(err, res, body) {
     test.done()
   })
 }
 
 exports.adminCanDeleteBeaconUserCreated = function (test) {
-  var req = new Req({
-    method: 'delete',
+  t.del({
     uri: '/data/beacons/' + testBeacon._id + '?' + adminCred
-  })
-  request(req, function(err, res) {
-    check(req, res)
+  }, function(err, res, body) {
     test.done()
   })
 }
 
 exports.userCanCommentOnOwnEntity = function (test) {
-  var req = new Req({
+  t.post({
     uri: '/do/insertComment?' + userCred,
     body: {entityId:testEntity._id,comment:testComment}
-  })
-  request(req, function(err, res) {
-    check(req, res, 201)
-    assert(res.body.count === 1, dump(req, res))
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
     test.done()
   })
 }
 
 exports.checkInsertComment = function (test) {
-  var req = new Req({
+  t.post({
     uri: '/do/getEntities',
     body: {entityIds:[testEntity._id],eagerLoad:{children:true,comments:true}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 1, dump(req, res))
-    assert(res.body.data && res.body.data[0] && res.body.data[0].comments.length === 1, dump(req, res))
-    assert(res.body.data && res.body.data[0] && res.body.data[0].commentCount === 1, dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data[0] && body.data[0].comments.length === 1)
+    t.assert(body.data && body.data[0] && body.data[0].commentCount === 1)
     test.done()
   })
 }
 
 exports.user2CanCommentOnEntityOwnedByUser1 = function (test) {
   testComment.description = "I am user2 and I luv user1"
-  var req = new Req({
+  t.post({
     uri: '/do/insertComment?' + user2Cred,
     body: {entityId:testEntity._id,comment:testComment}
-  })
-  request(req, function(err, res) {
-    check(req, res, 201)
-    assert(res.body.count === 1, dump(req, res))
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
     test.done()
   })
 }
 
 exports.checkComments = function (test) {
-  var req = new Req({
+  t.post({
     uri: '/do/getEntities',
     body: {entityIds:[testEntity._id],eagerLoad:{children:true,comments:true}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 1, dump(req, res))
-    assert(res.body.data && res.body.data[0] && res.body.data[0].comments.length === 2, dump(req, res))
-    assert(res.body.data && res.body.data[0] && res.body.data[0].commentCount === 2, dump(req, res))
-    var comments = res.body.data[0].comments
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data[0] && body.data[0].comments.length === 2)
+    t.assert(body.data && body.data[0] && body.data[0].commentCount === 2)
+    var comments = body.data[0].comments
     // Comments are appended to the end of the comments array
-    assert(comments[0]._creator === testUser._id)
-    assert(comments[1]._creator === testUser2._id)
+    t.assert(comments[0]._creator === testUser._id)
+    t.assert(comments[1]._creator === testUser2._id)
     test.done()
   })
 }
 
 exports.updateEntity = function (test) {
   testEntity.name = 'Testing super candi'
-  var req = new Req({
+  t.post({
     uri: '/do/updateEntity?' + userCred,
     body: {entity:testEntity}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 1, dump(req, res))
-    assert(res.body.data && res.body.data._id, dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data._id)
     test.done()
   })
 }
 
 exports.checkUpdateEntity = function (test) {
-  var req = new Req({
-    method: 'get',
+  t.get({
     uri: '/data/entities/' + testEntity._id
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.data && res.body.data[0] && res.body.data[0].name === 'Testing super candi', dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.data && body.data[0] && body.data[0].name === 'Testing super candi')
     test.done()
   })
 }
 
 exports.insertLink = function (test) {
-  var req = new Req({
+  t.post({
     uri: '/data/links?' + userCred,
     body: {data:testLink}
-  })
-  request(req, function(err, res) {
-    check(req, res, 201)
-    assert(res.body.count === 1 && res.body.data, dump(req, res))
-    testLink._id = res.body.data._id
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1 && body.data)
+    testLink._id = body.data._id
     test.done()
   })
 }
 
 exports.checkInsertedLink = function(test) {
-  var req = new Req({
-    method: 'get',
+  t.get({
     uri: '/data/links/' + testLink._id
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.data && res.body.data[0] && res.body.data[0]._id === testLink._id, dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.data && body.data[0] && body.data[0]._id === testLink._id)
     test.done()
   })
 
 }
 
 exports.updateLink = function (test) {
-  var req = new Req({
+  t.post({
     uri: '/do/updateLink?' + userCred,
     body: {link:newTestLink, originalToId: testLink._to}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 1, dump(req, res))
-    assert(res.body.data && res.body.data._id, dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data._id)
     test.done()
   })
 }
 
 exports.checkUpdatedLink = function (test) {
-  var req = new Req({
+  t.post({
     uri: '/do/find',
     body: {table:'links', find: {_to: newTestLink._to, _from: newTestLink._from}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 1, dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
     test.done()
   })
 }
 
 exports.deleteEntity = function (test) {
-  var req = new Req({
+  t.post({
     uri: '/do/deleteEntity?' + userCred,
     body: {
       entityId:testEntity._id, 
       deleteChildren:false
     }
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 1, dump(req, res))
-    assert(res.body.data && res.body.data._id, dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data._id)
     test.done()
   })
 }
 
 exports.checkDeleteEntity = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/do/find',
     body: {table:'entities',find:{_id:testEntity._id}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 0, dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.count === 0)
     test.done()
   })
 }
 
 exports.checkDeleteLink = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/do/find',
     body: {table:'links', find:{_to:testBeacon._id, _from:testEntity._id}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 0, dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.count === 0)
     test.done()
   })
 }
 
 exports.checkDeleteEntityLogActions = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/do/find',
     body: {table:'actions', find:{_target:testEntity._id, type:'insert_entity'}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 0, dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.count === 0)
     test.done()
   })
 }
 
 exports.checkDeleteLinkLogActions = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/do/find',
     body: {table:'actions', find:{_target:primaryLink._id, type:'tune_link_primary'}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 0, dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.count === 0)
     test.done()
   })
 }

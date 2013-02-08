@@ -1,29 +1,27 @@
-/*
+/**
  *  Proxibase perf test
  *
  *  These tests do not check the accuracy of the results of queries. They only
  *    check that queries do not throw errors and that they finish in less than
  *    the expected time.
+ *
+ *  We use test.ok in some cases instead of t.assert because test.ok will not
+ *    abort the test on failure.
  */
 
-var
-
-  request = require('request'),
-  testUtil = require('../util'),
-  constants = require('../constants'),
-  userCred = '',
-  adminCred = '',
-  getRec = constants.getDefaultRecord,
-  dbProfile = constants.dbProfile.smokeTest,
-  results = [],
-  util = require('utils'),
-  Timer = util.Timer,
-  testTimer = Timer(),
-  Req = testUtil.Req,
-  check = testUtil.check,
-  dump = testUtil.dump,
-  log = util.log
-  _exports = {} // for commenting out tests
+var testUtil = require('../util')
+var t = testUtil.treq
+var constants = require('../constants')
+var userCred = ''
+var adminCred = ''
+var getRec = constants.getDefaultRecord
+var dbProfile = constants.dbProfile.smokeTest
+var results = []
+var util = require('utils')
+var Timer = util.Timer
+var testTimer = Timer()
+var log = util.log
+var _exports = {} // for commenting out tests
 
 
 // Process perf test results
@@ -68,10 +66,9 @@ exports.start = function(test) {
 
 
 exports.insert100Users = function(test) {
-  var
-    timer = Timer(),
-    user = getRec('users'),
-    cRecs = 0
+  var timer = Timer()
+  var user = getRec('users')
+  var cRecs = 0
 
   timer.expected = 60
   delete user._id
@@ -85,66 +82,56 @@ exports.insert100Users = function(test) {
     user.name = 'Perf Test User ' + i
     user.email = 'perftestuser' + i + '@3meters.com'
     user.password = 'foobar'
-    var req = new Req({
+    t.post({
       uri: '/user/create',
       body: {data: user, noValidate: true, secret: 'larissa'},
-    })
-    request(req, function(err, res) {
-      check(req, res)
-      if (res.body.count) cRecs += res.body.count
+    }, function(err, res, body) {
+      if (body.count) cRecs += body.count
       return insertUser(i)
     })
   }
 }
 
 exports.find100Users = function(test) {
-  var
-    timer = Timer(),
-    cRecs = 0
+  var timer = Timer()
+  var cRecs = 0
   timer.expected = 60
 
   findUser(100)
   function findUser(i) {
     if (!i--) return done(test, 'find100Users', timer, cRecs)
-    var req = new Req({
+    t.post({
       uri: '/do/find',
       body: {table: 'users', find: {email: 'perftestuser' + i + '@3meters.com'}}
-    })
-    request(req, function(err, res) {
-      check(req, res)
-      if (res.body.count) cRecs += res.body.count
+    }, function(err, res, body) {
+      if (body.count) cRecs += body.count
       return findUser(i)
     })
   }
 }
 
 exports.findAndUpdate100Users = function(test) {
-  var
-    timer = Timer(),
-    cRecs = 0
+  var timer = Timer()
+  var cRecs = 0
   timer.expected = 120
 
   findAndUpdateUser(100)
   function findAndUpdateUser(i) {
     if (!i--) return done(test, 'findAndUpdate100Users', timer, cRecs)
-    var req = new Req({
+    t.post({
       uri: '/do/find',
       body: {
         table: 'users',
         fields: ['_id'],
         find: {email:'perftestuser' + i + '@3meters.com'}
       }
-    })
-    request(req, function(err, res) {
-      check(req, res)
-      var req2 = new Req({
-        uri: '/data/users/' + res.body.data[0]._id + '?' + adminCred,
+    }, function(err, res, body) {
+      t.post({
+        uri: '/data/users/' + body.data[0]._id + '?' + adminCred,
         body: {data:{location:'Updated Perfburg' + i + ', WA'}}
-      })
-      request(req2, function(err, res) {
-        check(req2, res)
-        if (res.body.count) cRecs += res.body.count
-        test.ok(res.body && res.body.count && res.body.count > 0, dump(req2, res))
+      }, function(err, res, body) {
+        if (body.count) cRecs += body.count
+        test.ok(body && body.count && body.count > 0)
         return findAndUpdateUser(i)
       })
     })
@@ -153,9 +140,8 @@ exports.findAndUpdate100Users = function(test) {
 
 
 exports.get100Entities = function (test) {
-  var
-    timer = Timer(),
-    cRecs = 0
+  var timer = Timer()
+  var cRecs = 0
   timer.expected = 300
 
   getEntity(100)
@@ -165,27 +151,24 @@ exports.get100Entities = function (test) {
     var recNum = Math.floor(Math.random() * dbProfile.beacons * dbProfile.epb)
     var id = testUtil.genId('entities', recNum)
 
-    var req = new Req({
+    t.post({
       uri: '/do/getEntities',
       body: {
         entityIds:[id],
         eagerLoad:{children:true, comments:true},
         options:{limit:500, skip:0, sort:{modifiedDate:-1}}
       }
-    })
-    request(req, function(err, res) {
-      check(req, res)
-      if (res.body.count) cRecs += ((res.body.count) + (res.body.count * dbProfile.spe))
-      test.ok(res.body.count === 1, dump(req, res))
+    }, function(err, res, body) {
+      if (body.count) cRecs += ((body.count) + (body.count * dbProfile.spe))
+      test.ok(body.count === 1)
       return getEntity(i) // recurse
     })
   }
 }
 
 exports.getEntitiesForLocation100Beacons = function (test) {
-  var
-    timer = Timer(),
-    cRecs = 0
+  var timer = Timer()
+  var cRecs = 0
   timer.expected = 300
 
   getEntitiesForLocation(100)
@@ -194,28 +177,25 @@ exports.getEntitiesForLocation100Beacons = function (test) {
     if (!i--) return done(test, 'getEntitiesForLocation100Beacons', timer, cRecs)
     var recNum = Math.floor(Math.random() * dbProfile.beacons)
     var id = testUtil.genBeaconId(recNum)
-    var req = new Req({
+    t.post({
       uri: '/do/getEntitiesForLocation',
       body: {
         beaconIdsNew:[id],
         eagerLoad:{ children:true, comments:false },
         options:{ limit:500, skip:0, sort:{modifiedDate:-1} }
       }
-    })
-    request(req, function(err, res) {
-      check(req, res)
-      if (res.body.count) cRecs += ((res.body.count) + (res.body.count * dbProfile.spe))
-      test.ok(res.body.count === dbProfile.epb, dump(req, res))
+    }, function(err, res, body) {
+      if (body.count) cRecs += ((body.count) + (body.count * dbProfile.spe))
+      test.ok(body.count === dbProfile.epb)
       getEntitiesForLocation(i)
     })
   }
 }
 
 exports.getEntitiesForLocation10x10Beacons = function (test) {
-  var 
-    timer = Timer(),
-    cRecs = 0,
-    batchSize = 10
+  var timer = Timer()
+  var cRecs = 0
+  var batchSize = 10
   timer.expected = 300
 
   getEntitiesForLocation(dbProfile.beacons / batchSize)
@@ -230,27 +210,24 @@ exports.getEntitiesForLocation10x10Beacons = function (test) {
       var id = testUtil.genBeaconId(j)
       beaconIds.push(id)
     }
-    var req = new Req({
+    t.post({
       uri: '/do/getEntitiesForLocation',
       body: {
         beaconIdsNew:beaconIds, 
         eagerLoad:{ children:true, comments:false }, 
         options:{ limit:500, skip:0, sort:{modifiedDate:-1} }
       }
-    })
-    request(req, function(err, res) {
-      check(req, res)
-      test.ok(res.body.count === dbProfile.epb * batchSize, dump(req, res))
-      if (res.body.count) cRecs += ((res.body.count) + (res.body.count * dbProfile.spe))
+    }, function(err, res, body) {
+      test.ok(body.count === dbProfile.epb * batchSize)
+      if (body.count) cRecs += ((body.count) + (body.count * dbProfile.spe))
       getEntitiesForLocation(i)
     })
   }
 }
 
 _exports.getEntitiesByLocationOnly = function (test) {
-  var
-    timer = Timer(),
-    cRecs = 0
+  var timer = Timer()
+  var cRecs = 0
   timer.expected = 300
 
   getEntitiesForLocation(100)
@@ -259,7 +236,7 @@ _exports.getEntitiesByLocationOnly = function (test) {
     if (!i--) return done(test, 'getEntitiesByLocationOnly', timer, cRecs)
     var recNum = Math.floor(Math.random() * dbProfile.beacons)
     var id = testUtil.genBeaconId(recNum)
-    var req = new Req({
+    t.post({
       uri: '/do/getEntitiesForLocation',
       body: {
         observation: { accuracy:20, latitude:47.5935851, longitude:-122.1596039 },
@@ -267,20 +244,17 @@ _exports.getEntitiesByLocationOnly = function (test) {
         eagerLoad:{ children:true, comments:false },
         options:{ limit:500, skip:0, sort:{modifiedDate:-1} }
       }
-    })
-    request(req, function(err, res) {
-      check(req, res)
-      if (res.body.count) cRecs += ((res.body.count) + (res.body.count * dbProfile.spe))
-      test.ok(res.body.count === dbProfile.epb, dump(req, res))
+    }, function(err, res, body) {
+      if (body.count) cRecs += ((body.count) + (body.count * dbProfile.spe))
+      test.ok(body.count === dbProfile.epb)
       getEntitiesForLocation(i)
     })
   }
 }
 
 _exports.getEntitiesByLocationWithBeaconUpgrade = function (test) {
-  var
-    timer = Timer(),
-    cRecs = 0
+  var timer = Timer()
+  var cRecs = 0
   timer.expected = 300
 
   getEntitiesForLocation(100)
@@ -289,7 +263,7 @@ _exports.getEntitiesByLocationWithBeaconUpgrade = function (test) {
     if (!i--) return done(test, 'getEntitiesByLocationWithBeaconUpgrade', timer, cRecs)
     var recNum = Math.floor(Math.random() * dbProfile.beacons)
     var id = testUtil.genBeaconId(recNum)
-    var req = new Req({
+    t.post({
       uri: '/do/getEntitiesForLocation',
       body: {
         beaconIdsNew:beaconIds, 
@@ -298,20 +272,17 @@ _exports.getEntitiesByLocationWithBeaconUpgrade = function (test) {
         eagerLoad:{ children:true, comments:false },
         options:{ limit:500, skip:0, sort:{modifiedDate:-1} }
       }
-    })
-    request(req, function(err, res) {
-      check(req, res)
-      if (res.body.count) cRecs += ((res.body.count) + (res.body.count * dbProfile.spe))
-      test.ok(res.body.count === dbProfile.epb, dump(req, res))
+    }, function(err, res, body) {
+      if (body.count) cRecs += ((body.count) + (body.count * dbProfile.spe))
+      test.ok(body.count === dbProfile.epb)
       getEntitiesForLocation(i)
     })
   }
 }
 
 _exports.getUsers = function (test) {
-  var
-    timer = Timer(),
-    cRecs = 0
+  var timer = Timer()
+  var cRecs = 0
   timer.expected = 300
 
   getEntitiesForLocation(100)
@@ -320,16 +291,14 @@ _exports.getUsers = function (test) {
     if (!i--) return done(test, 'getUsers', timer, cRecs)
     var recNum = Math.floor(Math.random() * dbProfile.beacons)
     var id = testUtil.genBeaconId(recNum)
-    var req = new Req({
+    t.post({
       uri: '/do/getUser',
       body: {
         userId:'xxxxxxxxxxxxxxxxxx'
       }
-    })
-    request(req, function(err, res) {
-      check(req, res)
-      if (res.body.count) cRecs += ((res.body.count) + (res.body.count * dbProfile.spe))
-      test.ok(res.body.count === dbProfile.epb, dump(req, res))
+    }, function(err, res, body) {
+      if (body.count) cRecs += ((body.count) + (body.count * dbProfile.spe))
+      test.ok(body.count === dbProfile.epb)
       getUsers(i)
     })
   }
@@ -337,28 +306,26 @@ _exports.getUsers = function (test) {
 
 
 exports.getEntitiesFor10Users = function(test) {
-  var timer = Timer(),
-    recordLimit = 300,
-    cRecs = 0 
+  var timer = Timer()
+  var recordLimit = 300
+  var cRecs = 0
   timer.expected = 120
 
   getEntitiesForUser(10)
 
   function getEntitiesForUser(i) {
     if (!i--) return done(test, 'getEntitiesFor10Users', timer, cRecs)
-    var req = new Req({
+    t.post({
       uri: '/do/getEntitiesForUser',
       body: {
         userId:constants.uid1,
         eagerLoad:{children:false, comments:false},
         options:{limit:500, skip:0, sort:{modifiedDate:-1}}
       }
-    })
-    request(req, function(err, res) {
-      check(req, res)
-      if (res.body.count) cRecs += res.body.count
+    }, function(err, res, body) {
+      if (body.count) cRecs += body.count
       // This check currently fails because the method doesn't support limits
-      //test.ok(res.body.count === Math.min(recordLimit, dbProfile.beacons * dbProfile.epb), dump(req, res))
+      //test.ok(body.count === Math.min(recordLimit, dbProfile.beacons * dbProfile.epb))
       return getEntitiesForUser(i)
     })
   }
@@ -366,16 +333,15 @@ exports.getEntitiesFor10Users = function(test) {
 
 // Makes an external call -- not appropriate for perf test
 _exports.getPlacesNear100Locations = function (test) {
-  var 
-    timer = Timer(),
-    cRecs = 0
+  var timer = Timer()
+  var cRecs = 0
   timer.expected = 300
 
   getPlacesNearLocation(100)
 
   function getPlacesNearLocation(i) {
     if (!i--) return done(test, 'getPlacesNear100Locations', timer, cRecs)
-    var req = new Req({
+    t.post({
       uri: '/do/getPlacesNearLocation',
       body: {
         userId: constants.uid1,
@@ -385,10 +351,8 @@ _exports.getPlacesNear100Locations = function (test) {
         source: 'foursquare',
         options:{limit:500, skip:0, sort:{modifiedDate:-1}}
       }
-    })
-    request(req, function(err, res) {
-      check(req, res)
-      if (res.body.count) cRecs += res.body.count
+    }, function(err, res, body) {
+      if (body.count) cRecs += body.count
       return getPlacesNearLocation(i)
     })
   }

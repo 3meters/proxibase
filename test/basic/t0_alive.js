@@ -2,6 +2,7 @@
  *  Proxibase alive test
  */
 
+var assert = require('assert')
 var testUtil = require('../util')
 var t = testUtil.treq
 var util = require('utils')
@@ -11,7 +12,7 @@ var _exports = {}
 
 // Make sure server is alive and responding
 exports.getIndexPage = function(test) {
-  t.get({}, function(err, res) {
+  t.get({}, function(err, res, body) {
     test.done()
   })
 }
@@ -41,10 +42,9 @@ exports.getErrorsPage = function(test) {
 }
 
 // Make sure server barfs on post without body
-//   default method for Req is post, not get
 exports.postWithMissingBody = function(test) {
-  t.get('/do/find', 400, function(err, res) {
-    t.assert(res.body.error)
+  t.post('/do/find', 400, function(err, res, body) {
+    t.assert(body.error)
     test.done()
   })
 }
@@ -52,11 +52,17 @@ exports.postWithMissingBody = function(test) {
 
 // Make sure server barfs on body not parsable as JSON
 exports.postWithBadJsonInBody = function(test) {
-  t.post({
-    uri: '/data/users',
-    body: '{data: "This is not JSON"}'
-  }, 400, function(err, res) {
-    t.assert(res.body.error)
+  // We have to do this one with raw requst since our
+  // treq util will trap bad json before the request is sent
+  var req = {
+    uri: testUtil.serverUrl + '/data/users',
+    method: 'post',
+    body: '{data: "This is not JSON"}',
+    headers: {'Content-type': 'application/json'}
+  }
+  testUtil.request(req, function(err, res) {
+    testUtil.check(req, res, 400)
+    assert(res.body.error, testUtil.dump(req, res))
     test.done()
   })
 }

@@ -1,22 +1,16 @@
-/*
+/**
  *  Proxibase admin tests
- *
  */
 
-var
-  assert = require('assert'),
-  request = require('request'),
-  util = require('utils'),
-  log = util.log,
-  testUtil = require('../util'),
-  Req = testUtil.Req,
-  check = testUtil.check,
-  dump = testUtil.dump,
-  userSession,
-  userCred,
-  adminSession,
-  adminCred,
-  _exports = {}  // For commenting out tests
+var util = require('utils')
+var log = util.log
+var testUtil = require('../util')
+var t = testUtil.treq
+var userSession
+var userCred
+var adminSession
+var adminCred
+var _exports = {}  // For commenting out tests
 
 
 exports.getUserSession = function(test) {
@@ -31,16 +25,24 @@ exports.getUserSession = function(test) {
   })
 }
 
-exports.findOrphans = function(test) {
-  var req = new Req({
-    uri: '/admin/findorphans?' + adminCred,
-    method: 'get'
-  })
-  request(req, function(err, res){
-    check(req, res)
-    assert(res.body.report)
+exports.findOrphansAsAnnonFails = function(test) {
+  t.get('/admin/findorphans', 401,
+  function(err, res, body){
     test.done()
   })
 }
 
+exports.findOrphansAsUserFails = function(test) {
+  t.get('/admin/findorphans?' + userCred, 401,
+  function(err, res, body){
+    test.done()
+  })
+}
 
+exports.findOrphansAsAdminWorks = function(test) {
+  t.get('/admin/findorphans?' + adminCred,
+  function(err, res, body){
+    t.assert(body.report)
+    test.done()
+  })
+}
