@@ -1,63 +1,49 @@
-
-/*
+/**
  * Proxibase base web method tests
  */
 
-var
-  request = require('request'),
-  assert = require('assert'),
-  util = require('utils'),
-  log = util.log,
-  testUtil = require('../util'),
-  Req = testUtil.Req,
-  check = testUtil.check,
-  dump = testUtil.dump,
-  constants = require('../constants'),
-  userCred = '',
-  adminCred = '',
-  testUser1 = {},
-  _exports = {}  // For commenting out tests
+var util = require('utils')
+var log = util.log
+var testUtil = require('../util')
+var t = testUtil.treq
+var constants = require('../constants')
+var userCred = ''
+var adminCred = ''
+var testUser1 = {}
+var _exports = {}  // For commenting out tests
 
 
 exports.getUserSession = function(test) {
   testUtil.getUserSession(function(session) {
     userCred = 'user=' + session._owner + '&session=' + session.key
-    test.done()
-  })
-}
-
-
-exports.getAdminSession = function(test) {
-  testUtil.getAdminSession(function(session) {
-    adminCred = 'user=' + session._owner + '&session=' + session.key
-    test.done()
+    testUtil.getAdminSession(function(session) {
+      adminCred = 'user=' + session._owner + '&session=' + session.key
+      test.done()
+    })
   })
 }
 
 
 exports.echo = function(test) {
-  var req = new Req({
+  var rBody = {foo: {bar: {baz: 'foo'}}}
+  t.post({
     uri: '/do/echo',
-    body: {table: 'users'}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    delete (res.body.time)
-    assert.deepEqual(req.body, res.body, dump(req, res))
+    body: rBody
+  }, function(err, res, body) {
+    t.assert(body.foo.bar.baz === rBody.foo.bar.baz)
+    // TODO:  get t.assert to inherit from assert and do t.assert.deepequal(body, rBody)
     test.done()
   })
 }
 
 
 exports.simpleFind = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/do/find?' + userCred,
     body: {table: 'users'}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body && res.body.data, dump(req, res))
-    assert(res.body.data instanceof Array && res.body.data.length)
+  }, function(err, res, body) {
+    t.assert(body && body.data)
+    t.assert(body.data instanceof Array && body.data.length)
     test.done()
   })
 }
@@ -65,97 +51,83 @@ exports.simpleFind = function(test) {
 
 exports.findWithLimitNotSignedIn = function(test) {
   var limit = 10
-  var req = new Req({
+  t.post({
     uri: '/do/find',
     body: {table:'entities', limit: limit}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body && res.body.data, dump(req, res))
-    assert(res.body.data instanceof Array, dump(req, res))
-    assert(res.body.count === limit, dump(req, res))
-    assert(res.body.data.length === limit, dump(req, res))
-    assert(res.body.more === true, dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body && body.data)
+    t.assert(body.data instanceof Array)
+    t.assert(body.count === limit)
+    t.assert(body.data.length === limit)
+    t.assert(body.more === true)
     test.done()
   })
 }
 
 
 exports.findById = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/do/find?' + userCred,
     body: {table:'users', ids:[constants.uid1]}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.data.length === 1 && res.body.count === 1)
-    assert(res.body.data[0]._id === constants.uid1)
-    testUser1 = res.body.data[0]
+  }, function(err, res, body) {
+    t.assert(body.data.length === 1 && body.count === 1)
+    t.assert(body.data[0]._id === constants.uid1)
+    testUser1 = body.data[0]
     test.done()
   })
 }
 
 
 exports.findByNameCaseInsensitive = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/do/find?' + userCred,
     body: {table:'users', names:[testUser1.name.toUpperCase()]}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.data.length === 1 && res.body.count === 1, dump(req, res))
-    assert(res.body.data[0]._id === constants.uid1)
+  }, function(err, res, body) {
+    t.assert(body.data.length === 1 && body.count === 1)
+    t.assert(body.data[0]._id === constants.uid1)
     test.done()
   })
 }
 
 
 exports.findPassThrough = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/do/find?' + userCred,
     body: {table:'users', find:{email: testUser1.email}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.data.length === 1 && res.body.count === 1)
-    assert(res.body.data[0].email === testUser1.email)
+  }, function(err, res, body) {
+    t.assert(body.data.length === 1 && body.count === 1)
+    t.assert(body.data[0].email === testUser1.email)
     test.done()
   })
 }
 
 
 exports.touchFailsForAnnonymous = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/do/touch',
     body: {table: 'users'}
-  })
-  request(req, function(err, res) {
-    check(req, res, 401)
+  }, 401, function(err, res, body) {
     test.done()
   })
 }
 
 
 exports.touchFailsForUsers = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/do/touch?' + userCred,
     body: {table: 'users'}
-  })
-  request(req, function(err, res) {
-    check(req, res, 401)
+  }, 401, function(err, res) {
     test.done()
   })
 }
 
 
 exports.touchWorksForAdmins = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/do/touch?' + adminCred,
     body: {table: 'users'}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count)
+  }, function(err, res, body) {
+    t.assert(body.count)
     test.done()
   })
 }
