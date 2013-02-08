@@ -2,15 +2,10 @@
  *  Proxibase rest basic test
  */
 
-var assert = require('assert')
-var request = require('request')
 var util = require('utils')
 var log = util.log
 var testUtil = require('../util')
-var Req = testUtil.Req
-var check = testUtil.check
-var dump = testUtil.dump
-var t = testUtil.T() // newfangled test harness
+var t = testUtil.treq
 var userSession
 var userCred
 var adminSession
@@ -44,32 +39,24 @@ exports.getUserSession = function(test) {
 
 
 exports.cannotPostDocWithMissingDataTag = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/documents?' + userCred,
     body: {'name': 'ForgotToEncloseDataInDataTag'}
-  })
-  request(req, function(err, res) {
-    check(req, res, 400)
-    assert(res.body.error.code === 400.1)
-    assert(res.body.error, dump(req, res))
+  }, 400, function(err, res, body) {
+    t.assert(body.error.code === 400.1)
     test.done()
   })
 }
 
 
 exports.cannotPostWithMultipleArrayElements = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/documents?' + userCred,
     body: {data: [
-      {
-        name: 'RestTestMultiDoc0',
-      },{
-        name: 'RestTestMultiDoc1',
-      }
+      { name: 'RestTestMultiDoc0', },
+      { name: 'RestTestMultiDoc1', }
     ]}
-  })
-  request(req, function(err, res) {
-    check(req, res, 400)
+  }, 400, function(err, res, body) {
     test.done()
   })
 }
@@ -77,73 +64,62 @@ exports.cannotPostWithMultipleArrayElements = function(test) {
 
 // TODO: only enforced by REST.  Custom methods bypass
 exports.cannotPostWithNonSchemaFields = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/documents?' + userCred,
     body: {data: {name: 'I make up fields', myField: 'foo'}}
-  })
-  request(req, function(err, res) {
-    check(req, res, 400)
-    assert(res.body.error.code === 400.11) // Bad parameter
+  }, 400, function(err, res, body) {
+    t.assert(body.error.code === 400.11) // Bad parameter
     test.done()
   })
 }
 
 
 exports.canAddDoc = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/documents?' + userCred,
     body: {data: testDoc1}
-  })
-  request(req, function(err, res) {
-    check(req, res, 201)
-    assert(res.body.count === 1, dump(req, res))
-    assert(res.body.data && res.body.data._id, dump(req, res))
-    testDoc1._id = res.body.data._id
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data._id)
+    testDoc1._id = body.data._id
     test.done()
   })
 }
 
 
 exports.canAddDocAsSingleElementArray = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/documents?' + userCred,
     body: {data: testDoc2}
-  })
-  request(req, function(err, res) {
-    check(req, res, 201)
-    assert(res.body.data && res.body.data._id)
-    testDoc2._id = res.body.data._id
+  }, 201, function(err, res, body) {
+    t.assert(body.data && body.data._id)
+    testDoc2._id = body.data._id
     test.done()
   })
 }
 
 exports.cannotAddDocMissingRequiredField = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/entities?' + userCred,
     body: {data: {name: 'Test Entity Missing its type'}}
-  })
-  request(req, function(err, res) {
-    check(req, res, 400)
-    assert(res.body.error.code === 400.1) // missingParam
+  }, 400, function(err, res, body) {
+    t.assert(body.error.code === 400.1) // missingParam
     test.done()
   })
 }
 
 exports.findDocsByIdAndCheckSysFields = function(test) {
-  var req = new Req({
-    method: 'get',
+  t.get({
     uri: '/data/documents/' + testDoc1._id + ',' + testDoc2._id + '?' + userCred
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 2, dump(req, res))
-    assert((res.body.data[0]._id === testDoc1._id || res.body.data[1]._id === testDoc1._id), dump(req, res))
-    assert((res.body.data[0].name === testDoc2.name || res.body.data[1].name === testDoc2.name), dump(req, res))
-    assert(res.body.data[0]._creator === userSession._owner)
-    assert(res.body.data[0]._owner === userSession._owner)
-    assert(res.body.data[0].createdDate > testStartTime)
-    assert(res.body.data[0].modifiedDate > testStartTime)
-    testDoc1Saved = res.body.data[0]
+  }, function(err, res, body) {
+    t.assert(body.count === 2)
+    t.assert((body.data[0]._id === testDoc1._id || body.data[1]._id === testDoc1._id))
+    t.assert((body.data[0].name === testDoc2.name || body.data[1].name === testDoc2.name))
+    t.assert(body.data[0]._creator === userSession._owner)
+    t.assert(body.data[0]._owner === userSession._owner)
+    t.assert(body.data[0].createdDate > testStartTime)
+    t.assert(body.data[0].modifiedDate > testStartTime)
+    testDoc1Saved = body.data[0]
     test.done()
   })
 }
@@ -151,62 +127,48 @@ exports.findDocsByIdAndCheckSysFields = function(test) {
 
 
 exports.findDocsByGetAndFindAndJson = function(test) {
-  var req = new Req({
-    method: 'get',
+  t.get({
     uri: '/data/documents?find={"_id":"' + testDoc1._id + '"}&' + userCred
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.data.length === 1, dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.data.length === 1)
     test.done()
   })
 }
 
 exports.findDocsByGetAndFindAndJsonFailsWithBadUserCred = function(test) {
-  var req = new Req({
-    method: 'get',
-    uri: '/data/documents?find={"_id":"' + testDoc1._id + '"}&' + userCred.slice(0, -1) // bogus session key
-  })
-  request(req, function(err, res) {
-    check(req, res, 401) // badAuth
+  t.get({
+    // bogus session key
+    uri: '/data/documents?find={"_id":"' + testDoc1._id + '"}&' + userCred.slice(0, -1)
+  }, 401, function(err, res, body) {
     test.done()
   })
 }
 
 exports.findDocsByGetAndFindWithBadJson = function(test) {
-  var req = new Req({
-    method: 'get',
+  t.get({
     uri: '/data/documents?find={_id:"' + testDoc1._id + '"}&' + userCred
-  })
-  request(req, function(err, res) {
-    check(req, res, 400)
+  }, 400, function(err, res, body) {
     test.done()
   })
 }
 
 exports.findDocsByNameWhenNotSignedIn = function(test) {
-  var req = new Req({
-    method: 'get',
+  t.get({
     uri: '/data/documents?names=' + testDoc1.name.toUpperCase() + ',' + testDoc2.name
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 2, dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.count === 2)
     test.done()
   })
 }
 
 exports.findWithLookups = function(test) {
-  var req = new Req({
-    method: 'get',
+  t.get({
     uri: '/data/documents?names=' + testDoc1.name + '&lookups=1'
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    var doc = res.body.data[0]
-    assert('Test User' === doc.owner, dump(req, res))
-    assert('Test User' === doc.creator, dump(req, res))
-    assert('Test User' === doc.modifier, dump(req, res))
+  }, function(err, res, body) {
+    var doc = body.data[0]
+    t.assert('Test User' === doc.owner)
+    t.assert('Test User' === doc.creator)
+    t.assert('Test User' === doc.modifier)
     test.done()
   })
 }
@@ -214,31 +176,26 @@ exports.findWithLookups = function(test) {
 
 
 exports.updateDoc = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/documents/' + testDoc1._id + '?' + userCred,
     body: {data: {name: 'Changed Name' } }
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 1)
-    assert(res.body.data && res.body.data.name)
-    assert(res.body.data.name === 'Changed Name', dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data.name)
+    t.assert(body.data.name === 'Changed Name')
     test.done()
   })
 }
 
 
 exports.checkUpdatedDoc = function(test) {
-  var req = new Req({
-    method: 'gET',
+  t.get({
     uri: '/data/documents/' + testDoc1._id
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.data && res.body.data[0])
-    assert(res.body.data[0].name === 'Changed Name', dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.data && body.data[0])
+    t.assert(body.data[0].name === 'Changed Name')
     // Ensures modified date is getting set on update
-    assert(res.body.data[0].modifiedDate > testDoc1Saved.modifiedDate)
+    t.assert(body.data[0].modifiedDate > testDoc1Saved.modifiedDate)
     test.done()
   })
 }
@@ -247,77 +204,63 @@ exports.settingFieldsToNullUnsetsThem = function(test) {
   t.post({
     uri: '/data/documents/' + testDoc1._id + '?' + userCred,
     body: {data: {data: null} }
-  }, function(err, res) {
-    t.assert(util.type(res.body.data.data === 'undefined'))
+  }, function(err, res, body) {
+    t.assert(util.type(body.data.data === 'undefined'))
     test.done()
   })
 }
 
 
 exports.cannotAddNonSchemaFieldsUsingUpdate = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/documents/' + testDoc1._id + '?' + userCred,
     body: {data: {myNewField: 'Should fail' } }
-  })
-  request(req, function(err, res) {
-    check(req, res, 400)
-    assert(res.body.error.code === 400.11) // Bad parameter
+  }, 400, function(err, res, body) {
+    t.assert(body.error.code === 400.11) // Bad parameter
     test.done()
   })
 }
 
 
 exports.deleteUpdateDoc = function(test) {
-  var req = new Req({
-    method: 'delete',
+  t.del({
     uri: '/data/documents/' + testDoc1._id + '?' + userCred
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 1, dump(req, res))
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
     test.done()
   })
 }
 
 
 exports.checkUpdatedDocDeletedThenAddBack = function(test) {
-  var req = new Req({
-    method: 'gET',
+  t.get({
     uri: '/data/documents/' + testDoc1._id + '?' + userCred
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 0, dump(req, res))
-    var req2 = new Req({
+  }, function(err, res, body) {
+    t.assert(body.count === 0)
+    t.post({
       uri: '/data/documents?' + userCred,
       body: {data: testDoc1}
-    })
-    request(req2, function(err, res) {
-      check(req, res, 201)
-      assert(res.body.data._id = testDoc1._id)
+    }, 201, function(err, res, body) {
+      t.assert(body.data._id = testDoc1._id)
       test.done()
     })
   })
 }
 
 exports.userCannotUpdateNonExistantDoc = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/documents/00005.002?' + userCred,
     body: {data: {name: 'I should not be saved'}}
-  })
-  request(req, function(err, res) {
-    check(req, res, 404)
+  }, 404, function(err, res, body) {
     test.done()
   })
 }
 
 exports.adminCannotUpdateNonExistantDoc = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/documents/00005.002?' + adminCred,
     body: {data: {name: 'I should should not be saved'}}
-  })
-  request(req, function(err, res) {
-    check(req, res, 404)
+  }, 404, function(err, res, body) {
     test.done()
   })
 }
@@ -326,21 +269,17 @@ exports.adminCannotUpdateNonExistantDoc = function(test) {
 exports.canAddDocsWithPreexitingIds = function(test) {
   var newDocId1 = '0007.060101.55664.234.11111'
   var newDocId2 = '0007.060101.55664.234.22222'
-  var req = new Req({
+  t.post({
     uri: '/data/documents?' + userCred,
     body: {data: {_id: newDocId1, name: 'I have my own id'}}
-  })
-  request(req, function(err, res) {
-    check(req, res, 201)
-    assert(res.body.count === 1)
-    assert(res.body.data && res.body.data._id)
-    assert(res.body.data._id === newDocId1)
-    var req2 = new Req({
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data._id)
+    t.assert(body.data._id === newDocId1)
+    t.post({
       uri: '/data/documents?' + userCred,
       body: {data: {_id: newDocId2, name: 'I do too'}}
-    })
-    request(req2, function(err, res) {
-      check(req2, res, 201)
+    }, 201, function(err, res, body) {
       test.done()
     })
   })
@@ -348,67 +287,55 @@ exports.canAddDocsWithPreexitingIds = function(test) {
 
 
 exports.cannotAddDocWithMissMatchedTableId = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/documents?' + userCred,
     body: {data: {_id: '0005.060101.55664.234.34567', name: 'My id points to the wrong collection'}}
-  })
-  request(req, function(err, res) {
-    check(req, res, 400)
+  }, 400, function(err, res, body) {
     test.done()
   })
 }
 
 exports.cannotLinkDocToBogusTableId = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/links?' + userCred,
     body: {data: {_from: testDoc1._id,
      _to: 'foo.120101.673423.654.23423'}}
-  })
-  request(req, function(err, res) {
-    check(req, res, 400)
+  }, 400, function(err, res, body) {
     test.done()
   })
 }
 
 
 exports.userCanLinkDocs = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/links?' + userCred,
     body: {data: {_from: testDoc1._id,
      _to: testDoc2._id}}
-  })
-  request(req, function(err, res) {
-    check(req, res, 201)
-    linkId = res.body.data._id
+  }, 201, function(err, res, body) {
+    linkId = body.data._id
     test.done()
   })
 }
 
 
 exports.checkLink = function(test) {
-  var req = new Req({
-    method: 'get',
+  t.get({
     uri: '/data/links/' + linkId
-  })
-  request(req, function(err, res) {
-    check(req, res) 
-    assert(res.body.data[0]._from = testDoc1._id)
-    assert(res.body.data[0]._to = testDoc2._id)
-    assert(res.body.data[0].fromCollectionId = documentsSchemaId)
-    assert(res.body.data[0].toCollectionId = documentsSchemaId)
+  }, function(err, res, body) {
+    t.assert(body.data[0]._from = testDoc1._id)
+    t.assert(body.data[0]._to = testDoc2._id)
+    t.assert(body.data[0].fromCollectionId = documentsSchemaId)
+    t.assert(body.data[0].toCollectionId = documentsSchemaId)
     test.done()
   })
 }
 
 
 exports.canDeleteLink = function(test) {
-  var req = new Req({
-    method: 'delete',
+  t.del({
     uri: '/data/links/' + linkId + '?' + userCred
-  })
-  request(req, function(err, res) {
-    check(req, res) 
-    assert(res.body.count = 1)
+  }, function(err, res, body) {
+    t.assert(body.count = 1)
     test.done()
   })
 }
@@ -416,66 +343,57 @@ exports.canDeleteLink = function(test) {
 
 
 exports.userCannotDeleteUsingWildcard = function(test) {
-  var req = new Req({
-    method: 'delete',
-    uri: '/data/documents/*?' + userCred
-  })
-  request(req, function(err, res) {
-    check(req, res, 404)
+  t.del({ uri: '/data/documents/*?' + userCred }, 404,
+  function(err, res, body) {
     test.done()
   })
 }
 
 
 exports.userCanDeleteMultipleDocs = function(test) {
-  var req = new Req({
-    method: 'delete',
+  t.del({
     uri: '/data/documents/' + testDoc1._id + ',' + testDoc2._id + '?' + userCred
-  })
-  request(req, function(err, res) {
-    check(req, res) 
-    assert(res.body.count === 2) 
+    }, function(err, res, body) {
+    t.assert(body.count === 2) 
     test.done()
   })
 }
 
 
 exports.defaultsWork = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/beacons?' + userCred,
     body: {data: {
       bssid: '01:10:11:22:44:66',
       ssid: 'Rest test beacon'
     }}
-  })
-  request(req, function(err, res){
-    check(req, res, 201)
-    assert(res.body.data.visibility === 'public')
+  }, 201, function(err, res, body) {
+    t.assert(body.data.visibility === 'public')
     test.done()
   })
 }
 
 exports.anonCannotReadSystemCollections = function(test) {
-  t.get({uri: '/data/sessions'}, 401, function(err, res) {
+  t.get({uri: '/data/sessions'}, 401, function(err, res, body) {
     test.done()
   })
 }
 
 exports.userCannotReadSystemCollections = function(test) {
-  t.get({uri: '/data/sessions?' + userCred}, 401, function(err, res) {
+  t.get({uri: '/data/sessions?' + userCred}, 401, function(err, res, body) {
     test.done()
   })
 }
 
 exports.admiCanReadSystemCollections = function(test) {
-  t.get({uri: '/data/sessions?' + adminCred}, function(err, res) {
-    t.assert(res.body.data.length)
+  t.get({uri: '/data/sessions?' + adminCred}, function(err, res, body) {
+    t.assert(body.data.length)
     test.done()
   })
 }
 
 exports.usersCannotSkipSafeInsert = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/beacons?' + userCred,
     body: {
       data: {
@@ -484,15 +402,13 @@ exports.usersCannotSkipSafeInsert = function(test) {
       },
       skipValidation: true 
     }
-  })
-  request(req, function(err, res) {
-    check(req, res, 401)
+  }, 401, function(err, res, body) {
     test.done()
   })
 }
 
 exports.adminsCanSkipSafeInsert = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/beacons?' + adminCred,
     body: {
       data: {
@@ -501,16 +417,14 @@ exports.adminsCanSkipSafeInsert = function(test) {
       },
       skipValidation: true
     }
-  })
-  request(req, function(err, res) {
-    check(req, res, 201)
-    assert(res.body.data.bogusField, dump(req, res))
+  }, 201, function(err, res, body) {
+    t.assert(body.data.bogusField)
     test.done()
   })
 }
 
 exports.usersCannotSkipSafeUpdate = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/beacons/bogusid1?' + userCred,
     body: {
       data: {
@@ -518,15 +432,13 @@ exports.usersCannotSkipSafeUpdate = function(test) {
       },
       skipValidation: true
     }
-  })
-  request(req, function(err, res) {
-    check(req, res, 401)
+  }, 401, function(err, res, body) {
     test.done()
   })
 }
 
 exports.adminsCanSkipSafeUpdate = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/beacons/bogusid1?' + adminCred,
     body: {
       data: {
@@ -534,24 +446,19 @@ exports.adminsCanSkipSafeUpdate = function(test) {
       },
       skipValidation: true
     }
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count === 1, dump(req, res))
-    assert(res.body.data === 1, dump(req, res)) // unsafe update does not return updated record
+  }, function(err, res, body) {
+    t.assert(res.body.count === 1)
+    t.assert(res.body.data === 1) // unsafe update does not return updated record
     test.done()
   })
 }
 exports.countByWorks = function(test) {
-  var req = new Req({
-    method: 'get',
+  t.get({
     uri: '/data/entities?countBy=_owner'
-  })
-  request(req, function(err, res) {
-    check(req, res)
+  }, function(err, res, body) {
     // These are based on data in template test database
-    assert(res.body.count >= 10, dump(req, res))
-    assert(res.body.data[0].countBy === 300, dump(req, res))
+    t.assert(res.body.count >= 10)
+    t.assert(res.body.data[0].countBy === 300)
     test.done()
   })
 }
@@ -559,13 +466,10 @@ exports.countByWorks = function(test) {
 // This has to be the last test because all subsequent logins will fail
 // since it deletes all the sessions
 exports.adminCanDeleteAllUsingWildcard = function(test) {
-  var req = new Req({
-    method: 'delete',
+  t.del({
     uri: '/data/sessions/*?' + adminCred
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.count >= 1)
+  }, function(err, res, body) {
+    t.assert(res.body.count >= 1)
     test.done()
   })
 }
