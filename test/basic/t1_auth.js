@@ -1,94 +1,78 @@
-/*
+/**
  *  Proxibase basic authencation test
  */
 
-var
-  assert = require('assert'),
-  request = require('request'),
-  testUtil = require('../util'),
-  t = testUtil.T(),
-  Req = testUtil.Req,
-  check = testUtil.check,
-  dump = testUtil.dump,
-  testUser = {
-    name: 'AuthTestUser',
-    email: 'authtest@3meters.com',
-    password: 'foobar'
-  }
-  adminCred = '',
-  userCred = '',
-  userOldCred = '',
-  session = {},
-  adminSession = {},
-  _exports = {},                    // for commenting out tests
-  util = require('utils'),
-  log = util.log
+var util = require('utils')
+var log = util.log
+var testUtil = require('../util')
+var t = testUtil.treq
+var adminCred
+var userCred
+var userOldCred
+var session = {}
+var adminSession = {}
+var _exports = {}                    // for commenting out tests
+var testUser = {
+  name: 'AuthTestUser',
+  email: 'authtest@3meters.com',
+  password: 'foobar'
+}
 
 
 exports.cannotAddUserWhenNotSignedIn = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/users',
     body: {data: {email: 'foo@bar.com', password: 'foobarfoo'}}
-  })
-  request(req, function(err, res) {
-    check(req, res, 401)
+  }, 401, function(err, res, body) {
     test.done()
   })
 }
 
 
 exports.canSignInAsAdmin = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/auth/signin',
     body: {user: {email: 'admin', password:'admin'}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.user)
-    assert(res.body.session)
-    adminSession = res.body.session
+  }, function(err, res, body) {
+    t.assert(body.user)
+    t.assert(body.session)
+    adminSession = body.session
     // These credentials will be useds in subsequent tests
-    adminCred = 'user=' + res.body.user._id + '&session=' + res.body.session.key
+    adminCred = 'user=' + body.user._id + '&session=' + body.session.key
     test.done()
   })
 }
 
 
 exports.adminCannotAddUserWithoutEmail = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/users?' + adminCred,
     body: {data: {name: 'bob', password: 'foobar'}}
-  })
-  request(req, function(err, res) {
-    check(req, res, 400)
-    assert(res.body.error.code === 400.1, dump(req, res))
+  }, 400, function(err, res, body) {
+    t.assert(body.error.code === 400.1)
     test.done()
   })
 }
 
 
 exports.adminCannotAddUserWithoutPassword = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/users?' + adminCred,
     body: {data: {email: 'foo@bar.com'}}
-  })
-  request(req, function(err, res) {
-    check(req, res, 400)
-    assert(res.body.error.code === 400.1)
+  }, 400, function(err, res, body) {
+    t.assert(body.error.code === 400.1)
     test.done()
   })
 }
 
 
 exports.adminCanAddUserViaRest = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/users?' + adminCred,
     body: {data: testUser}
-  })
-  request(req, function(err, res) {
-    check(req, res, 201)
-    assert(res.body.data._id)
-    testUser._id = res.body.data._id
+  }, 201, function(err, res, body) {
+    t.assert(body.data._id)
+    testUser._id = body.data._id
     test.done()
   })
 }
@@ -104,176 +88,147 @@ exports.userCanValidateEmail = function(test) {
 
 
 exports.adminCannotChangeValidateDateViaRest = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/users/' + testUser._id + '?' + adminCred,
     body: {data: {validationDate: util.getTimeUTC()}}
-  })
-  request(req, function(err, res) {
-    check(req, res, 403)  // forbidden
-    assert(res.body.error.code === 403.22)
+  }, 403, function(err, res, body) {
+    t.assert(body.error.code === 403.22)
     test.done()
   })
 }
 
 
 exports.adminCannotAddUserWithDupeEmail = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/users?' + adminCred,
     body: {data: testUser}
-  })
-  request(req, function(err, res) {
-    check(req, res, 403)
-    assert(res.body.error.code === 403.1)
+  }, 403, function(err, res, body) {
+    t.assert(body.error.code === 403.1)
     test.done()
   })
 }
 
 
 exports.userCannotSignInWithWrongFields = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/auth/signin',
     body: {user: {name: 'Not a user', password: 'password'}}
-  })
-  request(req, function(err, res) {
-    check(req, res, 400)
-    assert(res.body.error.code === 400.1, dump(req,res))
+  }, 400, function(err, res, body) {
+    t.assert(body.error.code === 400.1)
     test.done()
   })
 }
 
 
 exports.userCannotSignInWithBadEmail = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/auth/signin',
     body: {user: {email: 'billy@notHere', password: 'wrong'}}
-  })
-  request(req, function(err, res) {
-    check(req, res, 401)
-    assert(res.body.error.code === 401.1)
+  }, 401, function(err, res, body) {
+    t.assert(body.error.code === 401.1)
     test.done()
   })
 }
 
 
 exports.userCannotSignInWithBadPassword = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/auth/signin',
     body: {user: {email: testUser.email, password: 'wrong'}}
-  })
-  request(req, function(err, res) {
-    check(req, res, 401)
-    assert(res.body.error.code === 401.1)
+  }, 401, function(err, res, body) {
+    t.assert(body.error.code === 401.1)
     test.done()
   })
 }
 
 
 exports.userCanSignIn = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/auth/signin',
     body: {user: {email: testUser.email, password: testUser.password}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.user)
-    assert(res.body.user._id === testUser._id)
-    assert(res.body.user.name === testUser.name)
-    assert(res.body.user.email)
-    assert(res.body.user.role && res.body.user.role === 'user')
-    assert(res.body.session)
-    session = res.body.session
-    userCred = 'user=' + res.body.session._owner + '&session=' + res.body.session.key
+  }, function(err, res, body) {
+    t.assert(body.user)
+    t.assert(body.user._id === testUser._id)
+    t.assert(body.user.name === testUser.name)
+    t.assert(body.user.email)
+    t.assert(body.user.role && body.user.role === 'user')
+    t.assert(body.session)
+    session = body.session
+    userCred = 'user=' + body.session._owner + '&session=' + body.session.key
     test.done()
   })
 }
 
 
 exports.userCanSignInWithDifferentCasedEmail = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/auth/signin',
     body: {user: {email: testUser.email.toUpperCase(), password: testUser.password}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.user)
-    assert(res.body.user._id === testUser._id)
-    assert(res.body.user.name === testUser.name)
-    assert(res.body.user.email)
-    assert(res.body.session)
+  }, function(err, res, body) {
+    t.assert(body.user)
+    t.assert(body.user._id === testUser._id)
+    t.assert(body.user.name === testUser.name)
+    t.assert(body.user.email)
+    t.assert(body.session)
     test.done()
   })
 }
 
 
 exports.cannotValidateSessionWithBogusUser = function(test) {
-  var req = new Req({
-    method: 'get',
+  t.get({
     uri: '/data/users?user=bogus&session=' + session.key
-  })
-  request(req, function(err, res) {
-    check(req, res, 401)
-    assert(res.body.error.code === 401.1)
+  }, 401, function(err, res, body) {
+    t.assert(body.error.code === 401.1)
     test.done()
   })
 }
 
 
 exports.cannotValidateSessionWithBogusKey = function(test) {
-  var req = new Req({
-    method: 'get', 
+  t.get({
     uri: '/data/users?user=' + session._owner + '&session=bogus'
-  })
-  request(req, function(err, res) {
-    check(req, res, 401)
-    assert(res.body.error.code === 401.1)
+  }, 401, function(err, res, body) {
+    t.assert(body.error.code === 401.1)
     test.done()
   })
 }
 
 
 exports.canValidateSession = function(test) {
-  var req = new Req({
-    method: 'get',
+  t.get({
     uri: '/data/documents?user=' + session._owner + '&session=' + session.key
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.user, dump(req, res))
-    assert(res.body.user._id === testUser._id)
-    assert(res.body.user.name === testUser.name)
+  }, function(err, res, body) {
+    t.assert(body.user)
+    t.assert(body.user._id === testUser._id)
+    t.assert(body.user.name === testUser.name)
     test.done()
   })
 }
 
 
 exports.canValidateSessionUsingParamsInBody = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/do/find',
     body: {table: 'documents', user: session._owner, session: session.key}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.user)
-    assert(res.body.user._id === testUser._id)
-    assert(res.body.user.name === testUser.name)
+  }, function(err, res, body) {
+    t.assert(body.user)
+    t.assert(body.user._id === testUser._id)
+    t.assert(body.user.name === testUser.name)
     test.done()
   })
 }
 
 
 exports.sessionParamsInQueryStringOverrideOnesInBody = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/do/find?user=' + session._owner + '&session=' + session.key,
     body: {table: 'users', user: util.adminUser._id, session: session.key}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    var req2 = new Req({
+  }, function(err, res, body) {
+    t.post({
       uri: '/do/find?user=' + util.adminUser._id + '&session=' + session.key,
       body: {table: 'users', user: session._owner, session: session.key}
-    })
-    request(req2, function(err, res) {
-      check(req, res, 401)
+    }, 401, function(err, res, body) {
       test.done()
     })
   })
@@ -281,49 +236,41 @@ exports.sessionParamsInQueryStringOverrideOnesInBody = function(test) {
 
 
 exports.adminCannotChangePasswordDirectly = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/users/' + testUser._id + '?' + adminCred,
     body: {data: {password: 'newpass'}}
-  })
-  request(req, function(err, res) {
-    check(req, res, 403)  // forbidden
-    assert(res.body.error.code === 403.22)
+  }, 403, function(err, res, body) {
+    t.assert(body.error.code === 403.22)
     test.done()
   })
 }
 
 
 exports.userCannotChangePasswordTooWeak = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/user/changepw?' + userCred,
     body: {user: {_id: testUser._id, oldPassword: testUser.password, newPassword: 'password'}}
-  })
-  request(req, function(err, res) {
-    check(req, res, 403)
-    assert(res.body.error.code === 403.21)
+  }, 403, function(err, res, body) {
+    t.assert(body.error.code === 403.21)
     test.done()
   })
 }
 
 
 exports.userCanChangePassword = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/user/changepw?' + userCred,
     body: {user: {_id: testUser._id, oldPassword: testUser.password, newPassword: 'newpassword'}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    var req2 = new Req({
+  }, function(err, res, body) {
+    t.post({
       uri: '/auth/signin',
       body: {user: {email: testUser.email, password: 'newpassword'}}
-    })
-    request(req2, function(err, res) {
-      check(req2, res)
-      assert(res.body.user)
-      assert(res.body.session)
+    }, function(err, res, body) {
+      t.assert(body.user)
+      t.assert(body.session)
       userOldCred = userCred
-      userCred = 'user=' + res.body.session._owner + '&session=' + res.body.session.key
-      assert(userCred != userOldCred)
+      userCred = 'user=' + body.session._owner + '&session=' + body.session.key
+      t.assert(userCred != userOldCred)
       test.done()
     })
   })
@@ -331,125 +278,103 @@ exports.userCanChangePassword = function(test) {
 
 
 exports.changingPasswordDestroysOldSession = function(test) {
-  var req = new Req({
-    method: 'get',
+  t.get({
     uri: '/data/documents?' + userOldCred
-  })
-  request(req, function(err, res) {
-    check(req, res, 401)
+  }, 401, function(err, res, body) {
     test.done()
   })
 }
 
 
 exports.changingPasswordsCreatesNewSession = function(test) {
-  var req = new Req({
-    method: 'get',
+  t.get({
     uri: '/data/documents?' + userCred
-  })
-  request(req, function(err, res) {
-    check(req, res)
+  }, function(err, res, body) {
     test.done()
   })
 }
 
 
 exports.userCannotChangeRoles = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/users/' + testUser._id + '?' + userCred,
     body: {data: {role: 'admin'}}
-  })
-  request(req, function(err, res) {
-    check(req, res, 401)
-    assert(res.body.error.code === 401)
+  }, 401, function(err, res, body) {
+    t.assert(body.error.code === 401)
     test.done()
   })
 }
 
 
 exports.adminCanChangeRoles = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/users/' + testUser._id + '?' + adminCred,
     body: {data: {role: 'lobster'}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
+  }, function(err, res, body) {
     test.done()
   })
 }
 
 
 exports.changingEmailResetsValidationNotifyDate = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/users/' + testUser._id + '?' + userCred,
     body: {data: {email: 'authtest3@3meters.com'}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
+  }, function(err, res, body) {
     // TODO: check that validation mail was resent to new email address
-    assert(!res.body.data.validationNotifyDate)
+    t.assert(!body.data.validationNotifyDate)
     test.done()
   })
 }
 
 exports.changingEmailInvalidatesOldSession = function(test) {
-  var req = new Req({
-    method: 'get',
+  t.get({
     uri: '/data/documents?' + userCred,
-  })
-  request(req, function(err, res) {
-    check(req, res, 401)
-    assert(res.body.error.code === 401.1)
+  }, 401, function(err, res, body) {
+    t.assert(body.error.code === 401.1)
     test.done()
   })
 }
 
 exports.userCanSignInWithNewEmail = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/auth/signin',
     body: {user: {email: 'authtest3@3meters.com', password: 'newpassword'}}
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.session)
-    userCred = 'user=' + res.body.session._owner + '&session=' + res.body.session.key
+  }, function(err, res, body) {
+    t.assert(body.session)
+    userCred = 'user=' + body.session._owner + '&session=' + body.session.key
     test.done()
   })
 }
 
 
 exports.userCannotAddUserViaRest = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/data/users?' + userCred,
     body: {data: {email: 'authNoRest@3meters.com', password: 'foobar'}}
-  })
-  request(req, function(err, res) {
-    check(req, res, 401)
-    assert(res.body.error.code === 401)
+  }, 401, function(err, res, body) {
+    t.assert(body.error.code === 401)
     test.done()
   })
 }
 
 
 exports.annonymousUserCannotCreateUserViaApiWithoutSecret = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/user/create',
     body: {data: {name: 'AuthTestUser2',
       email: 'authtest2@3meters.com',
       password: 'foobar'}
     }
-  })
-  // Signs the user in as well
-  request(req, function(err, res) {
-    check(req, res, 400)
-    assert(res.body.error.code === 400.1)
+  }, 400, function(err, res, body) {
+    t.assert(body.error.code === 400.1)
     test.done()
   })
 }
 
 
 exports.annonymousUserCannotCreateUserViaApiWithWrongSecret = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/user/create',
     body: {
       data: {name: 'AuthTestUser2',
@@ -458,18 +383,15 @@ exports.annonymousUserCannotCreateUserViaApiWithWrongSecret = function(test) {
       },
       secret: 'wrongsecret'
     }
-  })
-  // Signs the user in as well
-  request(req, function(err, res) {
-    check(req, res, 401)
-    assert(res.body.error.code === 401.3)
+  }, 401, function(err, res, body) {
+    t.assert(body.error.code === 401.3)
     test.done()
   })
 }
 
 
 exports.annonymousUserCanCreateUserViaApi = function(test) {
-  var req = new Req({
+  t.post({
     uri: '/user/create',
     body: {
       data: {
@@ -479,13 +401,10 @@ exports.annonymousUserCanCreateUserViaApi = function(test) {
       },
       secret: 'larissa'
     }
-  })
-  // Signs the user in as well
-  request(req, function(err, res) {
-    check(req, res)
-    assert(res.body.user)
-    assert(!res.body.user.validationDate)
-    assert(res.body.session)
+  }, function(err, res, body) {
+    t.assert(body.user)
+    t.assert(!body.user.validationDate)
+    t.assert(body.session)
     test.done()
   })
 }
@@ -501,28 +420,21 @@ exports.annonymousUserCannotCreateUserViaApiWithoutWhitelistedEmail = function(t
       },
       secret: 'larissa'
     }
-  }, 401, function(err, res) {
-    t.assert(res.body.error.message.indexOf('support@') >0)
+  }, 401, function(err, res, body) {
+    t.assert(body.error.message.indexOf('support@') >0)
     test.done()
   })
 }
 
 exports.userCanSignOut = function(test) {
-  var req = new Req({
+  t.get({
     uri: '/auth/signout?' + userCred,
-    method: 'get'
-  })
-  request(req, function(err, res) {
-    check(req, res)
-    var req2 = new Req({
+  }, function(err, res, body) {
+    t.get({
       uri: '/data/users?' + userCred,
-      method: 'get'
-    })
-    request(req2, function(err, res) {
-      check(req, res, 401)
+    }, 401, function(err, res, body) {
       test.done()
     })
   })
 }
-
 

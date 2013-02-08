@@ -16,7 +16,7 @@ var fs = require('fs')
 var request = require('superagent')
 var cheerio = require('cheerio')
 var testUtil = require('../util')
-var t = testUtil.T()
+var t = testUtil.treq
 var constants = require('../constants')
 var check = testUtil.check
 var dump = testUtil.dump
@@ -201,7 +201,7 @@ function testProvider(options, callback) {
 
       request.get(proxAuthRedirectUrl)
         .end(function(err, res) {
-        check({}, res)
+        testUtil.check({}, res)
         callback()
       })
     })

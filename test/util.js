@@ -1,4 +1,4 @@
-/*
+/**
  * Proxibase test util module
  */
 
@@ -9,79 +9,59 @@ var assert = require('assert')
 var request = require('request')
 var constants = require('./constants')
 
-
 assert(util.truthy, 'The proxibase utils are not loaded properly, bailing')
 util.setConfig('configtest.js')
-
 
 // Base Uri all test requests call, can be overridden by callers
 exports.serverUrl = util.config.service.url
 
 
-// Request options constructor
-// Note that default method is post, not get
-var Req = exports.Req = function(options) {
+// set some default test request options
+function makeReq(options) {
 
-  // Make sure caller uses new
-  if (!(this instanceof arguments.callee)) {
-    throw new Error('Req must be called as a constructor with new')
-  }
-
+  var req = {}
   if (type.isString(options)) {
-    options = {
-      method: 'get',
-      uri: options
-    }
+    options = {method: 'get', uri: options}
   }
+  util.extend(req, options)
 
-  for (key in options) {
-    this[key] = options[key]
-  }
+  if (options.uri) req.uri = exports.serverUrl + options.uri
+  else req.uri = exports.serverUrl
 
-  if (this.uri) this.uri = exports.serverUrl + this.uri
-  else this.uri = exports.serverUrl
-
-  this.method = this.method || 'post'
-
-  if (this.body && (util.type(this.body) === 'object')) {
-    try { this.body = JSON.stringify(this.body) }
-    catch (e) { throw e }
-  }
-
-  this.headers = {"content-type":"application/json"}
-  if (!this.method) this.method = 'get'
-
+  req.method = options.method || 'get'
+  req.json = true
+  return req
 }
 
 //
-// Experimental test class that shares the most recent
-// request and response with the assert wrapper
+// Test class that makes the original req and respone
+// objects available as corpes for failed asserts
 //
 //   var t = require('util').treq
 //
 // exports.mytest = function(test)
 //   var options = { uri: '/data/users' }
-//   t.get(options, 200, function(err, res) {
-//      t.ok(res.body.data.count)
+//   t.get(options, 200, function(err, res, body) {
+//      t.assert(body.data.count)
 //      test.done()
 //   }
 // }
 //
 function TestRequest() {
-  var _req = {}
-  var _res = {}
+  var _req
+  var _res
 
-  // Wrapper wrapper
+  // Main method
   function treq(options, statusCode, cb) {
-    if (arguments.length < 3 && (typeof statusCode === 'function')) {
+    if (arguments.length < 3 && (type.isFunction(statusCode))) {
       // status code not included, shift left and set default
       cb = statusCode
       statusCode = 200
     }
-    var req = new Req(options)
-    _req = req // for debugging asserts
+    var req = makeReq(options)
+    _req = req
     request(req, function(err, res) {
-      _res = res // for debugging asserts
+      _res = res
       check(req, res, statusCode)
       cb(err, res, res.body)
     })
@@ -123,8 +103,6 @@ function TestRequest() {
   return public
 }
 
-exports.T = TestRequest
-exports.treq = TestRequest()
 
 var testUser = {
   name: 'Test User',
@@ -137,7 +115,7 @@ var adminUser = {
   password: 'admin'
 }
 
-exports.getUserSession = function(user, fn) {
+function getUserSession(user, fn) {
   if (!fn) {
     fn = user
     user = testUser
@@ -146,12 +124,12 @@ exports.getUserSession = function(user, fn) {
 }
 
 
-exports.getAdminSession = function(user, fn) {
+function getAdminSession(user, fn) {
   if (!fn) {
     fn = user
     user = adminUser
   }
-  getSession(user, true, fn) 
+  getSession(user, true, fn)
 }
 
 
@@ -162,7 +140,8 @@ exports.getAdminSession = function(user, fn) {
  */
 function getSession(user, asAdmin, fn) {
 
-  var req = new Req({
+  var req = makeReq({
+    method: 'post',
     uri: '/auth/signin',
     body: {user: user}
   })
@@ -172,7 +151,8 @@ function getSession(user, asAdmin, fn) {
     if (res.statusCode >= 400) {
       if (asAdmin) throw new Error('Cannot sign in with default admin credentials')
       // create user
-      var req = new Req({
+      var req = makeReq({
+        method: 'post',
         uri: '/user/create',
         body: {data: user, noValidate: true, secret: 'larissa'},
       })
@@ -185,7 +165,7 @@ function getSession(user, asAdmin, fn) {
       })
     }
     else {
-      if (res.body && util.type(res.body) === 'string') {
+      if (res.body && type.isString((res.body))) {
         try { res.body = JSON.parse(res.body) }
         catch (e) { throw e }
       }
@@ -222,16 +202,16 @@ var dump = exports.dump = function(req, res, msg) {
 
 
 // Ensure response, check status code, parse body
-var check = exports.check = function(req, res, code) {
+function check(req, res, code) {
   assert(req, 'Missing request')
   assert(res, 'Missing response')
   assert(res.statusCode, 'Missing response.statusCode')
   code = code || 200
-  if (req.body) {
+  if (req.body && type.isString(req.body)) {
     try { req.body = JSON.parse(req.body) }
     catch (e) { } // we allow non-JSON in request body
   }
-  if (res.body && (util.type(res.body) === 'string')) {
+  if (res.body && (type.isString(res.body))) {
     try { res.body = JSON.parse(res.body) }
     catch (e) { console.error(res.body); throw e }
   }
@@ -279,3 +259,9 @@ var pad = exports.pad = function(number, digits) {
   return zeros + s
 }
 
+exports.getUserSession = getUserSession
+exports.getAdminSession = getAdminSession
+exports.treq = TestRequest()
+exports.dump = dump
+exports.check = check
+exports.request = request

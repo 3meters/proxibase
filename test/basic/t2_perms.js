@@ -1,31 +1,29 @@
-
-/*
+/**
  *  Proxibase permission test
  */
 
-var
-  testUtil = require('../util'),
-  t = testUtil.treq,
-  adminCred = '',
-  user1Cred = '',
-  user2Cred = '',
-  user1 = {
-    name: 'Perm Test User 1',
-    email: 'permtest1@3meters.com',
-    password: 'foobar'
-  },
-  user2 = {
-    name: 'Perm Test User 2',
-    email: 'permtest2@3meters.com',
-    password: 'foobar'
-  },
-  doc1 = {
-    name: 'Doc1',
-    data: { foo: 'bar' }
-  },
-  _exports = {},                    // for commenting out tests
-  util = require('utils'),
-  log = util.log
+var util = require('utils')
+var log = util.log
+var testUtil = require('../util')
+var t = testUtil.treq
+var adminCred
+var user1Cred
+var user2Cred
+var user1 = {
+  name: 'Perm Test User 1',
+  email: 'permtest1@3meters.com',
+  password: 'foobar'
+}
+var user2 = {
+  name: 'Perm Test User 2',
+  email: 'permtest2@3meters.com',
+  password: 'foobar'
+}
+var doc1 = {
+  name: 'Doc1',
+  data: { foo: 'bar' }
+}
+var _exports = {}                    // for commenting out tests
 
 
 exports.signInAsAdmin = function(test) {
