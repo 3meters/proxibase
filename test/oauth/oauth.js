@@ -11,6 +11,8 @@
  *    This test is fragile by nature.
  */
 
+var util = require('proxutils')
+var log = util.log
 var assert = require('assert')
 var fs = require('fs')
 var request = require('superagent')
@@ -20,7 +22,6 @@ var t = testUtil.treq
 var constants = require('../constants')
 var check = testUtil.check
 var dump = testUtil.dump
-var Req = testUtil.Req
 var adminCred = ''
 var testOauthId = {
   twitter: 'twitter:606624261'
@@ -28,7 +29,6 @@ var testOauthId = {
 var jQuerySrc = 'http://code.jquery.com/jquery-1.7.2.min.js'
 var baseUri = testUtil.serverUrl
 var _exports = {}  // for commenting out tests
-var log = require('utils').log
 
 
 // Get admin session and set credentials

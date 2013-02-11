@@ -6,7 +6,7 @@
  *     feature area is stable.
  */
 
-var util = require('utils')
+var util = require('proxutils')
 var log = util.log
 var testUtil = require('../util')
 var t = testUtil.treq  // newfangled test helper
@@ -96,7 +96,8 @@ exports.getPlacesNearLocationFoursquare = function(test) {
 }
 
 exports.getPlacesNearLocationFactual = function(test) {
-  var ballRoomId = 'a10ad88f-c26c-42bb-99c6-10233f59d2d8'
+  // var ballRoomId = 'a10ad88f-c26c-42bb-99c6-10233f59d2d8'
+  var ballRoomId = '46aef19f-2990-43d5-a9e3-11b78060150c'
   var roxyId = 'fdf4b14d-93d7-4ada-8bef-19add2fa9b15' // Roxy's Diner
   var foundRoxy = false
   t.post({
