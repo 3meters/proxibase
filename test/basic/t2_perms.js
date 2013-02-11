@@ -2,7 +2,7 @@
  *  Proxibase permission test
  */
 
-var util = require('utils')
+var util = require('proxutils')
 var log = util.log
 var testUtil = require('../util')
 var t = testUtil.treq

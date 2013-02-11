@@ -4,7 +4,7 @@
  *   Silently overwrites existing files or tables
  */
 
-var util = require('../../lib/utils') // load proxibase extentions to node util
+var util = require('proxutils') // load proxibase extentions to node util
 var log = util.log
 var fs = require('fs')
 var path = require('path')

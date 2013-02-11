@@ -2,7 +2,7 @@
  *  Proxibase local suggestSources test
  */
 
-var util = require('utils')
+var util = require('proxutils')
 var log = util.log
 var testUtil = require('../util')
 var serviceUri = util.config.service.uri
