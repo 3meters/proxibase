@@ -14,8 +14,6 @@ old
 !categories.json
 !/assets/
 !/assets/proxerr.log
-!/lib/node_modules
-!/test/node_modules
 
 /test/oauth/*.html
 /perf.csv
