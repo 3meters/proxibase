@@ -283,7 +283,6 @@ https://github.com/3meters/proxibase/issues?state=open
 ## Todo
 
 ### Models
-* Add schema checker to base.js
 * Broken links: prevent or garbage collect
 * Create user captcha
 
@@ -304,12 +303,18 @@ https://github.com/3meters/proxibase/issues?state=open
 * Lock / unlock account
 
 ### Rest
-* get: outer joins
-* post: insert array
-* saveAPI: convert to mongoskin
+* get: linked entites
 
-### Misc
-* scrub old style errors from custom methods
-* rationalize version migration into a command-linable pipeline
-* do version migration in place?
+## Developer Notes
+To build
+    npm install
 
+Windows users must manually create a symbolic link from /node_utils/proxutils to /lib/proxutils.  If you don't your server will not start.
+
+Tests require internet connectivity
+
+Run basic tests
+    make test
+
+Run all tests
+    make test-all
