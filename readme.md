@@ -28,7 +28,7 @@ find documents
     method: POST
     body: {
       "collection|stat": string,          // base collection or statitistics collection
-      "ids": [string],
+      "ids": [string]
       "names": [string],                  // case-insensitive
       "fields": [string],
       "find": {mongodb find expression},  // pass-through to mongodb, case-sensitive
@@ -37,9 +37,11 @@ find documents
       "skip": number,
       "sort": {field1:1, field2:-1},
       "count": boolean,                   // returns no records, only count, limit and skip are ignored
-      "countBy": fieldName                // returns count of collection grouped by any field
+      "countBy":  [string]                // returns count of collection grouped by field or fields
     }
-    
+
+or
+    GET /data/users?countBy=role&lookups=true  etc
 
 ## Users and Admins
 Each user account has a role.  The only valid roles are 'user', the default, and 'admin'.  When the server starts it checks for a user with _id 00000.000000.00000.000.00000.  If it does not exist the server creates the user with 
@@ -51,7 +53,7 @@ Each user account has a role.  The only valid roles are 'user', the default, and
       role: 'admin',
       password: 'admin'
     }
-    
+
 Users or tests can log in with these credentials to perform administrative tasks.
 
 With a few exeptions, admins can perform any operation on the server that would be prevented by permissions.  Users, in general, can read everything, write records to most tables, and can update and remove records that they own.  Users cannot update or delete records owned by other users.
