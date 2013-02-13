@@ -447,21 +447,43 @@ exports.adminsCanSkipSafeUpdate = function(test) {
       skipValidation: true
     }
   }, function(err, res, body) {
-    t.assert(res.body.count === 1)
-    t.assert(res.body.data === 1) // unsafe update does not return updated record
+    t.assert(body.count === 1)
+    t.assert(body.data === 1) // unsafe update does not return updated record
     test.done()
   })
 }
+
+exports.countByFailsOnBogusFields = function(test) {
+  t.get({
+    uri: '/data/entities?countBy=_foo,bar'
+  }, 400, function(err, res, body) {
+    t.assert(body.error.code === 400.11)
+    test.done()
+  })
+}
+
 exports.countByWorks = function(test) {
   t.get({
     uri: '/data/entities?countBy=_owner'
   }, function(err, res, body) {
     // These are based on data in template test database
-    t.assert(res.body.count >= 10)
-    t.assert(res.body.data[0].countBy === 300)
+    t.assert(body.count >= 10)
+    t.assert(body.data[0].countBy === 300)
     test.done()
   })
 }
+
+exports.countByMultipleFieldsWorks = function(test) {
+  t.get({
+    uri: '/data/beacons?countBy=_owner,visibility'
+  }, function(err, res, body) {
+    // These are based on data in template test database
+    t.assert(body.count >= 10)
+    t.assert(body.data[5].countBy === 10)
+    test.done()
+  })
+}
+
 
 // This has to be the last test because all subsequent logins will fail
 // since it deletes all the sessions
@@ -469,7 +491,7 @@ exports.adminCanDeleteAllUsingWildcard = function(test) {
   t.del({
     uri: '/data/sessions/*?' + adminCred
   }, function(err, res, body) {
-    t.assert(res.body.count >= 1)
+    t.assert(body.count >= 1)
     test.done()
   })
 }

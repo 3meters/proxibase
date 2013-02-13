@@ -23,7 +23,7 @@
     "request": "*",
     "authom": "*",
     "cheerio": "*",
-    "fbgraph": "*",
+    "fbagent": "*",
     "factual-api": "*"
   },
 
