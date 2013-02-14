@@ -1,6 +1,7 @@
 config*.js
 crash.js
 node_modules
+!/node_modules/proxutils.js
 old
 *.json
 .monitor
