@@ -39,7 +39,7 @@ process.chdir(__dirname)
 cli
   .option('-c, --config <file>', 'Config file [configtest.js]')
   .option('-s, --server <url>', 'Server url')
-  .option('-t, --testdir <dir>', 'Test directory')
+  .option('-t, --test <dir>', 'Test')
   .option('-b, --basic', 'Only run the basic tests')
   .option('-n, --none', 'Do not run any tests -- just ensure the test db')
   .option('-g, --generate', 'generate a fresh template test db from code')
@@ -48,7 +48,8 @@ cli
 
 
 // Process command-line interface flags
-if (cli.testdir) testDirs = [cli.testdir]
+if (cli.basic) testDirs = basicDirs
+if (cli.test) testDirs = [cli.test]
 if (cli.log) logFile = cli.log
 
 if (cli.server) {
@@ -209,11 +210,9 @@ function ensureServer(callback) {
 
 function runTests() {
   if (cli.none) finish()
-  var dirs = testDirs
-  if (cli.basic) dirs = basicDirs
   log('\nTesting: ' + serverUrl)
-  log('Test dirs: ' + dirs)
-  reporter.run(dirs, false, finish)
+  log('Test dirs: ' + testDirs)
+  reporter.run(testDirs, false, finish)
 }
 
 
