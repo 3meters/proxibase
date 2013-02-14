@@ -162,8 +162,6 @@ exports.getPlacesNearLocationFactual = function(test) {
 }
 
 
-// TODO: test excludePlaceIds
-
 exports.suggestSourcesFromWebsite = function(test) {
   t.post({
     uri: '/do/suggestSources',
