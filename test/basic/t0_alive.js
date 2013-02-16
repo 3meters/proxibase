@@ -1,4 +1,4 @@
-/*
+/**
  *  Proxibase alive test
  */
 
@@ -71,7 +71,7 @@ exports.postWithBadJsonInBody = function(test) {
 exports.speakSpanishToMe = function(test) {
   t.get('/aPageThatWillNotBeFound?lang=es', 404, function(err, res, body) {
     t.assert(body.error)
-    t.assert(body.error.message === 'No se ha encontrado') // see lib/extend/error.js
+    t.assert(body.error.message === 'No se ha encontrado')
     test.done()
   })
 }
