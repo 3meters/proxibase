@@ -3,16 +3,18 @@
 # Production proxibase startup script using nodemon
 # See https://github.com/remy/nodemon
 
-PROX='/usr/local/prox'
-PROXLOG='/var/log/prox/prox.log'
-ERRLOG='/var/log/prox/proxerr.log'
+PROX="/usr/local/prox"
+LOGDIR="/var/log/prox"
+PROXLOG="$LOGDIR/prox.log"
+ERRLOG="$LOGDIR/proxerr.log"
+OLD="$LOGDIR/old"
+DATE=`date +"%Y.%m.%d-%T"`
 
-# Replace the existing log, must be the first argument
-if [ "$1" = "-r" ]; then
-  rm $PROXLOG
-  rm $ERRLOG
-  shift
-fi
+cp $PROXLOG "$OLD/$DATE.prox.log"
+>$PROXLOG
+
+cp $ERRLOG "$OLD/$DATE.proxerr.log"
+>$ERRLOG
 
 echo "proxerr.log: $ERRLOG"
 echo "prox.log: $PROXLOG ..."
