@@ -1,4 +1,4 @@
-/*
+/**
  * push: loads proxibase data files into a proxibase server via the rest api
  *
  * Usage:
@@ -12,22 +12,27 @@ var fs = require('fs')
 var path = require('path')
 var program = require('commander')
 var req = require('request')
-var log = console.log
 var util = require('proxutils')
+var log = util.log
 var testUtil = require('../../test/util')
 var tables = []
 var tableNames= []
 var errors = []
 var adminCred = ''
 
+
+// Parse command line options
 program
-  .option('-s --server <dev>', 'push to server [dev|test|prod|prodtest|uri]', String, 'dev')
-  .option('-i --in <files>', 'input direcotry [files]', String, 'files')
-  .option('-v --validate <validate>', 'validate data on insert, sets sys fields')
+  .option('-s --server <dev>',
+      'push to server [dev|test|prod|stage|uri]', String, 'dev')
+  .option('-i --in <files>',
+      'input direcotry [files]', String, 'files')
+  .option('-v --validate <validate>',
+      'validate data on insert, sets sys fields')
   .parse(process.argv)
 
-// set server URI baseed on command line switch.  default is local dev machine
 
+// Set server URI baseed on command line switch.  default is local dev machine
 switch(program.server) {
   case 'dev':
     baseUri = 'https://localhost:6643'
@@ -38,13 +43,14 @@ switch(program.server) {
   case 'prod':
     baseUri = 'https://api.aircandi.com'
     break
-  case 'prodtest':
+  case 'stage':
     baseUri = 'https://api.aircandi.com:444'
   default:
     baseUri = program.server
 }
 
 
+// Read files to push
 readFiles(program.in)
 testUtil.serverUrl = baseUri
 testUtil.getAdminSession(function(session) {
@@ -52,8 +58,8 @@ testUtil.getAdminSession(function(session) {
   loadTable(0)
 })
 
-// synchronously read all json files from dir assuming dir and files are well-formed
 
+// Synchronously read all json files from dir assuming dir and files are well-formed
 function readFiles(dir) {
   var fileNames = fs.readdirSync(dir)
   fileNames.forEach(function (fileName) {
@@ -64,6 +70,7 @@ function readFiles(dir) {
   })
 }
 
+// Load a table from a file
 function loadTable(iTable) {
   if (iTable >= tables.length) return done() // break recursion
   loadDoc(tables[iTable], 0, 0, tableNames[iTable], function() {
@@ -72,8 +79,8 @@ function loadTable(iTable) {
   })
 }
 
+// Load a record
 function loadDoc(docs, iDoc, cLoaded, tableName, next) {
-
   if (iDoc >= docs.length) {
     log(tableName + ': ' + cLoaded)
     return next() // break recursion
@@ -107,6 +114,7 @@ function loadDoc(docs, iDoc, cLoaded, tableName, next) {
   })
 }
 
+// Finish
 function done() {
   if (errors.length) {
     console.error('\nFinished with ' + errors.length + ' error(s)')
