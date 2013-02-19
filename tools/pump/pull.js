@@ -32,7 +32,7 @@ switch(program.server) {
     baseUri = 'https://localhost:6644'
     break
   case 'prod':
-    baseUri = 'https://api.aircandi.com:643'
+    baseUri = 'https://api.aircandi.com'
     break
   default:
     baseUri = program.server

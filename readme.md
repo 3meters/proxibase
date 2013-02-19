@@ -1,9 +1,7 @@
 # Proxibase
 Proxibase is the backing service for 3meters aircandi and related services
 
-Web: https://www.aircandi.com
-
-API: https://aircandi.com:643
+https://api.aircandi.com
 
 ## Quick Reference
 
