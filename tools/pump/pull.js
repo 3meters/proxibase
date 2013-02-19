@@ -1,4 +1,4 @@
-/*
+/**
  * pull: suck all data from a proxibase server into local json files via the public rest API
  *
  * Usage:
@@ -8,22 +8,25 @@
  *    node pull --help
  */
 
-var
-  fs = require('fs'),
-  program = require('commander'),
-  req = require('request'),
-  tables = [],
-  baseUri = ''
+var util = require('proxutils')
+var log = util.log
+var fs = require('fs')
+var program = require('commander')
+var req = require('request')
+var tables = []
+var baseUri = ''
 
-// parse command line options
 
+// Parse command line options
 program
-  .option('-s --server <server>', 'server to pull data from [dev|prod|uri]', String, 'dev')
-  .option('-o, --out <files>', 'output direcotry [files]', String, 'files')
+  .option('-s --server <server>',
+      'server to pull data from [dev|test|prod|uri]', String, 'dev')
+  .option('-o, --out <files>',
+      'output direcotry [files]', String, 'files')
   .parse(process.argv)
 
-// set server URI baseed on command line switch.  default is local dev machine
 
+// Set server URI baseed on command line switch.  default is local dev machine
 switch(program.server) {
   case 'dev':
     baseUri = 'https://localhost:6643'
@@ -32,14 +35,14 @@ switch(program.server) {
     baseUri = 'https://localhost:6644'
     break
   case 'prod':
-    baseUri = 'https://api.aircandi.com:643'
+    baseUri = 'https://api.aircandi.com'
     break
   default:
     baseUri = program.server
 }
 
-// get table names from target server
 
+// Get table names from target server
 req.get(baseUri + '/schema', function (err, res) {
   if (err) throw err
   if (res.statusCode !== 200) throw new Error('Unexpected statusCode: ' + res.statusCode)
@@ -50,11 +53,12 @@ req.get(baseUri + '/schema', function (err, res) {
   pullTable(tables.length, done)
 })
 
-// pull data async in series
 
+// Pull data async in series
 function pullTable(iTable, cb) {
   if (!iTable--) return cb
   var tableName = tables[iTable]
+  if (tableName === 'sessions') return pullTable(iTable, cb)  // skip
   var options = {
     headers: { "content-type": "application/json" }
   }
@@ -67,7 +71,7 @@ function pullTable(iTable, cb) {
     if (tableName === 'users') {
       var users = []
       body.data.forEach(function(user) {
-        if (user._id !== '0000.000000.00000.000.000000') users.push(user)
+        if (user._id !== '0001.000000.00000.000.000000') users.push(user)
       })
       body.data = users
     }
@@ -78,11 +82,13 @@ function pullTable(iTable, cb) {
   })
 }
 
+// Write results
 function save(tbl, name) {
   if (!fs.existsSync(program.out)) fs.mkdirSync(program.out)
   fs.writeFileSync(program.out + '/' + name + '.json', JSON.stringify(tbl))
 }
 
+// Finish
 function done() {
   console.log('Finished')
   process.exit(0)
