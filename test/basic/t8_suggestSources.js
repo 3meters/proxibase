@@ -112,12 +112,41 @@ exports.compareFoursquareToFactual = function(test) {
     t.assert(sources4s.length > 3)
     t.post({
       uri: '/do/suggestSources',
-      body: {sources: [{source: 'factual', id: 'a10ad88f-c26c-42bb-99c6-10233f59d2d8'}]}  // Seattle Ballroom
+      // Seattle Ballroom
+      body: {sources: [{source: 'factual', id: 'a10ad88f-c26c-42bb-99c6-10233f59d2d8'}],
+             includeRaw: true}
     }, function(err, res) {
       var sourcesFact = res.body.data
       t.assert(sourcesFact.length > 3)
       t.assert(sourcesFact.length === sources4s.length + 1) // factual will add the 4s entry
       test.done()
     })
+  })
+}
+
+exports.getFacebookFromFoursquare = function(test) {
+  t.post({
+    uri: '/do/suggestSources',
+    body: {
+      sources: [
+        {
+          source: 'foursquare',
+          id: '42893400f964a5204c231fe3',
+          name: 'The Red Door',
+        }
+      ],
+      location: {lat: 47.65, lng: -122.35},
+      includeRaw: true
+    }
+  },
+  function(err, res) {
+    var sources = res.body.data
+    t.assert(sources && sources.length)
+    t.assert(sources.some(function(source) {
+      return (source.source === 'facebook'
+        && source.id === '155509047801321'
+        && source.origin === 'facebook')
+    }))
+    test.done()
   })
 }
