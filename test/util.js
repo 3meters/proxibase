@@ -5,6 +5,7 @@
 var util = require('proxutils')
 var log = util.log
 var type = util.type
+var _ = util._
 var assert = require('assert')
 var request = require('request')
 var constants = require('./constants')
@@ -23,7 +24,7 @@ function makeReq(options) {
   if (type.isString(options)) {
     options = {method: 'get', uri: options}
   }
-  util.extend(req, options)
+  _.extend(req, options)
 
   if (options.uri) req.uri = exports.serverUrl + options.uri
   else req.uri = exports.serverUrl
