@@ -34,10 +34,10 @@ exports.checkTwitterUrls = function(test) {
     t.assert(res.body.data[0].type === 'twitter')
     t.assert(res.body.data[0].id === 'bob')
     t.assert(res.body.data[0].name === '@bob')
+    t.assert(res.body.data[0].packageName === 'com.twitter.android')
+    t.assert(res.body.data[0].icon)
+    t.assert(res.body.data[0].icon.indexOf('twitter.png') > 0)
     t.assert(res.body.data[0].data)
-    t.assert(res.body.data[0].data.packageName === 'com.twitter.android')
-    t.assert(res.body.data[0].data.icon)
-    t.assert(res.body.data[0].data.icon.indexOf('twitter.png') > 0)
     t.assert(res.body.data[0].data.origin === 'website')
     t.assert(res.body.data[0].data.originUrl === url)
     test.done()
@@ -45,9 +45,10 @@ exports.checkTwitterUrls = function(test) {
 }
 
 exports.checkFacebookUrls = function(test) {
+  var url = serviceUri + '/test/facebook.html'
   t.post({
     uri: '/do/suggestSources',
-    body: {sources: [{type: 'website', id: serviceUri + '/test/facebook.html'}]}
+    body: {sources: [{type: 'website', id: url}]}
   },
   function(err, res) {
     var sources = res.body.data
@@ -57,10 +58,11 @@ exports.checkFacebookUrls = function(test) {
     sources.forEach(function(source) {
       t.assert(source.id)
       t.assert(source.type === 'facebook')
+      t.assert(source.icon)
+      t.assert(source.packageName)
       t.assert(source.data)
-      t.assert(source.data.origin.indexOf('website') === 0)
-      t.assert(source.data.icon)
-      t.assert(source.data.packageName)
+      t.assert(source.data.origin === 'website')
+      t.assert(source.data.originUrl === url)
       map[source.id] = source
     })
     t.assert(Object.keys(map).length === sources.length)  // no dupes by id
