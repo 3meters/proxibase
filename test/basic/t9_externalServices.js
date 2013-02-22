@@ -7,6 +7,7 @@
  */
 
 var util = require('proxutils')
+var _ = util._
 var log = util.log
 var testUtil = require('../util')
 var t = testUtil.treq  // newfangled test helper
@@ -57,7 +58,8 @@ exports.getSources = function(test) {
   t.get({uri: '/sources'}, function(err, res) {
     var sources = res.body.data
     t.assert(sources && sources.length > 5)
-    t.assert(sources[0].icon.length > 20)
+    t.assert(sources[0].data)
+    t.assert(sources[0].data.icon.length > 20)
     // TODO:  run a reqest on the icon and confirm that it is a valid png
     test.done()
   })
@@ -70,7 +72,7 @@ exports.getPlacesNearLocationFoursquare = function(test) {
     body: {
       latitude: 47.6521,
       longitude: -122.3530,   // The Ballroom, Fremont, Seattle
-      source: 'foursquare',
+      provider: 'foursquare',
       meters: 100,
       includeRaw: false,
       limit: 10,
@@ -88,8 +90,11 @@ exports.getPlacesNearLocationFoursquare = function(test) {
       var sources = place.sources
       t.assert(sources)
       t.assert(sources.length)
-      var source = sources[0]
-      t.assert(source.source && source.icon && (source.url || source.id))
+      sources.forEach(function(source) {
+        t.assert(source.type)
+        t.assert(source.data)
+        t.assert(source.id || source.data.url)
+      })
     })
     test.done()
   })
@@ -105,11 +110,11 @@ exports.getPlacesNearLocationFactual = function(test) {
     body: {
       latitude: 47.6521,
       longitude: -122.3530,   // The Ballroom, Fremont, Seattle
-      source: 'factual',
+      provider: 'factual',
       meters: 100,
-      includeRaw: false,
       limit: 10,
-      excludePlaceIds: [ballRoomId]
+      excludePlaceIds: [ballRoomId],
+      includeRaw: true,
     }
   }, function(err, res) {
     var places = res.body.data
@@ -152,9 +157,12 @@ exports.getPlacesNearLocationFactual = function(test) {
       var sources = res.body.data[0].sources
       t.assert(sources && sources.length >= 2) // a website and a twitter account
       sources.forEach(function(source) {
-        t.assert(source.id || source.url)
-        t.assert(source.origin && source.icon && source.name && source.source)
-        t.assert(source.source !== 'factual')
+        t.assert(source.type)
+        t.assert(source.type !== 'factual')
+        t.assert(source.data)
+        t.assert(source.id || source.data.url)
+        t.assert(source.data.origin)
+        t.assert(source.data.icon)
       })
       test.done()
     })
@@ -165,11 +173,11 @@ exports.getPlacesNearLocationFactual = function(test) {
 exports.suggestSourcesFromWebsite = function(test) {
   t.post({
     uri: '/do/suggestSources',
-    body: {sources: [{source: 'website', id: 'http://www.massenamodern.com'}]}
+    body: {sources: [{type: 'website', id: 'http://www.massenamodern.com'}]}
   },
   function(err, res) {
     t.assert(res.body.data.length === 1) // returns only the new suggested sources
-    t.assert(res.body.data[0].source === 'twitter')
+    t.assert(res.body.data[0].type === 'twitter')
     t.assert(res.body.data[0].id === 'massenamodern')
     test.done()
   })
@@ -179,13 +187,13 @@ exports.suggestSourcesFromWebsite = function(test) {
 exports.suggestFactualSourcesFromFoursquareId = function(test) {
   t.post({
     uri: '/do/suggestSources',
-    body: {sources: [{source: 'foursquare', id: '4abebc45f964a520a18f20e3'}]} // Seattle Ballroom in Fremont
+    body: {sources: [{type: 'foursquare', id: '4abebc45f964a520a18f20e3'}]} // Seattle Ballroom in Fremont
   },
   function(err, res) {
     t.assert(res.body.data.length > 3)
     // Check no dupe of original source
     res.body.data.forEach(function(source) {
-      t.assert(!(source.source == 'foursquare' && source.id == '4abebc45f964a520a18f20e3'))
+      t.assert(!(source.type == 'foursquare' && source.id == '4abebc45f964a520a18f20e3'))
     })
     test.done()
   })
@@ -194,10 +202,10 @@ exports.suggestFactualSourcesFromFoursquareId = function(test) {
 exports.insertEntitySuggestSources = function(test) {
   var body = {
     suggestSources: true,
-    entity: util.clone(testEntity),
+    entity: _.clone(testEntity),
   }
   body.entity.sources = [{
-    source: 'website',
+    type: 'website',
     id: 'http://www.massenamodern.com'
   }]
   t.post({uri: '/do/insertEntity?' + userCred, body: body}, 201,
@@ -205,7 +213,7 @@ exports.insertEntitySuggestSources = function(test) {
       t.assert(res.body.data[0].sources)
       var sources = res.body.data[0].sources
       t.assert(sources.length === 2) // appends the new sources to the ones in the request
-      t.assert(sources[1].source === 'twitter')
+      t.assert(sources[1].type === 'twitter')
       t.assert(sources[1].id === 'massenamodern')
       test.done()
     }
@@ -215,10 +223,10 @@ exports.insertEntitySuggestSources = function(test) {
 exports.insertPlaceEntitySuggestSourcesFromFactual = function(test) {
   var body = {
     suggestSources: true,
-    entity: util.clone(testEntity),
+    entity: _.clone(testEntity),
   }
   body.entity.sources = [{
-    source: 'foursquare',
+    type: 'foursquare',
     id: '4abebc45f964a520a18f20e3' // Seattle Ballroom
   }]
   t.post({uri: '/do/insertEntity?' + userCred, body: body}, 201,
@@ -235,7 +243,7 @@ exports.insertPlaceEntitySuggestSourcesFromFactual = function(test) {
 exports.getPlacePhotos = function(test) {
   t.post({
     uri: '/do/getPlacePhotos',
-    body: {source: 'foursquare', sourceId: '4abebc45f964a520a18f20e3'}
+    body: {provider: 'foursquare', id: '4abebc45f964a520a18f20e3'}
   }, function(err, res, body) {
     t.assert(body.data.length > 10)
     test.done()

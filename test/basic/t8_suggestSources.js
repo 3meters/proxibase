@@ -24,17 +24,22 @@ exports.getSessions = function(test) {
 }
 
 exports.checkTwitterUrls = function(test) {
+  var url = serviceUri + '/test/twitter.html'
   t.post({
     uri: '/do/suggestSources',
-    body: {sources: [{source: 'website', id: serviceUri + '/test/twitter.html'}]}
+    body: {sources: [{type: 'website', id: url}]}
   },
   function(err, res) {
     t.assert(res.body.data.length === 1)
-    t.assert(res.body.data[0].source === 'twitter')
+    t.assert(res.body.data[0].type === 'twitter')
     t.assert(res.body.data[0].id === 'bob')
     t.assert(res.body.data[0].name === '@bob')
-    t.assert(res.body.data[0].packageName === 'com.twitter.android')
-    t.assert(res.body.data[0].icon.indexOf('twitter.png') > 0)
+    t.assert(res.body.data[0].data)
+    t.assert(res.body.data[0].data.packageName === 'com.twitter.android')
+    t.assert(res.body.data[0].data.icon)
+    t.assert(res.body.data[0].data.icon.indexOf('twitter.png') > 0)
+    t.assert(res.body.data[0].data.origin === 'website')
+    t.assert(res.body.data[0].data.originUrl === url)
     test.done()
   })
 }
@@ -42,7 +47,7 @@ exports.checkTwitterUrls = function(test) {
 exports.checkFacebookUrls = function(test) {
   t.post({
     uri: '/do/suggestSources',
-    body: {sources: [{source: 'website', id: serviceUri + '/test/facebook.html'}]}
+    body: {sources: [{type: 'website', id: serviceUri + '/test/facebook.html'}]}
   },
   function(err, res) {
     var sources = res.body.data
@@ -51,10 +56,11 @@ exports.checkFacebookUrls = function(test) {
     var map = {}
     sources.forEach(function(source) {
       t.assert(source.id)
-      t.assert(source.source === 'facebook')
-      t.assert(source.origin === 'website')
-      t.assert(source.icon)
-      t.assert(source.packageName)
+      t.assert(source.type === 'facebook')
+      t.assert(source.data)
+      t.assert(source.data.origin.indexOf('website') === 0)
+      t.assert(source.data.icon)
+      t.assert(source.data.packageName)
       map[source.id] = source
     })
     t.assert(Object.keys(map).length === sources.length)  // no dupes by id
@@ -69,22 +75,22 @@ exports.checkFacebookUrls = function(test) {
 exports.checkEmailUrls = function(test) {
   t.post({
     uri: '/do/suggestSources',
-    body: {sources: [{source: 'website', id: serviceUri + '/test/email.html'}]}
+    body: {sources: [{type: 'website', id: serviceUri + '/test/email.html'}]}
   },
   function(err, res) {
     t.assert(res.body.data.length === 1)
-    t.assert(res.body.data[0].source === 'email')
+    t.assert(res.body.data[0].type === 'email')
     t.assert(res.body.data[0].id === 'george@3meters.com')
     test.done()
   })
 }
 
 exports.checkEmailUrlsWithGet = function(test) {
-  t.get({uri:'/do/suggestSources?sources[0][source]=website&sources[0][id]=' +
+  t.get({uri:'/do/suggestSources?sources[0][type]=website&sources[0][id]=' +
         serviceUri + '/test/email.html'},
   function(err, res) {
     t.assert(res.body.data.length === 1)
-    t.assert(res.body.data[0].source === 'email')
+    t.assert(res.body.data[0].type === 'email')
     t.assert(res.body.data[0].id === 'george@3meters.com')
     test.done()
   })
@@ -93,7 +99,7 @@ exports.checkEmailUrlsWithGet = function(test) {
 exports.checkBogusSources = function(test) {
   t.post({
     uri: '/do/suggestSources',
-    body: {sources: [{source: 'foursquare', url: 'http://www.google.com'}]}
+    body: {sources: [{type: 'foursquare', url: 'http://www.google.com'}]}
   },
   function(err, res) {
     t.assert(res.body.data.length === 0)
@@ -105,7 +111,7 @@ exports.checkBogusSources = function(test) {
 exports.compareFoursquareToFactual = function(test) {
   t.post({
     uri: '/do/suggestSources',
-    body: {sources: [{source: 'foursquare', id: '4abebc45f964a520a18f20e3'}]}  // Seattle Ballroom
+    body: {sources: [{type: 'foursquare', id: '4abebc45f964a520a18f20e3'}]}  // Seattle Ballroom
   },
   function(err, res) {
     var sources4s = res.body.data
@@ -113,7 +119,7 @@ exports.compareFoursquareToFactual = function(test) {
     t.post({
       uri: '/do/suggestSources',
       // Seattle Ballroom
-      body: {sources: [{source: 'factual', id: 'a10ad88f-c26c-42bb-99c6-10233f59d2d8'}],
+      body: {sources: [{type: 'factual', id: 'a10ad88f-c26c-42bb-99c6-10233f59d2d8'}],
              includeRaw: true}
     }, function(err, res) {
       var sourcesFact = res.body.data
@@ -130,7 +136,7 @@ exports.getFacebookFromFoursquare = function(test) {
     body: {
       sources: [
         {
-          source: 'foursquare',
+          type: 'foursquare',
           id: '42893400f964a5204c231fe3',
           name: 'The Red Door',
         }
@@ -143,9 +149,10 @@ exports.getFacebookFromFoursquare = function(test) {
     var sources = res.body.data
     t.assert(sources && sources.length)
     t.assert(sources.some(function(source) {
-      return (source.source === 'facebook'
+      return (source.type === 'facebook'
         && source.id === '155509047801321'
-        && source.origin === 'facebook')
+        && source.data
+        && source.data.origin === 'facebook')
     }))
     test.done()
   })
