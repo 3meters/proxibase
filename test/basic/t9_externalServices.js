@@ -58,8 +58,7 @@ exports.getSources = function(test) {
   t.get({uri: '/sources'}, function(err, res) {
     var sources = res.body.data
     t.assert(sources && sources.length > 5)
-    t.assert(sources[0].data)
-    t.assert(sources[0].data.icon.length > 20)
+    t.assert(sources[0].icon.length > 20)
     // TODO:  run a reqest on the icon and confirm that it is a valid png
     test.done()
   })
@@ -92,8 +91,7 @@ exports.getPlacesNearLocationFoursquare = function(test) {
       t.assert(sources.length)
       sources.forEach(function(source) {
         t.assert(source.type)
-        t.assert(source.data)
-        t.assert(source.id || source.data.url)
+        t.assert(source.id || source.url)
       })
     })
     test.done()
@@ -159,10 +157,10 @@ exports.getPlacesNearLocationFactual = function(test) {
       sources.forEach(function(source) {
         t.assert(source.type)
         t.assert(source.type !== 'factual')
+        t.assert(source.id || source.url)
+        t.assert(source.icon)
         t.assert(source.data)
-        t.assert(source.id || source.data.url)
         t.assert(source.data.origin)
-        t.assert(source.data.icon)
       })
       test.done()
     })
