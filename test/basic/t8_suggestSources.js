@@ -23,6 +23,34 @@ exports.getSessions = function(test) {
   })
 }
 
+exports.ensureRequiredParams = function(test) {
+  var url = serviceUri + '/test/twitter.html'
+  t.post({
+    uri: '/do/suggestSources',
+    body: {includeRaw: true}
+  }, 400,
+  function(err, res, body) {
+    t.assert(body && body.error)
+    t.assert(body.error.code === 400.1)  // missingParam
+    t.assert(body.error.appStack)
+    test.done()
+  })
+}
+
+exports.errorOnUnknownParams = function(test) {
+  var url = serviceUri + '/test/twitter.html'
+  t.post({
+    uri: '/do/suggestSources',
+    body: {foo: 'bar', sources: [{type: 'website', id: url}]}
+  }, 400,
+  function(err, res, body) {
+    t.assert(body && body.error)
+    t.assert(body.error.code === 400.11)  // badParam
+    t.assert(body.error.appStack)
+    test.done()
+  })
+}
+
 exports.checkTwitterUrls = function(test) {
   var url = serviceUri + '/test/twitter.html'
   t.post({
