@@ -92,6 +92,7 @@ exports.getPlacesNearLocationFoursquare = function(test) {
       sources.forEach(function(source) {
         t.assert(source.type)
         t.assert(source.id || source.url)
+        t.assert(source.icon)
       })
     })
     test.done()
