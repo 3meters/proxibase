@@ -17,6 +17,8 @@ var testUser = {
   email: 'authtest@3meters.com',
   password: 'foobar'
 }
+var newUserId
+var newUserEmailValidateUrl
 
 
 exports.cannotAddUserWhenNotSignedIn = function(test) {
@@ -76,16 +78,6 @@ exports.adminCanAddUserViaRest = function(test) {
     test.done()
   })
 }
-
-exports.userCanValidateEmail = function(test) {
-  // TODO: implement.  This will require the node imap module to log into
-  // the test user mail account, receive and parse the notification mail,
-  // send the get request embeded in the mail, and confirm that the 
-  // validation flag is properle set on the user record
-  log('nyi')
-  test.done()
-}
-
 
 exports.adminCannotChangeValidateDateViaRest = function(test) {
   t.post({
@@ -390,25 +382,6 @@ exports.annonymousUserCannotCreateUserViaApiWithWrongSecret = function(test) {
 }
 
 
-exports.annonymousUserCanCreateUserViaApi = function(test) {
-  t.post({
-    uri: '/user/create',
-    body: {
-      data: {
-        name: 'AuthTestUser2',
-        email: 'authtest2@3meters.com',
-        password: 'foobar'
-      },
-      secret: 'larissa'
-    }
-  }, function(err, res, body) {
-    t.assert(body.user)
-    t.assert(!body.user.validationDate)
-    t.assert(body.session)
-    test.done()
-  })
-}
-
 exports.annonymousUserCannotCreateUserViaApiWithoutWhitelistedEmail = function(test) {
   t.post({
     uri: '/user/create',
@@ -425,6 +398,72 @@ exports.annonymousUserCannotCreateUserViaApiWithoutWhitelistedEmail = function(t
     test.done()
   })
 }
+
+
+exports.annonymousUserCanCreateUserViaApi = function(test) {
+  t.post({
+    uri: '/user/create',
+    body: {
+      data: {
+        name: 'AuthTestUser2',
+        email: 'authtest2@3meters.com',
+        password: 'foobar'
+      },
+      secret: 'larissa'
+    }
+  }, function(err, res, body) {
+    t.assert(body.user)
+    t.assert(!body.user.validationDate)
+    t.assert(body.user.validateEmailUrl)
+    newUserId = body.user._id
+    newUserEmailValidateUrl = body.user.validateEmailUrl
+    t.assert(body.session)
+    test.done()
+  })
+}
+
+
+_exports.newUserEmailValidateUrlWorksSlowly = function(test) {
+  t.get('/data/users/' + newUserId, function(err, res, body) {
+    t.assert(body.data.length)
+    t.assert(body.data[0].validationNotifyDate)
+    t.assert(!body.data[0].validationDate)
+    t.get({
+      uri: newUserEmailValidateUrl.slice(testUtil.serverUrl.length),
+      json: false  // call is redirected to an html page
+    }, function(err, res, body) {
+      t.get('/data/users/' + newUserId, function(err, res, body) {
+        t.assert(body.data.length)
+        t.assert(body.data[0].validationDate)
+        t.assert(body.data[0].validationDate > body.data[0].validationNotifyDate)
+        test.done()
+      })
+    })
+  })
+}
+
+exports.newUserEmailValidateUrlWorksFaster = function(test) {
+  t.get('/data/users/' + newUserId, function(err, res, body) {
+    t.assert(body.data.length)
+    t.assert(body.data[0].validationNotifyDate)
+    t.assert(!body.data[0].validationDate)
+
+    // Fire without waiting for the callback
+    t.get(newUserEmailValidateUrl.slice(testUtil.serverUrl.length))
+
+    // Give time for the update to finish, but don't wait for the
+    // call to redirect the user to http://aircandi.com
+    setTimeout(function() {
+      t.get('/data/users/' + newUserId, function(err, res, body) {
+        t.assert(body.data.length)
+        t.assert(body.data[0].validationDate)
+        t.assert(body.data[0].validationDate > body.data[0].validationNotifyDate)
+        test.done()
+      })
+    }, 100)
+  })
+}
+
 
 exports.userCanSignOut = function(test) {
   t.get({

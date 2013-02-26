@@ -30,7 +30,7 @@ function makeReq(options) {
   else req.uri = exports.serverUrl
 
   req.method = options.method || 'get'
-  req.json = true
+  req.json = type.isBoolean(options.json) ? options.json : true
   return req
 }
 
@@ -61,7 +61,9 @@ function TestRequest() {
     }
     var req = makeReq(options)
     _req = req
+    if (!cb) return request(req) // fire and forget
     request(req, function(err, res) {
+      if (err) throw err
       _res = res
       check(req, res, statusCode)
       cb(err, res, res.body)
@@ -214,7 +216,12 @@ function check(req, res, code) {
   }
   if (res.body && (type.isString(res.body))) {
     try { res.body = JSON.parse(res.body) }
-    catch (e) { console.error(res.body); throw e }
+    catch (e) {
+      if (req.json) {
+        console.error(res.body)
+        throw e
+      }
+    }
   }
   assert(code === res.statusCode,
     dump(req, res, 'Bad statusCode: ' + res.statusCode + ' expected: ' + code))
