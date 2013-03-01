@@ -249,7 +249,9 @@ var saveTo = {
       function saveRow(row, callback) {
         var user = util.adminUser
         if (row._creator) user = {_id: row._creator, role: 'user'}
-        collection.safeInsert(row, {user: user}, function(err) {
+        var options = {user: user}
+        if (tableName === 'users') options.noValidate = true // skip email validation
+        collection.safeInsert(row, options, function(err) {
           return callback(err)
         })
       }
