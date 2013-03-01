@@ -460,7 +460,7 @@ exports.newUserEmailValidateUrlWorksFaster = function(test) {
         t.assert(body.data[0].validationDate > body.data[0].validationNotifyDate)
         test.done()
       })
-    }, 100)
+    }, 300)
   })
 }
 
