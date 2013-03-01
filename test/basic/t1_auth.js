@@ -18,7 +18,11 @@ var testUser = {
   password: 'foobar'
 }
 var newUserId
+var newUserEmail
 var newUserEmailValidateUrl
+var notifyDate
+var validationDate
+
 
 
 exports.cannotAddUserWhenNotSignedIn = function(test) {
@@ -73,8 +77,13 @@ exports.adminCanAddUserViaRest = function(test) {
     uri: '/data/users?' + adminCred,
     body: {data: testUser}
   }, 201, function(err, res, body) {
-    t.assert(body.data._id)
+    var user = body.data
+    t.assert(user._id)
+    t.assert(user.email === testUser.email)
+    t.assert(user.validationNotifyDate)
+    t.assert(!user.validationDate)
     testUser._id = body.data._id
+    notifyDate = user.validationNotifyDate
     test.done()
   })
 }
@@ -313,8 +322,9 @@ exports.changingEmailResetsValidationNotifyDate = function(test) {
     uri: '/data/users/' + testUser._id + '?' + userCred,
     body: {data: {email: 'authtest3@3meters.com'}}
   }, function(err, res, body) {
-    // TODO: check that validation mail was resent to new email address
-    t.assert(!body.data.validationNotifyDate)
+    var user = body.data
+    t.assert(user.validationNotifyDate > notifyDate)
+    t.assert(!body.data.validationDate)
     test.done()
   })
 }
@@ -413,8 +423,9 @@ exports.annonymousUserCanCreateUserViaApi = function(test) {
     }
   }, function(err, res, body) {
     t.assert(body.user)
-    t.assert(!body.user.validationDate)
     t.assert(body.user.validateEmailUrl)
+    t.assert(body.user.validationNotifyDate)
+    t.assert(!body.user.validationDate)
     newUserId = body.user._id
     newUserEmailValidateUrl = body.user.validateEmailUrl
     t.assert(body.session)
@@ -464,6 +475,38 @@ exports.newUserEmailValidateUrlWorksFaster = function(test) {
   })
 }
 
+exports.changingEmailResetsValidationAndNotifyDates = function(test) {
+  var start = util.now()
+  t.post({
+    uri: '/data/users/' + newUserId + '?' + adminCred,
+    body: {data: {email: 'authtest4@3meters.com'}}
+  }, function(err, res, body) {
+    var user = body.data
+    t.assert(user.validationNotifyDate >= start)
+    t.assert(!body.data.validationDate)
+    test.done()
+  })
+}
+
+
+exports.reqValidateFailesForUsers = function(test) {
+  t.post({
+    uri: '/user/reqvalidate?' + userCred,
+    body: {user: {_id: newUserId}}
+  }, 401, function(err, res, body) {
+    test.done()
+  })
+}
+
+exports.reqValidateWorksForAdmins = function(test) {
+  t.post({
+    uri: '/user/reqvalidate?' + adminCred,
+    body: {user: {_id: newUserId}}
+  }, function(err, res, body) {
+    t.assert(body.info)
+    test.done()
+  })
+}
 
 exports.userCanSignOut = function(test) {
   t.get({
