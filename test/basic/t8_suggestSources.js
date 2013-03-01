@@ -149,7 +149,7 @@ exports.compareFoursquareToFactual = function(test) {
     t.post({
       uri: '/do/suggestSources',
       // Seattle Ballroom
-      body: {sources: [{type: 'factual', id: 'a10ad88f-c26c-42bb-99c6-10233f59d2d8'}],
+      body: {sources: [{type: 'factual', id: '46aef19f-2990-43d5-a9e3-11b78060150c'}],
              includeRaw: true}
     }, function(err, res) {
       var sourcesFact = res.body.data
