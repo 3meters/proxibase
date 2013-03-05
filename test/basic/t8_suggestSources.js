@@ -58,16 +58,18 @@ exports.checkTwitterUrls = function(test) {
     body: {sources: [{type: 'website', id: url}]}
   },
   function(err, res) {
-    t.assert(res.body.data.length === 1)
-    t.assert(res.body.data[0].type === 'twitter')
-    t.assert(res.body.data[0].id === 'bob')
-    t.assert(res.body.data[0].name === '@bob')
-    t.assert(res.body.data[0].packageName === 'com.twitter.android')
-    t.assert(res.body.data[0].icon)
-    t.assert(res.body.data[0].icon.indexOf('twitter.png') > 0)
-    t.assert(res.body.data[0].data)
-    t.assert(res.body.data[0].data.origin === 'website')
-    t.assert(res.body.data[0].data.originUrl === url)
+    t.assert(res.body.data.length === 2)
+    t.assert(res.body.data[0].type === 'website')
+    var src = res.body.data[1]
+    t.assert(src.type === 'twitter')
+    t.assert(src.id === 'bob')
+    t.assert(src.name === '@bob')
+    t.assert(src.packageName === 'com.twitter.android')
+    t.assert(src.icon)
+    t.assert(src.icon.indexOf('twitter.png') > 0)
+    t.assert(src.data)
+    t.assert(src.data.origin === 'website')
+    t.assert(src.data.originUrl === url)
     test.done()
   })
 }
