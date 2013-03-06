@@ -26,7 +26,7 @@ exports.getSessions = function(test) {
 exports.ensureRequiredParams = function(test) {
   var url = serviceUri + '/test/twitter.html'
   t.post({
-    uri: '/do/suggestSources',
+    uri: '/sources/suggest',
     body: {includeRaw: true}
   }, 400,
   function(err, res, body) {
@@ -40,7 +40,7 @@ exports.ensureRequiredParams = function(test) {
 exports.errorOnUnknownParams = function(test) {
   var url = serviceUri + '/test/twitter.html'
   t.post({
-    uri: '/do/suggestSources',
+    uri: '/sources/suggest',
     body: {foo: 'bar', sources: [{type: 'website', id: url}]}
   }, 400,
   function(err, res, body) {
@@ -54,7 +54,7 @@ exports.errorOnUnknownParams = function(test) {
 exports.checkTwitterUrls = function(test) {
   var url = serviceUri + '/test/twitter.html'
   t.post({
-    uri: '/do/suggestSources',
+    uri: '/sources/suggest',
     body: {sources: [{type: 'website', id: url}]}
   },
   function(err, res) {
@@ -77,15 +77,16 @@ exports.checkTwitterUrls = function(test) {
 exports.checkFacebookUrls = function(test) {
   var url = serviceUri + '/test/facebook.html'
   t.post({
-    uri: '/do/suggestSources',
+    uri: '/sources/suggest',
     body: {sources: [{type: 'website', id: url}]}
   },
   function(err, res) {
     var sources = res.body.data
-    t.assert(sources.length === 3)
+    t.assert(sources.length === 4)
     // make a map of the results array by id
     var map = {}
-    sources.forEach(function(source) {
+    sources = sources.slice(1)
+    sources.forEach(function(source, i) {
       t.assert(source.id)
       t.assert(source.type === 'facebook')
       t.assert(source.icon)
@@ -106,35 +107,36 @@ exports.checkFacebookUrls = function(test) {
 
 exports.checkEmailUrls = function(test) {
   t.post({
-    uri: '/do/suggestSources',
+    uri: '/sources/suggest',
     body: {sources: [{type: 'website', id: serviceUri + '/test/email.html'}]}
   },
   function(err, res) {
-    t.assert(res.body.data.length === 1)
-    t.assert(res.body.data[0].type === 'email')
-    t.assert(res.body.data[0].id === 'george@3meters.com')
+    t.assert(res.body.data.length === 2)
+    t.assert(res.body.data[1].type === 'email')
+    t.assert(res.body.data[1].id === 'george@3meters.com')
     test.done()
   })
 }
 
 exports.checkEmailUrlsWithGet = function(test) {
-  t.get({uri:'/do/suggestSources?sources[0][type]=website&sources[0][id]=' +
+  t.get({uri:'/sources/suggest?sources[0][type]=website&sources[0][id]=' +
         serviceUri + '/test/email.html'},
   function(err, res) {
-    t.assert(res.body.data.length === 1)
-    t.assert(res.body.data[0].type === 'email')
-    t.assert(res.body.data[0].id === 'george@3meters.com')
+    t.assert(res.body.data.length === 2)
+    t.assert(res.body.data[1].type === 'email')
+    t.assert(res.body.data[1].id === 'george@3meters.com')
     test.done()
   })
 }
 
 exports.checkBogusSources = function(test) {
   t.post({
-    uri: '/do/suggestSources',
+    uri: '/sources/suggest',
     body: {sources: [{type: 'foursquare', url: 'http://www.google.com'}]}
   },
   function(err, res) {
-    t.assert(res.body.data.length === 0)
+    t.assert(res.body.data.length === 1)
+    // TODO:  what should happen to this one?
     test.done()
   })
 }
@@ -142,14 +144,14 @@ exports.checkBogusSources = function(test) {
 
 exports.compareFoursquareToFactual = function(test) {
   t.post({
-    uri: '/do/suggestSources',
+    uri: '/sources/suggest',
     body: {sources: [{type: 'foursquare', id: '4abebc45f964a520a18f20e3'}]}  // Seattle Ballroom
   },
   function(err, res) {
     var sources4s = res.body.data
     t.assert(sources4s.length > 3)
     t.post({
-      uri: '/do/suggestSources',
+      uri: '/sources/suggest',
       // Seattle Ballroom
       body: {sources: [{type: 'factual', id: '46aef19f-2990-43d5-a9e3-11b78060150c'}],
              includeRaw: true}
@@ -164,7 +166,7 @@ exports.compareFoursquareToFactual = function(test) {
 
 exports.getFacebookFromFoursquare = function(test) {
   t.post({
-    uri: '/do/suggestSources',
+    uri: '/sources/suggest',
     body: {
       sources: [
         {
