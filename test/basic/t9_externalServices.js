@@ -157,9 +157,9 @@ exports.getPlacesNearLocationFactual = function(test) {
       t.assert(sources && sources.length >= 2) // a website and a twitter account
       sources.forEach(function(source) {
         t.assert(source.type)
-        if (source.type === 'factual') t.assert(source.hidden)
+        if (source.type === 'factual') t.assert(source.system)
         t.assert(source.id || source.url)
-        if (!source.hidden) t.assert(source.icon)
+        t.assert(source.icon)
         t.assert(source.data)
         t.assert(source.data.origin)
       })
