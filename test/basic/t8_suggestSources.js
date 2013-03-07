@@ -153,7 +153,7 @@ exports.suggestSourcesFactual = function(test) {
     var sources = res.body.data
     t.assert(sources.length > 4)
     t.assert(sources[0].type === 'factual')
-    t.assert(sources[0].hidden)
+    t.assert(sources[0].system)
     t.assert(sources[1].type === 'foursquare')  // check basic sorting
     t.assert(res.body.raw)
     t.assert(res.body.raw.targetSources)
@@ -204,12 +204,13 @@ exports.getFacebookFromFoursquare = function(test) {
     var sources = res.body.data
     t.assert(sources && sources.length)
     // TODO: test for duped 4square entry
-    // TODO: test for duplicate removal based like filter
     t.assert(sources.some(function(source) {
       return (source.type === 'facebook'
-        && source.id === '155509047801321'
-        && source.data
-        && source.data.origin === 'facebook')
+        && source.id === '155509047801321')
+    }))
+    // This facebook entry fails the popularity contest
+    t.assert(sources.every(function(source) {
+      return source.id !== '427679707274727'
     }))
     var raw = res.body.raw
     t.assert(raw)
