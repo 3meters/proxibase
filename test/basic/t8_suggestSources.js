@@ -26,7 +26,7 @@ exports.getSessions = function(test) {
 exports.ensureRequiredParams = function(test) {
   var url = serviceUri + '/test/twitter.html'
   t.post({
-    uri: '/do/suggestSources',
+    uri: '/sources/suggest',
     body: {includeRaw: true}
   }, 400,
   function(err, res, body) {
@@ -40,7 +40,7 @@ exports.ensureRequiredParams = function(test) {
 exports.errorOnUnknownParams = function(test) {
   var url = serviceUri + '/test/twitter.html'
   t.post({
-    uri: '/do/suggestSources',
+    uri: '/sources/suggest',
     body: {foo: 'bar', sources: [{type: 'website', id: url}]}
   }, 400,
   function(err, res, body) {
@@ -54,20 +54,23 @@ exports.errorOnUnknownParams = function(test) {
 exports.checkTwitterUrls = function(test) {
   var url = serviceUri + '/test/twitter.html'
   t.post({
-    uri: '/do/suggestSources',
-    body: {sources: [{type: 'website', id: url}]}
+    uri: '/sources/suggest',
+    body: {sources: [{type: 'website', id: url}], includeRaw: true},
   },
   function(err, res) {
-    t.assert(res.body.data.length === 1)
-    t.assert(res.body.data[0].type === 'twitter')
-    t.assert(res.body.data[0].id === 'bob')
-    t.assert(res.body.data[0].name === '@bob')
-    t.assert(res.body.data[0].packageName === 'com.twitter.android')
-    t.assert(res.body.data[0].icon)
-    t.assert(res.body.data[0].icon.indexOf('twitter.png') > 0)
-    t.assert(res.body.data[0].data)
-    t.assert(res.body.data[0].data.origin === 'website')
-    t.assert(res.body.data[0].data.originUrl === url)
+    t.assert(res.body.data.length === 2)
+    t.assert(res.body.data[0].type === 'website')
+    var src = res.body.data[1]
+    t.assert(src.type === 'twitter')
+    t.assert(src.id === 'bob')
+    t.assert(src.name === '@bob')
+    t.assert(src.packageName === 'com.twitter.android')
+    t.assert(src.icon)
+    t.assert(src.icon.indexOf('twitter.png') > 0)
+    t.assert(src.data)
+    t.assert(src.data.origin === 'website')
+    t.assert(src.data.originUrl === url)
+    t.assert(res.body.raw.webPageCandidates.length === 6)
     test.done()
   })
 }
@@ -75,15 +78,16 @@ exports.checkTwitterUrls = function(test) {
 exports.checkFacebookUrls = function(test) {
   var url = serviceUri + '/test/facebook.html'
   t.post({
-    uri: '/do/suggestSources',
+    uri: '/sources/suggest',
     body: {sources: [{type: 'website', id: url}]}
   },
   function(err, res) {
     var sources = res.body.data
-    t.assert(sources.length === 3)
+    t.assert(sources.length === 5)
     // make a map of the results array by id
     var map = {}
-    sources.forEach(function(source) {
+    sources = sources.slice(1)
+    sources.forEach(function(source, i) {
       t.assert(source.id)
       t.assert(source.type === 'facebook')
       t.assert(source.icon)
@@ -94,60 +98,81 @@ exports.checkFacebookUrls = function(test) {
       map[source.id] = source
     })
     t.assert(Object.keys(map).length === sources.length)  // no dupes by id
-    t.assert(map['george.snelling'])
-    t.assert(map['george.snelling'].name === 'George Snelling')
-    t.assert(map['GetLuckyStrike'])
-    t.assert(map['papamurphyspizza'])
+    t.assert(map['620955808'])
+    t.assert(map['620955808'].name === 'George Snelling')
+    t.assert(map['227605257298019'])
+    t.assert(map['284314854066'])
+    t.assert(map['115450755150958'])
     test.done()
   })
 }
 
 exports.checkEmailUrls = function(test) {
   t.post({
-    uri: '/do/suggestSources',
+    uri: '/sources/suggest',
     body: {sources: [{type: 'website', id: serviceUri + '/test/email.html'}]}
   },
   function(err, res) {
-    t.assert(res.body.data.length === 1)
-    t.assert(res.body.data[0].type === 'email')
-    t.assert(res.body.data[0].id === 'george@3meters.com')
+    t.assert(res.body.data.length === 2)
+    t.assert(res.body.data[1].type === 'email')
+    t.assert(res.body.data[1].id === 'george@3meters.com')
     test.done()
   })
 }
 
 exports.checkEmailUrlsWithGet = function(test) {
-  t.get({uri:'/do/suggestSources?sources[0][type]=website&sources[0][id]=' +
+  t.get({uri:'/sources/suggest?sources[0][type]=website&sources[0][id]=' +
         serviceUri + '/test/email.html'},
   function(err, res) {
-    t.assert(res.body.data.length === 1)
-    t.assert(res.body.data[0].type === 'email')
-    t.assert(res.body.data[0].id === 'george@3meters.com')
+    t.assert(res.body.data.length === 2)
+    t.assert(res.body.data[1].type === 'email')
+    t.assert(res.body.data[1].id === 'george@3meters.com')
     test.done()
   })
 }
 
 exports.checkBogusSources = function(test) {
   t.post({
-    uri: '/do/suggestSources',
+    uri: '/sources/suggest',
     body: {sources: [{type: 'foursquare', url: 'http://www.google.com'}]}
   },
   function(err, res) {
-    t.assert(res.body.data.length === 0)
+    t.assert(res.body.data.length === 1)
+    // TODO:  what should happen to this one?
     test.done()
   })
 }
 
+exports.suggestSourcesFactual = function(test) {
+  t.post({
+    uri: '/sources/suggest',
+    body: {sources: [{type: 'factual', id: '46aef19f-2990-43d5-a9e3-11b78060150c'}],
+             includeRaw: true}
+  },
+  function(err, res) {
+    var sources = res.body.data
+    t.assert(sources.length > 4)
+    t.assert(sources[0].type === 'factual')
+    t.assert(sources[0].hidden)
+    t.assert(sources[1].type === 'foursquare')  // check basic sorting
+    t.assert(res.body.raw)
+    t.assert(res.body.raw.targetSources)
+    t.assert(res.body.raw.targetsNormalized)
+    t.assert(res.body.raw.factualCandidates.length > 12)
+    test.done()
+  })
+}
 
 exports.compareFoursquareToFactual = function(test) {
   t.post({
-    uri: '/do/suggestSources',
+    uri: '/sources/suggest',
     body: {sources: [{type: 'foursquare', id: '4abebc45f964a520a18f20e3'}]}  // Seattle Ballroom
   },
   function(err, res) {
     var sources4s = res.body.data
     t.assert(sources4s.length > 3)
     t.post({
-      uri: '/do/suggestSources',
+      uri: '/sources/suggest',
       // Seattle Ballroom
       body: {sources: [{type: 'factual', id: '46aef19f-2990-43d5-a9e3-11b78060150c'}],
              includeRaw: true}
@@ -162,7 +187,7 @@ exports.compareFoursquareToFactual = function(test) {
 
 exports.getFacebookFromFoursquare = function(test) {
   t.post({
-    uri: '/do/suggestSources',
+    uri: '/sources/suggest',
     body: {
       sources: [
         {
@@ -178,12 +203,18 @@ exports.getFacebookFromFoursquare = function(test) {
   function(err, res) {
     var sources = res.body.data
     t.assert(sources && sources.length)
+    // TODO: test for duped 4square entry
+    // TODO: test for duplicate removal based like filter
     t.assert(sources.some(function(source) {
       return (source.type === 'facebook'
         && source.id === '155509047801321'
         && source.data
         && source.data.origin === 'facebook')
     }))
+    var raw = res.body.raw
+    t.assert(raw)
+    t.assert(raw.facebookCandidates.length >= 2)
+    t.assert(raw.factualCandidates.length >= 12)
     test.done()
   })
 }
