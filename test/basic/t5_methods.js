@@ -4,6 +4,7 @@
 
 var util = require('proxutils')
 var log = util.log
+var adminId = util.adminUser._id
 var testUtil = require('../util')
 var t = testUtil.treq
 var constants = require('../constants')
@@ -63,7 +64,7 @@ var testEntity3 = {
   signalFence : -100,
   name : "Testing candi 3",
   type : "com.aircandi.candi.place",
-  place: {location:{lat:testLatitude, lng:testLongitude}},
+  place: {location:{lat:testLatitude, lng:testLongitude}, provider: 'foursquare'},
   visibility : "public",
   isCollection: true,
   enabled : true,
@@ -247,7 +248,11 @@ exports.insertEntity = function (test) {
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
-    t.assert(body.data && body.data[0]._id)
+    t.assert(body.data && body.data[0])
+    var savedEnt = body.data[0]
+    t.assert(savedEnt._owner === testUser._id)
+    t.assert(savedEnt._creator === testUser._id)
+    t.assert(savedEnt._modifier === testUser._id)
 
     /* Find and store the primary link that was created by insertEntity */
     t.post({
@@ -342,7 +347,7 @@ exports.checkInsertBeacon = function(test) {
   })
 }
 
-exports.insertEntityWithNoLinks = function (test) {
+exports.insertPlaceEntityWithNoLinks = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCred,
     body: {
@@ -362,11 +367,66 @@ exports.checkInsertEntityNoLinks = function(test) {
   }, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data[0] && body.data[0].place)
-    t.assert(body.data[0].place.location)
-    t.assert(body.data[0].place.location.lat && body.data[0].place.location.lng)
-    t.assert(body.data[0].loc)
+    var ent = body.data[0]
+    t.assert(ent.place.location)
+    t.assert(ent.place.location.lat && body.data[0].place.location.lng)
+    t.assert(ent.loc)
+    t.assert(ent._owner === adminId) // admins own places
+    t.assert(ent._creator === testUser._id)
+    t.assert(ent._modifier === testUser._id)
+    t.assert(ent.createdDate === ent.modifiedDate)
     test.done()
   })
+}
+
+exports.insertEntityDoNotTrack = function(test) {
+  t.post({
+    uri: '/data/users/' + testUser._id + '?' + userCred,
+    body: {data: {doNotTrack: true}}
+  }, function(err, res) {
+    t.assert(res.body.data.doNotTrack)
+    var ent = util.clone(testEntity3) // place entity
+    delete ent._id
+    ent.name = 'Testing Place Ent with doNotTrack'
+    var beacon = util.clone(testBeacon)
+    beacon._id = '0008.44:44:44:44:44:44'
+    beacon.bssid = '44:44:44:44:44:44',
+    t.post({
+      uri: '/do/insertEntity?' + userCred,
+      body: {
+        entity: ent,
+        beacons: [beacon],
+        primaryBeaconId: beacon._id,
+        observation: testObservation
+      }
+    }, 201, function(err, res, body) {
+      t.assert(body.count === 1)
+      t.assert(body.data && body.data[0])
+      var savedEnt = body.data[0]
+      var adminId = util.adminUser._id
+      t.assert(savedEnt._owner === adminId)
+      t.assert(savedEnt._creator === adminId)
+      t.assert(savedEnt._modifier === adminId)
+      t.get('/data/beacons/' + beacon._id,
+        function(err, res, body) {
+          t.assert(body.data[0])
+          var savedBeacon = body.data[0]
+          t.assert(savedBeacon._owner === adminId)
+          t.assert(savedBeacon._creator === adminId)
+          t.assert(savedBeacon._modifier === adminId)
+          t.get({
+            uri: '/data/links?find={"_from":"' + savedEnt._id + '"}'
+          }, function(err, res, body) {
+            t.assert(body.data[0])
+            var link = body.data[0]
+            t.assert(link._owner === adminId)
+            t.assert(link._creator === adminId)
+            t.assert(link._modifier === adminId)
+            test.done()
+          })
+        })
+      })
+    })
 }
 
 exports.getEntitiesForLocationIncludingNoLinkBigRadius = function (test) {
@@ -379,7 +439,7 @@ exports.getEntitiesForLocationIncludingNoLinkBigRadius = function (test) {
       radius: radiusBig 
     }
   }, function(err, res, body) {
-    t.assert(body.count === 3)
+    t.assert(body.count === 4)
     t.assert(body.date)
     test.done()
   })
@@ -389,8 +449,8 @@ exports.getEntitiesForLocationIncludingNoLinkTinyRadius = function (test) {
   t.post({
     uri: '/do/getEntitiesForLocation',
     body: {
-      beaconIdsNew:[testBeacon._id], 
-      eagerLoad:{children:true,comments:false}, 
+      beaconIdsNew:[testBeacon._id],
+      eagerLoad:{children:true,comments:false},
       observation:testObservation3, 
       radius: radiusTiny
     }
@@ -405,8 +465,8 @@ exports.trackEntityBrowse = function(test) {
   t.post({
     uri: '/do/trackEntity?' + userCred,
     body: {
-      entityId:testEntity._id, 
-      beacons:[testBeacon, testBeacon2, testBeacon3], 
+      entityId:testEntity._id,
+      beacons:[testBeacon, testBeacon2, testBeacon3],
       primaryBeaconId:testBeacon2._id,
       observation:testObservation,
       actionType:'browse'
