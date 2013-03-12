@@ -81,9 +81,9 @@ exports.getPlacesNearLocationFoursquare = function(test) {
     var places = res.body.data
     t.assert(places.length === 9) // arguably a bug, the exclude process happens after the query
     places.forEach(function(place) {
-      t.assert(place._id)
-      t.assert(place._id !== ballRoomId)
       t.assert(place.place)
+      t.assert(place.place.id)
+      t.assert(place.place.id !== ballRoomId)
       t.assert(place.place.category)
       t.assert(place.place.category.name)
       var sources = place.sources
@@ -100,7 +100,6 @@ exports.getPlacesNearLocationFoursquare = function(test) {
 }
 
 exports.getPlacesNearLocationFactual = function(test) {
-  // var ballRoomId = 'a10ad88f-c26c-42bb-99c6-10233f59d2d8'
   var ballRoomId = '46aef19f-2990-43d5-a9e3-11b78060150c'
   var roxyId = 'fdf4b14d-93d7-4ada-8bef-19add2fa9b15' // Roxy's Diner
   var foundRoxy = false
@@ -119,14 +118,13 @@ exports.getPlacesNearLocationFactual = function(test) {
     var places = res.body.data
     t.assert(places.length === 9)
     places.forEach(function(place) {
-      t.assert(place._id)
-      t.assert(place._id !== ballRoomId)
       t.assert(place.place)
-      t.assert(place.place.category)
+      t.assert(ballRoomId !== place.place.id)
+      t.assert(place.place.category, 'blech ' + util.inspect(place))
       t.assert(place.place.category.name)
     })
     var roxys = places.filter(function(e) {
-      return (e._id === 'fdf4b14d-93d7-4ada-8bef-19add2fa9b15') // Roxy's Diner
+      return (e.place.id === 'fdf4b14d-93d7-4ada-8bef-19add2fa9b15') // Roxy's Diner
     })
     t.assert(roxys.length === 1)
     insertEnt(roxys[0])
@@ -235,6 +233,40 @@ exports.insertPlaceEntitySuggestSourcesFromFactual = function(test) {
       test.done()
     }
   )
+}
+
+exports.getPlacesInsertEntityGetPlaces = function(test) {
+  var ballRoomId = '4abebc45f964a520a18f20e3'
+  // Rudy's barbershop, across the street from the Ballroom in Fremont
+  var rudysId = '4c8ee53dad70a143619d8d0f'
+  t.post({
+    uri: '/do/getPlacesNearLocation',
+    body: {
+      latitude: 47.6521,
+      longitude: -122.3530,   // The Ballroom, Fremont, Seattle
+      provider: 'foursquare',
+    }
+  }, function(err, res, body) {
+    var places = body.data
+    var rudys = null
+    t.assert(places.length > 10)
+    places.forEach(function(place) {
+      if (rudysId === place.place.id) {
+        return rudys = place
+      }
+    })
+    t.assert(rudys)
+    t.post({
+      uri: '/do/insertEntity?' + userCred,
+      body: {entity: rudys}
+    }, 201, function(err, res, body) {
+      // TODO:  run getPlacesNearLocation again centered at the Ballroom.
+      //    Confirm that Rudys is a real entity, is not duped, and is 
+      //    sorted properly.  
+      log('debug inserted Rubys as an entity', body)
+      test.done()
+    })
+  })
 }
 
 exports.getPlacePhotos = function(test) {
