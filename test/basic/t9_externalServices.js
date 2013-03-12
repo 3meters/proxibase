@@ -301,13 +301,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
             var places = body.data
             var foundLadro = 0
             var foundNewEnt = 0
-            var prevDistance = 0
             places.forEach(function(place) {
-              // make sure places are sorted by distance
-              if (place.place && util.type.isNumber(place.place.distance)) {
-                t.assert(place.place.distance >= prevDistance)
-                prevDistance = place.place.distance
-              }
               if (place._id && place.place.id === ladroId) foundLadro++
               if (place._id && place._id === newEnt._id) foundNewEnt++
             })
