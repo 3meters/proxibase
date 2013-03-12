@@ -237,8 +237,8 @@ exports.insertPlaceEntitySuggestSourcesFromFactual = function(test) {
 
 exports.getPlacesInsertEntityGetPlaces = function(test) {
   var ballRoomId = '4abebc45f964a520a18f20e3'
-  // Rudy's barbershop, across the street from the Ballroom in Fremont
-  var rudysId = '4c8ee53dad70a143619d8d0f'
+  // Cafe Ladro, a few doors down from the Ballroom
+  var ladroId = '45d62041f964a520d2421fe3'
   t.post({
     uri: '/do/getPlacesNearLocation',
     body: {
@@ -248,23 +248,75 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
     }
   }, function(err, res, body) {
     var places = body.data
-    var rudys = null
+    var ladro = null
     t.assert(places.length > 10)
     places.forEach(function(place) {
-      if (rudysId === place.place.id) {
-        return rudys = place
+      if (ladroId === place.place.id) {
+        return ladro = place
       }
     })
-    t.assert(rudys)
+    t.assert(ladro)
     t.post({
       uri: '/do/insertEntity?' + userCred,
-      body: {entity: rudys}
+      body: {entity: ladro}
     }, 201, function(err, res, body) {
-      // TODO:  run getPlacesNearLocation again centered at the Ballroom.
-      //    Confirm that Rudys is a real entity, is not duped, and is 
-      //    sorted properly.  
-      log('debug inserted Rubys as an entity', body)
-      test.done()
+      t.post({
+        uri: '/do/insertEntity?' + userCred,
+        body: {entity: {
+          name: 'A user-created Test Entity Inside the BallRoom',
+          type : "com.aircandi.candi.place",
+          place: {provider: 'user', location: {lat: 47.6521, lng: -122.3530}},
+          visibility : "public",
+          isCollection: true,
+          enabled : true,
+          locked : false,
+        }}
+      }, 201, function(err, res, body) {
+        var newEnt = body.data[0]
+        t.assert(newEnt)
+        t.post({
+          uri: '/do/getPlacesNearLocation',
+          body: {
+            latitude: 47.6521,
+            longitude: -122.3530,
+            provider: 'foursquare',
+          }
+        }, function(err, res, body) {
+          // Make sure the real entitiy is in the found places
+          var places = body.data
+          var found = 0
+          places.forEach(function(place) {
+            if (place._id && place.place.id === ladroId) found++
+          })
+          t.assert(found === 1)
+          // Make sure search by factual returns the same result, join is on phone number
+          t.post({
+            uri: '/do/getPlacesNearLocation',
+            body: {
+              latitude: 47.6521,
+              longitude: -122.3530,
+              provider: 'factual',
+            }
+          }, function(err, res, body) {
+            var places = body.data
+            var foundLadro = 0
+            var foundNewEnt = 0
+            var prevDistance = 0
+            places.forEach(function(place) {
+              // make sure places are sorted by distance
+              if (place.place && util.type.isNumber(place.place.distance)) {
+                t.assert(place.place.distance >= prevDistance)
+                prevDistance = place.place.distance
+              }
+              if (place._id && place.place.id === ladroId) foundLadro++
+              if (place._id && place._id === newEnt._id) foundNewEnt++
+            })
+            t.assert(foundLadro === 1)
+            t.assert(foundNewEnt === 1)
+            test.done()
+          })
+        })
+      })
     })
   })
 }
