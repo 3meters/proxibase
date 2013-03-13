@@ -81,9 +81,9 @@ exports.getPlacesNearLocationFoursquare = function(test) {
     var places = res.body.data
     t.assert(places.length === 9) // arguably a bug, the exclude process happens after the query
     places.forEach(function(place) {
-      t.assert(place._id)
-      t.assert(place._id !== ballRoomId)
       t.assert(place.place)
+      t.assert(place.place.id)
+      t.assert(place.place.id !== ballRoomId)
       t.assert(place.place.category)
       t.assert(place.place.category.name)
       var sources = place.sources
@@ -100,7 +100,6 @@ exports.getPlacesNearLocationFoursquare = function(test) {
 }
 
 exports.getPlacesNearLocationFactual = function(test) {
-  // var ballRoomId = 'a10ad88f-c26c-42bb-99c6-10233f59d2d8'
   var ballRoomId = '46aef19f-2990-43d5-a9e3-11b78060150c'
   var roxyId = 'fdf4b14d-93d7-4ada-8bef-19add2fa9b15' // Roxy's Diner
   var foundRoxy = false
@@ -119,14 +118,13 @@ exports.getPlacesNearLocationFactual = function(test) {
     var places = res.body.data
     t.assert(places.length === 9)
     places.forEach(function(place) {
-      t.assert(place._id)
-      t.assert(place._id !== ballRoomId)
       t.assert(place.place)
-      t.assert(place.place.category)
+      t.assert(ballRoomId !== place.place.id)
+      t.assert(place.place.category, 'blech ' + util.inspect(place))
       t.assert(place.place.category.name)
     })
     var roxys = places.filter(function(e) {
-      return (e._id === 'fdf4b14d-93d7-4ada-8bef-19add2fa9b15') // Roxy's Diner
+      return (e.place.id === 'fdf4b14d-93d7-4ada-8bef-19add2fa9b15') // Roxy's Diner
     })
     t.assert(roxys.length === 1)
     insertEnt(roxys[0])
@@ -235,6 +233,86 @@ exports.insertPlaceEntitySuggestSourcesFromFactual = function(test) {
       test.done()
     }
   )
+}
+
+exports.getPlacesInsertEntityGetPlaces = function(test) {
+  var ballRoomId = '4abebc45f964a520a18f20e3'
+  // Cafe Ladro, a few doors down from the Ballroom
+  var ladroId = '45d62041f964a520d2421fe3'
+  t.post({
+    uri: '/do/getPlacesNearLocation',
+    body: {
+      latitude: 47.6521,
+      longitude: -122.3530,   // The Ballroom, Fremont, Seattle
+      provider: 'foursquare',
+    }
+  }, function(err, res, body) {
+    var places = body.data
+    var ladro = null
+    t.assert(places.length > 10)
+    places.forEach(function(place) {
+      if (ladroId === place.place.id) {
+        return ladro = place
+      }
+    })
+    t.assert(ladro)
+    t.post({
+      uri: '/do/insertEntity?' + userCred,
+      body: {entity: ladro}
+    }, 201, function(err, res, body) {
+      t.post({
+        uri: '/do/insertEntity?' + userCred,
+        body: {entity: {
+          name: 'A user-created Test Entity Inside the BallRoom',
+          type : "com.aircandi.candi.place",
+          place: {provider: 'user', location: {lat: 47.6521, lng: -122.3530}},
+          visibility : "public",
+          isCollection: true,
+          enabled : true,
+          locked : false,
+        }}
+      }, 201, function(err, res, body) {
+        var newEnt = body.data[0]
+        t.assert(newEnt)
+        t.post({
+          uri: '/do/getPlacesNearLocation',
+          body: {
+            latitude: 47.6521,
+            longitude: -122.3530,
+            provider: 'foursquare',
+          }
+        }, function(err, res, body) {
+          // Make sure the real entitiy is in the found places
+          var places = body.data
+          var found = 0
+          places.forEach(function(place) {
+            if (place._id && place.place.id === ladroId) found++
+          })
+          t.assert(found === 1)
+          // Make sure search by factual returns the same result, join is on phone number
+          t.post({
+            uri: '/do/getPlacesNearLocation',
+            body: {
+              latitude: 47.6521,
+              longitude: -122.3530,
+              provider: 'factual',
+            }
+          }, function(err, res, body) {
+            var places = body.data
+            var foundLadro = 0
+            var foundNewEnt = 0
+            places.forEach(function(place) {
+              if (place._id && place.place.id === ladroId) foundLadro++
+              if (place._id && place._id === newEnt._id) foundNewEnt++
+            })
+            t.assert(foundLadro === 1)
+            t.assert(foundNewEnt === 1)
+            test.done()
+          })
+        })
+      })
+    })
+  })
 }
 
 exports.getPlacePhotos = function(test) {

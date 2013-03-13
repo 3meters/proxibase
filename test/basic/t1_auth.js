@@ -404,7 +404,7 @@ exports.annonymousUserCannotCreateUserViaApiWithoutWhitelistedEmail = function(t
       secret: 'larissa'
     }
   }, 401, function(err, res, body) {
-    t.assert(body.error.message.indexOf('support@') >0)
+    t.assert(body.error.code === 401.4)
     test.done()
   })
 }
@@ -489,7 +489,7 @@ exports.changingEmailResetsValidationAndNotifyDates = function(test) {
 }
 
 
-exports.reqValidateFailesForUsers = function(test) {
+exports.reqValidateFailsForUsers = function(test) {
   t.post({
     uri: '/user/reqvalidate?' + userCred,
     body: {user: {_id: newUserId}}
