@@ -18,8 +18,8 @@ var testLatitude = 46.1
 var testLongitude = -121.1
 var testLatitude2 = 47.1
 var testLongitude2 = -122.1
-var radiusTiny = (0.000001 / 3959)
-var radiusBig = (10 / 3959)
+var radiusTiny = 0.000001
+var radiusBig = 10000
 var testUser = {
   _id : "0001.111111.11111.111.111111",
   name : "John Q Test",

@@ -72,7 +72,7 @@ exports.getPlacesNearLocationFoursquare = function(test) {
       latitude: 47.6521,
       longitude: -122.3530,   // The Ballroom, Fremont, Seattle
       provider: 'foursquare',
-      meters: 100,
+      radius: 500,
       includeRaw: false,
       limit: 10,
       excludePlaceIds: [ballRoomId], // The Ballroom's 4sId
@@ -99,9 +99,27 @@ exports.getPlacesNearLocationFoursquare = function(test) {
   })
 }
 
+exports.getPlacesNearLocationLargeRadius = function(test) {
+  t.post({
+    uri: '/do/getPlacesNearLocation?' + userCred,
+    body: {
+      provider: 'foursquare',
+      //latitude: 47.6521,
+      //longitude: -122.3530,
+      latitude: 47.593,
+      longitude: -122.159,
+      radius: 10000,
+      limit: 20,
+    }
+  }, function(err, res, body) {
+    test.done()
+  })
+}
+
 exports.getPlacesNearLocationFactual = function(test) {
   var ballRoomId = '46aef19f-2990-43d5-a9e3-11b78060150c'
-  var roxyId = 'fdf4b14d-93d7-4ada-8bef-19add2fa9b15' // Roxy's Diner
+  var roxyId = '2bd21139-1907-4126-9443-65a2e48e1717' // Roxy's Diner 
+  // var roxyId = 'fdf4b14d-93d7-4ada-8bef-19add2fa9b15'
   var foundRoxy = false
   t.post({
     uri: '/do/getPlacesNearLocation',
@@ -109,7 +127,7 @@ exports.getPlacesNearLocationFactual = function(test) {
       latitude: 47.6521,
       longitude: -122.3530,   // The Ballroom, Fremont, Seattle
       provider: 'factual',
-      meters: 100,
+      radius: 500,
       limit: 10,
       excludePlaceIds: [ballRoomId],
       includeRaw: true,
@@ -124,7 +142,7 @@ exports.getPlacesNearLocationFactual = function(test) {
       t.assert(place.place.category.name)
     })
     var roxys = places.filter(function(e) {
-      return (e.place.id === 'fdf4b14d-93d7-4ada-8bef-19add2fa9b15') // Roxy's Diner
+      return (e.place.id === roxyId) // Roxy's Diner
     })
     t.assert(roxys.length === 1)
     insertEnt(roxys[0])
@@ -275,39 +293,63 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
         var newEnt = body.data[0]
         t.assert(newEnt)
         t.post({
-          uri: '/do/getPlacesNearLocation',
-          body: {
-            latitude: 47.6521,
-            longitude: -122.3530,
-            provider: 'foursquare',
-          }
-        }, function(err, res, body) {
-          // Make sure the real entitiy is in the found places
-          var places = body.data
-          var found = 0
-          places.forEach(function(place) {
-            if (place._id && place.place.id === ladroId) found++
-          })
-          t.assert(found === 1)
-          // Make sure search by factual returns the same result, join is on phone number
+          uri: '/do/insertEntity?' + userCred,
+          body: {entity: {
+            name: 'A user-created Entity At George\'s House',
+            type : 'com.aircandi.candi.place',
+            place: {provider: 'user', location: {lat: 47.664525, lng: -122.354787}},
+            visibility : "public",
+            isCollection: true,
+            enabled : true,
+            locked : false,
+          }}
+        }, 201, function(err, res, body) {
+          var newEnt2 = body.data[0]
+          t.assert(newEnt2)
           t.post({
             uri: '/do/getPlacesNearLocation',
             body: {
               latitude: 47.6521,
               longitude: -122.3530,
-              provider: 'factual',
+              provider: 'foursquare',
             }
           }, function(err, res, body) {
+            // Make sure the real entitiy is in the found places
             var places = body.data
             var foundLadro = 0
             var foundNewEnt = 0
+            var foundNewEnt2 = 0
             places.forEach(function(place) {
               if (place._id && place.place.id === ladroId) foundLadro++
               if (place._id && place._id === newEnt._id) foundNewEnt++
+              if (place._id && place._id === newEnt2._id) foundNewEnt2++
             })
             t.assert(foundLadro === 1)
             t.assert(foundNewEnt === 1)
-            test.done()
+            t.assert(foundNewEnt2 === 0)
+            // Make sure search by factual returns the same result, join is on phone number
+            t.post({
+              uri: '/do/getPlacesNearLocation',
+              body: {
+                latitude: 47.6521,
+                longitude: -122.3530,
+                provider: 'factual',
+              }
+            }, function(err, res, body) {
+              var places = body.data
+              var foundLadro = 0
+              var foundNewEnt = 0
+              var foundNewEnt2 = 0
+              places.forEach(function(place) {
+                if (place._id && place.place.id === ladroId) foundLadro++
+                if (place._id && place._id === newEnt._id) foundNewEnt++
+                if (place._id && place._id === newEnt2._id) foundNewEnt2++
+              })
+              t.assert(foundLadro === 1)
+              t.assert(foundNewEnt === 1)
+              t.assert(foundNewEnt2 === 0)
+              test.done()
+            })
           })
         })
       })
