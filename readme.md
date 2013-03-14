@@ -26,7 +26,7 @@ find documents
     method: POST
     body: {
       "collection|stat": string,          // base collection or statitistics collection
-      "name": [string],                   // case-insensitive
+      "name": string,                     // case-insensitive
       "fields": [string],
       "find": {mongodb find expression},  // pass-through to mongodb, case-sensitive
       "lookups": boolean,
@@ -159,8 +159,8 @@ Returns the collection's first 1000 records unsorted.
 ### GET /data/\<collection\>/\<id1\>,\<id2\>
 Returns records with the specified ids
 
-### GET /data/\<collection\>?name:\<name1,name2\>
-Returns records with the specified names, case-insensitive.  If the names include spaces, use POST /do/find 
+### GET /data/\<collection\>?name:name
+Returns the record with the specified name, case-insensitive.  If the names include spaces, use POST /do/find
 
 ### GET /data/\<collection\>/genid
 Generates a valid id for the table with the UTC timestamp of the request.  Useful if you want to make posts to mulitple tables with the primary and foreign keys preassigned.
@@ -234,7 +234,7 @@ POST /do/find is the same as GET /data/<collection>, but with the paramters in t
 
     {
       "collection|stat": string,          // base collection or statitistics collection
-      "names": [string],                  // case-insensitive
+      "name": string,                     // case-insensitive
       "fields": [string],
       "find": {mongodb find expression},  // pass-through to mongodb, case-sensitive
       "lookups": boolean,
