@@ -37,7 +37,6 @@ exports.getUserSession = function(test) {
   })
 }
 
-
 exports.cannotPostDocWithMissingDataTag = function(test) {
   t.post({
     uri: '/data/documents?' + userCred,
@@ -47,7 +46,6 @@ exports.cannotPostDocWithMissingDataTag = function(test) {
     test.done()
   })
 }
-
 
 exports.cannotPostWithMultipleArrayElements = function(test) {
   t.post({
@@ -61,8 +59,6 @@ exports.cannotPostWithMultipleArrayElements = function(test) {
   })
 }
 
-
-// TODO: only enforced by REST.  Custom methods bypass
 exports.cannotPostWithNonSchemaFields = function(test) {
   t.post({
     uri: '/data/documents?' + userCred,
@@ -72,7 +68,6 @@ exports.cannotPostWithNonSchemaFields = function(test) {
     test.done()
   })
 }
-
 
 exports.canAddDoc = function(test) {
   t.post({
@@ -86,6 +81,16 @@ exports.canAddDoc = function(test) {
   })
 }
 
+exports.fieldsParamWorks = function(test) {
+  t.get({
+    uri: '/data/documents/' + testDoc1._id + '?fields=name'
+  }, function(err, res, body) {
+    t.assert(body.data[0])
+    t.assert(body.data[0].name)
+    t.assert(!body.data[0].data)
+    test.done()
+  })
+}
 
 exports.canAddDocAsSingleElementArray = function(test) {
   t.post({
@@ -124,8 +129,6 @@ exports.findDocsByIdAndCheckSysFields = function(test) {
   })
 }
 
-
-
 exports.findDocsByGetAndFindAndJson = function(test) {
   t.get({
     uri: '/data/documents?find={"_id":"' + testDoc1._id + '"}&' + userCred
@@ -154,9 +157,9 @@ exports.findDocsByGetAndFindWithBadJson = function(test) {
 
 exports.findDocsByNameWhenNotSignedIn = function(test) {
   t.get({
-    uri: '/data/documents?name=' + testDoc1.name.toUpperCase() + ',' + testDoc2.name
+    uri: '/data/documents?name=' + testDoc1.name.toUpperCase()
   }, function(err, res, body) {
-    t.assert(body.count === 2)
+    t.assert(body.count === 1)
     test.done()
   })
 }
@@ -173,8 +176,6 @@ exports.findWithLookups = function(test) {
   })
 }
 
-
-
 exports.updateDoc = function(test) {
   t.post({
     uri: '/data/documents/' + testDoc1._id + '?' + userCred,
@@ -186,7 +187,6 @@ exports.updateDoc = function(test) {
     test.done()
   })
 }
-
 
 exports.checkUpdatedDoc = function(test) {
   t.get({
@@ -210,7 +210,6 @@ exports.settingFieldsToNullUnsetsThem = function(test) {
   })
 }
 
-
 exports.cannotAddNonSchemaFieldsUsingUpdate = function(test) {
   t.post({
     uri: '/data/documents/' + testDoc1._id + '?' + userCred,
@@ -221,7 +220,6 @@ exports.cannotAddNonSchemaFieldsUsingUpdate = function(test) {
   })
 }
 
-
 exports.deleteUpdateDoc = function(test) {
   t.del({
     uri: '/data/documents/' + testDoc1._id + '?' + userCred
@@ -230,7 +228,6 @@ exports.deleteUpdateDoc = function(test) {
     test.done()
   })
 }
-
 
 exports.checkUpdatedDocDeletedThenAddBack = function(test) {
   t.get({
@@ -265,7 +262,6 @@ exports.adminCannotUpdateNonExistantDoc = function(test) {
   })
 }
 
-
 exports.canAddDocsWithPreexitingIds = function(test) {
   var newDocId1 = '0007.060101.55664.234.11111'
   var newDocId2 = '0007.060101.55664.234.22222'
@@ -284,7 +280,6 @@ exports.canAddDocsWithPreexitingIds = function(test) {
     })
   })
 }
-
 
 exports.cannotAddDocWithMissMatchedTableId = function(test) {
   t.post({
@@ -305,7 +300,6 @@ exports.cannotLinkDocToBogusTableId = function(test) {
   })
 }
 
-
 exports.userCanLinkDocs = function(test) {
   t.post({
     uri: '/data/links?' + userCred,
@@ -316,7 +310,6 @@ exports.userCanLinkDocs = function(test) {
     test.done()
   })
 }
-
 
 exports.checkLink = function(test) {
   t.get({
@@ -330,7 +323,6 @@ exports.checkLink = function(test) {
   })
 }
 
-
 exports.canDeleteLink = function(test) {
   t.del({
     uri: '/data/links/' + linkId + '?' + userCred
@@ -340,15 +332,12 @@ exports.canDeleteLink = function(test) {
   })
 }
 
-
-
 exports.userCannotDeleteUsingWildcard = function(test) {
   t.del({ uri: '/data/documents/*?' + userCred }, 404,
   function(err, res, body) {
     test.done()
   })
 }
-
 
 exports.userCanDeleteMultipleDocs = function(test) {
   t.del({
@@ -358,7 +347,6 @@ exports.userCanDeleteMultipleDocs = function(test) {
     test.done()
   })
 }
-
 
 exports.defaultsWork = function(test) {
   t.post({
@@ -484,7 +472,6 @@ exports.countByMultipleFieldsWorks = function(test) {
   })
 }
 
-
 // This has to be the last test because all subsequent logins will fail
 // since it deletes all the sessions
 exports.adminCanDeleteAllUsingWildcard = function(test) {
@@ -495,4 +482,3 @@ exports.adminCanDeleteAllUsingWildcard = function(test) {
     test.done()
   })
 }
-
