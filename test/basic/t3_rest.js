@@ -154,7 +154,7 @@ exports.findDocsByGetAndFindWithBadJson = function(test) {
 
 exports.findDocsByNameWhenNotSignedIn = function(test) {
   t.get({
-    uri: '/data/documents?names=' + testDoc1.name.toUpperCase() + ',' + testDoc2.name
+    uri: '/data/documents?name=' + testDoc1.name.toUpperCase() + ',' + testDoc2.name
   }, function(err, res, body) {
     t.assert(body.count === 2)
     test.done()
@@ -163,7 +163,7 @@ exports.findDocsByNameWhenNotSignedIn = function(test) {
 
 exports.findWithLookups = function(test) {
   t.get({
-    uri: '/data/documents?names=' + testDoc1.name + '&lookups=1'
+    uri: '/data/documents?name=' + testDoc1.name + '&lookups=1'
   }, function(err, res, body) {
     var doc = body.data[0]
     t.assert('Test User' === doc.owner)
