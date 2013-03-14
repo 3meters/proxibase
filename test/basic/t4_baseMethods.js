@@ -81,7 +81,7 @@ exports.findById = function(test) {
 exports.findByNameCaseInsensitive = function(test) {
   t.post({
     uri: '/do/find?' + userCred,
-    body: {table:'users', names:[testUser1.name.toUpperCase()]}
+    body: {table:'users', name: testUser1.name.toUpperCase()}
   }, function(err, res, body) {
     t.assert(body.data.length === 1 && body.count === 1)
     t.assert(body.data[0]._id === constants.uid1)
