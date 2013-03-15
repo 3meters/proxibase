@@ -81,10 +81,10 @@ exports.findById = function(test) {
 exports.findByNameCaseInsensitive = function(test) {
   t.post({
     uri: '/do/find?' + userCred,
-    body: {table:'users', name: testUser1.name.toUpperCase()}
+    body: {table:'users', name: testUser1.name.toUpperCase(), sort: {_id: -1}}
   }, function(err, res, body) {
-    t.assert(body.data.length === 1 && body.count === 1)
-    t.assert(body.data[0]._id === constants.uid1)
+    t.assert(body.data.length === 2 && body.count === 2) //Test users 1 and 10
+    t.assert(body.data[1]._id === constants.uid1)
     test.done()
   })
 }
