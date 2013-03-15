@@ -164,6 +164,15 @@ exports.findDocsByNameWhenNotSignedIn = function(test) {
   })
 }
 
+exports.findDocsByNameStartsWithMatch = function(test) {
+  t.get({
+    uri: '/data/documents?name=' + testDoc1.name.slice(0, testDoc1.name.length -2)
+  }, function(err, res, body) {
+    t.assert(body.count === 2)
+    test.done()
+  })
+}
+
 exports.findWithLookups = function(test) {
   t.get({
     uri: '/data/documents?name=' + testDoc1.name + '&lookups=1'
@@ -453,7 +462,6 @@ exports.countByFailsOnBogusFields = function(test) {
 exports.sortWorks = function(test) {
   t.get('/data/users?sort[_id]=-1',
   function(err, res, body) {
-    log('debug body', body)
     var lastId = '9999.999999.99999.999.999999'
     body.data.forEach(function(user, i) {
       t.assert(user._id < lastId, i)

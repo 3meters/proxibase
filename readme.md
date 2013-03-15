@@ -28,8 +28,9 @@ find documents
       "collection|stat": string,          // base collection or statitistics collection
       "name": string,                     // case-insensitive
       "fields": [string],
-      "find": {mongodb find expression},  // pass-through to mongodb, case-sensitive. Also accepts
-                                          // params using https://github.com/visionmedia/node-querystring
+      "find": {mongodb find expression},  // pass-through to mongodb, case-sensitive.
+                                          // Also accepts get params using
+                                          // https://github.com/visionmedia/node-querystring
       "lookups": boolean,
       "limit": number,                    // default and max is 1000
       "skip": number,
