@@ -181,7 +181,7 @@ function getSession(user, asAdmin, fn) {
 // Disgourge req and res contents of failed test
 var dump = exports.dump = function(req, res, msg) {
 
-  var out = msg || 'Test failed:'
+  var out = 'Test failed: ' + msg
   out += '\n\nDump:\n==========================='
 
   out += '\nreq.method: ' + req.method
