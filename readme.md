@@ -28,7 +28,8 @@ find documents
       "collection|stat": string,          // base collection or statitistics collection
       "name": string,                     // case-insensitive
       "fields": [string],
-      "find": {mongodb find expression},  // pass-through to mongodb, case-sensitive
+      "find": {mongodb find expression},  // pass-through to mongodb, case-sensitive. Also accepts
+                                          // params using https://github.com/visionmedia/node-querystring
       "lookups": boolean,
       "limit": number,                    // default and max is 1000
       "skip": number,
@@ -159,13 +160,13 @@ Returns the collection's first 1000 records unsorted.
 ### GET /data/\<collection\>/\<id1\>,\<id2\>
 Returns records with the specified ids
 
-### GET /data/\<collection\>?name:name
+### GET /data/\<collection\>?name=<name>
 Returns the record with the specified name, case-insensitive.  If the names include spaces, use POST /do/find
 
 ### GET /data/\<collection\>/genid
 Generates a valid id for the table with the UTC timestamp of the request.  Useful if you want to make posts to mulitple tables with the primary and foreign keys preassigned.
 
-    ?sort={"namelc":1, "age:-1"}
+    ?sort[namelc]=1&sort[age]=-1
 Returns sorted by name lower case ascending, age decending
 
     ?limit=30
