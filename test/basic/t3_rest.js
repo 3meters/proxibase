@@ -450,6 +450,19 @@ exports.countByFailsOnBogusFields = function(test) {
   })
 }
 
+exports.sortWorks = function(test) {
+  t.get('/data/users?sort[_id]=-1',
+  function(err, res, body) {
+    log('debug body', body)
+    var lastId = '9999.999999.99999.999.999999'
+    body.data.forEach(function(user, i) {
+      t.assert(user._id < lastId, i)
+      lastId = user._id
+    })
+    test.done()
+  })
+}
+
 exports.countByWorks = function(test) {
   t.get({
     uri: '/data/entities?countBy=_owner'
