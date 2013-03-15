@@ -171,7 +171,7 @@ Generates a valid id for the table with the UTC timestamp of the request.  Usefu
 Returns sorted by name lower case ascending, age decending
 
     ?limit=30
-Returns only the first 30 records. Max 1000.
+Returns only the first 30 records. Default 100. Max 1000.
 
     ?skip=1000
 Skip the first 1000 records. Use in conjection with sort and limit to provide paging.
@@ -181,6 +181,9 @@ Only return the count of the collection, not any of the data.  Limit, skip, and 
 
     ?countBy=fieldName
 Returns the count of the colleciton grouped by fieldName
+
+    ?datesToUTC=true
+Converts dates stored in miliseconds since 1970 to UTC-formated string
 
     ?lookups=true
 For each reference key of the form _key looks up the name property of the referenced collection and adds it as key.  For example document._owner with lookups=true will also include document.owner = 'Jay'
@@ -240,7 +243,7 @@ POST /do/find is the same as GET /data/<collection>, but with the paramters in t
       "fields": [string],
       "find": {mongodb find expression},  // pass-through to mongodb, case-sensitive
       "lookups": boolean,
-      "limit": number,                    // default and max is 1000
+      "limit": number,                    // default 100, max 1000
       "skip": number,
       "sort": {field1:1, field2:-1},
       "count": boolean,                   // returns no records, only count, limit and skip are ignored
@@ -309,12 +312,10 @@ https://github.com/3meters/proxibase/issues?state=open
 To build
     npm install
 
-Windows users must manually create a symbolic link from /node_utils/proxutils to /lib/proxutils.  If you don't your server will not start.
-
 Tests require internet connectivity
 
 Run basic tests
     make test
 
 Run all tests
-    make test-all
+    make testall

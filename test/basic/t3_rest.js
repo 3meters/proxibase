@@ -470,6 +470,14 @@ exports.sortWorks = function(test) {
     test.done()
   })
 }
+exports.formatDatesWorks = function(test) {
+  t.get('/data/users?datesToUTC=1',
+  function(err, res, body) {
+    t.assert(util.type.isString(body.data[0].createdDate))
+    t.assert(util.type.isString(body.data[0].modifiedDate))
+    test.done()
+  })
+}
 
 exports.countByWorks = function(test) {
   t.get({
