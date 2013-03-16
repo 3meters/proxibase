@@ -7,7 +7,7 @@ https://api.aircandi.com
 
 sign in
 
-    path: /user/signin
+    path: /auth/signin
     method: POST
     body: {
       user: {
