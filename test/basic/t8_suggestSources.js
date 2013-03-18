@@ -139,7 +139,9 @@ exports.checkEmailUrlsWithGet = function(test) {
   })
 }
 
-exports.checkBogusSources = function(test) {
+
+// TODO: what should we return here?
+_exports.checkBogusSources = function(test) {
   if (disconnected) return skip(test)
   t.post({
     uri: '/sources/suggest',
@@ -147,8 +149,6 @@ exports.checkBogusSources = function(test) {
   },
   function(err, res, body) {
     t.assert(body.data.length === 1)
-    log('debug body', body)
-    // TODO:  what should happen to this one?
     test.done()
   })
 }

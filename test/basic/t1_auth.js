@@ -1,8 +1,10 @@
 /**
  *  Proxibase basic authencation test
- *    requires network connectivity because creating users
- *    likes to send mail, and if the mailer fails, errors
- *    bubble up to the test harness in unpredicatable ways
+ *
+ *      Covers most basic user creation and authentication pahts.
+ *      However does not cover email validation scenarios.  Those 
+ *      require a working sendmail server that is not supplied 
+ *      by defalt on Windows.  Find those in tests/auth/
  */
 
 var util = require('proxutils')
@@ -299,7 +301,6 @@ exports.adminCanChangeRoles = function(test) {
 }
 
 exports.userCanChangeOwnEmailViaRest = function(test) {
-  log('Copy test to auth and confirm changing email resets validationDate and validationNotifiyDate')
   t.post({
     uri: '/data/users/' + testUser._id + '?' + userCred,
     body: {data: {email: 'authtest3@3meters.com'}}
