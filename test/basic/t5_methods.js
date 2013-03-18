@@ -472,7 +472,8 @@ exports.trackEntityBrowse = function(test) {
       actionType:'browse'
     }
   }, function(err, res, body) {
-    test.done()
+    // Five f&f updates time to finish
+    setTimeout(function() { test.done() }, 200)
   })
 }
 
