@@ -43,7 +43,7 @@ exports.signInAsAdmin = function(test) {
 exports.addUser1 = function(test) {
   t.post({
     uri: '/user/create?' + adminCred,
-    body: {data: user1, noValidate: true, secret: 'larissa'},
+    body: {data: user1, skipEmailValidation: true, secret: 'larissa'},
   }, function(err, res, body) {
     t.assert(body.session)
     t.assert(body.user && body.user._id)
@@ -56,7 +56,7 @@ exports.addUser1 = function(test) {
 exports.addUser2 = function(test) {
   t.post({
     uri: '/user/create?' + adminCred,
-    body: {data: user2, noValidate: true, secret: 'larissa'}
+    body: {data: user2, skipEmailValidation: true, secret: 'larissa'}
   }, function(err, res, body) {
     t.assert(body.session)
     t.assert(body.user && body.user._id)

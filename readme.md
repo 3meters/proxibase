@@ -32,7 +32,7 @@ find documents
                                           // Also accepts get params using
                                           // https://github.com/visionmedia/node-querystring
       "lookups": boolean,
-      "limit": number,                    // default and max is 1000
+      "limit": number,                    // default 100, max 1000
       "skip": number,
       "sort": {field1:1, field2:-1},
       "count": boolean,                   // returns no records, only count, limit and skip are ignored
@@ -49,6 +49,7 @@ Each user account has a role.  The only valid roles are 'user', the default, and
       _id: '00000.000000.00000.000.00000',
       email: 'admin',
       name: 'admin',
+      namelc: 'admin',
       role: 'admin',
       password: 'admin'
     }
@@ -73,7 +74,7 @@ All other fields are optional. Secret is currently a static string. Someday it m
 Note that on success this call sets return status code to 200, not 201 and one might expect.  This is due to chaining the call to signin.  
 
 ## Authentication
-Users can be authenticated locally with a password or via a oauth provider such as Facebook, Twitter, or Google.  Their authentication source is stored in the users.authSource field which is required.  Valid values may be found in util.statics.authSources.  User emails must be unique.
+Users can be authenticated locally with a password or via a oauth provider such as Facebook, Twitter, or Google.  Their authentication source is stored in the users.authSource field which is required.  Valid values may be found in util.statics.authSources.  User emails must be unique in the system.
 
 ### Local
 If a new user is created with a password we assume the authSource is local.  We validate that the password is sufficiently strong before saving, and we save a one-way hash of the password the user entered.  See the users schema for the password rules and hash methods.
@@ -156,13 +157,13 @@ meaning
     collectionId.dateSince2000.secondsSinceMidnight.milliseconds.randomNumber
 
 ### GET /data/\<collection\>
-Returns the collection's first 1000 records unsorted.
+Returns the collection's first 100 records unsorted.
 
 ### GET /data/\<collection\>/\<id1\>,\<id2\>
 Returns records with the specified ids
 
 ### GET /data/\<collection\>?name=<name>
-Returns the record with the specified name, case-insensitive.  If the names include spaces, use POST /do/find
+Returns the record beginning with the specified name, case-insensitive.
 
 ### GET /data/\<collection\>/genid
 Generates a valid id for the table with the UTC timestamp of the request.  Useful if you want to make posts to mulitple tables with the primary and foreign keys preassigned.
@@ -171,10 +172,10 @@ Generates a valid id for the table with the UTC timestamp of the request.  Usefu
 Returns sorted by name lower case ascending, age decending
 
     ?limit=30
-Returns only the first 30 records. Default 100. Max 1000.
+Returns only the first 30 records. Default 100. Max 1000. If there are more records available the more=true flag will be set in the response.  
 
     ?skip=1000
-Skip the first 1000 records. Use in conjection with sort and limit to provide paging.
+Skip the first 1000 records. Use in conjection with sort, limit, and more to provide paging.
 
     ?count=ture
 Only return the count of the collection, not any of the data.  Limit, skip, and field paramters are ignored.
@@ -183,7 +184,7 @@ Only return the count of the collection, not any of the data.  Limit, skip, and 
 Returns the count of the colleciton grouped by fieldName
 
     ?datesToUTC=true
-Converts dates stored in miliseconds since 1970 to UTC-formated string
+Converts dates stored in miliseconds since 1970 to UTC-formated strings
 
     ?lookups=true
 For each reference key of the form _key looks up the name property of the referenced collection and adds it as key.  For example document._owner with lookups=true will also include document.owner = 'Jay'
@@ -218,7 +219,7 @@ or
 Inserts req.body.data or req.body.data[0] into the collection.  If a value for _id is specified it will be used, otherwise the server will generate a value for _id.  Only one record may be inserted per request. If you specifiy values for any of the system fields, those values will be stored.  If you do not the system will generate defaults for you.  The return value is all fields of the newly created record inside a data tag. 
 
 ### POST /data/\<collection\>/\<id\>
-Updates the document with _id = id in collection.  Non-system fields not inlucded in request.body.data or request.body.data[0] will not be modified. The return value is all fields of the modified document inside a data tag.  
+Updates the document with _id = id in collection.  Non-system fields not inlucded in request.body.data or request.body.data[0] will not be modified. The return value is all fields of the modified document inside a data tag. Note that complex fields (objects) will be completely replaced by the updated values, even if you only specify one of their sub-fields in your update.
 
 ### DELETE /data/\<collection\>/\<id1,id2\>
 Deletes those records
@@ -229,7 +230,7 @@ Deletes all records in the collection (admins only)
 <a name="webmethods"></a>
 ## Custom Web Methods
     /do
-Lists the web methods. POST to /do/methodName executes a method passing in the full request and response objects. The request body must be in JSON format. 
+Lists the web methods. POST to /do/methodName executes a method passing in the full request and response objects. The request body must be in JSON format.  Read-only methods, those begging with get can also be called via GET with parameters specified in the format defined by node-querystring.
 
 ### POST /do/echo
 Returns request.body
@@ -248,6 +249,7 @@ POST /do/find is the same as GET /data/<collection>, but with the paramters in t
       "sort": {field1:1, field2:-1},
       "count": boolean,                   // returns no records, only count, limit and skip are ignored
       "countBy": fieldName                // returns count of collection grouped by any field
+      "datesToUTC": boolean               // convert dates from numbers to strings
     }
     
 The collection|stat property is required.  All others are optional.
@@ -312,10 +314,20 @@ https://github.com/3meters/proxibase/issues?state=open
 To build
     npm install
 
-Tests require internet connectivity
+## Tests
+By default tests require internet connectivity and a working sendmail server
 
 Run basic tests
+
     make test
 
 Run all tests
+
     make testall
+
+More test options
+
+    cd test
+    node run --help
+
+

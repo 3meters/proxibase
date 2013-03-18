@@ -11,6 +11,8 @@ var _ = util._
 var log = util.log
 var testUtil = require('../util')
 var t = testUtil.treq  // newfangled test helper
+var disconnected = testUtil.disconnected
+var skip = testUtil.skip
 var userCred
 var adminCred
 var testLatitude = 46.1
@@ -65,6 +67,7 @@ exports.getSources = function(test) {
 }
 
 exports.getPlacesNearLocationFoursquare = function(test) {
+  if (disconnected) return skip(test)
   var ballRoomId = '4abebc45f964a520a18f20e3'
   t.post({
     uri: '/do/getPlacesNearLocation',
@@ -100,6 +103,7 @@ exports.getPlacesNearLocationFoursquare = function(test) {
 }
 
 exports.getPlacesNearLocationLargeRadius = function(test) {
+  if (disconnected) return skip(test)
   t.post({
     uri: '/do/getPlacesNearLocation?' + userCred,
     body: {
@@ -117,6 +121,7 @@ exports.getPlacesNearLocationLargeRadius = function(test) {
 }
 
 exports.getPlacesNearLocationFactual = function(test) {
+  if (disconnected) return skip(test)
   var ballRoomId = '46aef19f-2990-43d5-a9e3-11b78060150c'
   var roxyId = '2bd21139-1907-4126-9443-65a2e48e1717' // Roxy's Diner 
   // var roxyId = 'fdf4b14d-93d7-4ada-8bef-19add2fa9b15'
@@ -186,6 +191,7 @@ exports.getPlacesNearLocationFactual = function(test) {
 
 
 exports.suggestSourcesFromWebsite = function(test) {
+  if (disconnected) return skip(test)
   t.post({
     uri: '/sources/suggest',
     body: {sources: [{type: 'website', id: 'http://www.massenamodern.com'}]}
@@ -200,6 +206,7 @@ exports.suggestSourcesFromWebsite = function(test) {
 
 
 exports.suggestFactualSourcesFromFoursquareId = function(test) {
+  if (disconnected) return skip(test)
   t.post({
     uri: '/sources/suggest',
     body: {sources: [{type: 'foursquare', id: '4abebc45f964a520a18f20e3'}]} // Seattle Ballroom in Fremont
@@ -213,9 +220,10 @@ exports.suggestFactualSourcesFromFoursquareId = function(test) {
 }
 
 exports.insertEntitySuggestSources = function(test) {
+  if (disconnected) return skip(test)
   var body = {
     suggestSources: true,
-    entity: _.clone(testEntity),
+    entity: util.clone(testEntity),
   }
   body.entity.sources = [{
     type: 'website',
@@ -234,6 +242,7 @@ exports.insertEntitySuggestSources = function(test) {
 }
 
 exports.insertPlaceEntitySuggestSourcesFromFactual = function(test) {
+  if (disconnected) return skip(test)
   var body = {
     suggestSources: true,
     entity: _.clone(testEntity),
@@ -254,6 +263,7 @@ exports.insertPlaceEntitySuggestSourcesFromFactual = function(test) {
 }
 
 exports.getPlacesInsertEntityGetPlaces = function(test) {
+  if (disconnected) return skip(test)
   var ballRoomId = '4abebc45f964a520a18f20e3'
   // Cafe Ladro, a few doors down from the Ballroom
   var ladroId = '45d62041f964a520d2421fe3'
@@ -358,6 +368,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
 }
 
 exports.getPlacePhotos = function(test) {
+  if (disconnected) return skip(test)
   t.post({
     uri: '/do/getPlacePhotos',
     body: {provider: 'foursquare', id: '4abebc45f964a520a18f20e3'}
