@@ -58,6 +58,7 @@ exports.updateDefaultUserOauthId = function(test) {
 // Authorize via Twitter
 exports.authTwitter = function(test) {
 
+  if (testUtil.disconnected) return testUtil.skip(test)
   var options = {
     provider: 'twitter',
     oauthUri: baseUri + '/auth/signin/twitter',

@@ -4,9 +4,11 @@
 
 var util = require('proxutils')
 var log = util.log
-var testUtil = require('../util')
 var serviceUri = util.config.service.uri
+var testUtil = require('../util')
 var t = testUtil.treq  // newfangled test helper
+var disconnected = testUtil.disconnected
+var skip = testUtil.skip
 var userCred
 var adminCred
 var _exports = {} // for commenting out tests
@@ -24,6 +26,7 @@ exports.getSessions = function(test) {
 }
 
 exports.ensureRequiredParams = function(test) {
+  if (disconnected) return skip(test)
   var url = serviceUri + '/test/twitter.html'
   t.post({
     uri: '/sources/suggest',
@@ -38,6 +41,7 @@ exports.ensureRequiredParams = function(test) {
 }
 
 exports.errorOnUnknownParams = function(test) {
+  if (disconnected) return skip(test)
   var url = serviceUri + '/test/twitter.html'
   t.post({
     uri: '/sources/suggest',
@@ -52,6 +56,7 @@ exports.errorOnUnknownParams = function(test) {
 }
 
 exports.checkTwitterUrls = function(test) {
+  if (disconnected) return skip(test)
   var url = serviceUri + '/test/twitter.html'
   t.post({
     uri: '/sources/suggest',
@@ -76,6 +81,7 @@ exports.checkTwitterUrls = function(test) {
 }
 
 exports.checkFacebookUrls = function(test) {
+  if (disconnected) return skip(test)
   var url = serviceUri + '/test/facebook.html'
   t.post({
     uri: '/sources/suggest',
@@ -108,6 +114,7 @@ exports.checkFacebookUrls = function(test) {
 }
 
 exports.checkEmailUrls = function(test) {
+  if (disconnected) return skip(test)
   t.post({
     uri: '/sources/suggest',
     body: {sources: [{type: 'website', id: serviceUri + '/test/email.html'}]}
@@ -121,6 +128,7 @@ exports.checkEmailUrls = function(test) {
 }
 
 exports.checkEmailUrlsWithGet = function(test) {
+  if (disconnected) return skip(test)
   t.get({uri:'/sources/suggest?sources[0][type]=website&sources[0][id]=' +
         serviceUri + '/test/email.html'},
   function(err, res) {
@@ -132,18 +140,21 @@ exports.checkEmailUrlsWithGet = function(test) {
 }
 
 exports.checkBogusSources = function(test) {
+  if (disconnected) return skip(test)
   t.post({
     uri: '/sources/suggest',
     body: {sources: [{type: 'foursquare', url: 'http://www.google.com'}]}
   },
-  function(err, res) {
-    t.assert(res.body.data.length === 1)
+  function(err, res, body) {
+    t.assert(body.data.length === 1)
+    log('debug body', body)
     // TODO:  what should happen to this one?
     test.done()
   })
 }
 
 exports.suggestSourcesFactual = function(test) {
+  if (disconnected) return skip(test)
   t.post({
     uri: '/sources/suggest',
     body: {sources: [{type: 'factual', id: '46aef19f-2990-43d5-a9e3-11b78060150c'}],
@@ -164,6 +175,7 @@ exports.suggestSourcesFactual = function(test) {
 }
 
 exports.compareFoursquareToFactual = function(test) {
+  if (disconnected) return skip(test)
   t.post({
     uri: '/sources/suggest',
     body: {sources: [{type: 'foursquare', id: '4abebc45f964a520a18f20e3'}]}  // Seattle Ballroom
@@ -186,6 +198,7 @@ exports.compareFoursquareToFactual = function(test) {
 }
 
 exports.getFacebookFromFoursquare = function(test) {
+  if (disconnected) return skip(test)
   t.post({
     uri: '/sources/suggest',
     body: {

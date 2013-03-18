@@ -135,6 +135,10 @@ function getAdminSession(user, fn) {
   getSession(user, true, fn)
 }
 
+function skip(test) {
+  log('skipped test:')
+  test.done()
+}
 
 /*
  * Get a new session for a user, optionally as admin
@@ -157,7 +161,7 @@ function getSession(user, asAdmin, fn) {
       var req = makeReq({
         method: 'post',
         uri: '/user/create',
-        body: {data: user, noValidate: true, secret: 'larissa'},
+        body: {data: user, skipEmailValidation: true, secret: 'larissa'},
       })
       request(req, function(err, res) {
         if (err) throw err
@@ -273,3 +277,4 @@ exports.treq = TestRequest()
 exports.dump = dump
 exports.check = check
 exports.request = request
+exports.skip = skip

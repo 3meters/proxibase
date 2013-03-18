@@ -21,7 +21,7 @@ var dbProfile = require('./constants').dbProfile
 var testUtil = require('./util')
 var configFile = 'configtest.js'
 var basicDirs = ['basic']
-var testDirs = ['basic', 'oauth', 'perf', 'admin']
+var testDirs = ['basic', 'auth', 'perf', 'admin']
 var logFile = 'testServer.log'
 var logStream
 var cwd = process.cwd()
@@ -44,6 +44,7 @@ cli
   .option('-n, --none', 'Do not run any tests -- just ensure the test db')
   .option('-g, --generate', 'generate a fresh template test db from code')
   .option('-l, --log <file>', 'Test server log file [' + logFile + ']')
+  .option('-d, --disconnected', 'skip tests that require internet connectivity')
   .parse(process.argv)
 
 
@@ -51,6 +52,7 @@ cli
 if (cli.basic) testDirs = basicDirs
 if (cli.test) testDirs = [cli.test]
 if (cli.log) logFile = cli.log
+if (cli.disconnected) testUtil.disconnected = true
 
 if (cli.server) {
   // This option is used for running tests locally against a remote server

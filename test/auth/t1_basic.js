@@ -9,6 +9,8 @@ var util = require('proxutils')
 var log = util.log
 var testUtil = require('../util')
 var t = testUtil.treq
+var disconnected = testUtil.disconnected
+var skip = testUtil.skip
 var adminCred
 var userCred
 var userOldCred
@@ -27,6 +29,7 @@ var notifyDate
 var validationDate
 
 
+
 exports.cannotAddUserWhenNotSignedIn = function(test) {
   t.post({
     uri: '/data/users',
@@ -35,6 +38,7 @@ exports.cannotAddUserWhenNotSignedIn = function(test) {
     test.done()
   })
 }
+
 
 exports.canSignInAsAdmin = function(test) {
   t.post({
@@ -50,6 +54,7 @@ exports.canSignInAsAdmin = function(test) {
   })
 }
 
+
 exports.adminCannotAddUserWithoutEmail = function(test) {
   t.post({
     uri: '/data/users?' + adminCred,
@@ -59,6 +64,7 @@ exports.adminCannotAddUserWithoutEmail = function(test) {
     test.done()
   })
 }
+
 
 exports.adminCannotAddUserWithoutPassword = function(test) {
   t.post({
@@ -70,20 +76,19 @@ exports.adminCannotAddUserWithoutPassword = function(test) {
   })
 }
 
-exports.adminCanAddUserViaAPI = function(test) {
+
+exports.adminCanAddUserViaRest = function(test) {
   t.post({
-    uri: '/user/create?' + adminCred,
-    body: {data: testUser, secret: 'larissa', skipEmailValidation: true}
-  }, function(err, res, body) { // not 201 due to auto-signin
-    t.assert(body.user)
-    t.assert(body.session)
-    t.assert(!body.data)
-    var user = body.user
+    uri: '/data/users?' + adminCred,
+    body: {data: testUser}
+  }, 201, function(err, res, body) {
+    var user = body.data
     t.assert(user._id)
     t.assert(user.email === testUser.email)
-    t.assert(!user.validationNotifyDate)
+    t.assert(user.validationNotifyDate)
     t.assert(!user.validationDate)
     testUser._id = user._id
+    log('debug user', user)
     test.done()
   })
 }
@@ -98,15 +103,17 @@ exports.adminCannotChangeValidateDateViaRest = function(test) {
   })
 }
 
+
 exports.adminCannotAddUserWithDupeEmail = function(test) {
   t.post({
-    uri: '/user/create?' + adminCred,
-    body: {data: testUser, secret: 'larissa'}
+    uri: '/data/users?' + adminCred,
+    body: {data: testUser}
   }, 403, function(err, res, body) {
     t.assert(body.error.code === 403.1)
     test.done()
   })
 }
+
 
 exports.userCannotSignInWithWrongFields = function(test) {
   t.post({
@@ -118,6 +125,7 @@ exports.userCannotSignInWithWrongFields = function(test) {
   })
 }
 
+
 exports.userCannotSignInWithBadEmail = function(test) {
   t.post({
     uri: '/auth/signin',
@@ -128,6 +136,7 @@ exports.userCannotSignInWithBadEmail = function(test) {
   })
 }
 
+
 exports.userCannotSignInWithBadPassword = function(test) {
   t.post({
     uri: '/auth/signin',
@@ -137,6 +146,7 @@ exports.userCannotSignInWithBadPassword = function(test) {
     test.done()
   })
 }
+
 
 exports.userCanSignIn = function(test) {
   t.post({
@@ -155,6 +165,7 @@ exports.userCanSignIn = function(test) {
   })
 }
 
+
 exports.userCanSignInWithDifferentCasedEmail = function(test) {
   t.post({
     uri: '/auth/signin',
@@ -169,6 +180,7 @@ exports.userCanSignInWithDifferentCasedEmail = function(test) {
   })
 }
 
+
 exports.cannotValidateSessionWithBogusUser = function(test) {
   t.get({
     uri: '/data/users?user=bogus&session=' + session.key
@@ -178,6 +190,7 @@ exports.cannotValidateSessionWithBogusUser = function(test) {
   })
 }
 
+
 exports.cannotValidateSessionWithBogusKey = function(test) {
   t.get({
     uri: '/data/users?user=' + session._owner + '&session=bogus'
@@ -186,6 +199,7 @@ exports.cannotValidateSessionWithBogusKey = function(test) {
     test.done()
   })
 }
+
 
 exports.canValidateSession = function(test) {
   t.get({
@@ -198,6 +212,7 @@ exports.canValidateSession = function(test) {
   })
 }
 
+
 exports.canValidateSessionUsingParamsInBody = function(test) {
   t.post({
     uri: '/do/find',
@@ -209,6 +224,7 @@ exports.canValidateSessionUsingParamsInBody = function(test) {
     test.done()
   })
 }
+
 
 exports.sessionParamsInQueryStringOverrideOnesInBody = function(test) {
   t.post({
@@ -224,6 +240,7 @@ exports.sessionParamsInQueryStringOverrideOnesInBody = function(test) {
   })
 }
 
+
 exports.adminCannotChangePasswordDirectly = function(test) {
   t.post({
     uri: '/data/users/' + testUser._id + '?' + adminCred,
@@ -234,6 +251,7 @@ exports.adminCannotChangePasswordDirectly = function(test) {
   })
 }
 
+
 exports.userCannotChangePasswordTooWeak = function(test) {
   t.post({
     uri: '/user/changepw?' + userCred,
@@ -243,6 +261,7 @@ exports.userCannotChangePasswordTooWeak = function(test) {
     test.done()
   })
 }
+
 
 exports.userCanChangePassword = function(test) {
   t.post({
@@ -263,6 +282,7 @@ exports.userCanChangePassword = function(test) {
   })
 }
 
+
 exports.changingPasswordDestroysOldSession = function(test) {
   t.get({
     uri: '/data/documents?' + userOldCred
@@ -271,6 +291,7 @@ exports.changingPasswordDestroysOldSession = function(test) {
   })
 }
 
+
 exports.changingPasswordsCreatesNewSession = function(test) {
   t.get({
     uri: '/data/documents?' + userCred
@@ -278,6 +299,7 @@ exports.changingPasswordsCreatesNewSession = function(test) {
     test.done()
   })
 }
+
 
 exports.userCannotChangeRoles = function(test) {
   t.post({
@@ -289,6 +311,7 @@ exports.userCannotChangeRoles = function(test) {
   })
 }
 
+
 exports.adminCanChangeRoles = function(test) {
   t.post({
     uri: '/data/users/' + testUser._id + '?' + adminCred,
@@ -298,13 +321,15 @@ exports.adminCanChangeRoles = function(test) {
   })
 }
 
-exports.userCanChangeOwnEmailViaRest = function(test) {
-  log('Copy test to auth and confirm changing email resets validationDate and validationNotifiyDate')
+
+exports.changingEmailResetsValidationNotifyDate = function(test) {
   t.post({
     uri: '/data/users/' + testUser._id + '?' + userCred,
     body: {data: {email: 'authtest3@3meters.com'}}
   }, function(err, res, body) {
-    t.assert(body.data.email === 'authtest3@3meters.com')
+    var user = body.data
+    t.assert(user.validationNotifyDate)
+    t.assert(!body.data.validationDate)
     test.done()
   })
 }
@@ -391,6 +416,7 @@ exports.annonymousUserCannotCreateUserViaApiWithoutWhitelistedEmail = function(t
 
 
 exports.annonymousUserCanCreateUserViaApi = function(test) {
+  if (disconnected) return skip(test)
   t.post({
     uri: '/user/create',
     body: {
@@ -399,31 +425,109 @@ exports.annonymousUserCanCreateUserViaApi = function(test) {
         email: 'authtest2@3meters.com',
         password: 'foobar'
       },
-      secret: 'larissa',
-      skipEmailValidation: true,  // so that test can run on windows without sendmail
+      secret: 'larissa'
     }
   }, function(err, res, body) {
     t.assert(body.user)
+    t.assert(body.user.validateEmailUrl)
+    t.assert(body.user.validationNotifyDate)
+    t.assert(!body.user.validationDate)
+    newUserId = body.user._id
+    notifyDate = body.user.validationNotifyDate
+    newUserEmailValidateUrl = body.user.validateEmailUrl
     t.assert(body.session)
-    t.assert(body.session.key)
-    newUserCred = 'user=' + body.user._id + '&session=' + body.session.key
     test.done()
   })
 }
 
-exports.newUserCanSignIn = function(test) {
-  t.get('/data/users?' + newUserCred,
-  function(err, res, body) {
+
+_exports.newUserEmailValidateUrlWorksSlowly = function(test) {
+  t.get('/data/users/' + newUserId, function(err, res, body) {
+    t.assert(body.data.length)
+    t.assert(body.data[0].validationNotifyDate)
+    t.assert(!body.data[0].validationDate)
+    t.get({
+      uri: newUserEmailValidateUrl.slice(testUtil.serverUrl.length),
+      json: false  // call is redirected to an html page
+    }, function(err, res, body) {
+      t.get('/data/users/' + newUserId, function(err, res, body) {
+        t.assert(body.data.length)
+        t.assert(body.data[0].validationDate)
+        t.assert(body.data[0].validationDate > body.data[0].validationNotifyDate)
+        test.done()
+      })
+    })
+  })
+}
+
+exports.newUserEmailValidateUrlWorksFaster = function(test) {
+  if (disconnected) return skip(test)
+  t.get('/data/users/' + newUserId, function(err, res, body) {
+    t.assert(body.data.length)
+    t.assert(body.data[0].validationNotifyDate)
+    t.assert(!body.data[0].validationDate)
+
+    // Fire without waiting for the callback
+    t.get(newUserEmailValidateUrl.slice(testUtil.serverUrl.length))
+
+    // Give time for the update to finish, but don't wait for the
+    // call to redirect the user to http://aircandi.com
+    setTimeout(function() {
+      t.get('/data/users/' + newUserId, function(err, res, body) {
+        t.assert(body.data.length)
+        t.assert(body.data[0].validationDate)
+        t.assert(body.data[0].validationDate > body.data[0].validationNotifyDate)
+        test.done()
+      })
+    }, 300)
+  })
+}
+
+exports.changingEmailResetsValidationAndNotifyDates = function(test) {
+  if (disconnected) return skip(test)
+  var start = util.now()
+  t.post({
+    uri: '/data/users/' + newUserId + '?' + adminCred,
+    body: {data: {email: 'authtest4@3meters.com'}}
+  }, function(err, res, body) {
+    var user = body.data
+    t.assert(user.validationNotifyDate >= start)
+    t.assert(!body.data.validationDate)
+    test.done()
+  })
+}
+
+
+exports.reqValidateFailsForUsers = function(test) {
+  if (disconnected) return skip(test)
+  t.post({
+    uri: '/user/reqvalidate?' + userCred,
+    body: {user: {_id: newUserId}}
+  }, 401, function(err, res, body) {
+    test.done()
+  })
+}
+
+exports.reqValidateWorksForAdmins = function(test) {
+  if (disconnected) return skip(test)
+  t.post({
+    uri: '/user/reqvalidate?' + adminCred,
+    body: {user: {_id: newUserId}}
+  }, function(err, res, body) {
+    t.assert(body.info)
     test.done()
   })
 }
 
 exports.userCanSignOut = function(test) {
-  t.get('/auth/signout?' + userCred,
-  function(err, res, body) {
-    t.get('/data/users?' + userCred, 401,
-    function(err, res, body) {
+  t.get({
+    uri: '/auth/signout?' + userCred,
+  }, function(err, res, body) {
+    t.get({
+      uri: '/data/users?' + userCred,
+    }, 401, function(err, res, body) {
       test.done()
     })
   })
 }
+
