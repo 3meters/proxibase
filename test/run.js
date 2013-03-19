@@ -21,7 +21,7 @@ var dbProfile = require('./constants').dbProfile
 var testUtil = require('./util')
 var configFile = 'configtest.js'
 var basicDirs = ['basic']
-var testDirs = ['basic', 'auth', 'perf', 'admin']
+var testDirs = ['basic', 'oauth', 'perf', 'admin']
 var logFile = 'testServer.log'
 var logStream
 var cwd = process.cwd()

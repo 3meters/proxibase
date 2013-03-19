@@ -405,8 +405,8 @@ exports.annonymousUserCanCreateUserViaApi = function(test) {
     t.assert(body.user)
     t.assert(body.session)
     t.assert(body.session.key)
-    log('debug request.body', req.body)
     newUserId = body.user._id
+    newUserEmailValidateUrl = body.user.validateEmailUrl
     newUserCred = 'user=' + body.user._id + '&session=' + body.session.key
     test.done()
   })
@@ -439,6 +439,7 @@ _exports.newUserEmailValidateUrlWorksSlowly = function(test) {
 }
 
 exports.newUserEmailValidateUrlWorksFaster = function(test) {
+  if (testUtil.disconnected) return testUtil.skip(test)
   t.get('/data/users/' + newUserId, function(err, res, body) {
     t.assert(body.data.length)
     t.assert(body.data[0].validationNotifyDate)
