@@ -54,8 +54,9 @@ exports.canSignInAsAdmin = function(test) {
 
 exports.adminCannotAddUserWithoutEmail = function(test) {
   t.post({
-    uri: '/data/users?' + adminCred,
-    body: {data: {name: 'bob', password: 'foobar'}}
+    uri: '/user/create?' + adminCred,
+    body: {data: {name: 'bob', password: 'foobar'},
+        secret: 'larissa', skipEmailValidation: true}
   }, 400, function(err, res, body) {
     t.assert(body.error.code === 400.1)
     test.done()
@@ -64,8 +65,9 @@ exports.adminCannotAddUserWithoutEmail = function(test) {
 
 exports.adminCannotAddUserWithoutPassword = function(test) {
   t.post({
-    uri: '/data/users?' + adminCred,
-    body: {data: {email: 'foo@bar.com'}}
+    uri: '/user/create?' + adminCred,
+    body: {data: {email: 'foo@bar.com'},
+        secret: 'larissa', skipEmailValidation: true}
   }, 400, function(err, res, body) {
     t.assert(body.error.code === 400.1)
     test.done()
