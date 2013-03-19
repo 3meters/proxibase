@@ -56,7 +56,7 @@ exports.adminCannotAddUserWithoutEmail = function(test) {
   t.post({
     uri: '/user/create?' + adminCred,
     body: {data: {name: 'bob', password: 'foobar'},
-        secret: 'larissa', skipEmailValidation: true}
+        secret: 'larissa'}
   }, 400, function(err, res, body) {
     t.assert(body.error.code === 400.1)
     test.done()
@@ -65,27 +65,24 @@ exports.adminCannotAddUserWithoutEmail = function(test) {
 
 exports.adminCannotAddUserWithoutPassword = function(test) {
   t.post({
-    uri: '/user/create?' + adminCred,
-    body: {data: {email: 'foo@bar.com'},
-        secret: 'larissa', skipEmailValidation: true}
+    uri: '/data/users?' + adminCred,
+    body: {data: {email: 'foo@bar.com'}}
   }, 400, function(err, res, body) {
     t.assert(body.error.code === 400.1)
     test.done()
   })
 }
 
-exports.adminCanAddUserViaAPI = function(test) {
+exports.adminCanAddUserViaRest = function(test) {
   t.post({
-    uri: '/user/create?' + adminCred,
-    body: {data: testUser, secret: 'larissa', skipEmailValidation: true}
-  }, function(err, res, body) { // not 201 due to auto-signin
-    t.assert(body.user)
-    t.assert(body.session)
-    t.assert(!body.data)
-    var user = body.user
+    uri: '/data/users?' + adminCred,
+    body: {data: testUser}
+  }, 201, function(err, res, body) {
+    var user = body.data
     t.assert(user._id)
     t.assert(user.email === testUser.email)
-    t.assert(!user.validationNotifyDate)
+    t.assert(user.validationNotifyDate)
+    notifyDate = user.validationNotifyDate
     t.assert(!user.validationDate)
     testUser._id = user._id
     test.done()
@@ -105,7 +102,7 @@ exports.adminCannotChangeValidateDateViaRest = function(test) {
 exports.adminCannotAddUserWithDupeEmail = function(test) {
   t.post({
     uri: '/user/create?' + adminCred,
-    body: {data: testUser, secret: 'larissa', skipEmailValidation: true}
+    body: {data: testUser, secret: 'larissa'}
   }, 403, function(err, res, body) {
     t.assert(body.error.code === 403.1)
     test.done()
@@ -349,8 +346,7 @@ exports.annonymousUserCannotCreateUserViaApiWithoutSecret = function(test) {
     uri: '/user/create',
     body: {data: {name: 'AuthTestUser2',
       email: 'authtest2@3meters.com',
-      password: 'foobar'},
-      skipEmailValidation: true,
+      password: 'foobar'}
     },
   }, 400, function(err, res, body) {
     t.assert(body.error.code === 400.1)
@@ -367,7 +363,6 @@ exports.annonymousUserCannotCreateUserViaApiWithWrongSecret = function(test) {
         email: 'authtest2@3meters.com',
         password: 'foobar'
       },
-      skipEmailValidation: true,
       secret: 'wrongsecret'
     }
   }, 401, function(err, res, body) {
@@ -387,7 +382,6 @@ exports.annonymousUserCannotCreateUserViaApiWithoutWhitelistedEmail = function(t
         password: 'foobar'
       },
       secret: 'larissa',
-      skipEmailValidation: true,
     }
   }, 401, function(err, res, body) {
     t.assert(body.error.code === 401.4)
@@ -406,12 +400,13 @@ exports.annonymousUserCanCreateUserViaApi = function(test) {
         password: 'foobar'
       },
       secret: 'larissa',
-      skipEmailValidation: true,  // so that test can run on windows without sendmail
     }
   }, function(err, res, body) {
     t.assert(body.user)
     t.assert(body.session)
     t.assert(body.session.key)
+    log('debug request.body', req.body)
+    newUserId = body.user._id
     newUserCred = 'user=' + body.user._id + '&session=' + body.session.key
     test.done()
   })
@@ -420,6 +415,80 @@ exports.annonymousUserCanCreateUserViaApi = function(test) {
 exports.newUserCanSignIn = function(test) {
   t.get('/data/users?' + newUserCred,
   function(err, res, body) {
+    test.done()
+  })
+}
+
+_exports.newUserEmailValidateUrlWorksSlowly = function(test) {
+  t.get('/data/users/' + newUserId, function(err, res, body) {
+    t.assert(body.data.length)
+    t.assert(body.data[0].validationNotifyDate)
+    t.assert(!body.data[0].validationDate)
+    t.get({
+      uri: newUserEmailValidateUrl.slice(testUtil.serverUrl.length),
+      json: false  // call is redirected to an html page
+    }, function(err, res, body) {
+      t.get('/data/users/' + newUserId, function(err, res, body) {
+        t.assert(body.data.length)
+        t.assert(body.data[0].validationDate)
+        t.assert(body.data[0].validationDate > body.data[0].validationNotifyDate)
+        test.done()
+      })
+    })
+  })
+}
+
+exports.newUserEmailValidateUrlWorksFaster = function(test) {
+  t.get('/data/users/' + newUserId, function(err, res, body) {
+    t.assert(body.data.length)
+    t.assert(body.data[0].validationNotifyDate)
+    t.assert(!body.data[0].validationDate)
+
+    // Fire without waiting for the callback
+    t.get(newUserEmailValidateUrl.slice(testUtil.serverUrl.length))
+
+    // Give time for the update to finish, but don't wait for the
+    // call to redirect the user to http://aircandi.com
+    setTimeout(function() {
+      t.get('/data/users/' + newUserId, function(err, res, body) {
+        t.assert(body.data.length)
+        t.assert(body.data[0].validationDate)
+        t.assert(body.data[0].validationDate > body.data[0].validationNotifyDate)
+        test.done()
+      })
+    }, 300)
+  })
+}
+
+exports.changingEmailResetsValidationAndNotifyDates = function(test) {
+  var start = util.now()
+  t.post({
+    uri: '/data/users/' + newUserId + '?' + adminCred,
+    body: {data: {email: 'authtest4@3meters.com'}}
+  }, function(err, res, body) {
+    var user = body.data
+    t.assert(user.validationNotifyDate >= start)
+    t.assert(!body.data.validationDate)
+    test.done()
+  })
+}
+
+
+exports.reqValidateFailsForUsers = function(test) {
+  t.post({
+    uri: '/user/reqvalidate?' + userCred,
+    body: {user: {_id: newUserId}}
+  }, 401, function(err, res, body) {
+    test.done()
+  })
+}
+
+exports.reqValidateWorksForAdmins = function(test) {
+  t.post({
+    uri: '/user/reqvalidate?' + adminCred,
+    body: {user: {_id: newUserId}}
+  }, function(err, res, body) {
+    t.assert(body.info)
     test.done()
   })
 }
@@ -433,3 +502,4 @@ exports.userCanSignOut = function(test) {
     })
   })
 }
+

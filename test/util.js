@@ -161,7 +161,7 @@ function getSession(user, asAdmin, fn) {
       var req = makeReq({
         method: 'post',
         uri: '/user/create',
-        body: {data: user, skipEmailValidation: true, secret: 'larissa'},
+        body: {data: user, secret: 'larissa'},
       })
       request(req, function(err, res) {
         if (err) throw err
