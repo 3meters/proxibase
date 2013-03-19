@@ -105,7 +105,7 @@ exports.adminCannotChangeValidateDateViaRest = function(test) {
 exports.adminCannotAddUserWithDupeEmail = function(test) {
   t.post({
     uri: '/user/create?' + adminCred,
-    body: {data: testUser, secret: 'larissa'}
+    body: {data: testUser, secret: 'larissa', skipEmailValidation: true}
   }, 403, function(err, res, body) {
     t.assert(body.error.code === 403.1)
     test.done()
@@ -349,8 +349,9 @@ exports.annonymousUserCannotCreateUserViaApiWithoutSecret = function(test) {
     uri: '/user/create',
     body: {data: {name: 'AuthTestUser2',
       email: 'authtest2@3meters.com',
-      password: 'foobar'}
-    }
+      password: 'foobar'},
+      skipEmailValidation: true,
+    },
   }, 400, function(err, res, body) {
     t.assert(body.error.code === 400.1)
     test.done()
@@ -366,6 +367,7 @@ exports.annonymousUserCannotCreateUserViaApiWithWrongSecret = function(test) {
         email: 'authtest2@3meters.com',
         password: 'foobar'
       },
+      skipEmailValidation: true,
       secret: 'wrongsecret'
     }
   }, 401, function(err, res, body) {
@@ -384,7 +386,8 @@ exports.annonymousUserCannotCreateUserViaApiWithoutWhitelistedEmail = function(t
         email: 'authBest@3meters.com',
         password: 'foobar'
       },
-      secret: 'larissa'
+      secret: 'larissa',
+      skipEmailValidation: true,
     }
   }, 401, function(err, res, body) {
     t.assert(body.error.code === 401.4)
