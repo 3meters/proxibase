@@ -16,7 +16,7 @@ old
 !/assets/
 !/assets/proxerr.log
 
-/test/auth/*.html
+/test/oauth/*.html
 /perf.csv
 /proxibase.sublime-project
 /proxibase.sublime-workspace

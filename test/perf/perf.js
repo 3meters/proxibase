@@ -84,7 +84,7 @@ exports.insert100Users = function(test) {
     user.password = 'foobar'
     t.post({
       uri: '/user/create',
-      body: {data: user, skipEmailValidation: true, secret: 'larissa'},
+      body: {data: user, secret: 'larissa'},
     }, function(err, res, body) {
       if (body.count) cRecs += body.count
       return insertUser(i)
