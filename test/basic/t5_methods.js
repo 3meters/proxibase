@@ -562,6 +562,34 @@ exports.getEntitiesForLocationWithLocationUpdate = function (test) {
   })
 }
 
+exports.untrackEntityProximity = function(test) {
+  t.post({
+    uri: '/do/untrackEntity?' + userCred,
+    body: {
+      entityId:testEntity._id, 
+      beaconIds:[testBeacon._id, testBeacon2._id, testBeacon3._id], 
+      primaryBeaconId:testBeacon2._id,
+      observation:testObservation,
+      actionType:'proximity'
+    }
+  }, function(err, res, body) {
+    // give the fire-and-forget query some time to finish writing
+    setTimeout(function() {
+      test.done()
+    }, 200)
+  })
+}
+
+exports.checkUntrackEntityProximityLinksFromEntity1 = function(test) {
+  t.post({
+    uri: '/do/find',
+    body: {table:'links', find:{_from:testEntity._id, type:'proximity'}}
+  }, function(err, res, body) {
+    t.assert(body.count === 0)
+    test.done()
+  })
+}
+
 // Warning:  this is checking the results of a fire-and-forget
 //   updated, and may fail due to timing
 exports.checkBeaconLocationUpdate = function (test) {
