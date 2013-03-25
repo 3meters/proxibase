@@ -66,7 +66,7 @@ exports.getSources = function(test) {
   })
 }
 
-exports.getPlacesNearLocationFoursquare = function(test) {
+_exports.getPlacesNearLocationFoursquare = function(test) {
   if (disconnected) return skip(test)
   var ballRoomId = '4abebc45f964a520a18f20e3'
   t.post({
@@ -102,7 +102,7 @@ exports.getPlacesNearLocationFoursquare = function(test) {
   })
 }
 
-exports.getPlacesNearLocationLargeRadius = function(test) {
+_exports.getPlacesNearLocationLargeRadius = function(test) {
   if (disconnected) return skip(test)
   t.post({
     uri: '/do/getPlacesNearLocation?' + userCred,
@@ -120,7 +120,7 @@ exports.getPlacesNearLocationLargeRadius = function(test) {
   })
 }
 
-exports.getPlacesNearLocationFactual = function(test) {
+_exports.getPlacesNearLocationFactual = function(test) {
   if (disconnected) return skip(test)
   var ballRoomId = '46aef19f-2990-43d5-a9e3-11b78060150c'
   var roxyId = '2bd21139-1907-4126-9443-65a2e48e1717' // Roxy's Diner 
@@ -190,7 +190,7 @@ exports.getPlacesNearLocationFactual = function(test) {
 }
 
 
-exports.suggestSourcesFromWebsite = function(test) {
+_exports.suggestSourcesFromWebsite = function(test) {
   if (disconnected) return skip(test)
   t.post({
     uri: '/sources/suggest',
@@ -205,7 +205,7 @@ exports.suggestSourcesFromWebsite = function(test) {
 }
 
 
-exports.suggestFactualSourcesFromFoursquareId = function(test) {
+_exports.suggestFactualSourcesFromFoursquareId = function(test) {
   if (disconnected) return skip(test)
   t.post({
     uri: '/sources/suggest',
@@ -219,7 +219,7 @@ exports.suggestFactualSourcesFromFoursquareId = function(test) {
   })
 }
 
-exports.insertEntitySuggestSources = function(test) {
+_exports.insertEntitySuggestSources = function(test) {
   if (disconnected) return skip(test)
   var body = {
     suggestSources: true,
@@ -241,7 +241,7 @@ exports.insertEntitySuggestSources = function(test) {
   )
 }
 
-exports.insertPlaceEntitySuggestSourcesFromFactual = function(test) {
+_exports.insertPlaceEntitySuggestSourcesFromFactual = function(test) {
   if (disconnected) return skip(test)
   var body = {
     suggestSources: true,
