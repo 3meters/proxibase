@@ -37,6 +37,15 @@ exports.getUserSession = function(test) {
   })
 }
 
+exports.genIdWorks = function(test) {
+  t.get('/data/entities/genId',
+  function(err, res, body) {
+    t.assert(body.data._id)
+    t.assert(body.data._id.slice(0, 4) === '0004')
+    test.done()
+  })
+}
+
 exports.cannotPostDocWithMissingDataTag = function(test) {
   t.post({
     uri: '/data/documents?' + userCred,
