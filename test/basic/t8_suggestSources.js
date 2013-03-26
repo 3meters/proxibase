@@ -213,8 +213,8 @@ exports.getFacebookFromFoursquare = function(test) {
       includeRaw: true
     }
   },
-  function(err, res) {
-    var sources = res.body.data
+  function(err, res, body) {
+    var sources = body.data
     t.assert(sources && sources.length)
     // TODO: test for duped 4square entry
     t.assert(sources.some(function(source) {
@@ -229,6 +229,24 @@ exports.getFacebookFromFoursquare = function(test) {
     t.assert(raw)
     t.assert(raw.facebookCandidates.length >= 2)
     t.assert(raw.factualCandidates.length >= 12)
+    test.done()
+  })
+}
+
+exports.suggestSourcesUsingPlace = function(test) {
+  t.post({
+    uri: '/sources/suggest',
+    body: {
+      sources: [], // empty because user deleted them all
+      place: {
+        provider: 'foursquare',
+        id: '4abebc45f964a520a18f20e3',
+      }
+    },
+    includeRaw: true,
+  }, function(err, res, body) {
+    var sources = body.data
+    t.assert(sources.length > 3)
     test.done()
   })
 }
