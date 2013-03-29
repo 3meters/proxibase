@@ -234,6 +234,7 @@ exports.getFacebookFromFoursquare = function(test) {
 }
 
 exports.suggestSourcesUsingPlace = function(test) {
+  if (disconnected) return skip(test)
   t.post({
     uri: '/sources/suggest',
     body: {
