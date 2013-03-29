@@ -472,7 +472,7 @@ exports.trackEntityBrowse = function(test) {
       actionType:'browse'
     }
   }, function(err, res, body) {
-    // Five f&f updates time to finish
+    // Give f&f updates time to finish
     setTimeout(function() { test.done() }, 200)
   })
 }
@@ -573,10 +573,7 @@ exports.untrackEntityProximity = function(test) {
       actionType:'proximity'
     }
   }, function(err, res, body) {
-    // give the fire-and-forget query some time to finish writing
-    setTimeout(function() {
-      test.done()
-    }, 200)
+    test.done()
   })
 }
 
