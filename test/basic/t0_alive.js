@@ -76,3 +76,33 @@ exports.speakSpanishToMe = function(test) {
   })
 }
 
+exports.checkGetWorks = function(test) {
+  t.get('/check', function(err, res, body) {
+    t.assert(body.info)
+    test.done()
+  })
+}
+
+exports.checkFailsNicelyOnEmpty = function(test) {
+  t.post({
+    uri: '/check',
+    body: {}
+  }, 400, function(err, res, body) {
+    t.assert(body.error)
+    t.assert(body.error.code === 400.1)
+    t.assert(body.error.info)
+    t.assert(body.error.info.param)
+    t.assert(body.error.info.template)
+    test.done()
+  })
+}
+
+exports.checkBasicSuccedes = function(test) {
+  log('nyi')
+  test.done()
+}
+
+exports.checkBasicFailsProperly = function(test) {
+  log('nyi')
+  test.done()
+}
