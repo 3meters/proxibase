@@ -122,13 +122,14 @@ exports.checkBasicSuccedesProperly = function(test) {
   })
 }
 
-_exports.checkBasicFailsProperly = function(test) {
+exports.checkMinimalSuccedes = function(test) {
   t.post({
     uri: '/check',
-    body: {}
-  }, 400, function(err, res, body) {
-    t.assert(body.error)
-    t.assert(body.error.code === 400.1)
+    body: {
+      schema: {type: 'number', required: true}
+      value: 1
+    }
+  }, function(err, res, body) {
     test.done()
   })
 }
