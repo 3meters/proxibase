@@ -83,7 +83,7 @@ exports.checkGetWorks = function(test) {
   })
 }
 
-_exports.checkFailsNicelyOnEmpty = function(test) {
+exports.checkFailsNicelyOnEmpty = function(test) {
   t.post({
     uri: '/check',
     body: {}
@@ -91,8 +91,9 @@ _exports.checkFailsNicelyOnEmpty = function(test) {
     t.assert(body.error)
     t.assert(body.error.code === 400.1)
     t.assert(body.error.info)
-    t.assert(body.error.info.param)
-    t.assert(body.error.info.template)
+    t.assert(body.error.validArguments)
+    t.assert(body.error.validArguments.value)
+    t.assert(body.error.validArguments.schema)
     test.done()
   })
 }
@@ -102,22 +103,27 @@ exports.checkBasicSuccedesProperly = function(test) {
     uri: '/check',
     body: {
       schema:  {
-        arr1: {type: 'array', required: true},
+        str1: {type: 'string', required: true},
+        num1: {type: 'number', required: true},
+        boo1: {type: 'boolean', required: true},
+        arr1: {type: 'array',},
         obj1: {type: 'object', value: {
           str1: {type: 'string'},
         }},
-        str2: {type: 'object'},
-        num1: {type: 'number', default: 10000},
-        boo1: {type: 'boolean'}
+        num2: {type: 'number', default: 10},
       },
       value: {
-        arr1: [],
+        str1: 'hello',
+        num1: 1,
+        boo1: true,
+        // arr1: [],
         obj1: {
           str1: '123',
         },
       },
     }
   }, function(err, res, body) {
+    t.assert(body.value.num2 === 10)
     test.done()
   })
 }
@@ -126,7 +132,7 @@ exports.checkMinimalSuccedes = function(test) {
   t.post({
     uri: '/check',
     body: {
-      schema: {type: 'number', required: true}
+      schema: {type: 'number', required: true},
       value: 1
     }
   }, function(err, res, body) {
@@ -134,3 +140,16 @@ exports.checkMinimalSuccedes = function(test) {
   })
 }
 
+exports.checkMissingRequiredScalar = function(test) {
+  t.post({
+    uri: '/check',
+    body: {
+      schema: {type: 'number', required: true},
+      value: null
+    }
+  }, 400, function(err, res, body) {
+    t.assert(body.error.code === 400.1)
+    t.assert(false)
+    test.done()
+  })
+}
