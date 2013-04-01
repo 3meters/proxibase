@@ -24,7 +24,7 @@ module.exports = {
     port: 27017,
     database: 'prox',                    // dev:prox test:smokeData stage:stage production:prox
   },
-  sendMail: './testMail.log'             // boolean or filename for logging, default false
+  sendMail: './testMail.log',            // boolean or filename for logging, default false
   notify: {
     onStart: false,
     to: 'pager2010@3meters.com',

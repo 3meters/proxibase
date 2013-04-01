@@ -83,7 +83,7 @@ exports.checkGetWorks = function(test) {
   })
 }
 
-exports.checkFailsNicelyOnEmpty = function(test) {
+_exports.checkFailsNicelyOnEmpty = function(test) {
   t.post({
     uri: '/check',
     body: {}
@@ -97,12 +97,39 @@ exports.checkFailsNicelyOnEmpty = function(test) {
   })
 }
 
-exports.checkBasicSuccedes = function(test) {
-  log('nyi')
-  test.done()
+exports.checkBasicSuccedesProperly = function(test) {
+  t.post({
+    uri: '/check',
+    body: {
+      schema:  {
+        arr1: {type: 'array', required: true},
+        obj1: {type: 'object', value: {
+          str1: {type: 'string'},
+        }},
+        str2: {type: 'object'},
+        num1: {type: 'number', default: 10000},
+        boo1: {type: 'boolean'}
+      },
+      value: {
+        arr1: [],
+        obj1: {
+          str1: '123',
+        },
+      },
+    }
+  }, function(err, res, body) {
+    test.done()
+  })
 }
 
-exports.checkBasicFailsProperly = function(test) {
-  log('nyi')
-  test.done()
+_exports.checkBasicFailsProperly = function(test) {
+  t.post({
+    uri: '/check',
+    body: {}
+  }, 400, function(err, res, body) {
+    t.assert(body.error)
+    t.assert(body.error.code === 400.1)
+    test.done()
+  })
 }
+
