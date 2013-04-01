@@ -49,7 +49,6 @@ exports.postWithMissingBody = function(test) {
   })
 }
 
-
 // Make sure server barfs on body not parsable as JSON
 exports.postWithBadJsonInBody = function(test) {
   // We have to do this one with raw requst since our
@@ -90,10 +89,6 @@ exports.checkFailsNicelyOnEmpty = function(test) {
   }, 400, function(err, res, body) {
     t.assert(body.error)
     t.assert(body.error.code === 400.1)
-    t.assert(body.error.info)
-    t.assert(body.error.validArguments)
-    t.assert(body.error.validArguments.value)
-    t.assert(body.error.validArguments.schema)
     test.done()
   })
 }
@@ -149,7 +144,6 @@ exports.checkMissingRequiredScalar = function(test) {
     }
   }, 400, function(err, res, body) {
     t.assert(body.error.code === 400.1)
-    t.assert(false)
     test.done()
   })
 }
