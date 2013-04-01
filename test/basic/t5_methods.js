@@ -469,11 +469,15 @@ exports.trackEntityBrowse = function(test) {
       beacons:[testBeacon, testBeacon2, testBeacon3],
       primaryBeaconId:testBeacon2._id,
       observation:testObservation,
-      actionType:'browse'
+      actionType:'browse',
+      respondOnAccept:true,  // ask server to call back immediately on receipt
     }
   }, function(err, res, body) {
-    // Give f&f updates time to finish
-    setTimeout(function() { test.done() }, 200)
+    t.assert(body.info.indexOf('received') > 0)
+    // Give fire-and-forget updates time to finish
+    setTimeout(function() {
+      test.done()
+    }, 200)
   })
 }
 
@@ -517,13 +521,12 @@ exports.trackEntityProximity = function(test) {
       beacons:[testBeacon, testBeacon2, testBeacon3], 
       primaryBeaconId:testBeacon2._id,
       observation:testObservation,
-      actionType:'proximity'
+      actionType:'proximity',
+      respondOnAccept: false // wait for work to finish
     }
   }, function(err, res, body) {
-    // give the fire-and-forget query some time to finish writing
-    setTimeout(function() {
-      test.done()
-    }, 200)
+    t.assert(body.info.toLowerCase().indexOf('tracked') > 0)
+    test.done()
   })
 }
 
@@ -573,6 +576,7 @@ exports.untrackEntityProximity = function(test) {
       actionType:'proximity'
     }
   }, function(err, res, body) {
+    t.assert(body.info.indexOf('untracked') > 0)
     test.done()
   })
 }
@@ -587,8 +591,6 @@ exports.checkUntrackEntityProximityLinksFromEntity1 = function(test) {
   })
 }
 
-// Warning:  this is checking the results of a fire-and-forget
-//   updated, and may fail due to timing
 exports.checkBeaconLocationUpdate = function (test) {
   t.post({
     uri: '/do/find',
