@@ -10,6 +10,7 @@ var log = util.log
 var _exports = {}
 
 
+/*
 // Make sure server is alive and responding
 exports.getIndexPage = function(test) {
   t.get({}, function(err, res, body) {
@@ -75,6 +76,7 @@ exports.speakSpanishToMe = function(test) {
   })
 }
 
+*/ 
 exports.checkGetWorks = function(test) {
   t.get('/check', function(err, res, body) {
     t.assert(body.info)
@@ -161,7 +163,7 @@ exports.checkMissingRequiredObject = function(test) {
   })
 }
 
-exports.checkMissingRequiredNestedObject = function(test) {
+exports.checkMissingRequiredObject = function(test) {
   t.post({
     uri: '/check',
     body: {
@@ -176,6 +178,30 @@ exports.checkMissingRequiredNestedObject = function(test) {
   }, 400, function(err, res, body) {
     t.assert(body.error.code === 400.1)
     t.assert(body.error.validArguments.o1)
+    test.done()
+  })
+}
+
+exports.checkMissingRequiredNestedScalar = function(test) {
+  t.post({
+    uri: '/check',
+    body: {
+      schema: {
+        s1: {type: 'string'},
+        o1: {type: 'object', required: true, value: {
+            s1: {type: 'string', required: true}
+          }
+        },
+      },
+      value: {
+        s1: 'foo',
+        o1: {
+          s2: 'I am not s1'
+        }
+      }
+    }
+  }, 400, function(err, res, body) {
+    t.assert(body.error.code === 400.1)
     test.done()
   })
 }
