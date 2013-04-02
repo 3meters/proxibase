@@ -206,3 +206,31 @@ exports.checkMissingRequiredNestedScalar = function(test) {
     test.done()
   })
 }
+
+exports.checkStrictWorks= function(test) {
+  t.post({
+    uri: '/check',
+    body: {
+      schema: {
+        s1: {type: 'string'},
+        o1: {type: 'object', required: true, value: {
+            s1: {type: 'string', required: true}
+          }
+        },
+      },
+      value: {
+        s1: 'foo',
+        o1: {
+          s1: 'I am required',
+          s2: 'I am not allowed with strict'
+        }
+      },
+      options: {
+        strict: true
+      }
+    }
+  }, 400, function(err, res, body) {
+    t.assert(body.error.code === 400.11)
+    test.done()
+  })
+}
