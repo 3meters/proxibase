@@ -101,7 +101,7 @@ exports.checkBasicSuccedesProperly = function(test) {
         str1: {type: 'string', required: true},
         num1: {type: 'number', required: true},
         boo1: {type: 'boolean', required: true},
-        arr1: {type: 'array',},
+        arr1: {type: 'array'},
         obj1: {type: 'object', value: {
           str1: {type: 'string'},
         }},
@@ -144,6 +144,38 @@ exports.checkMissingRequiredScalar = function(test) {
     }
   }, 400, function(err, res, body) {
     t.assert(body.error.code === 400.1)
+    test.done()
+  })
+}
+
+exports.checkMissingRequiredObject = function(test) {
+  t.post({
+    uri: '/check',
+    body: {
+      schema: {type: 'object', required: true},
+      value: null
+    }
+  }, 400, function(err, res, body) {
+    t.assert(body.error.code === 400.1)
+    test.done()
+  })
+}
+
+exports.checkMissingRequiredNestedObject = function(test) {
+  t.post({
+    uri: '/check',
+    body: {
+      schema: {
+        s1: {type: 'string'},
+        o1: {type: 'object', required: true},
+      },
+      value: {
+        s1: 'foo'
+      }
+    }
+  }, 400, function(err, res, body) {
+    t.assert(body.error.code === 400.1)
+    t.assert(body.error.validArguments.o1)
     test.done()
   })
 }
