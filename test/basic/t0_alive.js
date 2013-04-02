@@ -234,3 +234,37 @@ exports.checkStrictWorks= function(test) {
     test.done()
   })
 }
+
+exports.checkArrayTypesPass = function(test) {
+  t.post({
+    uri: '/check',
+    body: {
+      schema: {
+        a1: {type: 'array', value: [{type: 'string'}]},
+        a2: {
+          type: 'array', value: [
+            {type: 'object', value: {
+                s3: {type: 'string', required: true},
+            }}
+          ]
+        },
+        o1: {type: 'object', required: true, value: {
+            a3: {type: 'array', required: true, value: [ {type: 'string'} ]}
+          }
+        },
+      },
+      value: {
+        a1: ['123', '456', '789'],
+        a2: [{s3: 'foo'}, {s3: 'bar'}, {s3: 'baz'}],
+        o1: {a3: ['aaa', 'bbb', 'ccc']},
+      },
+      options: {
+        strict: true
+      }
+    }
+  }, 400, function(err, res, body) {
+    t.assert(body.error.code === 400.11)
+    test.done()
+  })
+}
+
