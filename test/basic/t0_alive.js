@@ -10,7 +10,6 @@ var log = util.log
 var _exports = {}
 
 
-/*
 // Make sure server is alive and responding
 exports.getIndexPage = function(test) {
   t.get({}, function(err, res, body) {
@@ -76,7 +75,6 @@ exports.speakSpanishToMe = function(test) {
   })
 }
 
-*/ 
 exports.checkGetWorks = function(test) {
   t.get('/check', function(err, res, body) {
     t.assert(body.info)
@@ -106,6 +104,7 @@ exports.checkBasicSuccedesProperly = function(test) {
         arr1: {type: 'array'},
         obj1: {type: 'object', value: {
           str1: {type: 'string'},
+          str3: {type: 'string', default: '345'}
         }},
         num2: {type: 'number', default: 10},
       },
@@ -116,11 +115,13 @@ exports.checkBasicSuccedesProperly = function(test) {
         // arr1: [],
         obj1: {
           str1: '123',
+          str2: '234',
         },
       },
     }
   }, function(err, res, body) {
     t.assert(body.value.num2 === 10)
+    t.assert(body.value.obj1.str3 === '345')
     test.done()
   })
 }
