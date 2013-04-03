@@ -240,23 +240,21 @@ exports.checkArrayTypesPass = function(test) {
     uri: '/check',
     body: {
       schema: {
-        a1: {type: 'array', value: [{type: 'string'}]},
-        a2: {
-          type: 'array', value: [
-            {type: 'object', value: {
-                s3: {type: 'string', required: true},
+        a1: {type: 'array', value: {type: 'string'}},
+        a2: {type: 'array', value: {type: 'object', value: {
+                s1: {type: 'string', required: true},
             }}
-          ]
         },
         o1: {type: 'object', required: true, value: {
-            a3: {type: 'array', required: true, value: [ {type: 'string'} ]}
+            s2: {type: 'string', required: true},
+            a3: {type: 'array', required: true, value: {type: 'string'}}
           }
         },
       },
       value: {
         a1: ['123', '456', '789'],
-        a2: [{s3: 'foo'}, {s3: 'bar'}, {s3: 'baz'}],
-        o1: {a3: ['aaa', 'bbb', 'ccc']},
+        a2: [{s1: 'foo'}, {s1: 'bar'}, {s1: 'baz'}],
+        o1: {s2: 'bla', a3: ['aaa', 'bbb', 'ccc']},
       },
       options: {
         strict: true
