@@ -118,7 +118,10 @@ exports.checkBasicSuccedesProperly = function(test) {
           str2: '234',
         },
       },
-    }
+      options: {
+        setDefaults: true
+      },
+    },
   }, function(err, res, body) {
     t.assert(body.value.num2 === 10)
     t.assert(body.value.obj1.str3 === '345')
@@ -262,6 +265,27 @@ exports.checkArrayTypesPass = function(test) {
     }
   }, 400, function(err, res, body) {
     t.assert(body.error.code === 400.11)
+    test.done()
+  })
+}
+
+
+exports.checkArrayBasicFailsProperly = function(test) {
+  t.post({
+    uri: '/check',
+    body: {
+      schema: {
+        a1: {type: 'array', value: {type: 'string'}, required: true}
+      },
+      value: {
+        a1: ['123', '456', '789', 11],
+      },
+      options: {
+        strict: true
+      }
+    }
+  }, 400, function(err, res, body) {
+    t.assert(body.error.code === 400.12)
     test.done()
   })
 }

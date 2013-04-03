@@ -561,7 +561,10 @@ exports.getEntitiesForLocationWithLocationUpdate = function (test) {
       , observation:testObservation2
     }
   }, function(err, res, body) {
-    test.done()
+    setTimeout(function() {
+      // beacon observation update is fire-and-forget, give time to finish
+      test.done()
+    }, 200)
   })
 }
 
