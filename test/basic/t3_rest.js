@@ -112,6 +112,25 @@ exports.canAddDocAsSingleElementArray = function(test) {
   })
 }
 
+exports.canUpdateSinglePropertyOfNestedObject = function(test) {
+  t.post({
+    uri: '/data/documents/' + testDoc2._id + '?' + userCred,
+    body: {
+      data: {
+        data: {
+          number: 3
+        }
+      }
+    }
+  }, function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.data.data)
+    t.assert(body.data.data.foo === 'bar')
+    t.assert(body.data.data.number === 3)
+    test.done()
+  })
+}
+
 exports.cannotAddDocMissingRequiredField = function(test) {
   t.post({
     uri: '/data/entities?' + userCred,
