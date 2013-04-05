@@ -25,7 +25,7 @@ var testUser = {
   name : "John Q Test",
   email : "johnqtest@3meters.com",
   password : "12345678",
-  photo: {prefix:"resource:placeholder_user", format:"binary", sourceName:"aircandi"},
+  photo: {prefix:"resource:placeholder_user", sourceName:"aircandi"},
   location : "Testville, WA",
   isDeveloper : false
 }
@@ -37,7 +37,7 @@ var testUser2 = {
 }
 var testEntity = {
   _id : "0004.111111.11111.111.111111",
-  photo: {prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", format:"binary", sourceName:"aircandi"},
+  photo: {prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", sourceName:"aircandi"},
   signalFence : -100,
   name : "Testing candi",
   type : "com.aircandi.candi.picture",
@@ -48,7 +48,7 @@ var testEntity = {
 }
 var testEntity2 = {
   _id : "0004.111111.11111.111.111112",
-  photo: {prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", format:"binary", sourceName:"aircandi"},
+  photo: {prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", sourceName:"aircandi"},
   signalFence : -100,
   name : "Testing candi 2",
   type : "com.aircandi.candi.place",
@@ -60,7 +60,7 @@ var testEntity2 = {
 }
 var testEntity3 = {
   _id : "0004.111111.11111.111.111113",
-  photo: {prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", format:"binary", sourceName:"aircandi"},
+  photo: {prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", sourceName:"aircandi"},
   signalFence : -100,
   name : "Testing candi 3",
   type : "com.aircandi.candi.place",

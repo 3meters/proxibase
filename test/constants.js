@@ -113,7 +113,7 @@ defaultRecord.entities = {
     comment,
     comment
   ],
-  photo: {imageUri:"https://s3.amazonaws.com/3meters_images/test_preview.jpg"},
+  photo: {prefix:"https://s3.amazonaws.com/3meters_images/test_preview.jpg"},
   place: {location:{lat:latitude,lng:longitude}},
   visibility: 'public',
   enabled: true,
