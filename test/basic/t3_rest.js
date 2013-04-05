@@ -112,7 +112,9 @@ exports.canAddDocAsSingleElementArray = function(test) {
   })
 }
 
-exports.canUpdateSinglePropertyOfNestedObject = function(test) {
+
+// Mongo basically doesn't support this ability
+_exports.canUpdateSinglePropertyOfNestedObject = function(test) {
   t.post({
     uri: '/data/documents/' + testDoc2._id + '?' + userCred,
     body: {

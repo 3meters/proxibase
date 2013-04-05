@@ -20,7 +20,6 @@ var testLongitude = -121.1
 var testEntity = {
       photo: {
         prefix: "https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
-        format: "binary",
         sourceName: "aircandi",
       },
       signalFence : -100,
