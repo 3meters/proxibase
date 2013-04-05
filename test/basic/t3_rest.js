@@ -113,8 +113,7 @@ exports.canAddDocAsSingleElementArray = function(test) {
 }
 
 
-// Mongo basically doesn't support this ability
-_exports.canUpdateSinglePropertyOfNestedObject = function(test) {
+exports.canUpdateSinglePropertyOfNestedObject = function(test) {
   t.post({
     uri: '/data/documents/' + testDoc2._id + '?' + userCred,
     body: {
@@ -129,6 +128,26 @@ _exports.canUpdateSinglePropertyOfNestedObject = function(test) {
     t.assert(body.data.data)
     t.assert(body.data.data.foo === 'bar')
     t.assert(body.data.data.number === 3)
+    test.done()
+  })
+}
+
+exports.canRemovePropertyOfNestedObject = function(test) {
+  t.post({
+    uri: '/data/documents/' + testDoc2._id + '?' + userCred,
+    body: {
+      data: {
+        data: {
+          number: 4,
+          foo: null,
+        }
+      }
+    }
+  }, function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.data.data)
+    t.assert(body.data.data.number === 4)
+    t.assert(util.type.isUndefined(body.data.data.foo))
     test.done()
   })
 }
