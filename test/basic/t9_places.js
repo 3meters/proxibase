@@ -139,12 +139,12 @@ exports.getPlacesNearLocationFactual = function(test) {
     }
   }, function(err, res) {
     var places = res.body.data
-    t.assert(places.length === 9)
+    t.assert(places.length >= 8)
     places.forEach(function(place) {
       t.assert(place.place)
       t.assert(ballRoomId !== place.place.id)
       t.assert(place.place.category, 'blech ' + util.inspect(place))
-      t.assert(place.place.category.name)
+      t.assert(place.place.category.name, 'blech ' + util.inspect(place))
     })
     var roxys = places.filter(function(e) {
       return (e.place.id === roxyId) // Roxy's Diner

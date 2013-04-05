@@ -468,6 +468,15 @@ exports.countByFailsOnBogusFields = function(test) {
   })
 }
 
+exports.deleteBogusRecord = function(test) {
+ t.delete({
+    uri: '/data/beacons/bogusid1?' + adminCred,
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    test.done()
+  })
+}
+
 exports.sortWorks = function(test) {
   t.get('/data/users?sort[_id]=-1',
   function(err, res, body) {
