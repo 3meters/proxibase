@@ -46,3 +46,13 @@ exports.findOrphansAsAdminWorks = function(test) {
     test.done()
   })
 }
+
+exports.validateWorks = function(test) {
+  t.get('/admin/validate?' + adminCred,
+  function(err, res, body) {
+    t.assert(body.results)
+    t.assert(body.schemaErrors)
+    t.assert(body.schemaErrors.length === 0)
+    test.done()
+  })
+}
