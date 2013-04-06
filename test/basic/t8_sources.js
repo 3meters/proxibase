@@ -98,6 +98,7 @@ exports.checkFacebookUrls = function(test) {
       t.assert(source.type === 'facebook')
       t.assert(source.icon)
       t.assert(source.packageName)
+      t.assert(source.photo.prefix)
       t.assert(source.data)
       t.assert(source.data.origin === 'website')
       t.assert(source.data.originUrl === url)
@@ -219,7 +220,9 @@ exports.getFacebookFromFoursquare = function(test) {
     // TODO: test for duped 4square entry
     t.assert(sources.some(function(source) {
       return (source.type === 'facebook'
-        && source.id === '155509047801321')
+        && source.id === '155509047801321'
+        && source.name
+        && source.photo.prefix)
     }))
     // This facebook entry fails the popularity contest
     t.assert(sources.every(function(source) {
