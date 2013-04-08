@@ -15,17 +15,20 @@ cli
   .option('-c, --config <file>', 'config file [config.js]')
   .option('-d, --database <database>', 'database name [proxTest|prox]')
   .option('-x, --execute', 'execute the update, otherwise just returns prepared updates')
+  .parse(process.argv)
 
-var queries = [
+var toFix = [
   {
     type: 'facebook',
     prefix: 'https://graph.facebook.com/',
     suffix: '/picture?type=large',
+    fixed: 0,
   },
   {
     type: 'twitter',
     prefix: 'https://api.twitter.com/1/users/profile_image?screen_name=',
     suffix: '&size=bigger',
+    fixed: 0,
   },
 ]
 function start() {
@@ -39,11 +42,15 @@ function start() {
       throw err // force crash
     }
     db = util.db = connection
-    setPicture(queries, finish)
+    computeNewSources(function(err) {
+      if (err) return finish(err)
+      if (!cli.execute) return finish()
+      async.forEachSeries(results, saveNewSource, finish)
+    })
   })
 }
 
-function setPicture(queries, cb) {
+function computeNewSources(cb) {
   db.entities.find({
     type: 'com.aircandi.candi.place',
   }, {name: 1, sources: 1})
@@ -55,13 +62,14 @@ function setPicture(queries, cb) {
       var doc = util.clone(old)
       doc.sources.forEach(function(source) {
         delete source.icon
-        queries.forEach(function(query) {
-          if (source.type !== query.type) return
+        toFix.forEach(function(fix) {
+          if (source.type !== fix.type) return
           if (!source.id) return
           source.photo = {
-            prefix: query.prefix + source.id + query.suffix,
-            sourceName: query.type
+            prefix: fix.prefix + source.id + fix.suffix,
+            sourceName: fix.type
           }
+          fix.fixed++
         })
       })
       results.push({old: old, doc: doc})
@@ -70,9 +78,18 @@ function setPicture(queries, cb) {
   })
 }
 
+function saveNewSource(result, cb) {
+  var doc = result.doc
+  // Not safe update, bypasses validation and security
+  db.entities.update({_id: doc._id}, {$set: {sources: doc.sources}}, cb)
+}
+
 function finish(err) {
   if (err) throw err
-  log('addPhotos ok, results', results, {depth:7})
+  log('addPhotos ok, results', {
+    fixed: toFix,
+    docs: results
+  }, {depth:7})
   process.exit()
 }
 
