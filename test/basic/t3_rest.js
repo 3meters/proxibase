@@ -258,11 +258,12 @@ exports.checkUpdatedDoc = function(test) {
   })
 }
 
-exports.settingFieldsToNullUnsetsThem = function(test) {
+exports.settinFieldsToNullUnsetsThem = function(test) {
   t.post({
     uri: '/data/documents/' + testDoc1._id + '?' + userCred,
-    body: {data: {data: null} }
+    body: {name: null, data: {data: null} }
   }, function(err, res, body) {
+    t.assert(util.type(body.data.name === 'undefined'))
     t.assert(util.type(body.data.data === 'undefined'))
     test.done()
   })
