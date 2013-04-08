@@ -419,6 +419,27 @@ exports.defaultsWork = function(test) {
   })
 }
 
+exports.nullsAreNotPersistedOnInsert = function(test) {
+  t.post({
+    uri: '/data/documents?' + userCred, 
+    body: {
+      data: {
+        name: null,
+        data: {
+          p1: 1,
+          p2: null,
+        }
+      }
+    }
+  }, 201, function(err, res, body) {
+    var data = body.data
+    t.assert(util.type.isUndefined(data.name))
+    t.assert(data.data.p1 === 1)
+    t.assert(util.type.isUndefined(data.data.p2))
+    test.done()
+  })
+}
+
 exports.anonCannotReadSystemCollections = function(test) {
   t.get({uri: '/data/sessions'}, 401, function(err, res, body) {
     test.done()
