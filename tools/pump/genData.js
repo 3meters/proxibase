@@ -5,15 +5,15 @@
  */
 
 var util = require('proxutils') // load proxibase extentions to node util
+var dblib = require('proxdb')       // Proxdb lib
+var mongo = dblib.mongodb
 var log = util.log
 var fs = require('fs')
 var path = require('path')
-var mongo = require('mongodb')
 var async = require('async')
 var constants = require('../../test/constants')
 var testUtil = require('../../test/util')
 var tableIds = util.statics.collectionIds
-var dblib = require('../../lib/db')       // Proxdb lib
 var table = {}                            // Map of tables to be generated
 var startTime                             // Elapsed time counter
 var db                                    // Mongodb connection object
