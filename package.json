@@ -23,7 +23,9 @@
     "request": "*",
     "authom": "*",
     "cheerio": "*",
-    "factual-api": "*"
+    "factual-api": "*",
+    "url2png": "*",
+    "aws-sdk": "*"
   },
 
   "repository": "git://github.com:3meters/proxibase",
