@@ -152,6 +152,39 @@ exports.canRemovePropertyOfNestedObject = function(test) {
   })
 }
 
+exports.updateCanRemoveNestedObjects = function(test) {
+  t.post({
+    uri: '/data/documents/' + testDoc2._id + '?' + userCred,
+    body: {
+      data: {
+        type: 'I have lost my data',
+        data: null
+      }
+    }
+  }, function(err, res, body) {
+    t.assert(body.data.type === 'I have lost my data')
+    t.assert(type.isUndefined(body.data.data))
+    test.done()
+  })
+}
+
+exports.updateCanCreatedNestedObject = function(test) {
+  t.post({
+    uri: '/data/documents/' + testDoc2._id + '?' + userCred,
+    body: {
+      data: {
+        type: 'I have found my data',
+        data: {
+          p1: 1,
+        }
+      }
+    }
+  }, function(err, res, body) {
+    t.assert(body.data.data.p1 === 1)
+    test.done()
+  })
+}
+
 exports.cannotAddDocMissingRequiredField = function(test) {
   t.post({
     uri: '/data/entities?' + userCred,
@@ -168,7 +201,6 @@ exports.findDocsByIdAndCheckSysFields = function(test) {
   }, function(err, res, body) {
     t.assert(body.count === 2)
     t.assert((body.data[0]._id === testDoc1._id || body.data[1]._id === testDoc1._id))
-    t.assert((body.data[0].name === testDoc2.name || body.data[1].name === testDoc2.name))
     t.assert(body.data[0]._creator === userSession._owner)
     t.assert(body.data[0]._owner === userSession._owner)
     t.assert(body.data[0].createdDate > testStartTime)

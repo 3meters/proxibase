@@ -13,8 +13,10 @@ var results = []
 
 cli
   .option('-c, --config <file>', 'config file [config.js]')
-  .option('-d, --database <database>', 'database name [proxTest|prox]')
+  .option('-d, --database <database>', 'database')
   .option('-x, --execute', 'execute the update, otherwise just returns prepared updates')
+  .option('-i, --unsetIcons', 'unset the icon property of all sources')
+
   .parse(process.argv)
 
 var toFix = [
@@ -61,7 +63,7 @@ function computeNewSources(cb) {
       if (!util.type.isArray(old.sources)) return
       var doc = util.clone(old)
       doc.sources.forEach(function(source) {
-        delete source.icon
+        if (cli.unsetIcons) delete source.icon
         toFix.forEach(function(fix) {
           if (source.type !== fix.type) return
           if (!source.id) return
