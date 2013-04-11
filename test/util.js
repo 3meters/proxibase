@@ -31,6 +31,7 @@ function makeReq(options) {
 
   req.method = options.method || 'get'
   req.json = type.isBoolean(options.json) ? options.json : true
+  req.strictSSL = false  // Defaulted to false with node.0.8, in node 0.10 it defaults to true
   return req
 }
 
