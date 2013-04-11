@@ -23,7 +23,8 @@
     "request": "*",
     "authom": "*",
     "cheerio": "*",
-    "factual-api": "*"
+    "factual-api": "*",
+    "node-gcm": "*"
   },
 
   "repository": "git://github.com:3meters/proxibase",
