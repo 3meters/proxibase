@@ -230,7 +230,8 @@ exports.cannotInsertEntityNotLoggedIn = function (test) {
       entity:testEntity, 
       beacons:[testBeacon], 
       primaryBeaconId:testBeacon._id,
-      observation:testObservation
+      observation:testObservation,
+      skipNotifications:true
     }
   }, 401, function(err, res, body) {
     test.done()
@@ -244,7 +245,8 @@ exports.insertEntity = function (test) {
       entity:testEntity, 
       beacons:[testBeacon], 
       primaryBeaconId:testBeacon._id,
-      observation:testObservation
+      observation:testObservation,
+      skipNotifications:true
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
@@ -293,7 +295,8 @@ exports.insertEntityBeaconAlreadyExists = function (test) {
       entity:testEntity2, 
       beacons:[testBeacon], 
       primaryBeaconId:testBeacon._id,
-      observation:testObservation
+      observation:testObservation,
+      skipNotifications:true
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
@@ -342,7 +345,8 @@ exports.insertPlaceEntityWithNoLinks = function (test) {
     uri: '/do/insertEntity?' + userCred,
     body: {
       entity:testEntity3,
-      observation:testObservation
+      observation:testObservation,
+      skipNotifications:true
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
@@ -387,7 +391,8 @@ exports.insertEntityDoNotTrack = function(test) {
         entity: ent,
         beacons: [beacon],
         primaryBeaconId: beacon._id,
-        observation: testObservation
+        observation: testObservation,
+        skipNotifications: true
       }
     }, 201, function(err, res, body) {
       t.assert(body.count === 1)
@@ -570,7 +575,10 @@ exports.adminCanDeleteBeaconUserCreated = function (test) {
 exports.userCanCommentOnOwnEntity = function (test) {
   t.post({
     uri: '/do/insertComment?' + userCred,
-    body: {entityId:testEntity._id,comment:testComment}
+    body: {entityId:testEntity._id, 
+      comment:testComment, 
+      skipNotification:true
+    }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     test.done()
@@ -593,7 +601,10 @@ exports.user2CanCommentOnEntityOwnedByUser1 = function (test) {
   testComment.description = "I am user2 and I luv user1"
   t.post({
     uri: '/do/insertComment?' + user2Cred,
-    body: {entityId:testEntity._id,comment:testComment}
+    body: {entityId:testEntity._id, 
+      comment:testComment, 
+      skipNotifications: true
+    }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     test.done()
