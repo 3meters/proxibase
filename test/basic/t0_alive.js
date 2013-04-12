@@ -57,7 +57,8 @@ exports.postWithBadJsonInBody = function(test) {
     uri: testUtil.serverUrl + '/data/users',
     method: 'post',
     body: '{data: "This is not JSON"}',
-    headers: {'Content-type': 'application/json'}
+    headers: {'Content-type': 'application/json'},
+    strictSSL: false,
   }
   testUtil.request(req, function(err, res) {
     testUtil.check(req, res, 400)
