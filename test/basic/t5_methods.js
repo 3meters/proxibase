@@ -603,7 +603,7 @@ exports.user2CanCommentOnEntityOwnedByUser1 = function (test) {
     uri: '/do/insertComment?' + user2Cred,
     body: {entityId:testEntity._id, 
       comment:testComment, 
-      skipNotification:true
+      skipNotifications: true
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
