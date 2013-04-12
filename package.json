@@ -24,7 +24,7 @@
     "authom": "*",
     "cheerio": "*",
     "factual-api": "*",
-    "node-gcm": "0.9.4"
+    "node-gcm": "0.9.4",
     "url2png": "*",
     "aws-sdk": "*"
   },
