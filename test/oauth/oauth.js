@@ -15,7 +15,9 @@ var util = require('proxutils')
 var log = util.log
 var assert = require('assert')
 var fs = require('fs')
-var request = require('superagent')
+var superagent = require('superagent')
+// We need this because superagent has no way to turn off strictSSL
+var request = require('request')
 var cheerio = require('cheerio')
 var testUtil = require('../util')
 var t = testUtil.treq
@@ -26,8 +28,8 @@ var adminCred = ''
 var testOauthId = {
   twitter: 'twitter:606624261'
 }
-var jQuerySrc = 'http://code.jquery.com/jquery-1.7.2.min.js'
 var baseUri = testUtil.serverUrl
+var strictSSL = (util.config.service.mode === 'test') ? false : true
 var _exports = {}  // for commenting out tests
 
 
@@ -122,10 +124,17 @@ function testProvider(options, callback) {
    'Gecko/20101203 Firefox/3.6.13'
 
   log('uri: ' + options.oauthUri)
-  request
-    .get(options.oauthUri)
-    .set('User-Agent', userAgent)
-    .end(function(err, res) {
+  var reqOps = {
+    uri: options.oauthUri,
+    headers: {
+      'User-Agent': userAgent
+    },
+    strictSSL: strictSSL,
+  }
+  request.get(reqOps, function(err, res, body) {
+    // .get(options.oauthUri)
+    // .set('User-Agent', userAgent)
+    // .end(function(err, res) {
 
     // we should be redirected to a URL containing our provider application token and secret,
     // then the provider should respond with the its user interface login page.  This attempts
@@ -133,7 +142,7 @@ function testProvider(options, callback) {
 
     fs.writeFileSync(options.authPage, res.text)  // corpse
 
-    var $ = cheerio.load(res.text)
+    var $ = cheerio.load(body)
     var jQuerySelectLoginFormInputs = options.loginFormName + ' :input'
 
     $(jQuerySelectLoginFormInputs).each(function(index, input) {
@@ -154,7 +163,7 @@ function testProvider(options, callback) {
     // Use JQuery to extract the login form's action URI
     var loginFormActionUri = $(options.loginFormName).attr('action')
 
-    request.post(loginFormActionUri)
+    superagent.post(loginFormActionUri)
       .set('User-Agent', userAgent)
       .type('form')
       .send(loginForm)
@@ -200,8 +209,11 @@ function testProvider(options, callback) {
       // If we find them, we get a 200 and create or update a session
       // If we don't find them, we get a 406
 
-      request.get(proxAuthRedirectUrl)
-        .end(function(err, res) {
+      reqOps = {
+        uri: proxAuthRedirectUrl,
+        strictSSL: strictSSL,
+      }
+      request.get(reqOps, function(err, res) {
         testUtil.check({}, res)
         callback()
       })
