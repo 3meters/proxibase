@@ -1,24 +1,19 @@
 # Proxibase make file for helping people find the tests
 
-
-
 all: hello
 
 hello:
-	@echo 'usage: make <test|testb|testall>'
+	@echo 'usage: make <test|testd|testa>'
 
 test: testb
 
 testb:
 	@node test/run --basic
 
-foo:
-	@echo $(t) $(wildcard $(t))
+testd:
+	@node test/run --basic --disconnected
 
-testt:
-	@node test/run --test $(t)
-
-testall:
+testa:
 	@node test/run --generate
 
-.PHONY: test test-basic test-all
+.PHONY: test testd testa
