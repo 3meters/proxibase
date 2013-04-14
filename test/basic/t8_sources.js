@@ -26,7 +26,6 @@ exports.getSessions = function(test) {
 }
 
 exports.ensureRequiredParams = function(test) {
-  if (disconnected) return skip(test)
   var url = serviceUri + '/test/twitter.html'
   t.post({
     uri: '/sources/suggest',
@@ -41,7 +40,6 @@ exports.ensureRequiredParams = function(test) {
 }
 
 exports.errorOnUnknownParams = function(test) {
-  if (disconnected) return skip(test)
   var url = serviceUri + '/test/twitter.html'
   t.post({
     uri: '/sources/suggest',
@@ -56,7 +54,6 @@ exports.errorOnUnknownParams = function(test) {
 }
 
 exports.checkTwitterUrls = function(test) {
-  if (disconnected) return skip(test)
   var url = serviceUri + '/test/twitter.html'
   t.post({
     uri: '/sources/suggest',
@@ -81,7 +78,6 @@ exports.checkTwitterUrls = function(test) {
 }
 
 exports.checkFacebookUrls = function(test) {
-  if (disconnected) return skip(test)
   var url = serviceUri + '/test/facebook.html'
   t.post({
     uri: '/sources/suggest',
@@ -89,6 +85,7 @@ exports.checkFacebookUrls = function(test) {
   },
   function(err, res) {
     var sources = res.body.data
+    if (disconnected) return skip(test) // test calls facebook
     t.assert(sources.length === 5)
     // make a map of the results array by id
     var map = {}
@@ -115,7 +112,6 @@ exports.checkFacebookUrls = function(test) {
 }
 
 exports.checkEmailUrls = function(test) {
-  if (disconnected) return skip(test)
   t.post({
     uri: '/sources/suggest',
     body: {sources: [{type: 'website', id: serviceUri + '/test/email.html'}]}
@@ -129,7 +125,6 @@ exports.checkEmailUrls = function(test) {
 }
 
 exports.checkEmailUrlsWithGet = function(test) {
-  if (disconnected) return skip(test)
   t.get({uri:'/sources/suggest?sources[0][type]=website&sources[0][id]=' +
         serviceUri + '/test/email.html'},
   function(err, res) {
@@ -141,7 +136,7 @@ exports.checkEmailUrlsWithGet = function(test) {
 }
 
 
-// TODO: what should we return here?
+// TODO: code nyi
 _exports.checkBogusSources = function(test) {
   if (disconnected) return skip(test)
   t.post({
