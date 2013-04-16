@@ -71,8 +71,8 @@ exports.checkTwitterUrls = function(test) {
     t.assert(src.icon.indexOf('twitter.png') > 0)
     t.assert(src.data)
     t.assert(src.data.origin === 'website')
-    t.assert(src.data.originUrl === url)
-    t.assert(res.body.raw.webPageCandidates.length === 6)
+    t.assert(src.data.originId === url)
+    t.assert(res.body.raw.webSiteCandidates.length === 6)
     test.done()
   })
 }
