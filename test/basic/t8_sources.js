@@ -98,7 +98,7 @@ exports.checkFacebookUrls = function(test) {
       t.assert(source.photo.prefix)
       t.assert(source.data)
       t.assert(source.data.origin === 'website')
-      t.assert(source.data.originUrl === url)
+      t.assert(source.data.originId === url)
       map[source.id] = source
     })
     t.assert(Object.keys(map).length === sources.length)  // no dupes by id
