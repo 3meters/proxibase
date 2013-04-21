@@ -163,8 +163,7 @@ exports.suggestSourcesFactual = function(test) {
     t.assert(sources[0].system)
     t.assert(sources[1].type === 'foursquare')  // check basic sorting
     t.assert(res.body.raw)
-    t.assert(res.body.raw.targetSources)
-    t.assert(res.body.raw.targetsNormalized)
+    t.assert(res.body.raw.initialSources)
     t.assert(res.body.raw.factualCandidates.length > 12)
     test.done()
   })
