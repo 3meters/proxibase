@@ -135,6 +135,24 @@ exports.checkEmailUrlsWithGet = function(test) {
   })
 }
 
+// The Ballroom Seattle's facebook page is invisible to non-logged-in facebook
+// users because it serves alcohol. The service should return this source
+// unvalidated and hope for the best on the client where the user can authenticate
+// with facebook directly
+exports.notFoundFacebookSourcePassesThroughUnvalidated = function(test) {
+  t.post({
+    uri: '/sources/suggest',
+    body: {sources: [{type: 'facebook', id: '235200356726'}]}
+  }, function(err, res, body) {
+    t.assert(body.data && 1 === body.data.length)
+    var source = body.data[0]
+    t.assert(source.id === '235200356726')
+    t.assert(source.data)
+    t.assert(!source.data.validated)
+    t.assert(!source.photo)
+    test.done()
+  })
+}
 
 // TODO: code nyi
 _exports.checkBogusSources = function(test) {
