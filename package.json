@@ -26,7 +26,9 @@
     "factual-api": "*",
     "node-gcm": "0.9.4",
     "url2png": "*",
-    "aws-sdk": "*"
+    "aws-sdk": "*",
+    "moment": "*",
+    "tee-1": "*"
   },
 
   "repository": "git://github.com:3meters/proxibase",
