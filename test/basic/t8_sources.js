@@ -57,7 +57,9 @@ exports.checkTwitterUrls = function(test) {
   var url = serviceUri + '/test/twitter.html'
   t.post({
     uri: '/sources/suggest',
-    body: {sources: [{type: 'website', id: url}], includeRaw: true},
+    body: {sources: [
+      {type: 'website', id: url, data: {skipThumbnail: true}}
+    ], includeRaw: true},
   },
   function(err, res) {
     t.assert(res.body.data.length === 2)
@@ -81,8 +83,9 @@ exports.checkFacebookUrls = function(test) {
   var url = serviceUri + '/test/facebook.html'
   t.post({
     uri: '/sources/suggest',
-    body: {sources: [{type: 'website', id: url}]}
-  },
+    body: {sources: [
+      {type: 'website', id: url, data: {skipThumbnail: true}}
+    ]}},
   function(err, res) {
     var sources = res.body.data
     if (disconnected) return skip(test) // test calls facebook
@@ -114,7 +117,9 @@ exports.checkFacebookUrls = function(test) {
 exports.checkEmailUrls = function(test) {
   t.post({
     uri: '/sources/suggest',
-    body: {sources: [{type: 'website', id: serviceUri + '/test/email.html'}]}
+    body: {sources: [
+      {type: 'website', id: serviceUri + '/test/email.html', data: {skipThumbnail: true}}
+    ]}
   },
   function(err, res) {
     t.assert(res.body.data.length === 2)
@@ -124,9 +129,10 @@ exports.checkEmailUrls = function(test) {
   })
 }
 
+
 exports.checkEmailUrlsWithGet = function(test) {
   t.get({uri:'/sources/suggest?sources[0][type]=website&sources[0][id]=' +
-        serviceUri + '/test/email.html'},
+        serviceUri + '/test/email.html&sources[0][data][skipThumbnail]=1'},
   function(err, res) {
     t.assert(res.body.data.length === 2)
     t.assert(res.body.data[1].type === 'email')
