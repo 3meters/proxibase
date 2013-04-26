@@ -26,6 +26,7 @@
     "factual-api": "*",
     "node-gcm": "0.9.4",
     "url2png": "*",
+    "knox": "*",
     "aws-sdk": "*",
     "moment": "*",
     "tee-1": "*"
