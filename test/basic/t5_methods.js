@@ -456,6 +456,39 @@ exports.getEntitiesForLocationIncludingNoLinkTinyRadius = function (test) {
   })
 }
 
+exports.likeEntity = function(test) {
+  t.post({
+    uri: '/do/likeEntity?' + userCred,
+    body: {
+      entityId: testEntity2._id, 
+      entityType: testEntity2.type
+    }
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
+    test.done()
+  })
+}
+
+exports.checkLikeEntityLinkToEntity2 = function(test) {
+  t.post({
+    uri: '/do/find',
+    body: { table:'links', find:{ _to:testEntity2._id, type:'like' }}
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    test.done()
+  })
+}
+
+exports.checkLikeEntityLogAction = function(test) {
+  t.post({
+    uri: '/do/find',
+    body: {table:'actions',find:{ _target:testEntity2._id, type:'like_place'}}
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    test.done()
+  })
+}
+
 exports.trackEntityProximity = function(test) {
   t.post({
     uri: '/do/trackEntity?' + userCred,

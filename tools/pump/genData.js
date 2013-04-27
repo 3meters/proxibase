@@ -171,6 +171,7 @@ function genEntityRecords(count, isRoot) {
       // Link to beacon
       newLink._to = testUtil.genBeaconId(beaconNum)
       newLink.toCollectionId = tableIds['beacons']
+      newLink.type = 'proximity'
     }
     else {
       // Set the owner fields
@@ -180,6 +181,7 @@ function genEntityRecords(count, isRoot) {
       var parentRecNum = Math.floor(i / options.spe) // yeah, this is right
       newLink._to = testUtil.genId('entities', parentRecNum)
       newLink.toCollectionId = tableIds['entities']
+      newLink.type = 'content'
     }
     table.links.push(newLink)
 
