@@ -98,6 +98,7 @@ function ensureDb(options, callback) {
   var server = new mongo.Server(config.db.host, config.db.port, dbOptions)
   var db = new mongo.Db(options.database, server, {safe:true})
 
+
   // Drop template database if directed to by command line flag then run again
   if (cli.generate) {
     var templateServer = new mongo.Server(config.db.host, config.db.port, dbOptions)
@@ -117,6 +118,7 @@ function ensureDb(options, callback) {
       // See if template database exists
       adminDb = new mongo.Admin(db)
       adminDb.listDatabases(function(err, results) {
+        log(3)
         if (err) throw err
         if (!(results && results.databases)) throw new Error('Unexpected results from listDatabases')
 
