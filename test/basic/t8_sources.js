@@ -80,6 +80,7 @@ exports.checkTwitterUrls = function(test) {
 }
 
 exports.checkFacebookUrls = function(test) {
+  if (disconnected) return skip(test) // test calls facebook
   var url = serviceUri + '/test/facebook.html'
   t.post({
     uri: '/sources/suggest',
@@ -88,7 +89,6 @@ exports.checkFacebookUrls = function(test) {
     ]}},
   function(err, res) {
     var sources = res.body.data
-    if (disconnected) return skip(test) // test calls facebook
     t.assert(sources.length === 5)
     // make a map of the results array by id
     var map = {}
@@ -146,6 +146,7 @@ exports.checkEmailUrlsWithGet = function(test) {
 // unvalidated and hope for the best on the client where the user can authenticate
 // with facebook directly
 exports.notFoundFacebookSourcePassesThroughUnvalidated = function(test) {
+  if (disconnected) return skip(test)
   t.post({
     uri: '/sources/suggest',
     body: {sources: [{type: 'facebook', id: '235200356726'}]}

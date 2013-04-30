@@ -5,6 +5,7 @@
 var assert = require('assert')
 var testUtil = require('../util')
 var t = testUtil.treq
+var skip = testUtil.skip
 var util = require('proxutils')
 var log = util.log
 var _exports = {}
@@ -138,6 +139,51 @@ exports.checkMinimalSuccedes = function(test) {
       value: 1
     }
   }, function(err, res, body) {
+    test.done()
+  })
+}
+
+exports.checkCoerceStringsWorks = function(test) {
+  t.post({
+    uri: '/check',
+    body: {
+      schema: {
+        n1: {type: 'number'},
+        n2: {type: 'number'},
+        n3: {type: 'number'},
+        n4: {type: 'number'},
+        n5: {type: 'number'},
+        b1: {type: 'boolean'},
+        b2: {type: 'boolean'},
+        b3: {type: 'boolean'},
+        b4: {type: 'boolean'},
+        b5: {type: 'boolean'},
+      },
+      value: {
+        n1: '100',
+        n2: '-1',
+        n3: '0.52',
+        n4: '1.7',
+        n5: '0',
+        b1: 'true',
+        b2: 'foo',
+        b3: '1',
+        b4: '0',
+        b5: '-1',
+      },
+    }
+  }, function(err, res, body) {
+    var v = body.value
+    t.assert(v.n1 === 100)
+    t.assert(v.n2 === -1)
+    t.assert(v.n3 === 0.52)
+    t.assert(v.n4 === 1.7)
+    t.assert(v.n5 === 0)
+    t.assert(v.b1 === true)
+    t.assert(v.b2 === false)
+    t.assert(v.b3 === true)
+    t.assert(v.b4 === false)
+    t.assert(v.b5 === false)
     test.done()
   })
 }
