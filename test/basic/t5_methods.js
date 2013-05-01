@@ -13,6 +13,7 @@ var userCred
 var user2Cred
 var adminCred
 var primaryLink
+var trackingLink
 var _exports = {} // for commenting out tests
 var testLatitude = 46.1
 var testLongitude = -121.1
@@ -221,7 +222,6 @@ exports.getEntitiesForUser = function (test) {
     test.done()
   })
 }
-
 
 exports.cannotInsertEntityNotLoggedIn = function (test) {
   t.post({
@@ -458,10 +458,12 @@ exports.getEntitiesForLocationIncludingNoLinkTinyRadius = function (test) {
 
 exports.likeEntity = function(test) {
   t.post({
-    uri: '/do/likeEntity?' + userCred,
+    uri: '/do/insertVerbLink?' + userCred,
     body: {
-      entityId: testEntity2._id, 
-      entityType: testEntity2.type
+      toId: testEntity2._id, 
+      fromId: testUser._id,
+      verb: 'like',
+      actionType: 'like'
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
@@ -482,12 +484,39 @@ exports.checkLikeEntityLinkToEntity2 = function(test) {
 exports.checkLikeEntityLogAction = function(test) {
   t.post({
     uri: '/do/find',
-    body: {table:'actions',find:{ _target:testEntity2._id, type:'like_place'}}
+    body: {table:'actions',find:{ _target:testEntity2._id, type:'like'}}
   }, function(err, res, body) {
     t.assert(body.count === 1)
     test.done()
   })
 }
+
+exports.unlikeEntity = function(test) {
+  t.post({
+    uri: '/do/deleteVerbLink?' + userCred,
+    body: {
+      toId: testEntity2._id, 
+      fromId: testUser._id,
+      verb: 'like',
+      actionType: 'unlike'
+    }
+  }, function(err, res, body) {
+    t.assert(body.info.indexOf('successful') > 0)
+    test.done()
+  })
+}
+
+exports.checkUnlikeEntity = function(test) {
+  t.post({
+    uri: '/do/find',
+    body: {table:'links', find:{ _from:testUser._id, _to:testEntity2._id, type:'like'}}
+  }, function(err, res, body) {
+    t.assert(body.count === 0)
+    test.done()
+  })
+}
+
+/* Track and untrack */
 
 exports.trackEntityProximity = function(test) {
   t.post({
@@ -497,8 +526,7 @@ exports.trackEntityProximity = function(test) {
       beacons:[testBeacon, testBeacon2, testBeacon3], 
       primaryBeaconId:testBeacon2._id,
       actionType:'proximity',
-      observation:testObservation,
-      respondOnAccept: false // wait for work to finish
+      observation:testObservation
     }
   }, function(err, res, body) {
     t.assert(body.info.toLowerCase().indexOf('tracked') > 0)
@@ -521,6 +549,7 @@ exports.checkTrackEntityProximityLinkFromEntity1ToBeacon2 = function(test) {
     uri: '/do/find',
     body: {table:'links',find:{_to:testBeacon2._id, _from:testEntity._id, type:'proximity'}}
   }, function(err, res, body) {
+    trackingLink = body.data[0]
     t.assert(body.count === 1)
     t.assert(body.data[0].primary === true)
     t.assert(body.data[0].signal === testBeacon2.level)
@@ -528,19 +557,13 @@ exports.checkTrackEntityProximityLinkFromEntity1ToBeacon2 = function(test) {
   })
 }
 
-exports.getEntitiesForLocationWithLocationUpdate = function (test) {
+exports.checkTrackEntityLogAction = function(test) {
   t.post({
-    uri: '/do/getEntitiesForLocation',
-    body: {beaconIdsNew:[testBeacon._id]
-      , eagerLoad:{children:true,comments:false}
-      , beaconLevels:[-80]
-      , observation:testObservation2
-    }
+    uri: '/do/find',
+    body: {table:'actions',find:{ _target:trackingLink._id, type:'link_proximity'}}
   }, function(err, res, body) {
-    setTimeout(function() {
-      // beacon observation update is fire-and-forget, give time to finish
-      test.done()
-    }, 200)
+    t.assert(body.count === 1)
+    test.done()
   })
 }
 
@@ -566,6 +589,48 @@ exports.checkUntrackEntityProximityLinksFromEntity1 = function(test) {
   }, function(err, res, body) {
     t.assert(body.count === 0)
     test.done()
+  })
+}
+
+exports.trackEntityNoBeacons = function(test) {
+  t.post({
+    uri: '/do/trackEntity?' + userCred,
+    body: {
+      entityId:testEntity._id, 
+      actionType:'proximity',
+      observation:testObservation
+    }
+  }, function(err, res, body) {
+    t.assert(body.info.toLowerCase().indexOf('tracked') > 0)
+    test.done()
+  })
+}
+
+exports.checkTrackEntityNoBeaconsLogAction = function(test) {
+  t.post({
+    uri: '/do/find',
+    body: {table:'actions',find:{ _target:testEntity._id, type:'entity_proximity'}}
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    test.done()
+  })
+}
+
+/* Location update */
+
+exports.getEntitiesForLocationWithLocationUpdate = function (test) {
+  t.post({
+    uri: '/do/getEntitiesForLocation',
+    body: {beaconIdsNew:[testBeacon._id]
+      , eagerLoad:{children:true,comments:false}
+      , beaconLevels:[-80]
+      , observation:testObservation2
+    }
+  }, function(err, res, body) {
+    setTimeout(function() {
+      // beacon observation update is fire-and-forget, give time to finish
+      test.done()
+    }, 200)
   })
 }
 
