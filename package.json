@@ -1,7 +1,7 @@
 {
 
   "name": "proxibase",
-  "version": "0.8.36",
+  "version": "0.8.37",
   "private": true,
   "description": "Proxibase Service",
   "author": "3meters Engineering <dev@3meters.com>",
@@ -26,7 +26,10 @@
     "factual-api": "*",
     "node-gcm": "0.9.4",
     "url2png": "*",
-    "aws-sdk": "*"
+    "knox": "*",
+    "aws-sdk": "*",
+    "moment": "*",
+    "tee-1": "*"
   },
 
   "repository": "git://github.com:3meters/proxibase",

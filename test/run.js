@@ -60,7 +60,7 @@ if (cli.server) {
   serverUrl = testUtil.serverUrl = cli.server
   return runTests()
 }
-else {
+else {auto_reconnect: true
 
   // Load the config file
   util.setConfig(cli.config || configFile)
@@ -78,87 +78,93 @@ else {
 
 
 /*
- *  Ensure that a clean test database exists.  Look for a database called <database>Template.
- *  If it exists copy it to the target database.  If not, create it using $PROX/tools/genData.
+ *  Ensure that a clean test database exists.  Look for a database
+ *  called <database>Template. If it exists copy it to the target
+ *  database.  If not, create it using $PROX/tools/genData.
  *
- *  Options are the the same as genData
+ *  Ops are the the same as genData
  */
-function ensureDb(options, callback) {
+function ensureDb(ops, cb) {
 
-  assert(options && options.database, 'options.database is required')
+  assert(ops && ops.database, 'ops.database is required')
 
-  var database = options.database
-  var template = database + 'Template'
+  var host = config.db.host
+  var port = config.db.port
+  var dbOps = {safe: true}
 
-  var dbOptions = {
-    auto_reconnect: true,
-    safe: true
-  }
+  var dbName = ops.database
+  var templateName = dbName + 'Template'
 
-  var server = new mongo.Server(config.db.host, config.db.port, dbOptions)
-  var db = new mongo.Db(options.database, server, {safe:true})
+  var db = new mongo.Db(dbName, new mongo.Server(host, port), dbOps)
+  db.open(function(err, db) {
 
-  // Drop template database if directed to by command line flag then run again
-  if (cli.generate) {
-    var templateServer = new mongo.Server(config.db.host, config.db.port, dbOptions)
-    var templateDb = new mongo.Db(template, templateServer, {safe:true})
-    templateDb.dropDatabase(function(err, results) {
-      if (err) throw err
-      delete cli.generate
-      templateDb.close()
-      ensureDb(options, callback)
-    })
-  }
-
-  else {
-    db.dropDatabase(function(err, done) {
-      if (err) throw err
-
-      // See if template database exists
-      adminDb = new mongo.Admin(db)
-      adminDb.listDatabases(function(err, results) {
+    // Drop template database if directed to by command line flag then run again
+    if (cli.generate) {
+      var templateDb = new mongo.Db(templateName, new mongo.Server(host, port), dbOps)
+      templateDb.open(function(err) {
         if (err) throw err
-        if (!(results && results.databases)) throw new Error('Unexpected results from listDatabases')
+        templateDb.dropDatabase(function(err) {
+          if (err) throw err
+          // prepare for reentry
+          delete cli.generate
+          templateDb.close()
+          db.close()
+          ensureDb(ops, cb)
+        })
+      })
+    }
 
-        var templateExists = false
-        results.databases.forEach(function(db) {
-          if (db.name === template) {
-            templateExists = true
-            return
+    else {
+      db.dropDatabase(function(err, done) {
+        if (err) throw err
+
+        // See if template database exists
+        adminDb = new mongo.Admin(db)
+        adminDb.listDatabases(function(err, results) {
+          if (err) throw err
+          if (!(results && results.databases)) {
+            throw new Error('Unexpected results from listDatabases')
+          }
+          var templateExists = false
+          results.databases.forEach(function(db) {
+            if (db.name === templateName) {
+              templateExists = true
+              return
+            }
+          })
+
+          if (!templateExists) {
+            log('Creating new template database ' + templateName)
+            db.close()
+            ops.database = templateName
+            ops.validate = true         // Run schema validators on insert
+            genData(ops, function(err) {
+              if (err) throw err
+              // Now try again with the template database in place
+              ops.database = dbName
+              return ensureDb(ops, cb)
+            })
+          }
+
+          else {
+            log('Copying database from ' + templateName)
+            var timer = new util.Timer()
+            adminDb.command({copydb:1, fromdb:templateName, todb:dbName}, function(err, result) {
+              if (err) throw err
+              db.close()
+              log('Database copied in ' + timer.read() + ' seconds')
+              return cb()    // Finished
+           })
           }
         })
-
-        if (!templateExists) {
-          log('Creating new template database ' + template)
-          db.close()
-          options.database = template
-          options.validate = true         // Run schema validators on insert
-          genData(options, function(err) {
-            if (err) throw err
-            // Now try again with the template database in place
-            options.database = database
-            return ensureDb(options, callback)
-          })
-        }
-
-        else {
-          log('Copying database from ' + template)
-          var timer = new util.Timer()
-          adminDb.command({copydb:1, fromdb:template, todb:database}, function(err, result) {
-            if (err) throw err
-            db.close()
-            log('Database copied in ' + timer.read() + ' seconds')
-            return callback()    // Finished
-         })
-        }
       })
-    })
-  }
+    }
+  })
 }
 
 
 // Ensure the test server is running.  If not start one and pipe its log to a file
-function ensureServer(callback) {
+function ensureServer(cb) {
 
   log('Checking for test server ' + serverUrl)
 
@@ -178,7 +184,7 @@ function ensureServer(callback) {
       testServer = spawn('node', [__dirname + '/../prox', '--config', configFile])
     }
     else {  // Test server is already running
-      return callback()
+      return cb()
     }
 
     logStream.on('error', function(err) {
@@ -203,7 +209,7 @@ function ensureServer(callback) {
       if (!testServerStarted && data.indexOf(config.service.name + ' listening') >= 0) {
         testServerStarted = true
         log('Starting the tests')
-        return callback()
+        return cb()
       }
     })
   })

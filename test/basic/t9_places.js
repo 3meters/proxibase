@@ -122,8 +122,7 @@ exports.getPlacesNearLocationLargeRadius = function(test) {
 exports.getPlacesNearLocationFactual = function(test) {
   if (disconnected) return skip(test)
   var ballRoomId = '46aef19f-2990-43d5-a9e3-11b78060150c'
-  var roxyId = '2bd21139-1907-4126-9443-65a2e48e1717' // Roxy's Diner 
-  // var roxyId = 'fdf4b14d-93d7-4ada-8bef-19add2fa9b15'
+  var roxyId = '2bd21139-1907-4126-9443-65a2e48e1717' // Roxy's Diner
   var foundRoxy = false
   t.post({
     uri: '/do/getPlacesNearLocation',
