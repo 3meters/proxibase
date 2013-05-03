@@ -69,8 +69,7 @@ exports.checkTwitterUrls = function(test) {
     t.assert(src.id === 'bob')
     t.assert(src.name === '@bob')
     t.assert(src.packageName === 'com.twitter.android')
-    t.assert(src.icon)
-    t.assert(src.icon.indexOf('twitter.png') > 0)
+    t.assert(!src.icon)
     t.assert(src.data)
     t.assert(src.data.origin === 'website')
     t.assert(src.data.originId === url)
@@ -96,8 +95,9 @@ exports.checkFacebookUrls = function(test) {
     sources.forEach(function(source, i) {
       t.assert(source.id)
       t.assert(source.type === 'facebook')
-      t.assert(source.icon)
+      t.assert(!source.icon)
       t.assert(source.packageName)
+      t.assert(source.photo)
       t.assert(source.photo.prefix)
       t.assert(source.data)
       t.assert(source.data.origin === 'website')
@@ -161,15 +161,14 @@ exports.notFoundFacebookSourcePassesThroughUnvalidated = function(test) {
   })
 }
 
-// TODO: code nyi
-_exports.checkBogusSources = function(test) {
+exports.checkBogusSources = function(test) {
   if (disconnected) return skip(test)
   t.post({
     uri: '/sources/suggest',
     body: {sources: [{type: 'foursquare', url: 'http://www.google.com'}]}
   },
   function(err, res, body) {
-    t.assert(body.data.length === 1)
+    t.assert(body.data.length === 0)
     test.done()
   })
 }
@@ -236,16 +235,29 @@ exports.getFacebookFromFoursquare = function(test) {
   function(err, res, body) {
     var sources = body.data
     t.assert(sources && sources.length)
-    // TODO: test for duped 4square entry
+    t.assert(sources.some(function(source) {
+      return (source.type === 'foursquare'
+        && source.id === '42893400f964a5204c231fe3'
+        && source.data
+        && source.data.validated
+        && source.photo
+        && source.photo.prefix
+        && source.photo.suffix
+        && source.photo.sourceName === 'foursquare')
+    }))
     t.assert(sources.some(function(source) {
       return (source.type === 'facebook'
         && source.id === '155509047801321'
         && source.name
-        && source.photo.prefix)
+        && source.data
+        && source.data.validated
+        && source.photo
+        && source.photo.prefix
+        && source.photo.sourceName === 'facebook')
     }))
-    // This facebook entry fails the popularity contest
     t.assert(sources.every(function(source) {
-      return source.id !== '427679707274727'
+      return (source.id !== '427679707274727'  // This facebook entry fails the popularity contest
+        && !source.icon)  // depricated
     }))
     var raw = res.body.raw
     t.assert(raw)

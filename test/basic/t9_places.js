@@ -94,7 +94,7 @@ exports.getPlacesNearLocationFoursquare = function(test) {
       sources.forEach(function(source) {
         t.assert(source.type)
         t.assert(source.id || source.url)
-        t.assert(source.icon)
+        t.assert(!source.icon)
       })
     })
     test.done()
@@ -178,7 +178,7 @@ exports.getPlacesNearLocationFactual = function(test) {
         t.assert(source.type)
         if (source.type === 'factual') t.assert(source.system)
         t.assert(source.id || source.url)
-        t.assert(source.icon)
+        t.assert(!source.icon)
         t.assert(source.data)
         t.assert(source.data.origin)
       })
