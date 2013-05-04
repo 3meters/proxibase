@@ -201,6 +201,16 @@ exports.compareFoursquareToFactual = function(test) {
   },
   function(err, res) {
     var sources4s = res.body.data
+    t.assert(sources4s.some(function(source) {
+      return (source.type === 'foursquare'
+        && source.id === '4abebc45f964a520a18f20e3'
+        && source.data.validated
+        && source.photo
+        && source.photo.prefix
+        && source.photo.suffix
+        && !source.icon
+      )
+    }))
     t.assert(sources4s.length > 3)
     t.post({
       uri: '/sources/suggest',
