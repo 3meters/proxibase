@@ -77,15 +77,13 @@ exports.getPlacesNearLocationFoursquare = function(test) {
       radius: 500,
       includeRaw: false,
       limit: 10,
-      excludePlaceIds: [ballRoomId], // The Ballroom's 4sId
     }
   }, function(err, res) {
     var places = res.body.data
-    t.assert(places.length === 9) // arguably a bug, the exclude process happens after the query
+    t.assert(places.length >= 9) // arguably a bug, the exclude process happens after the query
     places.forEach(function(place) {
       t.assert(place.place)
       t.assert(place.place.id)
-      t.assert(place.place.id !== ballRoomId)
       t.assert(place.place.category)
       t.assert(place.place.category.name)
       var sources = place.sources
@@ -99,6 +97,32 @@ exports.getPlacesNearLocationFoursquare = function(test) {
     })
     test.done()
   })
+}
+
+exports.getPlacesNearLocationExcludeWorks = function(test) {
+  if (disconnected) return skip(test)
+  var ballRoomId = '4abebc45f964a520a18f20e3'
+  t.post({
+    uri: '/do/getPlacesNearLocation',
+    body: {
+      latitude: 47.6521,
+      longitude: -122.3530,   // The Ballroom, Fremont, Seattle
+      provider: 'foursquare',
+      radius: 500,
+      excludePlaceIds: [ballRoomId], // The Ballroom's 4sId
+    }
+  }, function(err, res) {
+    var places = res.body.data
+    places.forEach(function(place) {
+      t.assert(place.place.id !== ballRoomId)
+    })
+    test.done()
+  })
+}
+
+
+exports.insertEntityFromGPNL = function (test) {
+  return skip(test)
 }
 
 exports.getPlacesNearLocationLargeRadius = function(test) {
