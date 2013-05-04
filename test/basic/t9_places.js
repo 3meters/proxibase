@@ -165,8 +165,8 @@ exports.getPlacesNearLocationFactual = function(test) {
     places.forEach(function(place) {
       t.assert(place.place)
       t.assert(ballRoomId !== place.place.id)
-      t.assert(place.place.category, 'blech ' + util.inspect(place))
-      t.assert(place.place.category.name, 'blech ' + util.inspect(place))
+      t.assert(place.place.category)
+      t.assert(place.place.category.name)
     })
     var roxys = places.filter(function(e) {
       return (e.place.id === roxyId) // Roxy's Diner
@@ -206,6 +206,7 @@ exports.getPlacesNearLocationFactual = function(test) {
         t.assert(source.data)
         t.assert(source.data.origin)
       })
+      t.assert(false)
       test.done()
     })
   }
