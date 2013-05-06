@@ -185,10 +185,18 @@ exports.suggestSourcesFactual = function(test) {
     t.assert(sources.length > 4)
     t.assert(sources[0].type === 'factual')
     t.assert(sources[0].system)
-    t.assert(sources[1].type === 'foursquare')  // check basic sorting
     t.assert(res.body.raw)
     t.assert(res.body.raw.initialSources)
     t.assert(res.body.raw.factualCandidates.length > 12)
+    t.assert(sources.some(function(source) {
+      return (source.type === 'foursquare'
+          && source.photo
+          && source.photo.prefix
+          && source.data.origin === 'factual'
+          && source.data.validated
+          && source.data.checkinsCount
+      )
+    }))
     test.done()
   })
 }
