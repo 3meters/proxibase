@@ -18,6 +18,7 @@ old
 !package.json
 !categories.json
 !/assets/
+!/assets/prox.log
 !/assets/proxerr.log
 
 /test/oauth/*.html

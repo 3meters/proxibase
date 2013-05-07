@@ -7,14 +7,8 @@ PROX="/usr/local/prox"
 LOGDIR="/var/log/prox"
 PROXLOG="$LOGDIR/prox.log"
 ERRLOG="$LOGDIR/proxerr.log"
-OLD="$LOGDIR/old"
-DATE=`date +"%Y.%m.%d-%T"`
 
-cp $PROXLOG "$OLD/$DATE.prox.log"
->$PROXLOG
-
-cp $ERRLOG "$OLD/$DATE.proxerr.log"
->$ERRLOG
+proxrotate
 
 echo "proxerr.log: $ERRLOG"
 echo "prox.log: $PROXLOG ..."
