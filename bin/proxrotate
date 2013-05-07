@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Braindead simple log file rotater
+
+PROX="/usr/local/prox"
+LOGDIR="/var/log/prox"
+PROXLOG="$LOGDIR/prox.log"
+ERRLOG="$LOGDIR/proxerr.log"
+OLD="$LOGDIR/old"
+DATE=`date +"%Y.%m.%d-%T"`
+
+cp $PROXLOG "$OLD/$DATE.prox.log"
+echo '' >$PROXLOG
+
+cp $ERRLOG "$OLD/$DATE.proxerr.log"
+echo '' >$ERRLOG
+
