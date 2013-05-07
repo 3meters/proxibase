@@ -4,6 +4,7 @@
 
 var util = require('proxutils')
 var log = util.log
+var type = util.type
 var testUtil = require('../util')
 var t = testUtil.treq
 var userSession
@@ -195,6 +196,45 @@ exports.cannotAddDocMissingRequiredField = function(test) {
   })
 }
 
+exports.canUpdateNestedArrays = function(test) {
+  t.post({
+    uri: '/data/entities?' + userCred,
+    body: {data: {
+      type: 'com.aircandi.candi.place',
+      name: 'Test Entity With Comments',
+      comments: [
+        {name: 'Comment 1', description: 'I am comment 1'},
+        {name: 'Comment 2', description: 'I am comment 2'},
+      ]
+    }}
+  }, 201, function(err, res, body) {
+    var ent = body.data
+    t.assert(ent.comments.length === 2)
+    t.post({
+      uri: '/data/entities/' + ent._id + '?' + userCred,
+      body: {data: {
+        name: null, // piggy-back test that nulling name deletes namelc
+        comments: [
+          {name: 'Comment 1', description: 'I am comment 1'},
+          {name: 'Comment 2', description: 'I am new comment 2'},
+        ]
+      }}
+    }, function(err, res, body) {
+      var ent = body.data
+      t.assert(ent._id && ent.type && ent.comments)
+      t.assert(type.isUndefined(ent.name))
+      t.assert(type.isUndefined(ent.namelc))
+      t.assert(ent.comments[0].description === 'I am comment 1')
+      t.assert(ent.comments[1].description === 'I am new comment 2')
+      t.delete({
+        uri: '/data/entities/' + ent._id + '?' + userCred
+      }, function(err, res) {
+        test.done()
+      })
+    })
+  })
+}
+
 exports.findDocsByIdAndCheckSysFields = function(test) {
   t.get({
     uri: '/data/documents/' + testDoc1._id + ',' + testDoc2._id + '?' + userCred
@@ -290,7 +330,7 @@ exports.checkUpdatedDoc = function(test) {
   })
 }
 
-exports.settinFieldsToNullUnsetsThem = function(test) {
+exports.settingFieldsToNullUnsetsThem = function(test) {
   t.post({
     uri: '/data/documents/' + testDoc1._id + '?' + userCred,
     body: {name: null, data: {data: null} }

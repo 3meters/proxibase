@@ -120,11 +120,6 @@ exports.getPlacesNearLocationExcludeWorks = function(test) {
   })
 }
 
-
-exports.insertEntityFromGPNL = function (test) {
-  return skip(test)
-}
-
 exports.getPlacesNearLocationLargeRadius = function(test) {
   if (disconnected) return skip(test)
   t.post({
@@ -164,7 +159,7 @@ exports.getPlacesNearLocationFactual = function(test) {
     t.assert(places.length >= 8)
     places.forEach(function(place) {
       t.assert(place.place)
-      t.assert(ballRoomId !== place.place.id)
+      t.assert(ballRoomId !== place.place.id) // excluded
       t.assert(place.place.category)
       t.assert(place.place.category.name)
     })
@@ -192,7 +187,8 @@ exports.getPlacesNearLocationFactual = function(test) {
       uri: '/do/insertEntity?' + userCred,
       body: {
         entity: ent,
-        suggestSources: true
+        suggestSources: true,
+        includeRaw: true,
       }
     }, 201, function(err, res) {
       t.assert(res.body.data.length)
@@ -206,12 +202,20 @@ exports.getPlacesNearLocationFactual = function(test) {
         t.assert(source.data)
         t.assert(source.data.origin)
       })
-      t.assert(false)
+      t.assert(sources.some(function(source) {
+        return (source.type === 'foursquare'
+            && source.photo
+            && source.photo.prefix
+            && source.photo.suffix
+          )
+      }))
+      t.assert(sources.some(function(source) {
+        return (source.type === 'facebook')
+      }))
       test.done()
     })
   }
 }
-
 
 exports.suggestSourcesFromWebsite = function(test) {
   if (disconnected) return skip(test)
@@ -227,17 +231,26 @@ exports.suggestSourcesFromWebsite = function(test) {
   })
 }
 
-
 exports.suggestFactualSourcesFromFoursquareId = function(test) {
   if (disconnected) return skip(test)
   t.post({
     uri: '/sources/suggest',
     body: {sources: [{type: 'foursquare', id: '4abebc45f964a520a18f20e3'}]} // Seattle Ballroom in Fremont
   },
-  function(err, res) {
-    t.assert(res.body.data.length > 3)
-    var source = res.body.data[0]
-    t.assert(source.type === 'foursquare' && source.id === '4abebc45f964a520a18f20e3')
+  function(err, res, body) {
+    var sources = body.data
+    t.assert(sources.length > 3)
+    t.assert(sources.some(function(source) {
+      return (source.type === 'foursquare'
+          && source.id === '4abebc45f964a520a18f20e3'
+        )
+    }))
+    t.assert(sources.some(function(source) {
+      return (source.type === 'facebook')
+    }))
+    t.assert(sources.some(function(source) {
+      return (source.type === 'website')
+    }))
     test.done()
   })
 }
@@ -247,6 +260,7 @@ exports.insertEntitySuggestSources = function(test) {
   var body = {
     suggestSources: true,
     entity: util.clone(testEntity),
+    includeRaw: true,
   }
   body.entity.sources = [{
     type: 'website',
@@ -279,7 +293,20 @@ exports.insertPlaceEntitySuggestSourcesFromFactual = function(test) {
       t.assert(res.body.data[0].sources)
       var sources = res.body.data[0].sources
       t.assert(sources.length > 3) // appends the new sources to the ones in the request
-      // TODO: check for specific source
+      t.assert(sources.some(function(source) {
+        return (source.type === 'foursquare'
+            && source.id === '4abebc45f964a520a18f20e3'
+          )
+      }))
+      t.assert(sources.some(function(source) {
+        return (source.type === 'facebook')
+      }))
+      t.assert(sources.some(function(source) {
+        return (source.type === 'website')
+      }))
+      t.assert(sources.some(function(source) {
+        return (source.type === 'twitter')
+      }))
       test.done()
     }
   )
@@ -309,8 +336,22 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
     t.assert(ladro)
     t.post({
       uri: '/do/insertEntity?' + userCred,
-      body: {entity: ladro}
+      body: {entity: ladro, suggestSources: true, includeRaw: true}
     }, 201, function(err, res, body) {
+      t.assert(body.data[0].sources)
+      var sources = body.data[0].sources
+      t.assert(sources.some(function(source) {
+        return (source.type === 'facebook')
+      }))
+      t.assert(sources.some(function(source) {
+        return (source.type === 'website')
+      }))
+      t.assert(sources.some(function(source) {
+        return (source.type === 'foursquare')
+      }))
+      t.assert(sources.some(function(source) {
+        return (source.type === 'twitter')
+      }))
       t.post({
         uri: '/do/insertEntity?' + userCred,
         body: {entity: {
@@ -415,3 +456,4 @@ exports.getPlacePhotos = function(test) {
     test.done()
   })
 }
+

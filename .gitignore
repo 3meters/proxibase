@@ -13,6 +13,8 @@ old
 ~*
 
 /assets/img/thumbnails
+!/assets/img/thumbnails/readme.txt
+
 !package.json
 !categories.json
 !/assets/
