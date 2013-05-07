@@ -246,7 +246,7 @@ exports.getFacebookFromFoursquare = function(test) {
           name: 'The Red Door',
         }
       ],
-      location: {lat: 47.65, lng: -122.35},
+      place: {location: {lat: 47.65, lng: -122.35}},
       includeRaw: true
     }
   },
