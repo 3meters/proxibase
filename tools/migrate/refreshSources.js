@@ -1,0 +1,82 @@
+/**
+ * Add photo properties to facebook and twitter sources
+ */
+
+var util = require('proxutils')
+var log = util.log
+var request =  require('request').defaults({
+  json: true,
+  strictSSL: false,
+})
+var cli = require('commander')
+var async = require('async')
+var cred = ''
+var results = []
+var server = 'https://localhost:6643'
+
+cli
+  .option('-s, --server <server>', 'server url [' + server + ']')
+  .option('-e, --email <email>', 'user email [admin]', String, 'admin')
+  .option('-p, --password <password>', 'password [admin]', String, 'admin')
+  .option('-i, --index <index>', 'index of record to start on [0]', Number, 0)
+  .option('-d, --delay <delay>', 'seconds to wait between calls [0]', Number, 0)
+  .option('-x, --execute', 'update all sources, otherwise just step through them all')
+  .parse(process.argv)
+
+if (cli.server) server = cli.server
+
+request.post({
+    uri: server + '/auth/signin', 
+    body: {user: {email: cli.email, password: cli.password}},
+  }, function(err, res, body) {
+    if (err) throw err
+    if (!(body.user && body.session)) throw new Error('Login failed', res.headers)
+    cred = 'user=' + body.user._id + '&session=' + body.session.key
+    updateEnt(cli.index)
+  })
+
+function updateEnt(skip) {
+  log(skip)
+  request.post({
+    uri: server + '/do/find?' + cred,
+    body: {
+      collection: 'entities',
+      find: {type: 'com.aircandi.candi.place'},
+      sort: {_id: 1},
+      limit: 1,
+      skip: skip,
+    }
+  }, function (err, res, body) {
+    if (err) throw err
+    if (res.statusCode === 404) return finish(skip)
+    if (!cli.execute) return next()
+    request.post({
+      uri: server + '/do/updateEntity?' + cred,
+      body: {
+        entity: {_id: body.data[0]._id},
+        refreshSources: true,
+        skipActivityDate: true,
+      }
+    }, function(err, res, body) {
+      if (err) throw err
+      if (200 !== res.statusCode) {
+        throw new Error('updateEntity returned status ' + res.statusCode, body)
+      }
+      next()
+    })
+
+    function next() {
+      if (body.more) {
+        skip++
+        setTimeout(function() {
+          return updateEnt(skip)
+        }, cli.delay * 1000)
+      }
+      else finish(skip)
+    }
+  })
+}
+
+function finish(skip) {
+  log('Updated ' + skip + ' entities')
+}
