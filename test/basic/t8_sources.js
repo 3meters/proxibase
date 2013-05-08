@@ -219,6 +219,14 @@ exports.compareFoursquareToFactual = function(test) {
         && !source.icon
       )
     }))
+    t.assert(sources4s.some(function(source) {
+      return (source.type === 'factual'
+        && source.data.validated
+        && source.system
+        && !source.photo
+        && !source.icon
+      )
+    }))
     t.assert(sources4s.length > 3)
     t.post({
       uri: '/sources/suggest',
@@ -228,7 +236,7 @@ exports.compareFoursquareToFactual = function(test) {
     }, function(err, res) {
       var sourcesFact = res.body.data
       t.assert(sourcesFact.length > 3)
-      t.assert(sourcesFact.length === sources4s.length + 1) // factual will add the 4s entry
+      t.assert(sourcesFact.length === sources4s.length)
       test.done()
     })
   })

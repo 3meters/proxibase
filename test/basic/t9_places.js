@@ -212,6 +212,11 @@ exports.getPlacesNearLocationFactual = function(test) {
       t.assert(sources.some(function(source) {
         return (source.type === 'facebook')
       }))
+      t.assert(sources.some(function(source) {
+        return (source.type === 'factual'
+            && source.system
+          )
+      }))
       test.done()
     })
   }
@@ -247,6 +252,9 @@ exports.suggestFactualSourcesFromFoursquareId = function(test) {
     }))
     t.assert(sources.some(function(source) {
       return (source.type === 'facebook')
+    }))
+    t.assert(sources.some(function(source) {
+      return (source.type === 'factual')
     }))
     t.assert(sources.some(function(source) {
       return (source.type === 'website')
@@ -305,6 +313,9 @@ exports.insertPlaceEntitySuggestSourcesFromFactual = function(test) {
         return (source.type === 'website')
       }))
       t.assert(sources.some(function(source) {
+        return (source.type === 'factual')
+      }))
+      t.assert(sources.some(function(source) {
         return (source.type === 'twitter')
       }))
       test.done()
@@ -345,6 +356,9 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
       }))
       t.assert(sources.some(function(source) {
         return (source.type === 'website')
+      }))
+      t.assert(sources.some(function(source) {
+        return (source.type === 'factual')
       }))
       t.assert(sources.some(function(source) {
         return (source.type === 'foursquare')
