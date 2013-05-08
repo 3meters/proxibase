@@ -12,8 +12,7 @@ old
 *.csv
 ~*
 
-!/assets/img/thumbnails/readme.txt
-/assets/img/thumbnails/
+/assets/img/thumbnails/*.png
 
 !package.json
 !categories.json
