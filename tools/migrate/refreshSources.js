@@ -11,6 +11,7 @@ var request =  require('request').defaults({
 var cli = require('commander')
 var async = require('async')
 var cred = ''
+var noLimit = true
 var results = []
 var server = 'https://localhost:6643'
 
@@ -19,11 +20,13 @@ cli
   .option('-e, --email <email>', 'user email [admin]', String, 'admin')
   .option('-p, --password <password>', 'password [admin]', String, 'admin')
   .option('-i, --index <index>', 'index of record to start on [0]', Number, 0)
+  .option('-n, --number <number>', 'number of records to update', Number, 0)
   .option('-d, --delay <delay>', 'seconds to wait between calls [0]', Number, 0)
   .option('-x, --execute', 'update all sources, otherwise just step through them all')
   .parse(process.argv)
 
 if (cli.server) server = cli.server
+if (cli.number) noLimit = false
 
 request.post({
     uri: server + '/auth/signin', 
@@ -69,7 +72,7 @@ function updateEnt(skip) {
     })
 
     function next() {
-      if (body.more) {
+      if (body.more && (nolimit || --cli.number)) {
         skip++
         setTimeout(function() {
           return updateEnt(skip)
