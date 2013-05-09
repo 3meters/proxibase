@@ -12,6 +12,7 @@ var cli = require('commander')
 var async = require('async')
 var cred = ''
 var noLimit = true
+var count = 0
 var results = []
 var server = 'https://localhost:6643'
 
@@ -72,7 +73,7 @@ function updateEnt(skip) {
     })
 
     function next() {
-      if (body.more && (nolimit || --cli.number)) {
+      if (body.more && (noLimit || count++ < cli.number)) {
         skip++
         setTimeout(function() {
           return updateEnt(skip)
@@ -83,6 +84,6 @@ function updateEnt(skip) {
   })
 }
 
-function finish(skip) {
-  log('Updated ' + skip + ' entities')
+function finish(count) {
+  log('Updated ' + count + ' entities')
 }
