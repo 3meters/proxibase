@@ -30,7 +30,7 @@ request.post({
     body: {user: {email: cli.email, password: cli.password}},
   }, function(err, res, body) {
     if (err) throw err
-    if (!(body.user && body.session)) throw new Error('Login failed', res.headers)
+    if (!(body.user && body.session)) throw new Error('Login failed')
     cred = 'user=' + body.user._id + '&session=' + body.session.key
     updateEnt(cli.index)
   })
@@ -50,17 +50,20 @@ function updateEnt(skip) {
     if (err) throw err
     if (res.statusCode === 404) return finish(skip)
     if (!cli.execute) return next()
+    var entityId = body.data[0]._id
     request.post({
       uri: server + '/do/updateEntity?' + cred,
       body: {
-        entity: {_id: body.data[0]._id},
+        entity: {_id: entityId},
         refreshSources: true,
         skipActivityDate: true,
       }
     }, function(err, res, body) {
       if (err) throw err
       if (200 !== res.statusCode) {
-        throw new Error('updateEntity returned status ' + res.statusCode, body)
+        log('Error: updateEntity returned status ' + res.statusCode +
+            ' for entity ' + entityId, body)
+        throw new Error('Unexpected return status form updateEntity')
       }
       next()
     })
