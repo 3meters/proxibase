@@ -80,10 +80,12 @@ exports.getPlacesNearLocationFoursquare = function(test) {
     }
   }, function(err, res) {
     var places = res.body.data
-    t.assert(places.length >= 9) // arguably a bug, the exclude process happens after the query
+    t.assert(places.length === 10)
     places.forEach(function(place) {
       t.assert(place.place)
-      t.assert(place.place.id)
+      t.assert(place.place.providers.length)
+      t.assert(place.place.providers[0].type === 'foursquare')
+      t.assert(place.place.providers[0].id)
       t.assert(place.place.category)
       t.assert(place.place.category.name)
       var sources = place.sources
@@ -159,12 +161,12 @@ exports.getPlacesNearLocationFactual = function(test) {
     t.assert(places.length >= 8)
     places.forEach(function(place) {
       t.assert(place.place)
-      t.assert(ballRoomId !== place.place.id) // excluded
+      t.assert(ballRoomId !== place.place.providers[0].id) // excluded
       t.assert(place.place.category)
       t.assert(place.place.category.name)
     })
     var roxys = places.filter(function(e) {
-      return (e.place.id === roxyId) // Roxy's Diner
+      return (e.place.providers[0].id === roxyId) // Roxy's Diner
     })
     t.assert(roxys.length === 1)
     insertEnt(roxys[0])
@@ -340,7 +342,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
     var ladro = null
     t.assert(places.length > 10)
     places.forEach(function(place) {
-      if (ladroId === place.place.id) {
+      if (ladroId === place.place.providers[0].id) {
         return ladro = place
       }
     })
@@ -408,7 +410,8 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
             var foundNewEnt = 0
             var foundNewEnt2 = 0
             places.forEach(function(place) {
-              if (place.place.id && place.place.id === ladroId) foundLadro++
+              t.assert(place.providers && place.providers.length)
+              if (place.providers[0].id && place.providers[0].id === ladroId) foundLadro++
               if (place._id && place._id === newEnt._id) foundNewEnt++
               if (place._id && place._id === newEnt2._id) foundNewEnt2++
             })
@@ -429,9 +432,12 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
               var foundNewEnt = 0
               var foundNewEnt2 = 0
               places.forEach(function(place) {
-                if (place._id && place.place.id === ladroId) foundLadro++
                 if (place._id && place._id === newEnt._id) foundNewEnt++
                 if (place._id && place._id === newEnt2._id) foundNewEnt2++
+                t.assert(place.providers.length)
+                place.providers.foreach(function(provider) {
+                  if (provider.id === ladroId) foundLadro++
+                })
               })
               t.assert(foundLadro === 1)
               t.assert(foundNewEnt === 1)
