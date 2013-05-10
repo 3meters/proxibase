@@ -65,7 +65,7 @@ var testEntity3 = {
   signalFence : -100,
   name : "Testing candi 3",
   type : "com.aircandi.candi.place",
-  place: {location:{lat:testLatitude, lng:testLongitude}, provider: 'foursquare'},
+  place: {location:{lat:testLatitude, lng:testLongitude}},
   visibility : "public",
   isCollection: true,
   enabled : true,

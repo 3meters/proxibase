@@ -29,4 +29,5 @@ module.exports = {
     onStart: false,
     to: 'pager2010@3meters.com',
   },
+  testThumbnails: false,                 // default false, if true thumbnails will fire even in test mode
 }

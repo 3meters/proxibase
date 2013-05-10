@@ -299,10 +299,7 @@ exports.suggestSourcesUsingPlace = function(test) {
     uri: '/sources/suggest',
     body: {
       sources: [], // empty because user deleted them all
-      place: {
-        provider: 'foursquare',
-        id: '4abebc45f964a520a18f20e3',
-      }
+      place: {provider: {foursquare: '4abebc45f964a520a18f20e3'}},
     },
     includeRaw: true,
   }, function(err, res, body) {
