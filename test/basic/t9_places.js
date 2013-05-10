@@ -13,6 +13,7 @@ var testUtil = require('../util')
 var t = testUtil.treq  // newfangled test helper
 var disconnected = testUtil.disconnected
 var skip = testUtil.skip
+var user
 var userCred
 var adminCred
 var testLatitude = 46.1
@@ -37,6 +38,7 @@ var _exports = {} // for commenting out tests
 // Get user and admin sessions and store the credentials in module globals
 exports.getSessions = function(test) {
   testUtil.getUserSession(function(session) {
+    user = {_id: session._owner}
     userCred = 'user=' + session._owner + '&session=' + session.key
     testUtil.getAdminSession(function(session) {
       adminCred = 'user=' + session._owner + '&session=' + session.key
@@ -79,13 +81,12 @@ exports.getPlacesNearLocationFoursquare = function(test) {
       limit: 10,
     }
   }, function(err, res) {
+    var foundBallroom = 0
     var places = res.body.data
     t.assert(places.length === 10)
     places.forEach(function(place) {
-      t.assert(place.place)
-      t.assert(place.place.providers.length)
-      t.assert(place.place.providers[0].type === 'foursquare')
-      t.assert(place.place.providers[0].id)
+      t.assert(place.place.provider)
+      if (place.place.provider.foursquare === ballRoomId) foundBallroom++
       t.assert(place.place.category)
       t.assert(place.place.category.name)
       var sources = place.sources
@@ -97,6 +98,7 @@ exports.getPlacesNearLocationFoursquare = function(test) {
         t.assert(!source.icon)
       })
     })
+    t.assert(foundBallroom === 1)
     test.done()
   })
 }
@@ -161,12 +163,14 @@ exports.getPlacesNearLocationFactual = function(test) {
     t.assert(places.length >= 8)
     places.forEach(function(place) {
       t.assert(place.place)
-      t.assert(ballRoomId !== place.place.providers[0].id) // excluded
+      t.assert(place.place.provider)
+      t.assert(place.place.provider.factual)
+      t.assert(ballRoomId !== place.place.provider.factual) //excluded
       t.assert(place.place.category)
       t.assert(place.place.category.name)
     })
     var roxys = places.filter(function(e) {
-      return (e.place.providers[0].id === roxyId) // Roxy's Diner
+      return (e.place.provider.factual === roxyId) // Roxy's Diner
     })
     t.assert(roxys.length === 1)
     insertEnt(roxys[0])
@@ -178,7 +182,7 @@ exports.getPlacesNearLocationFactual = function(test) {
       signalFence : -100,
       name : roxy.name,
       type : "com.aircandi.candi.place",
-      place: {location:{lat:roxy.place.location.lat, lng:roxy.place.location.lng}},
+      place: roxy.place,
       sources: roxy.sources,
       visibility : "public",
       isCollection: true,
@@ -194,7 +198,9 @@ exports.getPlacesNearLocationFactual = function(test) {
       }
     }, 201, function(err, res) {
       t.assert(res.body.data.length)
-      var sources = res.body.data[0].sources
+      var savedRoxy = res.body.data[0]
+      t.assert(savedRoxy.place.provider.factual === roxy.place.provider.factual)
+      var sources = savedRoxy.sources
       t.assert(sources && sources.length >= 2) // a website and a twitter account
       sources.forEach(function(source) {
         t.assert(source.type)
@@ -325,55 +331,72 @@ exports.insertPlaceEntitySuggestSourcesFromFactual = function(test) {
   )
 }
 
+// Big test that duplicates the full round trip from
+// get places through create entity mixing in custom
+// entities and multiple place providers.
+// Subject to breakage if the providers change data or
+// are unavailable
 exports.getPlacesInsertEntityGetPlaces = function(test) {
+
   if (disconnected) return skip(test)
-  var ballRoomId = '4abebc45f964a520a18f20e3'
-  // Cafe Ladro, a few doors down from the Ballroom
-  var ladroId = '45d62041f964a520d2421fe3'
+  var ballRoomId = '4abebc45f964a520a18f20e3' // Ball Room, Fremont Seattle
+  var ladroId = '45d62041f964a520d2421fe3'    // Cafe Ladro, a few doors down
+
+  // Fire up radar from the Ball Room
   t.post({
     uri: '/do/getPlacesNearLocation',
     body: {
       latitude: 47.6521,
-      longitude: -122.3530,   // The Ballroom, Fremont, Seattle
+      longitude: -122.3530,
       provider: 'foursquare',
     }
   }, function(err, res, body) {
     var places = body.data
     var ladro = null
+    var hasFactualProviderId = 0
     t.assert(places.length > 10)
     places.forEach(function(place) {
-      if (ladroId === place.place.providers[0].id) {
-        return ladro = place
+      t.assert(place.place.provider)
+      if (place.place.provider.factual) {
+        hasFactualProviderId++
+        t.assert(place.place.provider.foursquare) // we merged them
+      }
+      if (ladroId === place.place.provider.foursquare) {
+        ladro = place
       }
     })
     t.assert(ladro)
+
+    // We added a Roxy entity above, sourced from factual.
+    // This proves we have merged multiple provider ids onto
+    // single entity
+    t.assert(hasFactualProviderId)
+
+    // Insert ladro as an entity
     t.post({
       uri: '/do/insertEntity?' + userCred,
       body: {entity: ladro, suggestSources: true, includeRaw: true}
     }, 201, function(err, res, body) {
       t.assert(body.data[0].sources)
       var sources = body.data[0].sources
-      t.assert(sources.some(function(source) {
-        return (source.type === 'facebook')
-      }))
-      t.assert(sources.some(function(source) {
-        return (source.type === 'website')
-      }))
-      t.assert(sources.some(function(source) {
-        return (source.type === 'factual')
-      }))
-      t.assert(sources.some(function(source) {
-        return (source.type === 'foursquare')
-      }))
-      t.assert(sources.some(function(source) {
-        return (source.type === 'twitter')
-      }))
+      var srcMap = {}
+      sources.forEach(function(source) {
+        srcMap[source.type] = srcMap[source.type] || 0
+        srcMap[source.type]++
+      })
+      t.assert(srcMap.factual === 1)
+      t.assert(srcMap.website === 1)
+      t.assert(srcMap.foursquare === 1)
+      t.assert(srcMap.facebook >= 1)
+      t.assert(srcMap.twitter >= 1)
+
+      // Add a user-created place inside the ballroom
       t.post({
         uri: '/do/insertEntity?' + userCred,
         body: {entity: {
           name: 'A user-created Test Entity Inside the BallRoom',
           type : "com.aircandi.candi.place",
-          place: {provider: 'user', location: {lat: 47.6521, lng: -122.3530}},
+          place: {provider: {user: user._id}, location: {lat: 47.6521, lng: -122.3530}},
           visibility : "public",
           isCollection: true,
           enabled : true,
@@ -382,12 +405,14 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
       }, 201, function(err, res, body) {
         var newEnt = body.data[0]
         t.assert(newEnt)
+
+        // Add a user-created place about a mile away, at George's house
         t.post({
           uri: '/do/insertEntity?' + userCred,
           body: {entity: {
             name: 'A user-created Entity At George\'s House',
             type : 'com.aircandi.candi.place',
-            place: {provider: 'user', location: {lat: 47.664525, lng: -122.354787}},
+            place: {provider: {user: user._id}, location: {lat: 47.664525, lng: -122.354787}},
             visibility : "public",
             isCollection: true,
             enabled : true,
@@ -396,6 +421,8 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
         }, 201, function(err, res, body) {
           var newEnt2 = body.data[0]
           t.assert(newEnt2)
+
+          // Run radar again
           t.post({
             uri: '/do/getPlacesNearLocation',
             body: {
@@ -410,15 +437,23 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
             var foundNewEnt = 0
             var foundNewEnt2 = 0
             places.forEach(function(place) {
-              t.assert(place.providers && place.providers.length)
-              if (place.providers[0].id && place.providers[0].id === ladroId) foundLadro++
-              if (place._id && place._id === newEnt._id) foundNewEnt++
-              if (place._id && place._id === newEnt2._id) foundNewEnt2++
+              t.assert(place.place.provider)
+              if (place.place.provider.foursquare === ladroId) foundLadro++
+              if (place._id && place._id === newEnt._id) {
+                foundNewEnt++
+                t.assert(place.place.provider.user === user._id)
+              }
+              if (place._id && place._id === newEnt2._id) {
+                foundNewEnt2++
+                t.assert(place.place.provider.user === user._id)
+              }
             })
             t.assert(foundLadro === 1)
             t.assert(foundNewEnt === 1)
-            t.assert(foundNewEnt2 === 0)
-            // Make sure search by factual returns the same result, join is on phone number
+            t.assert(foundNewEnt2 === 0) // outside the radius
+
+            // Now run radar with factual as the provider, ensuring the same
+            // results, joining on phone number
             t.post({
               uri: '/do/getPlacesNearLocation',
               body: {
@@ -434,14 +469,16 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
               places.forEach(function(place) {
                 if (place._id && place._id === newEnt._id) foundNewEnt++
                 if (place._id && place._id === newEnt2._id) foundNewEnt2++
-                t.assert(place.providers.length)
-                place.providers.foreach(function(provider) {
-                  if (provider.id === ladroId) foundLadro++
-                })
+                t.assert(place.place.provider)
+                if (place.place.provider.foursquare === ladroId) {
+                  foundLadro++
+                  t.assert(place.place.provider.factual) // should have been added to the map
+                }
               })
               t.assert(foundLadro === 1)
               t.assert(foundNewEnt === 1)
               t.assert(foundNewEnt2 === 0)
+
               // Confirm that excludePlaceIds works for our entities
               t.post({
                 uri: '/do/getPlacesNearLocation',
