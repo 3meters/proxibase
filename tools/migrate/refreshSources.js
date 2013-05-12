@@ -1,5 +1,5 @@
 /**
- * Add photo properties to facebook and twitter sources
+ * Call updateEntity refreshSources = true for all place entities
  */
 
 var util = require('proxutils')
@@ -40,7 +40,6 @@ request.post({
   })
 
 function updateEnt(skip) {
-  log(skip)
   request.post({
     uri: server + '/do/find?' + cred,
     body: {
@@ -73,6 +72,7 @@ function updateEnt(skip) {
     })
 
     function next() {
+      log(skip)
       if (body.more && (noLimit || count++ < cli.number)) {
         skip++
         setTimeout(function() {
