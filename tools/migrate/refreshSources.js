@@ -79,11 +79,11 @@ function updateEnt(skip) {
           return updateEnt(skip)
         }, cli.delay * 1000)
       }
-      else finish(skip)
+      else finish()
     }
   })
 }
 
-function finish(count) {
+function finish() {
   log('Updated ' + count + ' entities')
 }
