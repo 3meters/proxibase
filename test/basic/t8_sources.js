@@ -236,7 +236,8 @@ exports.compareFoursquareToFactual = function(test) {
     }, function(err, res) {
       var sourcesFact = res.body.data
       t.assert(sourcesFact.length > 3)
-      t.assert(sourcesFact.length === sources4s.length)
+      t.assert(sourcesFact.length === sources4s.length,
+          {four: sources4s.length, fact: sourcesFact.length})
       test.done()
     })
   })
