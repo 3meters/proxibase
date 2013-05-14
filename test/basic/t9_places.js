@@ -1,9 +1,9 @@
-/*
- *  Proxibase external service provider tests
+/**
+ *  Proxibase place provider tests
  *
- *     These tests are not stubbed, but make internet calls based on random 
- *     web pages and services existing on the web.  Fine to move out of basic once
- *     feature area is stable.
+ *     These tests are not stubbed, but make internet calls based on random
+ *     web pages and services existing on the web.  Fine to move out of basic
+ *     once the feature area is stable.
  */
 
 var util = require('proxutils')
