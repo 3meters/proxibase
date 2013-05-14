@@ -342,7 +342,7 @@ _exports.getPlacesNear100Locations = function (test) {
   function getPlacesNearLocation(i) {
     if (!i--) return done(test, 'getPlacesNear100Locations', timer, cRecs)
     t.post({
-      uri: '/do/getPlacesNearLocation',
+      uri: '/places/getNearLocation',
       body: {
         userId: constants.uid1,
         latitude: constants.latitude,

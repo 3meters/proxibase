@@ -48,7 +48,7 @@ exports.getSessions = function(test) {
 }
 
 exports.getCategories = function(test) {
-  t.get({uri: '/categories'}, function(err, res) {
+  t.get({uri: '/places/getCategories'}, function(err, res) {
     var cats = res.body.data
     t.assert(cats && cats.length > 5)
     t.assert(cats[0].icon.length > 20)
@@ -71,7 +71,7 @@ exports.getPlacesNearLocationFoursquare = function(test) {
   if (disconnected) return skip(test)
   var ballRoomId = '4abebc45f964a520a18f20e3'
   t.post({
-    uri: '/do/getPlacesNearLocation',
+    uri: '/places/getNearLocation',
     body: {
       latitude: 47.6521,
       longitude: -122.3530,   // The Ballroom, Fremont, Seattle
@@ -107,7 +107,7 @@ exports.getPlacesNearLocationExcludeWorks = function(test) {
   if (disconnected) return skip(test)
   var ballRoomId = '4abebc45f964a520a18f20e3'
   t.post({
-    uri: '/do/getPlacesNearLocation',
+    uri: '/places/getNearLocation',
     body: {
       latitude: 47.6521,
       longitude: -122.3530,   // The Ballroom, Fremont, Seattle
@@ -127,7 +127,7 @@ exports.getPlacesNearLocationExcludeWorks = function(test) {
 exports.getPlacesNearLocationLargeRadius = function(test) {
   if (disconnected) return skip(test)
   t.post({
-    uri: '/do/getPlacesNearLocation?' + userCred,
+    uri: '/places/getNearLocation?' + userCred,
     body: {
       provider: 'foursquare',
       //latitude: 47.6521,
@@ -148,7 +148,7 @@ exports.getPlacesNearLocationFactual = function(test) {
   var roxyId = '2bd21139-1907-4126-9443-65a2e48e1717' // Roxy's Diner
   var foundRoxy = false
   t.post({
-    uri: '/do/getPlacesNearLocation',
+    uri: '/places/getNearLocation',
     body: {
       latitude: 47.6521,
       longitude: -122.3530,   // The Ballroom, Fremont, Seattle
@@ -344,7 +344,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
 
   // Fire up radar from the Ball Room
   t.post({
-    uri: '/do/getPlacesNearLocation',
+    uri: '/places/getNearLocation',
     body: {
       latitude: 47.6521,
       longitude: -122.3530,
@@ -424,7 +424,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
 
           // Run radar again
           t.post({
-            uri: '/do/getPlacesNearLocation',
+            uri: '/places/getNearLocation',
             body: {
               latitude: 47.6521,
               longitude: -122.3530,
@@ -455,7 +455,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
             // Now run radar with factual as the provider, ensuring the same
             // results, joining on phone number
             t.post({
-              uri: '/do/getPlacesNearLocation',
+              uri: '/places/getNearLocation',
               body: {
                 latitude: 47.6521,
                 longitude: -122.3530,
@@ -481,7 +481,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
 
               // Confirm that excludePlaceIds works for our entities
               t.post({
-                uri: '/do/getPlacesNearLocation',
+                uri: '/places/getNearLocation',
                 body: {
                   latitude: 47.6521,
                   longitude: -122.3530,
@@ -506,7 +506,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
 exports.getPlacePhotos = function(test) {
   if (disconnected) return skip(test)
   t.post({
-    uri: '/do/getPlacePhotos',
+    uri: '/places/getPhotos',
     body: {provider: 'foursquare', id: '4abebc45f964a520a18f20e3'}
   }, function(err, res, body) {
     t.assert(body.data.length > 10)
