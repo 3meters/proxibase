@@ -89,6 +89,7 @@ exports.getPlacesNearLocationFoursquare = function(test) {
       if (place.place.provider.foursquare === ballRoomId) foundBallroom++
       t.assert(place.place.category)
       t.assert(place.place.category.name)
+      t.assert(/^\/img\/categories\/foursquare\/.*_88\.png$/.test(place.place.category.icon))
       var sources = place.sources
       t.assert(sources)
       t.assert(sources.length)
@@ -96,6 +97,9 @@ exports.getPlacesNearLocationFoursquare = function(test) {
         t.assert(source.type)
         t.assert(source.id || source.url)
         t.assert(!source.icon)
+        if (source.type === 'twitter') {
+          t.assert('com.twitter.android' === source.packageName )
+        }
       })
     })
     t.assert(foundBallroom === 1)
