@@ -73,7 +73,7 @@ function TestRequest() {
 
   // Assert wrapper that calls dump automatically on failure
   function tok(expr, msg) {
-    assert(expr, dump(_req, _res, msg))
+    if (!expr) throw new Error(dump(_req, _res, msg))
   }
 
   // get request
@@ -184,22 +184,28 @@ function getSession(user, asAdmin, fn) {
 }
 
 // Disgourge req and res contents of failed test
-var dump = exports.dump = function(req, res, msg) {
+function dump(req, res, msg) {
 
-  msg = msg || ''
-  var out = 'Test failed: ' + msg
+  var out = '\n\nTest failed: '
+
+  if (msg) {
+    out += (type.isObject(msg))
+      ? '\n' + util.inspect(msg, false, 12)
+      : String(msg)
+  }
+
   out += '\n\nDump:\n==========================='
 
   out += '\nreq.method: ' + req.method
   out += '\nreq.uri: ' + req.uri
 
   if (req.body) {
-    out += '\nreq.body:\n' + util.inspect(req.body, false, 10) + '\n'
+    out += '\nreq.body:\n' + util.inspect(req.body, false, 12) + '\n'
   }
 
   if (res.statusCode) out += '\n\nres.statusCode: ' + res.statusCode + '\n'
 
-  out += 'res.body:\n' + util.inspect(res.body, false, 10)
+  out += 'res.body:\n' + util.inspect(res.body, false, 12)
 
   // util.inspect converts all our newlines to the literal '\n'
   // this next line converts them back for proper display on the console
