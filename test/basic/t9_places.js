@@ -172,6 +172,7 @@ exports.getPlacesNearLocationFactual = function(test) {
       t.assert(ballRoomId !== place.place.provider.factual) //excluded
       t.assert(place.place.category)
       t.assert(place.place.category.name)
+      t.assert(place.place.category.icon)
     })
     var roxys = places.filter(function(e) {
       return (e.place.provider.factual === roxyId) // Roxy's Diner
@@ -234,46 +235,44 @@ exports.getPlacesNearLocationFactual = function(test) {
   }
 }
 
-exports.suggestSourcesFromWebsite = function(test) {
+exports.getPlacesNearLocationGoogle = function(test) {
   if (disconnected) return skip(test)
+
+  var ballRoomId = 'f0147a535bedf4bb948f35379873cab0747ba9e2'
+  var roxyId = 'd9083f5df362b2ed27c9e10339c9510960192624'
+
+  var foundRoxy = 0
   t.post({
-    uri: '/sources/suggest',
-    body: {sources: [{type: 'website', id: 'http://www.massenamodern.com'}]}
-  },
-  function(err, res) {
-    t.assert(res.body.data.length === 2)
-    t.assert(res.body.data[1].type === 'twitter')
-    t.assert(res.body.data[1].id === 'massenamodern')
+    uri: '/places/getNearLocation',
+    body: {
+      latitude: 47.6521,
+      longitude: -122.3530,   // The Ballroom, Fremont, Seattle
+      provider: 'google',
+      radius: 100,
+      limit: 10,
+      excludePlaceIds: [ballRoomId],
+      includeRaw: true,
+    }
+  }, function(err, res) {
+    var places = res.body.data
+    t.assert(places.length >= 8)
+    places.forEach(function(place) {
+      t.assert(place.place)
+      t.assert(place.place.provider)
+      // Not all places returned need to have place.place.provider.google
+      // They can be entities we already have in our system given by
+      // foursquare, factual, or user
+      if (roxyId === place.place.provider.google) foundRoxy++
+      t.assert(ballRoomId !== place.place.provider.google) //excluded
+      t.assert(place.place.category)
+      t.assert(place.place.category.name)
+      t.assert(place.place.category.icon)
+    })
+    t.assert(1 === foundRoxy)
     test.done()
   })
 }
 
-exports.suggestFactualSourcesFromFoursquareId = function(test) {
-  if (disconnected) return skip(test)
-  t.post({
-    uri: '/sources/suggest',
-    body: {sources: [{type: 'foursquare', id: '4abebc45f964a520a18f20e3'}]} // Seattle Ballroom in Fremont
-  },
-  function(err, res, body) {
-    var sources = body.data
-    t.assert(sources.length > 3)
-    t.assert(sources.some(function(source) {
-      return (source.type === 'foursquare'
-          && source.id === '4abebc45f964a520a18f20e3'
-        )
-    }))
-    t.assert(sources.some(function(source) {
-      return (source.type === 'facebook')
-    }))
-    t.assert(sources.some(function(source) {
-      return (source.type === 'factual')
-    }))
-    t.assert(sources.some(function(source) {
-      return (source.type === 'website')
-    }))
-    test.done()
-  })
-}
 
 exports.insertEntitySuggestSources = function(test) {
   if (disconnected) return skip(test)
@@ -290,7 +289,7 @@ exports.insertEntitySuggestSources = function(test) {
     function(err, res, body) {
       t.assert(res.body.data[0].sources)
       var sources = res.body.data[0].sources
-      t.assert(sources.length === 2) // appends the new sources to the ones in the request
+      t.assert(sources.length === 2)
       t.assert(sources[1].type === 'twitter')
       t.assert(sources[1].id === 'massenamodern')
       test.done()
@@ -306,13 +305,13 @@ exports.insertPlaceEntitySuggestSourcesFromFactual = function(test) {
   }
   body.entity.sources = [{
     type: 'foursquare',
-    id: '4abebc45f964a520a18f20e3' // Seattle Ballroom
+    id: '4abebc45f964a520a18f20e3'  // Seattle Ballroom
   }]
   t.post({uri: '/do/insertEntity?' + userCred, body: body}, 201,
     function(err, res) {
       t.assert(res.body.data[0].sources)
       var sources = res.body.data[0].sources
-      t.assert(sources.length > 3) // appends the new sources to the ones in the request
+      t.assert(sources.length > 3) 
       t.assert(sources.some(function(source) {
         return (source.type === 'foursquare'
             && source.id === '4abebc45f964a520a18f20e3'
@@ -335,11 +334,11 @@ exports.insertPlaceEntitySuggestSourcesFromFactual = function(test) {
   )
 }
 
-// Big test that duplicates the full round trip from
+// Big test that replicates the full round trip from
 // get places through create entity mixing in custom
-// entities and multiple place providers.
-// Subject to breakage if the providers change data or
-// are unavailable
+// entities and multiple place providers. Subject to
+// breaks if the providers change data or are
+// unavailable.
 exports.getPlacesInsertEntityGetPlaces = function(test) {
 
   if (disconnected) return skip(test)

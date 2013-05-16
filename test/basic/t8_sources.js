@@ -201,6 +201,35 @@ exports.suggestSourcesFactual = function(test) {
   })
 }
 
+// Combine with next?
+exports.suggestFactualSourcesFromFoursquareId = function(test) {
+  if (disconnected) return skip(test)
+  t.post({
+    uri: '/sources/suggest',
+    body: {sources: [{type: 'foursquare', id: '4abebc45f964a520a18f20e3'}]} // Seattle Ballroom in Fremont
+  },
+  function(err, res, body) {
+    var sources = body.data
+    t.assert(sources.length > 3)
+    t.assert(sources.some(function(source) {
+      return (source.type === 'foursquare'
+          && source.id === '4abebc45f964a520a18f20e3'
+        )
+    }))
+    t.assert(sources.some(function(source) {
+      return (source.type === 'facebook')
+    }))
+    t.assert(sources.some(function(source) {
+      return (source.type === 'factual')
+    }))
+    t.assert(sources.some(function(source) {
+      return (source.type === 'website')
+    }))
+    test.done()
+  })
+}
+
+// Combine with previous?
 exports.compareFoursquareToFactual = function(test) {
   if (disconnected) return skip(test)
   t.post({
@@ -236,8 +265,7 @@ exports.compareFoursquareToFactual = function(test) {
     }, function(err, res) {
       var sourcesFact = res.body.data
       t.assert(sourcesFact.length > 3)
-      t.assert(sourcesFact.length === sources4s.length,
-          {four: sources4s.length, fact: sourcesFact.length})
+      t.assert(sourcesFact.length === sources4s.length)
       test.done()
     })
   })
@@ -290,6 +318,20 @@ exports.getFacebookFromFoursquare = function(test) {
     t.assert(raw)
     t.assert(raw.facebookCandidates.length >= 2)
     t.assert(raw.factualCandidates.length >= 12)
+    test.done()
+  })
+}
+
+exports.suggestSourcesFromWebsite = function(test) {
+  if (disconnected) return skip(test)
+  t.post({
+    uri: '/sources/suggest',
+    body: {sources: [{type: 'website', id: 'http://www.massenamodern.com'}]}
+  },
+  function(err, res) {
+    t.assert(res.body.data.length === 2)
+    t.assert(res.body.data[1].type === 'twitter')
+    t.assert(res.body.data[1].id === 'massenamodern')
     test.done()
   })
 }
