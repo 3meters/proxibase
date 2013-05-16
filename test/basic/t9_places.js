@@ -242,6 +242,8 @@ exports.getPlacesNearLocationGoogle = function(test) {
   var roxyId = 'd9083f5df362b2ed27c9e10339c9510960192624'
 
   var foundRoxy = 0
+  var googleProvided = 0
+  var factualProvided = 0
   t.post({
     uri: '/places/getNearLocation',
     body: {
@@ -251,7 +253,7 @@ exports.getPlacesNearLocationGoogle = function(test) {
       radius: 100,
       limit: 10,
       excludePlaceIds: [ballRoomId],
-      includeRaw: true,
+      includeRaw: false,
     }
   }, function(err, res) {
     var places = res.body.data
@@ -259,16 +261,35 @@ exports.getPlacesNearLocationGoogle = function(test) {
     places.forEach(function(place) {
       t.assert(place.place)
       t.assert(place.place.provider)
+      if (place.place.provider.google) {
+        googleProvided++
+        t.assert(place.place.provider.googleReference, place.place)
+      }
+      if (place.place.provider.factual) {
+        factualProvided++
+      }
       // Not all places returned need to have place.place.provider.google
       // They can be entities we already have in our system given by
       // foursquare, factual, or user
-      if (roxyId === place.place.provider.google) foundRoxy++
       t.assert(ballRoomId !== place.place.provider.google) //excluded
+      t.assert(place.place.location)
+      t.assert(place.place.location.lat)
+      t.assert(place.place.location.lng)
+      if (roxyId === place.place.provider.google) {
+        foundRoxy++
+        t.assert(place.place.location.address)
+        t.assert(place.place.location.city)
+        t.assert(place.place.location.state)
+        t.assert(place.place.location.cc, place.place)
+        t.assert(place.place.location.postalCode)
+      }
       t.assert(place.place.category)
       t.assert(place.place.category.name)
       t.assert(place.place.category.icon)
     })
     t.assert(1 === foundRoxy)
+    t.assert(googleProvided)
+    t.assert(factualProvided) // proves dupe merging on phone works
     test.done()
   })
 }
