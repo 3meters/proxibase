@@ -264,6 +264,9 @@ exports.getPlacesNearLocationGoogle = function(test) {
       if (place.place.provider.google) {
         googleProvided++
         t.assert(place.place.provider.googleReference, place.place)
+        t.assert(place.sources.some(function(source) {
+          return (source.type === 'google')
+        }), place.sources)
       }
       if (place.place.provider.factual) {
         factualProvided++
@@ -282,6 +285,9 @@ exports.getPlacesNearLocationGoogle = function(test) {
         t.assert(place.place.location.state)
         t.assert(place.place.location.cc, place.place)
         t.assert(place.place.location.postalCode)
+        t.assert(place.sources.some(function(source) {
+          return (source.type === 'website')
+        }))
       }
       t.assert(place.place.category)
       t.assert(place.place.category.name)
