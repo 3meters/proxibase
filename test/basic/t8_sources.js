@@ -271,7 +271,7 @@ exports.compareFoursquareToFactual = function(test) {
   })
 }
 
-exports.getFacebookFromFoursquare = function(test) {
+exports.getFacebookFromPlaceJoinWithFoursquare = function(test) {
   if (disconnected) return skip(test)
   t.post({
     uri: '/sources/suggest',
@@ -283,7 +283,10 @@ exports.getFacebookFromFoursquare = function(test) {
           name: 'The Red Door',
         }
       ],
-      place: {location: {lat: 47.65, lng: -122.35}},
+      place: {
+        name: 'The Red Door',
+        location: {lat: 47.65, lng: -122.35},
+      },
       includeRaw: true
     }
   },
