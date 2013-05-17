@@ -183,21 +183,10 @@ exports.getPlacesNearLocationFactual = function(test) {
 
   // Insert the roxy diner and make sure her sources come out right
   function insertEnt(roxy) {
-    var ent = {
-      signalFence : -100,
-      name : roxy.name,
-      type : "com.aircandi.candi.place",
-      place: roxy.place,
-      sources: roxy.sources,
-      visibility : "public",
-      isCollection: true,
-      enabled : true,
-      locked : false,
-    }
     t.post({
       uri: '/do/insertEntity?' + userCred,
       body: {
-        entity: ent,
+        entity: roxy,
         suggestSources: true,
         includeRaw: true,
       }
