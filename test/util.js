@@ -189,7 +189,7 @@ function dump(req, res, msg) {
   var out = '\n\nTest failed: '
 
   if (msg) {
-    out += (type.isObject(msg))
+    out += (type.isObject(msg) || type.isArray(msg))
       ? '\n' + util.inspect(msg, false, 12)
       : String(msg)
   }
