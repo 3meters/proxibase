@@ -26,7 +26,7 @@ var testEntity = {
       signalFence : -100,
       name : "Test Place Entity Suggest Sources",
       type : "com.aircandi.candi.place",
-      place: {location:{lat:testLatitude, lng:testLongitude}},
+      place: {lat:testLatitude, lng:testLongitude},
       visibility : "public",
       isCollection: true,
       enabled : true,
@@ -264,16 +264,15 @@ exports.getPlacesNearLocationGoogle = function(test) {
       // They can be entities we already have in our system given by
       // foursquare, factual, or user
       t.assert(ballRoomId !== place.place.provider.google) //excluded
-      t.assert(place.place.location)
-      t.assert(place.place.location.lat)
-      t.assert(place.place.location.lng)
+      t.assert(place.place.lat)
+      t.assert(place.place.lng)
       if (roxyId === place.place.provider.google) {
         foundRoxy++
-        t.assert(place.place.location.address)
-        t.assert(place.place.location.city)
-        t.assert(place.place.location.state)
-        t.assert(place.place.location.cc, place.place)
-        t.assert(place.place.location.postalCode)
+        t.assert(place.place.address)
+        t.assert(place.place.city)
+        t.assert(place.place.state)
+        t.assert(place.place.cc, place.place)
+        t.assert(place.place.postalCode)
         t.assert(place.sources.some(function(source) {
           return (source.type === 'website')
         }))
@@ -415,7 +414,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
         body: {entity: {
           name: 'A user-created Test Entity Inside the BallRoom',
           type : "com.aircandi.candi.place",
-          place: {provider: {user: user._id}, location: {lat: 47.6521, lng: -122.3530}},
+          place: {provider: {user: user._id}, lat: 47.6521, lng: -122.3530},
           visibility : "public",
           isCollection: true,
           enabled : true,
@@ -431,7 +430,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
           body: {entity: {
             name: 'A user-created Entity At George\'s House',
             type : 'com.aircandi.candi.place',
-            place: {provider: {user: user._id}, location: {lat: 47.664525, lng: -122.354787}},
+            place: {provider: {user: user._id}, lat: 47.664525, lng: -122.354787},
             visibility : "public",
             isCollection: true,
             enabled : true,
