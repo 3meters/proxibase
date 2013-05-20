@@ -53,7 +53,7 @@ var testEntity2 = {
   signalFence : -100,
   name : "Testing candi 2",
   type : "com.aircandi.candi.place",
-  place: {location:{lat:testLatitude, lng:testLongitude}},
+  place: {lat:testLatitude, lng:testLongitude},
   visibility : "public",
   isCollection: true,
   enabled : true,
@@ -65,7 +65,7 @@ var testEntity3 = {
   signalFence : -100,
   name : "Testing candi 3",
   type : "com.aircandi.candi.place",
-  place: {location:{lat:testLatitude, lng:testLongitude}, provider: 'foursquare'},
+  place: {lat:testLatitude, lng:testLongitude},
   visibility : "public",
   isCollection: true,
   enabled : true,
@@ -362,8 +362,7 @@ exports.checkInsertEntityNoLinks = function(test) {
     t.assert(body.count === 1)
     t.assert(body.data[0] && body.data[0].place)
     var ent = body.data[0]
-    t.assert(ent.place.location)
-    t.assert(ent.place.location.lat && body.data[0].place.location.lng)
+    t.assert(ent.place.lat && body.data[0].place.lng)
     t.assert(ent.loc)
     t.assert(ent._owner === adminId) // admins own places
     t.assert(ent._creator === testUser._id)
