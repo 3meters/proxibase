@@ -57,14 +57,15 @@ exports.checkTwitterUrls = function(test) {
   var url = serviceUri + '/test/twitter.html'
   t.post({
     uri: '/sources/suggest',
-    body: {sources: [
-      {type: 'website', id: url, data: {skipThumbnail: true}}
-    ], includeRaw: true},
+    body: {entity: {sources: [
+      {type: 'website', id: url}
+    ]}, includeRaw: true},
   },
   function(err, res) {
-    t.assert(res.body.data.length === 2)
-    t.assert(res.body.data[0].type === 'website')
-    var src = res.body.data[1]
+    var sources = res.body.data.sources
+    t.assert(sources.length === 2)
+    t.assert(sources[0].type === 'website')
+    var src = sources[1]
     t.assert(src.type === 'twitter')
     t.assert(src.id === 'bob')
     t.assert(src.name === '@bob')
@@ -83,11 +84,11 @@ exports.checkFacebookUrls = function(test) {
   var url = serviceUri + '/test/facebook.html'
   t.post({
     uri: '/sources/suggest',
-    body: {sources: [
-      {type: 'website', id: url, data: {skipThumbnail: true}}
-    ]}},
+    body: {entity: {sources: [
+      {type: 'website', id: url}
+    ]}}},
   function(err, res) {
-    var sources = res.body.data
+    var sources = res.body.data.sources
     t.assert(sources.length === 5)
     // make a map of the results array by id
     var map = {}
@@ -117,26 +118,28 @@ exports.checkFacebookUrls = function(test) {
 exports.checkEmailUrls = function(test) {
   t.post({
     uri: '/sources/suggest',
-    body: {sources: [
-      {type: 'website', id: serviceUri + '/test/email.html', data: {skipThumbnail: true}}
-    ]}
+    body: {entity: {sources: [
+      {type: 'website', id: serviceUri + '/test/email.html'}
+    ]}}
   },
   function(err, res) {
-    t.assert(res.body.data.length === 2)
-    t.assert(res.body.data[1].type === 'email')
-    t.assert(res.body.data[1].id === 'george@3meters.com')
+    var sources = res.body.data.sources
+    t.assert(sources.length === 2)
+    t.assert(sources[1].type === 'email')
+    t.assert(sources[1].id === 'george@3meters.com')
     test.done()
   })
 }
 
 
 exports.checkEmailUrlsWithGet = function(test) {
-  t.get({uri:'/sources/suggest?sources[0][type]=website&sources[0][id]=' +
-        serviceUri + '/test/email.html&sources[0][data][skipThumbnail]=1'},
+  t.get({uri: '/sources/suggest?entity[sources][0][type]=website' +
+    '&entity[sources][0][id]=' + serviceUri + '/test/email.html'},
   function(err, res) {
-    t.assert(res.body.data.length === 2)
-    t.assert(res.body.data[1].type === 'email')
-    t.assert(res.body.data[1].id === 'george@3meters.com')
+    var sources = res.body.data.sources
+    t.assert(sources.length === 2)
+    t.assert(sources[1].type === 'email')
+    t.assert(sources[1].id === 'george@3meters.com')
     test.done()
   })
 }
@@ -149,10 +152,11 @@ exports.notFoundFacebookSourcePassesThroughUnvalidated = function(test) {
   if (disconnected) return skip(test)
   t.post({
     uri: '/sources/suggest',
-    body: {sources: [{type: 'facebook', id: '235200356726'}]}
+    body: {entity: {sources: [{type: 'facebook', id: '235200356726'}]}}
   }, function(err, res, body) {
-    t.assert(body.data && 1 === body.data.length)
-    var source = body.data[0]
+    var sources = body.data.sources
+    t.assert(sources && 1 === sources.length)
+    var source = sources[0]
     t.assert(source.id === '235200356726')
     t.assert(source.data)
     t.assert(!source.data.validated)
@@ -165,10 +169,10 @@ exports.checkBogusSources = function(test) {
   if (disconnected) return skip(test)
   t.post({
     uri: '/sources/suggest',
-    body: {sources: [{type: 'foursquare', url: 'http://www.google.com'}]}
+    body: {entity: {sources: [{type: 'foursquare', url: 'http://www.google.com'}]}}
   },
   function(err, res, body) {
-    t.assert(body.data.length === 0)
+    t.assert(body.data.sources.length === 0)
     test.done()
   })
 }
@@ -177,11 +181,11 @@ exports.suggestSourcesFactual = function(test) {
   if (disconnected) return skip(test)
   t.post({
     uri: '/sources/suggest',
-    body: {sources: [{type: 'factual', id: '46aef19f-2990-43d5-a9e3-11b78060150c'}],
+    body: {entity: {sources: [{type: 'factual', id: '46aef19f-2990-43d5-a9e3-11b78060150c'}]},
              includeRaw: true}
   },
   function(err, res) {
-    var sources = res.body.data
+    var sources = res.body.data.sources
     t.assert(sources.length > 4)
     t.assert(sources[0].type === 'factual')
     t.assert(sources[0].system)
@@ -206,10 +210,10 @@ exports.suggestFactualSourcesFromFoursquareId = function(test) {
   if (disconnected) return skip(test)
   t.post({
     uri: '/sources/suggest',
-    body: {sources: [{type: 'foursquare', id: '4abebc45f964a520a18f20e3'}]} // Seattle Ballroom in Fremont
+    body: {entity: {sources: [{type: 'foursquare', id: '4abebc45f964a520a18f20e3'}]}} // Seattle Ballroom in Fremont
   },
   function(err, res, body) {
-    var sources = body.data
+    var sources = body.data.sources
     t.assert(sources.length > 3)
     t.assert(sources.some(function(source) {
       return (source.type === 'foursquare'
@@ -234,10 +238,10 @@ exports.compareFoursquareToFactual = function(test) {
   if (disconnected) return skip(test)
   t.post({
     uri: '/sources/suggest',
-    body: {sources: [{type: 'foursquare', id: '4abebc45f964a520a18f20e3'}]}  // Seattle Ballroom
+    body: {entity: {sources: [{type: 'foursquare', id: '4abebc45f964a520a18f20e3'}]}}  // Seattle Ballroom
   },
   function(err, res) {
-    var sources4s = res.body.data
+    var sources4s = res.body.data.sources
     t.assert(sources4s.some(function(source) {
       return (source.type === 'foursquare'
         && source.id === '4abebc45f964a520a18f20e3'
@@ -260,10 +264,10 @@ exports.compareFoursquareToFactual = function(test) {
     t.post({
       uri: '/sources/suggest',
       // Seattle Ballroom
-      body: {sources: [{type: 'factual', id: '46aef19f-2990-43d5-a9e3-11b78060150c'}],
+      body: {entity: {sources: [{type: 'factual', id: '46aef19f-2990-43d5-a9e3-11b78060150c'}]},
              includeRaw: true}
     }, function(err, res) {
-      var sourcesFact = res.body.data
+      var sourcesFact = res.body.data.sources
       t.assert(sourcesFact.length > 3)
       t.assert(sourcesFact.length === sources4s.length)
       test.done()
@@ -276,22 +280,20 @@ exports.getFacebookFromPlaceJoinWithFoursquare = function(test) {
   t.post({
     uri: '/sources/suggest',
     body: {
-      sources: [
-        {
+      entity: {
+        name: 'The Red Door',
+        place: {lat: 47.65, lng: -122.35},
+        sources: [{
           type: 'foursquare',
           id: '42893400f964a5204c231fe3',
           name: 'The Red Door',
-        }
-      ],
-      place: {
-        name: 'The Red Door',
-        location: {lat: 47.65, lng: -122.35},
+        }],
       },
-      includeRaw: true
-    }
+      includeRaw: true,
+    },
   },
   function(err, res, body) {
-    var sources = body.data
+    var sources = body.data.sources
     t.assert(sources && sources.length)
     t.assert(sources.some(function(source) {
       return (source.type === 'foursquare'
@@ -329,12 +331,13 @@ exports.suggestSourcesFromWebsite = function(test) {
   if (disconnected) return skip(test)
   t.post({
     uri: '/sources/suggest',
-    body: {sources: [{type: 'website', id: 'http://www.massenamodern.com'}]}
+    body: {entity: {sources: [{type: 'website', id: 'http://www.massenamodern.com'}]}}
   },
-  function(err, res) {
-    t.assert(res.body.data.length === 2)
-    t.assert(res.body.data[1].type === 'twitter')
-    t.assert(res.body.data[1].id === 'massenamodern')
+  function(err, res, body) {
+    var sources = body.data.sources
+    t.assert(sources.length === 2)
+    t.assert(sources[1].type === 'twitter')
+    t.assert(sources[1].id === 'massenamodern')
     test.done()
   })
 }
@@ -344,12 +347,12 @@ exports.suggestSourcesUsingPlace = function(test) {
   t.post({
     uri: '/sources/suggest',
     body: {
-      sources: [], // empty because user deleted them all
-      place: {provider: {foursquare: '4abebc45f964a520a18f20e3'}},
+      entity: {sources: [], // empty because user deleted them all
+      place: {provider: {foursquare: '4abebc45f964a520a18f20e3'}}},
     },
     includeRaw: true,
   }, function(err, res, body) {
-    var sources = body.data
+    var sources = body.data.sources
     t.assert(sources.length > 3)
     test.done()
   })

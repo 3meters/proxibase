@@ -235,8 +235,10 @@ function check(req, res, code) {
       }
     }
   }
-  assert(code === res.statusCode,
-    dump(req, res, 'Bad statusCode: ' + res.statusCode + ' expected: ' + code))
+  if (code !== res.statusCode) {
+    throw new Error(dump(req, res,
+        'Bad statusCode: ' + res.statusCode + ' expected: ' + code))
+  }
 }
 
 
