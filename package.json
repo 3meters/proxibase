@@ -19,7 +19,7 @@
     "nodeunit": "*",
     "async": "*",
     "nodemailer": "*",
-    "superagent": "*",
+    "superagent": "0.14.2",
     "request": "*",
     "authom": "*",
     "cheerio": "*",
