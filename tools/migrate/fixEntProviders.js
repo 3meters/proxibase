@@ -1,5 +1,6 @@
 /**
- * Call updateEntity refreshSources = true for all place entities
+ * Update entity.place.provider type string and provider id type string
+ * to map { provider: id }
  */
 
 var util = require('proxutils')
@@ -12,7 +13,8 @@ var cli = require('commander')
 var async = require('async')
 var cred = ''
 var noLimit = true
-var count = 0
+var read = 0
+var updated = 0
 var results = []
 var server = 'https://localhost:6643'
 
@@ -23,14 +25,14 @@ cli
   .option('-i, --index <index>', 'index of record to start on [0]', Number, 0)
   .option('-n, --number <number>', 'number of records to update', Number, 0)
   .option('-d, --delay <delay>', 'seconds to wait between calls [0]', Number, 0)
-  .option('-x, --execute', 'update all sources, otherwise just step through them all')
+  .option('-x, --execute', 'perfrom the update, otherwise just step through them all')
   .parse(process.argv)
 
 if (cli.server) server = cli.server
 if (cli.number) noLimit = false
 
 request.post({
-    uri: server + '/auth/signin', 
+    uri: server + '/auth/signin',
     body: {user: {email: cli.email, password: cli.password}},
   }, function(err, res, body) {
     if (err) throw err
@@ -50,30 +52,52 @@ function updateEnt(skip) {
       skip: skip,
     }
   }, function (err, res, body) {
+
     if (err) throw err
     if (res.statusCode === 404) return finish(skip)
+    read++
+    var ent = body.data[0]
+    if (!(ent.place
+        && util.type.isString(ent.place.provider)
+        && util.type.isString(ent.place.id)
+        )) {
+      return next()
+    }
+
+    // Convert the place object to its new format
+    var newPlace = util.clone(ent.place)
+    var providerKey = ent.place.provider
+    newPlace.provider = {}
+    newPlace.provider[providerKey] = ent.place.id
+    delete newPlace.id
+    delete newPlace.providers
+
     if (!cli.execute) return next()
-    var entityId = body.data[0]._id
+
+    // Update it
     request.post({
       uri: server + '/do/updateEntity?' + cred,
       body: {
-        entity: {_id: entityId},
-        refreshSources: true,
+        entity: {
+          _id: ent._id,
+          place: newPlace,
+        },
         skipActivityDate: true,
       }
     }, function(err, res, body) {
       if (err) throw err
       if (200 !== res.statusCode) {
         log('Error: updateEntity returned status ' + res.statusCode +
-            ' for entity ' + entityId, body)
+            ' for entity ' + ent._id, body)
         throw new Error('Unexpected return status form updateEntity')
       }
+      updated++
       next()
     })
 
     function next() {
       log(skip)
-      if (body.more && (noLimit || count++ < cli.number)) {
+      if (body.more && (noLimit || read++ < cli.number)) {
         skip++
         setTimeout(function() {
           return updateEnt(skip)
@@ -85,5 +109,6 @@ function updateEnt(skip) {
 }
 
 function finish() {
-  log('Updated ' + count + ' entities')
+  log('Read ' + read + ' entities')
+  log('Updated ' + updated + ' entities')
 }
