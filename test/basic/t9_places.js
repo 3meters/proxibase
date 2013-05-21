@@ -89,7 +89,8 @@ exports.getPlacesNearLocationFoursquare = function(test) {
       if (place.place.provider.foursquare === ballRoomId) foundBallroom++
       t.assert(place.place.category)
       t.assert(place.place.category.name)
-      //t.assert(/^\/img\/categories\/foursquare\/.*_88\.png$/.test(place.place.category.icon))
+      t.assert(place.place.category.photo)
+      t.assert(/^\/img\/categories\/foursquare\/.*_88\.png$/.test(place.place.category.photo.prefix))
       var sources = place.sources
       t.assert(sources)
       t.assert(sources.length)
@@ -414,7 +415,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
         body: {entity: {
           name: 'A user-created Test Entity Inside the BallRoom',
           type : util.statics.typePlace,
-          place: {provider: {user: user._id}, lat: 47.6521, lng: -122.3530},
+          place: {provider: {aircandi: user._id}, lat: 47.6521, lng: -122.3530},
           visibility : "public",
           isCollection: true,
           enabled : true,
@@ -430,7 +431,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
           body: {entity: {
             name: 'A user-created Entity At George\'s House',
             type : util.statics.typePlace,
-            place: {provider: {user: user._id}, lat: 47.664525, lng: -122.354787},
+            place: {provider: {aircandi: user._id}, lat: 47.664525, lng: -122.354787},
             visibility : "public",
             isCollection: true,
             enabled : true,
@@ -459,11 +460,11 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
               if (place.place.provider.foursquare === ladroId) foundLadro++
               if (place._id && place._id === newEnt._id) {
                 foundNewEnt++
-                t.assert(place.place.provider.user === user._id)
+                t.assert(place.place.provider.aircandi === user._id)
               }
               if (place._id && place._id === newEnt2._id) {
                 foundNewEnt2++
-                t.assert(place.place.provider.user === user._id)
+                t.assert(place.place.provider.aircandi === user._id)
               }
             })
             t.assert(foundLadro === 1)
