@@ -409,109 +409,117 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
       t.assert(srcMap.twitter >= 1)
 
       // Add a user-created place inside the ballroom
-      t.post({
-        uri: '/do/insertEntity?' + userCred,
-        body: {entity: {
-          name: 'A user-created Test Entity Inside the BallRoom',
-          type : "com.aircandi.candi.place",
-          place: {provider: {user: user._id}, lat: 47.6521, lng: -122.3530},
-          visibility : "public",
-          isCollection: true,
-          enabled : true,
-          locked : false,
-        }}
-      }, 201, function(err, res, body) {
-        var newEnt = body.data[0]
-        t.assert(newEnt)
-
-        // Add a user-created place about a mile away, at George's house
+      t.get('/data/entities/genId', function(err, res, body) {
+        var entId = body.data._id
         t.post({
           uri: '/do/insertEntity?' + userCred,
           body: {entity: {
-            name: 'A user-created Entity At George\'s House',
-            type : 'com.aircandi.candi.place',
-            place: {provider: {user: user._id}, lat: 47.664525, lng: -122.354787},
+            _id: entId,
+            name: 'A user-created Test Entity Inside the BallRoom',
+            type : "com.aircandi.candi.place",
+            place: {provider: {aircandi: entId}, lat: 47.6521, lng: -122.3530},
             visibility : "public",
             isCollection: true,
             enabled : true,
             locked : false,
           }}
         }, 201, function(err, res, body) {
-          var newEnt2 = body.data[0]
-          t.assert(newEnt2)
+          var newEnt = body.data[0]
+          t.assert(newEnt)
 
-          // Run radar again
-          t.post({
-            uri: '/places/getNearLocation',
-            body: {
-              latitude: 47.6521,
-              longitude: -122.3530,
-              provider: 'foursquare',
-            }
-          }, function(err, res, body) {
-            // Make sure the real entitiy is in the found places
-            var places = body.data
-            var foundLadro = 0
-            var foundNewEnt = 0
-            var foundNewEnt2 = 0
-            places.forEach(function(place) {
-              t.assert(place.place.provider)
-              if (place.place.provider.foursquare === ladroId) foundLadro++
-              if (place._id && place._id === newEnt._id) {
-                foundNewEnt++
-                t.assert(place.place.provider.user === user._id)
-              }
-              if (place._id && place._id === newEnt2._id) {
-                foundNewEnt2++
-                t.assert(place.place.provider.user === user._id)
-              }
-            })
-            t.assert(foundLadro === 1)
-            t.assert(foundNewEnt === 1)
-            t.assert(foundNewEnt2 === 0) // outside the radius
-
-            // Now run radar with factual as the provider, ensuring the same
-            // results, joining on phone number
+          // Add a user-created place about a mile away, at George's house
+          t.get('/data/entities/genId', function(err, res, body) {
+            var entId = body.data._id
             t.post({
-              uri: '/places/getNearLocation',
-              body: {
-                latitude: 47.6521,
-                longitude: -122.3530,
-                provider: 'factual',
-              }
-            }, function(err, res, body) {
-              var places = body.data
-              var foundLadro = 0
-              var foundNewEnt = 0
-              var foundNewEnt2 = 0
-              places.forEach(function(place) {
-                if (place._id && place._id === newEnt._id) foundNewEnt++
-                if (place._id && place._id === newEnt2._id) foundNewEnt2++
-                t.assert(place.place.provider)
-                if (place.place.provider.foursquare === ladroId) {
-                  foundLadro++
-                  t.assert(place.place.provider.factual) // should have been added to the map
-                }
-              })
-              t.assert(foundLadro === 1)
-              t.assert(foundNewEnt === 1)
-              t.assert(foundNewEnt2 === 0)
+              uri: '/do/insertEntity?' + userCred,
+              body: {entity: {
+                _id: entId,
+                name: 'A user-created Entity At George\'s House',
+                type : 'com.aircandi.candi.place',
+                place: {provider: {aircandi: entId}, lat: 47.664525, lng: -122.354787},
+                visibility : "public",
+                isCollection: true,
+                enabled : true,
+                locked : false,
+              }}
+            }, 201, function(err, res, body) {
+              var newEnt2 = body.data[0]
+              t.assert(newEnt2)
 
-              // Confirm that excludePlaceIds works for our entities
+              // Run radar again
               t.post({
                 uri: '/places/getNearLocation',
                 body: {
                   latitude: 47.6521,
                   longitude: -122.3530,
                   provider: 'foursquare',
-                  excludePlaceIds: [newEnt._id],
                 }
               }, function(err, res, body) {
+                // Make sure the real entitiy is in the found places
                 var places = body.data
-                t.assert(!places.some(function(place) {
-                  return (place._id === newEnt._id)
-                }))
-                test.done()
+                var foundLadro = 0
+                var foundNewEnt = 0
+                var foundNewEnt2 = 0
+                places.forEach(function(place) {
+                  t.assert(place.place.provider)
+                  if (place.place.provider.foursquare === ladroId) foundLadro++
+                  if (place._id && place._id === newEnt._id) {
+                    foundNewEnt++
+                    t.assert(place.place.provider.aircandi === place._id)
+                  }
+                  if (place._id && place._id === newEnt2._id) {
+                    foundNewEnt2++
+                    t.assert(place.place.provider.aircandi === place._id)
+                  }
+                })
+                t.assert(foundLadro === 1)
+                t.assert(foundNewEnt === 1)
+                t.assert(foundNewEnt2 === 0) // outside the radius
+
+                // Now run radar with factual as the provider, ensuring the same
+                // results, joining on phone number
+                t.post({
+                  uri: '/places/getNearLocation',
+                  body: {
+                    latitude: 47.6521,
+                    longitude: -122.3530,
+                    provider: 'factual',
+                  }
+                }, function(err, res, body) {
+                  var places = body.data
+                  var foundLadro = 0
+                  var foundNewEnt = 0
+                  var foundNewEnt2 = 0
+                  places.forEach(function(place) {
+                    if (place._id && place._id === newEnt._id) foundNewEnt++
+                    if (place._id && place._id === newEnt2._id) foundNewEnt2++
+                    t.assert(place.place.provider)
+                    if (place.place.provider.foursquare === ladroId) {
+                      foundLadro++
+                      t.assert(place.place.provider.factual) // should have been added to the map
+                    }
+                  })
+                  t.assert(foundLadro === 1)
+                  t.assert(foundNewEnt === 1)
+                  t.assert(foundNewEnt2 === 0)
+
+                  // Confirm that excludePlaceIds works for our entities
+                  t.post({
+                    uri: '/places/getNearLocation',
+                    body: {
+                      latitude: 47.6521,
+                      longitude: -122.3530,
+                      provider: 'foursquare',
+                      excludePlaceIds: [newEnt._id],
+                    }
+                  }, function(err, res, body) {
+                    var places = body.data
+                    t.assert(!places.some(function(place) {
+                      return (place._id === newEnt._id)
+                    }))
+                    test.done()
+                  })
+                })
               })
             })
           })
