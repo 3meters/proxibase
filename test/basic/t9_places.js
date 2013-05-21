@@ -25,7 +25,7 @@ var testEntity = {
       },
       signalFence : -100,
       name : "Test Place Entity Suggest Sources",
-      type : "com.aircandi.candi.place",
+      type : util.statics.typePlace,
       place: {lat:testLatitude, lng:testLongitude},
       visibility : "public",
       isCollection: true,
@@ -89,7 +89,7 @@ exports.getPlacesNearLocationFoursquare = function(test) {
       if (place.place.provider.foursquare === ballRoomId) foundBallroom++
       t.assert(place.place.category)
       t.assert(place.place.category.name)
-      t.assert(/^\/img\/categories\/foursquare\/.*_88\.png$/.test(place.place.category.icon))
+      //t.assert(/^\/img\/categories\/foursquare\/.*_88\.png$/.test(place.place.category.icon))
       var sources = place.sources
       t.assert(sources)
       t.assert(sources.length)
@@ -172,7 +172,7 @@ exports.getPlacesNearLocationFactual = function(test) {
       t.assert(ballRoomId !== place.place.provider.factual) //excluded
       t.assert(place.place.category)
       t.assert(place.place.category.name)
-      t.assert(place.place.category.icon)
+      t.assert(place.place.category.photo)
     })
     var roxys = places.filter(function(e) {
       return (e.place.provider.factual === roxyId) // Roxy's Diner
@@ -279,7 +279,7 @@ exports.getPlacesNearLocationGoogle = function(test) {
       }
       t.assert(place.place.category)
       t.assert(place.place.category.name)
-      t.assert(place.place.category.icon)
+      t.assert(place.place.category.photo)
     })
     t.assert(1 === foundRoxy)
     t.assert(googleProvided)
@@ -413,7 +413,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
         uri: '/do/insertEntity?' + userCred,
         body: {entity: {
           name: 'A user-created Test Entity Inside the BallRoom',
-          type : "com.aircandi.candi.place",
+          type : util.statics.typePlace,
           place: {provider: {user: user._id}, lat: 47.6521, lng: -122.3530},
           visibility : "public",
           isCollection: true,
@@ -429,7 +429,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
           uri: '/do/insertEntity?' + userCred,
           body: {entity: {
             name: 'A user-created Entity At George\'s House',
-            type : 'com.aircandi.candi.place',
+            type : util.statics.typePlace,
             place: {provider: {user: user._id}, lat: 47.664525, lng: -122.354787},
             visibility : "public",
             isCollection: true,
