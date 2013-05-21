@@ -41,7 +41,7 @@ var testEntity = {
   photo: {prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", sourceName:"aircandi"},
   signalFence : -100,
   name : "Testing candi",
-  type : "com.aircandi.candi.picture",
+  type : util.statics.typeContent,
   visibility : "public",
   isCollection: false,
   enabled : true,
@@ -52,7 +52,7 @@ var testEntity2 = {
   photo: {prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", sourceName:"aircandi"},
   signalFence : -100,
   name : "Testing candi 2",
-  type : "com.aircandi.candi.place",
+  type : util.statics.typePlace,
   place: {lat:testLatitude, lng:testLongitude},
   visibility : "public",
   isCollection: true,
@@ -64,7 +64,7 @@ var testEntity3 = {
   photo: {prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", sourceName:"aircandi"},
   signalFence : -100,
   name : "Testing candi 3",
-  type : "com.aircandi.candi.place",
+  type : util.statics.typePlace,
   place: {lat:testLatitude, lng:testLongitude},
   visibility : "public",
   isCollection: true,
@@ -281,7 +281,7 @@ exports.checkInsertEntity = function(test) {
 exports.checkInsertEntityLogAction = function(test) {
   t.post({
     uri: '/do/find',
-    body: {table:'actions',find:{_target:testEntity._id, type:'insert_entity_picture'}}
+    body: {table:'actions',find:{_target:testEntity._id, type:'insert_entity_content'}}
   }, function(err, res, body) {
     t.assert(body.count === 1)
     test.done()

@@ -200,7 +200,7 @@ exports.canUpdateNestedArrays = function(test) {
   t.post({
     uri: '/data/entities?' + userCred,
     body: {data: {
-      type: 'com.aircandi.candi.place',
+      type: util.statics.typePlace,
       name: 'Test Entity With Comments',
       comments: [
         {name: 'Comment 1', description: 'I am comment 1'},

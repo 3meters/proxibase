@@ -101,7 +101,7 @@ defaultRecord.beacons = {
 
 defaultRecord.entities = {
   _id: entityId,
-  type: 'com.aircandi.candi.picture',
+  type: util.statics.typeContent,
   name: 'Mona Lisa',
   subtitle: 'Leonardo daVinci',
   description: 'Mona Lisa (also known as La Gioconda or La Joconde) is a 16th-century portrait painted in oil on a poplar panel by Leonardo di ser Piero da Vinci during the Renaissance in Florence, Italy.',

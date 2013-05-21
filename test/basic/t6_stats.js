@@ -15,7 +15,7 @@ var testLatitude = 46.1
 var testLongitude = -121.1
 var testEntity = {
   name: "StatsTest Entity 1",
-  type: "com.aircandi.candi.picture",
+  type: util.statics.typeContent,
   enabled : true
 }
 var testBeacon = {
