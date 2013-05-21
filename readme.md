@@ -165,7 +165,7 @@ Returns records with the specified ids
 ### GET /data/\<collection\>?name=<name>
 Returns the record beginning with the specified name, case-insensitive.
 
-### GET /data/\<collection\>/genid
+### GET /data/\<collection\>/genId
 Generates a valid id for the table with the UTC timestamp of the request.  Useful if you want to make posts to mulitple tables with the primary and foreign keys preassigned.
 
     ?sort[namelc]=1&sort[age]=-1
