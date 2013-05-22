@@ -49,7 +49,7 @@ defaultRecord.users = defaultRecord.users1 = {
   name: 'Test User',
   email: 'test@3meters.com',
   location: 'Testville, WA',
-  isDeveloper: false
+  developer: false
 }
 
 defaultRecord.users2 = {
@@ -58,7 +58,7 @@ defaultRecord.users2 = {
   email: 'testdev@3meters.com',
   location: 'Testville, WA',
   password: password,
-  isDeveloper: true
+  developer: true
 }
 
 defaultRecord.documents = {

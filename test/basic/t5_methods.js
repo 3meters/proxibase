@@ -28,7 +28,7 @@ var testUser = {
   password : "12345678",
   photo: {prefix:"resource:placeholder_user", sourceName:"aircandi"},
   location : "Testville, WA",
-  isDeveloper : false
+  developer : false
 }
 var testUser2 = {
   _id : "0001.111111.11111.111.222222",
