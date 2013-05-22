@@ -26,8 +26,8 @@ var testUser = {
   name : "John Q Test",
   email : "johnqtest@3meters.com",
   password : "12345678",
-  photo: {prefix:"resource:placeholder_user", sourceName:"aircandi"},
-  location : "Testville, WA",
+  photo: { prefix:"resource:placeholder_user", sourceName:"resource" },
+  area : "Testville, WA",
   developer : false
 }
 var testUser2 = {
@@ -38,90 +38,87 @@ var testUser2 = {
 }
 var testEntity = {
   _id : "0004.111111.11111.111.111111",
-  photo: {prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", sourceName:"aircandi"},
+  photo: { prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", sourceName:"aircandi" },
   signalFence : -100,
   name : "Testing candi",
-  type : util.statics.typeContent,
-  visibility : "public",
-  isCollection: false,
+  type : util.statics.typePost,
+  private : false,
   enabled : true,
   locked : false
 }
 var testEntity2 = {
   _id : "0004.111111.11111.111.111112",
-  photo: {prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", sourceName:"aircandi"},
-  signalFence : -100,
   name : "Testing candi 2",
+  photo: { prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", sourceName:"aircandi" },
   type : util.statics.typePlace,
-  place: {lat:testLatitude, lng:testLongitude},
-  visibility : "public",
-  isCollection: true,
+  signalFence : -100,
+  place: { location:{ lat:testLatitude, lng:testLongitude }},
+  private : false,
   enabled : true,
   locked : false
 }
 var testEntity3 = {
   _id : "0004.111111.11111.111.111113",
-  photo: {prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", sourceName:"aircandi"},
-  signalFence : -100,
   name : "Testing candi 3",
+  photo: { prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", sourceName:"aircandi" },
   type : util.statics.typePlace,
-  place: {lat:testLatitude, lng:testLongitude},
-  visibility : "public",
-  isCollection: true,
+  signalFence : -100,
+  place: { location:{ lat:testLatitude, lng:testLongitude }},
+  private : false,
   enabled : true,
   locked : false
+}
+var testEntity4 = {
+  _id : "0004.111111.11111.111.111114",
+  type : util.statics.typeComment,
+  name : "Test Comment",
+  description : "Test comment, much ado about nothing.",
+  private : false,
+  enabled : true,
+  locked : false
+  creator: testUser
+  _creator : testUser._id
 }
 var testLink = {
   _to : '0008.11:11:11:11:11:22',
   _from : '0004.111111.11111.111.111111',
   primary: true,
-  signal: -100
+  level: -100
 }
 var newTestLink = {
   _to : '0004.111111.11111.111.111112',
   _from : '0004.111111.11111.111.111111',
-  primary: true,
-  signal: -100
 }
 var testBeacon = {
   _id : '0008.11:11:11:11:11:11',
-  label: 'Test Beacon Label',
+  name: 'Test Beacon Label',
   ssid: 'Test Beacon',
   bssid: '11:11:11:11:11:11',
-  beaconType: 'fixed',
-  visibility: 'public',
-  latitude : testLatitude,
-  longitude : testLongitude,
-  altitude : 12,
-  accuracy : 30,
+  type: 'fixed',
+  private: false,
+  location: { lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30 },
   level: -80,
   loc : [testLongitude, testLatitude]
 }
 var testBeacon2 = {
   _id : '0008.22:22:22:22:22:22',
-  label: 'Test Beacon Label 2',
+  name: 'Test Beacon Label 2',
   ssid: 'Test Beacon 2',
   bssid: '22:22:22:22:22:22',
-  beaconType: 'fixed',
-  visibility: 'public',
-  latitude : testLatitude,
-  longitude : testLongitude,
-  altitude : 12,
-  accuracy : 30,
+  type: 'fixed',
+  private: false,
+  location: { lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30 },
   level: -85,
   loc : [testLongitude, testLatitude]
 }
 var testBeacon3 = {
   _id : '0008.33:33:33:33:33:33',
-  label: 'Test Beacon Label 3',
+  name: 'Test Beacon Label 3',
   ssid: 'Test Beacon 3',
   bssid: '33:33:33:33:33:33',
-  beaconType: 'fixed',
-  visibility: 'public',
-  latitude : testLatitude,
-  longitude : testLongitude,
-  altitude : 12,
-  accuracy : 30,
+  type: 'fixed',
+  private: false,
+  location: { lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30 },
   level: -95,
   loc : [testLongitude, testLatitude]
 }
@@ -142,14 +139,6 @@ var testObservation3 = {
   longitude : -121.1,
   altitude : 12,
   accuracy : 30.0
-}
-var testComment = {
-  title : "Test Comment",
-  description : "Test comment, much ado about nothing.",
-  name : "John Q Test",
-  location : "Testville, WA",
-  imageUri : "resource:placeholder_user",
-  _creator : testUser._id
 }
 
 // Get user and admin sessions and store the credentials in module globals

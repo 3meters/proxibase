@@ -15,9 +15,9 @@ var
 cli
   .option('-u, --users <num>', 'users to generate [3]')
   .option('-b, --beacons <num>', 'beacons to generate [3]')
-  .option('-e, --epb <num>', 'entities per beacon [5]')
-  .option('-s, --spe <num>', 'sub entities per entity [5]')
-  .option('-c, --cpe <num>', 'comments per entity [5]')
+  .option('-e, --epb <num>', 'place entities per beacon [5]')
+  .option('-s, --spe <num>', 'post entities per place [5]')
+  .option('-c, --cpe <num>', 'comment entities per entity [5]')
   .option('-d, --database <database>', 'database name [proxTest]', String, 'proxTest')
   .option('-v, --validate', 'validate database inserts against schema')
   .option('-f, --files', 'create files rather than update the database')
