@@ -82,6 +82,8 @@ exports.adminCanAddUserViaRest = function(test) {
     t.assert(user._id)
     t.assert(user.email === testUser.email)
     t.assert(user.validationNotifyDate)
+    t.assert(user.role)
+    t.assert(user.role === 'user')
     notifyDate = user.validationNotifyDate
     t.assert(!user.validationDate)
     testUser._id = user._id
