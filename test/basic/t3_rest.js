@@ -14,12 +14,12 @@ var adminCred
 var documentsSchemaId = 5  // will break if we change schemaIds
 var testDoc1 = {
   name: 'Test Rest Doc 1',
-  data: { foo: 'bar', number: 1 }
+  sdata: { foo: 'bar', number: 1 }
 }
 var testDoc1Saved = {}
 var testDoc2 = {
   name: 'Test Rest Doc 2',
-  data: { foo: 'bar', number: 2 }
+  sdata: { foo: 'bar', number: 2 }
 }
 var linkId
 var testStartTime = util.getTimeUTC()
@@ -119,16 +119,16 @@ exports.canUpdateSinglePropertyOfNestedObject = function(test) {
     uri: '/data/documents/' + testDoc2._id + '?' + userCred,
     body: {
       data: {
-        data: {
+        sdata: {
           number: 3
         }
       }
     }
   }, function(err, res, body) {
     t.assert(body.data)
-    t.assert(body.data.data)
-    t.assert(body.data.data.foo === 'bar')
-    t.assert(body.data.data.number === 3)
+    t.assert(body.data.sdata)
+    t.assert(body.data.sdata.foo === 'bar')
+    t.assert(body.data.sdata.number === 3)
     test.done()
   })
 }
@@ -138,7 +138,7 @@ exports.canRemovePropertyOfNestedObject = function(test) {
     uri: '/data/documents/' + testDoc2._id + '?' + userCred,
     body: {
       data: {
-        data: {
+        sdata: {
           number: 4,
           foo: null,
         }
@@ -146,9 +146,9 @@ exports.canRemovePropertyOfNestedObject = function(test) {
     }
   }, function(err, res, body) {
     t.assert(body.data)
-    t.assert(body.data.data)
-    t.assert(body.data.data.number === 4)
-    t.assert(util.type.isUndefined(body.data.data.foo))
+    t.assert(body.data.sdata)
+    t.assert(body.data.sdata.number === 4)
+    t.assert(util.type.isUndefined(body.data.sdata.foo))
     test.done()
   })
 }
@@ -159,12 +159,12 @@ exports.updateCanRemoveNestedObjects = function(test) {
     body: {
       data: {
         type: 'I have lost my data',
-        data: null
+        sdata: null
       }
     }
   }, function(err, res, body) {
     t.assert(body.data.type === 'I have lost my data')
-    t.assert(type.isUndefined(body.data.data))
+    t.assert(type.isUndefined(body.data.sdata))
     test.done()
   })
 }
@@ -175,13 +175,13 @@ exports.updateCanCreatedNestedObject = function(test) {
     body: {
       data: {
         type: 'I have found my data',
-        data: {
+        sdata: {
           p1: 1,
         }
       }
     }
   }, function(err, res, body) {
-    t.assert(body.data.data.p1 === 1)
+    t.assert(body.data.sdata.p1 === 1)
     test.done()
   })
 }
@@ -196,7 +196,8 @@ exports.cannotAddDocMissingRequiredField = function(test) {
   })
 }
 
-exports.canUpdateNestedArrays = function(test) {
+// TODO:  reimplement targeting the devices collection
+_exports.canUpdateNestedArrays = function(test) {
   t.post({
     uri: '/data/entities?' + userCred,
     body: {data: {
@@ -333,10 +334,10 @@ exports.checkUpdatedDoc = function(test) {
 exports.settingFieldsToNullUnsetsThem = function(test) {
   t.post({
     uri: '/data/documents/' + testDoc1._id + '?' + userCred,
-    body: {name: null, data: {data: null} }
+    body: {name: null, data: {sdata: null} }
   }, function(err, res, body) {
     t.assert(util.type(body.data.name === 'undefined'))
-    t.assert(util.type(body.data.data === 'undefined'))
+    t.assert(util.type(body.data.sdata === 'undefined'))
     test.done()
   })
 }
@@ -487,7 +488,7 @@ exports.defaultsWork = function(test) {
       ssid: 'Rest test beacon'
     }}
   }, 201, function(err, res, body) {
-    t.assert(body.data.visibility === 'public')
+    t.assert(body.data.type === 'fixed')
     test.done()
   })
 }
@@ -498,7 +499,7 @@ exports.nullsAreNotPersistedOnInsert = function(test) {
     body: {
       data: {
         name: null,
-        data: {
+        sdata: {
           p1: 1,
           p2: null,
         }
@@ -507,8 +508,8 @@ exports.nullsAreNotPersistedOnInsert = function(test) {
   }, 201, function(err, res, body) {
     var data = body.data
     t.assert(util.type.isUndefined(data.name))
-    t.assert(data.data.p1 === 1)
-    t.assert(util.type.isUndefined(data.data.p2))
+    t.assert(data.sdata.p1 === 1)
+    t.assert(util.type.isUndefined(data.sdata.p2))
     test.done()
   })
 }
@@ -637,18 +638,35 @@ exports.countByWorks = function(test) {
   }, function(err, res, body) {
     // These are based on data in template test database
     t.assert(body.count >= 10)
-    t.assert(body.data[0].countBy === 300)
+    t.assert(body.data[0].countBy === 2050)
     test.done()
   })
 }
 
 exports.countByMultipleFieldsWorks = function(test) {
   t.get({
-    uri: '/data/beacons?countBy=_owner,visibility'
+    uri: '/data/entities?countBy=_owner,type'
   }, function(err, res, body) {
     // These are based on data in template test database
-    t.assert(body.count >= 10)
-    t.assert(body.data[5].countBy === 10)
+    t.assert(body.count >= 40)
+    body.data.forEach(function(elm) {
+      switch (elm.type) {
+        case 'com.aircandi.place':
+          t.assert(elm.countBy === 50)
+          break
+        case 'com.aircandi.post':
+          t.assert(elm.countBy === 250)
+          break
+        case 'com.aircandi.applink':
+          t.assert(elm.countBy === 250)
+          break
+        case 'com.aircandi.comment':
+          t.assert(elm.countBy === 1500)
+          break
+        default:
+          t.assert(false, 'Unexpected type ' + elm.type)
+      }
+    })
     test.done()
   })
 }
