@@ -21,9 +21,10 @@ var save                                  // Save function
 var options = {                           // Default options
   users: 3,                           // Count of users
   beacons: 3,                         // Count of beacons
-  epb: 5,                             // Entites per beacon
-  spe: 5,                             // Subentities (aka children) per beacon
-  cpe: 5,                             // Comments per entity
+  epb: 5,                             // Places per beacon
+  spe: 5,                             // Posts (aka children) per place
+  cpe: 5,                             // Comments per post and place entity
+  ape: 5,                             // Applinks per place
   database: 'proxTest',               // Database name
   validate: false,                    // Validate database data against schema
   files: false,                       // Output to JSON files rather than to datbase
@@ -84,8 +85,12 @@ function run(callback) {
   genUsers()
   // genDocuments()  now added by server startup code
   genBeacons()
+
   genEntities()
-  genChildEntities()
+  genPostEntities()
+  genApplinkEntities()
+  genCommentEntities()
+
   saveAll(function(err) {
     if (err) return callback(err)
     // if (!options.files) db.close()
@@ -123,23 +128,31 @@ function genBeacons() {
     beacon._creator = beacon._modifier =
       testUtil.genId('users', Math.floor((i * options.users) / options.beacons))
     // Inch our way around the world
-    beacon.latitude = (beacon.latitude + (i / 1000)) % 180
-    beacon.longitude = (beacon.longitude + (i / 1000)) % 180
+    beacon.location.lat = (beacon.location.lat + (i / 1000)) % 180
+    beacon.location.lng = (beacon.location.lng + (i / 1000)) % 180
     table.beacons.push(beacon)
   }
 }
 
 function genEntities() {
-  genEntityRecords(options.beacons * options.epb, true)
+  genEntityRecords(options.beacons * options.epb, util.statics.typePlace, true)
 }
 
-function genChildEntities(callback) {
-  genEntityRecords(options.beacons * options.epb * options.spe, false)
+function genPostEntities(callback) {
+  genEntityRecords(options.beacons * options.epb * options.spe, util.statics.typePost, false)
+}
+
+function genApplinkEntities(callback) {
+  genEntityRecords(options.beacons * options.epb * options.ape, util.statics.typeApplink, false)
+}
+
+function genCommentEntities(callback) {
+  genEntityRecords(options.beacons * options.epb * options.spe * options.cpe, util.statics.typeComment, false)
 }
 
 // Makes entity and link records for parent entities (isRoot = true)
 //   or child entities (isRoot = false)
-function genEntityRecords(count, isRoot) {
+function genEntityRecords(count, type, isRoot) {
 
   table.entities = table.entities || []
   table.links = table.links || []
@@ -147,17 +160,22 @@ function genEntityRecords(count, isRoot) {
   var countParents = options.beacons * options.epb // child Ids start after parent Ids
 
   for (var i = 0; i < count; i++) {
+    var newEnt
+
+    if (type === util.statics.typePlace) newEnt = constants.getDefaultRecord('entities_place')
+    if (type === util.statics.typeApplink) newEnt = constants.getDefaultRecord('entities_applink')
+    if (type === util.statics.typePost) newEnt = constants.getDefaultRecord('entities_post')
+    if (type === util.statics.typeComment) newEnt = constants.getDefaultRecord('entities_comment')
+
     var 
-      newEnt = constants.getDefaultRecord('entities'),
       recNum = isRoot ? i : i + countParents,
       beaconNum = Math.floor(i / (isRoot ? options.epb : options.beacons * options.epb))
       ownerRecNum = Math.floor((i * options.users) / (options.beacons * options.epb))
 
-
     newEnt._id = testUtil.genId('entities', recNum)
     newEnt.name = isRoot ? 
       newEnt.name + ' ' + (recNum + 1) :
-      newEnt.name + ' Child ' + (recNum + 1)
+      newEnt.name + ' ' + (recNum + 1)
     table.entities.push(newEnt)
 
     // Link
@@ -181,15 +199,12 @@ function genEntityRecords(count, isRoot) {
       var parentRecNum = Math.floor(i / options.spe) // yeah, this is right
       newLink._to = testUtil.genId('entities', parentRecNum)
       newLink.toCollectionId = tableIds['entities']
-      newLink.type = 'content'
+
+      if (type === util.statics.typeApplink) newLink.type = 'applink'
+      if (type === util.statics.typePost) newLink.type = 'post'
+      if (type === util.statics.typeComment) newLink.type = 'comment'
     }
     table.links.push(newLink)
-
-    // Comments
-    newEnt.comments = []
-    for (var j = 0; j < options.cpe; j++) {
-      newEnt.comments.push(constants.comment)
-    }
   }
 }
 

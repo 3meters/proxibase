@@ -38,46 +38,69 @@ var testUser2 = {
 }
 var testEntity = {
   _id : "0004.111111.11111.111.111111",
-  photo: { prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", sourceName:"aircandi" },
-  signalFence : -100,
+  type : util.statics.typePlace,
   name : "Testing candi",
-  type : util.statics.typePost,
-  private : false,
+  photo: { 
+    prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", sourceName:"aircandi" 
+  },
+  signalFence : -100,
+  location: { 
+    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] 
+  },
+  place: { 
+    address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065551212", 
+    provider:{ 
+      foursquare:"4bcfbae19854d13a82b8f64d" 
+    },
+    category:{ 
+      id:"4bf58dd8d48988d18c941735", 
+      name : "Baseball Stadium",
+      photo:{
+        sourceName : "assets.categories",
+        prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png"
+      },
+    },
   enabled : true,
-  locked : false
 }
 var testEntity2 = {
   _id : "0004.111111.11111.111.111112",
+  type : util.statics.typePost,
   name : "Testing candi 2",
-  photo: { prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", sourceName:"aircandi" },
-  type : util.statics.typePlace,
+  photo: { 
+    prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", sourceName:"aircandi" 
+  },
   signalFence : -100,
-  place: { location:{ lat:testLatitude, lng:testLongitude }},
-  private : false,
   enabled : true,
-  locked : false
 }
 var testEntity3 = {
   _id : "0004.111111.11111.111.111113",
-  name : "Testing candi 3",
-  photo: { prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", sourceName:"aircandi" },
   type : util.statics.typePlace,
+  name : "Testing candi 3",
+  photo: { 
+    prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", sourceName:"aircandi" 
+  },
+  location: { 
+    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] 
+  },
+  place: {},
   signalFence : -100,
-  place: { location:{ lat:testLatitude, lng:testLongitude }},
-  private : false,
   enabled : true,
-  locked : false
 }
 var testEntity4 = {
   _id : "0004.111111.11111.111.111114",
   type : util.statics.typeComment,
   name : "Test Comment",
   description : "Test comment, much ado about nothing.",
-  private : false,
   enabled : true,
-  locked : false
-  creator: testUser
-  _creator : testUser._id
+}
+var testEntity5 = {
+  _id: "0004.111111.11111.111.111115",
+  type: util.statics.typeApplink,
+  name: "Bannerwood Park",
+  photo: { prefix:"https://graph.facebook.com/143970268959049/picture?type=large", sourceName:"facebook" },
+  appId: "143970268959049"
+  enabled: true,
+  data: { origin : "facebook", validated : 1369167109174.0, likes : 9 }
 }
 var testLink = {
   _to : '0008.11:11:11:11:11:22',
@@ -95,10 +118,8 @@ var testBeacon = {
   ssid: 'Test Beacon',
   bssid: '11:11:11:11:11:11',
   type: 'fixed',
-  private: false,
-  location: { lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30 },
-  level: -80,
-  loc : [testLongitude, testLatitude]
+  location: { lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] },
+  level: -80,  
 }
 var testBeacon2 = {
   _id : '0008.22:22:22:22:22:22',
@@ -106,10 +127,8 @@ var testBeacon2 = {
   ssid: 'Test Beacon 2',
   bssid: '22:22:22:22:22:22',
   type: 'fixed',
-  private: false,
-  location: { lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30 },
+  location: { lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] },
   level: -85,
-  loc : [testLongitude, testLatitude]
 }
 var testBeacon3 = {
   _id : '0008.33:33:33:33:33:33',
@@ -117,10 +136,8 @@ var testBeacon3 = {
   ssid: 'Test Beacon 3',
   bssid: '33:33:33:33:33:33',
   type: 'fixed',
-  private: false,
-  location: { lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30 },
+  location: { lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] },
   level: -95,
-  loc : [testLongitude, testLatitude]
 }
 var testObservation = {
   latitude : testLatitude,
