@@ -89,7 +89,6 @@ defaultRecord.entities_place = {
   photo: { prefix:"https://s3.amazonaws.com/3meters_images/test_preview.jpg", sourceName:"aircandi" },
   location: { lat:latitude, lng:longitude, altitude:0, accuracy:30, speed: 0, geometry:[longitude, latitude] },
   signalFence: -100,
-  enabled: true,
   _creator: uid1,
 }
 
@@ -100,7 +99,6 @@ defaultRecord.entities_applink = {
   photo: { prefix:"https://graph.facebook.com/143970268959049/picture?type=large", sourceName:"facebook" },
   appId: "143970268959049",
   appUrl: "https://www.facebook.com/pages/Bannerwood-Park/143970268959049",
-  enabled: true,
   data: { origin : "facebook", validated : 1369167109174.0, likes : 9 },
   _creator: uid1,
 }
@@ -113,7 +111,6 @@ defaultRecord.entities_post = {
   description: 'Mona Lisa (also known as La Gioconda or La Joconde) is a 16th-century portrait painted in oil on a poplar panel by Leonardo di ser Piero da Vinci during the Renaissance in Florence, Italy.',
   photo: {prefix:"https://s3.amazonaws.com/3meters_images/test_preview.jpg"},
   signalFence: -100,
-  enabled: true,
   _creator: uid1,
 }
 
@@ -122,7 +119,6 @@ defaultRecord.entities_comment = {
   type: util.statics.typeComment,
   name: 'Hmmm, not sure what the fuss is',
   description: 'Stuck behind thick plexiglass, tiny, I could hardly see it.',
-  enabled: true,
   _creator: uid1,
 }
 

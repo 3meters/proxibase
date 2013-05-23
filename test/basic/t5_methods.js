@@ -70,7 +70,6 @@ var testEntity2 = {
     prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", sourceName:"aircandi" 
   },
   signalFence : -100,
-  enabled : true,
 }
 var testEntity3 = {
   _id : "0004.111111.11111.111.111113",
@@ -84,14 +83,12 @@ var testEntity3 = {
   },
   place: {},
   signalFence : -100,
-  enabled : true,
 }
 var testEntity4 = {
   _id : "0004.111111.11111.111.111114",
   type : util.statics.typeComment,
   name : "Test Comment",
   description : "Test comment, much ado about nothing.",
-  enabled : true,
 }
 var testEntity5 = {
   _id: "0004.111111.11111.111.111115",
@@ -99,7 +96,6 @@ var testEntity5 = {
   name: "Bannerwood Park",
   photo: { prefix:"https://graph.facebook.com/143970268959049/picture?type=large", sourceName:"facebook" },
   appId: "143970268959049"
-  enabled: true,
   data: { origin : "facebook", validated : 1369167109174.0, likes : 9 }
 }
 var testLink = {
