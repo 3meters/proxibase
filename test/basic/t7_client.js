@@ -71,7 +71,7 @@ exports.canRefreshVersionViaDatabaseAndGetOnClient = function(test) {
     uri: '/data/documents/' + util.statics.clientVersion._id + '?' + adminCred,
     body: {
       data: {
-        data: {
+        sdata: {
           androidMinimumVersion: 2
         }
       }

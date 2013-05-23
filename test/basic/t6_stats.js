@@ -15,25 +15,22 @@ var testLatitude = 46.1
 var testLongitude = -121.1
 var testEntity = {
   name: "StatsTest Entity 1",
-  type: util.statics.typeContent,
-  enabled : true
+  type: util.statics.typePost,
 }
 var testBeacon = {
-  label: 'Test Beacon Label',
+  name: 'Test Beacon Label',
   ssid: 'Test Beacon',
   bssid: '11:11:11:11:11:11',
-  beaconType: 'fixed',
-  visibility: 'public',
-  latitude : testLatitude,
-  longitude : testLongitude,
-  altitude : 12,
-  accuracy : 30,
-  level: -80,
-  loc : [testLongitude, testLatitude]
+  location: {
+    lat: testLatitude,
+    lng: testLongitude,
+    altitude: 12,
+    accuracy: 30,
+  }
 }
 var testObservation = {
-  latitude : testLatitude,
-  longitude : testLongitude,
+  lat : testLatitude,
+  lng : testLongitude,
   altitude : 100,
   accuracy : 50.0
 }
