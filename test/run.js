@@ -42,6 +42,7 @@ cli
   .option('-t, --test <dir>', 'Test')
   .option('-b, --basic', 'Only run the basic tests')
   .option('-n, --none', 'Do not run any tests -- just ensure the test db')
+  .option('-e, --empty', 'run against an empty database')
   .option('-g, --generate', 'generate a fresh template test db from code')
   .option('-l, --log <file>', 'Test server log file [' + logFile + ']')
   .option('-d, --disconnected', 'skip tests that require internet connectivity')
@@ -67,11 +68,37 @@ else {auto_reconnect: true
   config = util.config
   serverUrl = testUtil.serverUrl = config.service.url
 
-  // Make sure the right database exists and the test server is running
-  ensureDb(dbProfile.smokeTest, function(err) {
+  if (cli.empty) {
+    // Drop the existing test database i
+    ensureEmptyDb(function(err) {
+      if (err) throw err
+      ensureServer(function(err) {
+        if (err) throw err
+        runTests()
+      })
+    })
+  }
+  else {
+    // Make sure the right database exists
+    ensureDb(dbProfile.smokeTest, function(err) {
+      if (err) throw err
+      ensureServer(function() {
+        runTests()
+      })
+    })
+  }
+}
+
+// Drop the database
+function ensureEmptyDb(cb) {
+  var cfg = config.db
+  var db = new mongo.Db(cfg.database, new mongo.Server(cfg.host, cfg.port), {w:1})
+  db.open(function(err, db) {
     if (err) throw err
-    ensureServer(function() {
-      runTests()
+    db.dropDatabase(function(err) {
+      if (err) throw err
+      db.close()
+      cb()
     })
   })
 }
