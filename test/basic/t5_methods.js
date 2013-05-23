@@ -26,7 +26,10 @@ var testUser = {
   name : "John Q Test",
   email : "johnqtest@3meters.com",
   password : "12345678",
-  photo: { prefix:"resource:placeholder_user", sourceName:"resource" },
+  photo: { 
+    prefix:"resource:placeholder_user", 
+    source:"resource",
+  },
   area : "Testville, WA",
   developer : false
 }
@@ -41,7 +44,8 @@ var testEntity = {
   type : util.statics.typePlace,
   name : "Testing candi",
   photo: { 
-    prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", sourceName:"aircandi" 
+    prefix:"1001_20111224_104245.jpg", 
+    source:"aircandi",
   },
   signalFence : -100,
   location: { 
@@ -56,27 +60,27 @@ var testEntity = {
       id:"4bf58dd8d48988d18c941735", 
       name : "Baseball Stadium",
       photo:{
-        sourceName : "assets.categories",
-        prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png"
+        prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
+        source : "assets.categories",
       },
     },
-  enabled : true,
 }
 var testEntity2 = {
   _id : "0004.111111.11111.111.111112",
   type : util.statics.typePost,
   name : "Testing candi 2",
   photo: { 
-    prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", sourceName:"aircandi" 
+    prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", 
+    source:"aircandi",
   },
-  signalFence : -100,
 }
 var testEntity3 = {
   _id : "0004.111111.11111.111.111113",
   type : util.statics.typePlace,
   name : "Testing candi 3",
   photo: { 
-    prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", sourceName:"aircandi" 
+    prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", 
+    source:"aircandi",
   },
   location: { 
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] 
@@ -94,9 +98,14 @@ var testEntity5 = {
   _id: "0004.111111.11111.111.111115",
   type: util.statics.typeApplink,
   name: "Bannerwood Park",
-  photo: { prefix:"https://graph.facebook.com/143970268959049/picture?type=large", sourceName:"facebook" },
+  photo: { 
+    prefix:"https://graph.facebook.com/143970268959049/picture?type=large", 
+    source:"facebook",
+  },
   appId: "143970268959049"
-  data: { origin : "facebook", validated : 1369167109174.0, likes : 9 }
+  sdata: { 
+    origin : "facebook", validated : 1369167109174.0, likes : 9 
+  }
 }
 var testLink = {
   _to : '0008.11:11:11:11:11:22',
@@ -114,7 +123,9 @@ var testBeacon = {
   ssid: 'Test Beacon',
   bssid: '11:11:11:11:11:11',
   type: 'fixed',
-  location: { lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] },
+  location: { 
+    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] 
+  },
   level: -80,  
 }
 var testBeacon2 = {
@@ -123,7 +134,9 @@ var testBeacon2 = {
   ssid: 'Test Beacon 2',
   bssid: '22:22:22:22:22:22',
   type: 'fixed',
-  location: { lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] },
+  location: { 
+    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] 
+  },
   level: -85,
 }
 var testBeacon3 = {
@@ -132,7 +145,9 @@ var testBeacon3 = {
   ssid: 'Test Beacon 3',
   bssid: '33:33:33:33:33:33',
   type: 'fixed',
-  location: { lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] },
+  location: { 
+    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] 
+  },
   level: -95,
 }
 var testObservation = {
@@ -176,7 +191,7 @@ exports.getEntitiesLoadChildren = function (test) {
   t.post({
     uri: '/do/getEntities',
     body: {entityIds: [constants.entityId], 
-        eagerLoad: {parents: false, children: true, comments: true}}
+        eagerLoad: {children: true, comments: true}}
   }, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data[0])
