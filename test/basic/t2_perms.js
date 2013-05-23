@@ -21,7 +21,7 @@ var user2 = {
 }
 var doc1 = {
   name: 'Doc1',
-  data: { foo: 'bar' }
+  sdata: { foo: 'bar' }
 }
 var _exports = {}                    // for commenting out tests
 
@@ -97,10 +97,10 @@ exports.signinUser2 = function(test) {
 exports.user1CanUpdateOwnRecord = function (test) {
   t.post({
     uri: '/data/users/' + user1._id + '?' + user1Cred,
-    body: {data: {location: 'Orlando'}}
+    body: {data: {area: 'Orlando'}}
   }, function(err, res, body) {
     t.assert(body.user)
-    t.assert(body.data.location === 'Orlando')
+    t.assert(body.data.area === 'Orlando')
     test.done()
   })
 }
@@ -109,7 +109,7 @@ exports.user1CanUpdateOwnRecord = function (test) {
 exports.user1CannotUpdateUser2sRecord = function(test) {
   t.post({
     uri: '/data/users/' + user2._id + '?' + user1Cred,
-    body: {data: {location: 'Denver'}}
+    body: {data: {area: 'Denver'}}
   }, 401, function(err, res, body) {
     test.done()
   })
