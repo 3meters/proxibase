@@ -86,7 +86,7 @@ defaultRecord.entities_place = {
   name: 'Museum of Modern Art',
   subtitle: 'Contemporary Galleries: 1980-Now',
   description: 'The Museum of Modern Art is a place that fuels creativity, ignites minds, and provides inspiration. With extraordinary exhibitions and the world\'s finest collection of modern and contemporary art, MoMA is dedicated to the conversation between the past and the present, the established and the experimental. Our mission is helping you understand and enjoy the art of our time.',
-  photo: { prefix:"https://s3.amazonaws.com/3meters_images/test_preview.jpg", sourceName:"aircandi" },
+  photo: { prefix:"https://s3.amazonaws.com/3meters_images/test_preview.jpg", source:"aircandi" },
   location: { lat:latitude, lng:longitude, altitude:0, accuracy:30, speed: 0, geometry:[longitude, latitude] },
   signalFence: -100,
   _creator: uid1,
@@ -96,10 +96,10 @@ defaultRecord.entities_applink = {
   _id: entityId,
   type: util.statics.typeApplink,
   name: "Bannerwood Park",
-  photo: { prefix:"https://graph.facebook.com/143970268959049/picture?type=large", sourceName:"facebook" },
+  photo: { prefix:"https://graph.facebook.com/143970268959049/picture?type=large", source:"facebook" },
   appId: "143970268959049",
   appUrl: "https://www.facebook.com/pages/Bannerwood-Park/143970268959049",
-  data: { origin : "facebook", validated : 1369167109174.0, likes : 9 },
+  sdata: { origin : "facebook", validated : 1369167109174.0, likes : 9 },
   _creator: uid1,
 }
 
