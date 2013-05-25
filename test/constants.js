@@ -50,17 +50,27 @@ defaultRecord.users = defaultRecord.users1 = {
   _id: uid1,
   name: 'Test User',
   email: 'test@3meters.com',
+  photo: { 
+    prefix:"resource:placeholder_user", 
+    source:"resource",
+  },
   area: 'Testville, WA',
-  developer: false
+  developer: false,
+  enabled: true,
 }
 
 defaultRecord.users2 = {
   _id: uid2,
   name: 'Test User Dev',
   email: 'testdev@3meters.com',
+  photo: { 
+    prefix:"resource:placeholder_user", 
+    source:"resource",
+  },
   area: 'Testville, WA',
   password: password,
-  developer: true
+  developer: true,
+  enabled: true,
 }
 
 defaultRecord.documents = {
@@ -68,7 +78,8 @@ defaultRecord.documents = {
   type : 'com.aircandi.document.version',
   data: {
     androidMinimumVersion:10
-  }
+  },
+  enabled: true,
 }
 
 defaultRecord.beacons = {
@@ -77,7 +88,11 @@ defaultRecord.beacons = {
   ssid: 'Test Beacon',
   bssid: bssid,
   type: 'fixed',
-  location: { lat:latitude, lng:longitude, altitude:0, accuracy:30, speed: 0, geometry:[longitude, latitude] }
+  location: { 
+    lat:latitude, lng:longitude, altitude:0, accuracy:30, speed: 0, geometry:[longitude, latitude] 
+  },
+  level: -80,
+  enabled: true,
 }
 
 defaultRecord.entities_place = {
@@ -88,8 +103,23 @@ defaultRecord.entities_place = {
   description: 'The Museum of Modern Art is a place that fuels creativity, ignites minds, and provides inspiration. With extraordinary exhibitions and the world\'s finest collection of modern and contemporary art, MoMA is dedicated to the conversation between the past and the present, the established and the experimental. Our mission is helping you understand and enjoy the art of our time.',
   photo: { prefix:"https://s3.amazonaws.com/3meters_images/test_preview.jpg", source:"aircandi" },
   location: { lat:latitude, lng:longitude, altitude:0, accuracy:30, speed: 0, geometry:[longitude, latitude] },
+  place: { 
+    address:"123 Central Park", city:"New York", region:"NY", country:"USA", phone:"2065551212", 
+    provider:{ 
+      foursquare:"4bcfbae19854d13a82b8f64d" 
+    },
+    category:{ 
+      id:"4bf58dd8d48988d18c941735", 
+      name : "Baseball Stadium",
+      photo:{
+        prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
+        source : "assets.categories",
+      },
+    }
+  },
   signalFence: -100,
   _creator: uid1,
+  enabled: true,
 }
 
 defaultRecord.entities_applink = {
@@ -101,6 +131,7 @@ defaultRecord.entities_applink = {
   appUrl: "https://www.facebook.com/pages/Bannerwood-Park/143970268959049",
   sdata: { origin : "facebook", validated : 1369167109174.0, likes : 9 },
   _creator: uid1,
+  enabled: true,
 }
 
 defaultRecord.entities_post = {
@@ -110,8 +141,8 @@ defaultRecord.entities_post = {
   subtitle: 'Leonardo daVinci',
   description: 'Mona Lisa (also known as La Gioconda or La Joconde) is a 16th-century portrait painted in oil on a poplar panel by Leonardo di ser Piero da Vinci during the Renaissance in Florence, Italy.',
   photo: {prefix:"https://s3.amazonaws.com/3meters_images/test_preview.jpg"},
-  signalFence: -100,
   _creator: uid1,
+  enabled: true,
 }
 
 defaultRecord.entities_comment = {
@@ -120,6 +151,7 @@ defaultRecord.entities_comment = {
   name: 'Hmmm, not sure what the fuss is',
   description: 'Stuck behind thick plexiglass, tiny, I could hardly see it.',
   _creator: uid1,
+  enabled: true,
 }
 
 defaultRecord.links = {
