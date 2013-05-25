@@ -31,13 +31,15 @@ var testUser = {
     source:"resource",
   },
   area : "Testville, WA",
-  developer : false
+  developer : false,
+  enabled: true,
 }
 var testUser2 = {
   _id : "0001.111111.11111.111.222222",
   name : "John Q Test2",
   email : "johnqtest2@3meters.com",
-  password : "12345678"
+  password : "12345678",
+  enabled: true,
 }
 var testEntity = {
   _id : "0004.111111.11111.111.111111",
@@ -45,7 +47,7 @@ var testEntity = {
   name : "Testing candi",
   photo: { 
     prefix:"1001_20111224_104245.jpg", 
-    source:"aircandi",
+    source:"aircandi"
   },
   signalFence : -100,
   location: { 
@@ -63,7 +65,9 @@ var testEntity = {
         prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
         source : "assets.categories",
       },
-    },
+    }
+  },
+  enabled: true,
 }
 var testEntity2 = {
   _id : "0004.111111.11111.111.111112",
@@ -73,6 +77,7 @@ var testEntity2 = {
     prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", 
     source:"aircandi",
   },
+  enabled: true,
 }
 var testEntity3 = {
   _id : "0004.111111.11111.111.111113",
@@ -87,12 +92,14 @@ var testEntity3 = {
   },
   place: {},
   signalFence : -100,
+  enabled: true,
 }
 var testEntity4 = {
   _id : "0004.111111.11111.111.111114",
   type : util.statics.typeComment,
   name : "Test Comment",
   description : "Test comment, much ado about nothing.",
+  enabled: true,
 }
 var testEntity5 = {
   _id: "0004.111111.11111.111.111115",
@@ -102,10 +109,11 @@ var testEntity5 = {
     prefix:"https://graph.facebook.com/143970268959049/picture?type=large", 
     source:"facebook",
   },
-  appId: "143970268959049"
+  appId: "143970268959049",
   sdata: { 
     origin : "facebook", validated : 1369167109174.0, likes : 9 
-  }
+  },
+  enabled: true,
 }
 var testLink = {
   _to : '0008.11:11:11:11:11:22',
@@ -127,6 +135,7 @@ var testBeacon = {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] 
   },
   level: -80,  
+  enabled: true,
 }
 var testBeacon2 = {
   _id : '0008.22:22:22:22:22:22',
@@ -138,6 +147,7 @@ var testBeacon2 = {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] 
   },
   level: -85,
+  enabled: true,
 }
 var testBeacon3 = {
   _id : '0008.33:33:33:33:33:33',
@@ -149,6 +159,7 @@ var testBeacon3 = {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] 
   },
   level: -95,
+  enabled: true,
 }
 var testObservation = {
   latitude : testLatitude,
@@ -190,17 +201,20 @@ exports.getEntitiesLoadChildren = function (test) {
    */
   t.post({
     uri: '/do/getEntities',
-    body: {entityIds: [constants.entityId], 
-        eagerLoad: {children: true, comments: true}}
+    body: {
+      entityIds: [constants.entityId], 
+      activeLinks: { 
+        post: {load: true}, 
+        comment: {load: true},
+        proximity: {load: true},
+      }
+    }
   }, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data[0])
     var record = body.data[0]
-    t.assert(record.children.length === dbProfile.spe)
-    t.assert(record.childCount === dbProfile.spe)
-    t.assert(record.comments.length === dbProfile.cpe)
-    t.assert(record.commentCount === dbProfile.cpe)
-    t.assert(record.links[0]._to === constants.beaconId)
+    t.assert(record.entities.length === dbProfile.spe + dbProfile.cpe)
+    t.assert(record.linksOut[0]._to === constants.beaconId)
     test.done()
   })
 }
@@ -208,7 +222,12 @@ exports.getEntitiesLoadChildren = function (test) {
 exports.getEntitiesForLocation = function (test) {
   t.post({
     uri: '/do/getEntitiesForLocation',
-    body: {beaconIdsNew:[constants.beaconId],eagerLoad:{children:true,comments:false}}
+    body: {
+      beaconIds: [constants.beaconId],
+      load: {
+        children: true, 
+        comments: false
+      }}
   }, function(err, res, body) {
     t.assert(body.count === dbProfile.epb)
     t.assert(body.date)
