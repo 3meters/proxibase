@@ -67,7 +67,6 @@ var testEntity = {
       },
     }
   },
-  enabled: true,
 }
 var testEntity2 = {
   _id : "0004.111111.11111.111.111112",
@@ -77,7 +76,6 @@ var testEntity2 = {
     prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", 
     source:"aircandi",
   },
-  enabled: true,
 }
 var testEntity3 = {
   _id : "0004.111111.11111.111.111113",
@@ -92,14 +90,12 @@ var testEntity3 = {
   },
   place: {},
   signalFence : -100,
-  enabled: true,
 }
 var testEntity4 = {
   _id : "0004.111111.11111.111.111114",
   type : util.statics.typeComment,
   name : "Test Comment",
   description : "Test comment, much ado about nothing.",
-  enabled: true,
 }
 var testEntity5 = {
   _id: "0004.111111.11111.111.111115",
@@ -113,53 +109,55 @@ var testEntity5 = {
   sdata: { 
     origin : "facebook", validated : 1369167109174.0, likes : 9 
   },
-  enabled: true,
 }
 var testLink = {
   _to : '0008.11:11:11:11:11:22',
   _from : '0004.111111.11111.111.111111',
   primary: true,
-  level: -100
+  signal: -100
 }
 var newTestLink = {
   _to : '0004.111111.11111.111.111112',
   _from : '0004.111111.11111.111.111111',
 }
 var testBeacon = {
-  _id : '0008.11:11:11:11:11:11',
+  _id : '0004.11:11:11:11:11:11',
+  type : util.statics.typeBeacon,
   name: 'Test Beacon Label',
-  ssid: 'Test Beacon',
-  bssid: '11:11:11:11:11:11',
-  type: 'fixed',
+  beacon: {
+    ssid: 'Test Beacon',
+    bssid: '11:11:11:11:11:11',
+    signal: -80,  
+  },
   location: { 
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] 
   },
-  level: -80,  
-  enabled: true,
 }
 var testBeacon2 = {
-  _id : '0008.22:22:22:22:22:22',
+  _id : '0004.22:22:22:22:22:22',
+  type : util.statics.typeBeacon,
   name: 'Test Beacon Label 2',
-  ssid: 'Test Beacon 2',
-  bssid: '22:22:22:22:22:22',
-  type: 'fixed',
+  beacon: {
+    ssid: 'Test Beacon 2',
+    bssid: '22:22:22:22:22:22',
+    signal: -85,  
+  },
   location: { 
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] 
   },
-  level: -85,
-  enabled: true,
 }
 var testBeacon3 = {
-  _id : '0008.33:33:33:33:33:33',
+  _id : '0004.33:33:33:33:33:33',
+  type : util.statics.typeBeacon,
   name: 'Test Beacon Label 3',
-  ssid: 'Test Beacon 3',
-  bssid: '33:33:33:33:33:33',
-  type: 'fixed',
+  beacon: {
+    ssid: 'Test Beacon 3',
+    bssid: '33:33:33:33:33:33',
+    signal: -95,  
+  },
   location: { 
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] 
   },
-  level: -95,
-  enabled: true,
 }
 var testObservation = {
   latitude : testLatitude,
@@ -203,17 +201,19 @@ exports.getEntitiesLoadChildren = function (test) {
     uri: '/do/getEntities',
     body: {
       entityIds: [constants.entityId], 
-      activeLinks: { 
-        post: {load: true}, 
-        comment: {load: true},
-        proximity: {load: true},
-      }
+      entityType: 'entities',
+      activeLinks: [ 
+        { type:util.statics.typePost, load: true }, 
+        { type:util.statics.typeApplink, load: true }, 
+        { type:util.statics.typeComment, load: true }, 
+        { type:util.statics.typeProximity, links: true }, 
+      ]
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data[0])
     var record = body.data[0]
-    t.assert(record.entities.length === dbProfile.spe + dbProfile.cpe)
+    t.assert(record.entities.length === dbProfile.spe + dbProfile.cpe + dbProfile.ape)
     t.assert(record.linksOut[0]._to === constants.beaconId)
     test.done()
   })
@@ -221,15 +221,19 @@ exports.getEntitiesLoadChildren = function (test) {
 
 exports.getEntitiesForLocation = function (test) {
   t.post({
-    uri: '/do/getEntitiesForLocation',
+    uri: '/do/getEntities',
     body: {
-      beaconIds: [constants.beaconId],
-      load: {
-        children: true, 
-        comments: false
-      }}
+      entityIds: [constants.beaconId],
+      entityType: 'entities',
+      activeLinks: [ 
+        { type:util.statics.typeProximity, load: true }, 
+      ]
+    }
   }, function(err, res, body) {
-    t.assert(body.count === dbProfile.epb)
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data[0])
+    var record = body.data[0]
+    t.assert(record.entities.length === dbProfile.epb)
     t.assert(body.date)
     test.done()
   })
@@ -237,13 +241,19 @@ exports.getEntitiesForLocation = function (test) {
 
 exports.getEntitiesForLocationLimited = function (test) {
   t.post({
-    uri: '/do/getEntitiesForLocation',
-    body: {beaconIdsNew:[constants.beaconId], 
-        eagerLoad:{ children:true,comments:false }, 
-        options:{limit:3, skip:0, sort:{modifiedDate:-1}}}
+    uri: '/do/getEntities',
+    body: {
+      entityIds: [constants.beaconId],
+      entityType: 'entities',
+      activeLinks: [ 
+        { type:util.statics.typeProximity, load: true, limit: 3 }, 
+      ]
+    }
   }, function(err, res, body) {
-    t.assert(body.count === 3)
-    t.assert(body.more === true)
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data[0])
+    var record = body.data[0]
+    t.assert(record.entities.length === 3)
     test.done()
   })
 }
@@ -251,10 +261,12 @@ exports.getEntitiesForLocationLimited = function (test) {
 exports.getEntitiesForUser = function (test) {
   t.post({
     uri: '/do/getEntitiesForUser',
-    body: {userId:constants.uid1, eagerLoad:{children:false,comments:false}}
+    body: {
+      userId: constants.uid1
+    }
   }, function(err, res, body) {
-    t.assert(body.count === Math.min(constants.recordLimit,
-        dbProfile.beacons * dbProfile.epb / dbProfile.users))
+    t.assert(body.count === util.statics.optionsLimitDefault)
+    t.assert(body.more === true)
     test.done()
   })
 }
@@ -266,7 +278,6 @@ exports.cannotInsertEntityNotLoggedIn = function (test) {
       entity:testEntity, 
       beacons:[testBeacon], 
       primaryBeaconId:testBeacon._id,
-      observation:testObservation,
       skipNotifications:true
     }
   }, 401, function(err, res, body) {
@@ -278,11 +289,10 @@ exports.insertEntity = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCred,
     body: {
-      entity:testEntity, 
-      beacons:[testBeacon], 
-      primaryBeaconId:testBeacon._id,
-      observation:testObservation,
-      skipNotifications:true
+      entity: testEntity, 
+      beacons: [testBeacon], 
+      primaryBeaconId: testBeacon._id,
+      skipNotifications: true
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)

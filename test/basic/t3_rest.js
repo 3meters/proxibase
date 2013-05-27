@@ -482,13 +482,16 @@ exports.userCanDeleteMultipleDocs = function(test) {
 
 exports.defaultsWork = function(test) {
   t.post({
-    uri: '/data/beacons?' + userCred,
-    body: {data: {
-      bssid: '01:10:11:22:44:66',
-      ssid: 'Rest test beacon'
+    uri: '/data/entities?' + userCred,
+    body: {data: { 
+      type: util.statics.typeBeacon,
+      beacon: {
+        bssid: '01:10:11:22:44:66',
+        ssid: 'Rest test beacon'
+      }
     }}
   }, 201, function(err, res, body) {
-    t.assert(body.data.type === 'fixed')
+    t.assert(body.data.enabled === true)
     test.done()
   })
 }
@@ -535,11 +538,15 @@ exports.admiCanReadSystemCollections = function(test) {
 
 exports.usersCannotSkipSafeInsert = function(test) {
   t.post({
-    uri: '/data/beacons?' + userCred,
+    uri: '/data/entities?' + userCred,
     body: {
-      data: {
-        bssid: '01:10:11:22:44:88',
-        bogusField: 'I am a bogus field'
+      data: { 
+        _id: 'bogusid1',
+        type: util.statics.typeBeacon,
+        beacon: {
+          bssid: '01:10:11:22:44:88',
+          bogusField: 'I am a bogus field'
+        }
       },
       skipValidation: true 
     }
@@ -550,26 +557,31 @@ exports.usersCannotSkipSafeInsert = function(test) {
 
 exports.adminsCanSkipSafeInsert = function(test) {
   t.post({
-    uri: '/data/beacons?' + adminCred,
+    uri: '/data/entities?' + adminCred,
     body: {
-      data: {
+      data: { 
         _id: 'bogusid1',
-        bogusField: 'I am a bogus field'
+        type: util.statics.typeBeacon,
+        beacon: {
+          bssid: '01:10:11:22:44:88',
+          bogusField: 'I am a bogus field'
+        }
       },
-      skipValidation: true
+      skipValidation: true 
     }
   }, 201, function(err, res, body) {
-    t.assert(body.data.bogusField)
     test.done()
   })
 }
 
 exports.usersCannotSkipSafeUpdate = function(test) {
   t.post({
-    uri: '/data/beacons/bogusid1?' + userCred,
+    uri: '/data/entities/bogusid1?' + userCred,
     body: {
       data: {
-        bogusField2: 'I am a bogus field too'
+        beacon: {
+          bogusField2: 'I am a bogus field too'
+        }
       },
       skipValidation: true
     }
@@ -580,10 +592,12 @@ exports.usersCannotSkipSafeUpdate = function(test) {
 
 exports.adminsCanSkipSafeUpdate = function(test) {
   t.post({
-    uri: '/data/beacons/bogusid1?' + adminCred,
+    uri: '/data/entities/bogusid1?' + adminCred,
     body: {
       data: {
-        bogusField2: 'I am a bogus field too'
+        beacon: {
+          bogusField2: 'I am a bogus field too'
+        }
       },
       skipValidation: true
     }
@@ -605,7 +619,7 @@ exports.countByFailsOnBogusFields = function(test) {
 
 exports.deleteBogusRecord = function(test) {
  t.delete({
-    uri: '/data/beacons/bogusid1?' + adminCred,
+    uri: '/data/entities/bogusid1?' + adminCred,
   }, function(err, res, body) {
     t.assert(body.count === 1)
     test.done()
@@ -638,7 +652,7 @@ exports.countByWorks = function(test) {
   }, function(err, res, body) {
     // These are based on data in template test database
     t.assert(body.count >= 10)
-    t.assert(body.data[0].countBy === 2050)
+    t.assert(body.data[0].countBy === 2060)
     test.done()
   })
 }
@@ -662,6 +676,9 @@ exports.countByMultipleFieldsWorks = function(test) {
           break
         case 'com.aircandi.comment':
           t.assert(elm.countBy === 1500)
+          break
+        case 'com.aircandi.beacon':
+          t.assert(elm.countBy <= 10)
           break
         default:
           t.assert(false, 'Unexpected type ' + elm.type)
