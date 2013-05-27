@@ -87,12 +87,13 @@ module.exports = function(profile, callback) {
 }
 
 function run(callback) {
+
+  log('generating users')
   genUsers()
-  // genDocuments()  now added by server startup code
   log('generating beacons')
-  genBeacons()
+  genEntityRecords([0], null, options.beacons, util.statics.typeBeacon, null)
   log('generating places')
-  genEntityRecords(beaconIds, tableIds['beacons'], options.epb, util.statics.typePlace, util.statics.typeProximity)
+  genEntityRecords(beaconIds, tableIds['entities'], options.epb, util.statics.typePlace, util.statics.typeProximity)
   log('generating posts')
   genEntityRecords(placeIds, tableIds['entities'], options.spe, util.statics.typePost, util.statics.typePost)
   log('generating applinks')
@@ -122,28 +123,40 @@ function genUsers() {
     user.password = 'doobar' + i
     table.users.push(user)
   }
+
+  table.links = []
+  for (var i = 0; i < table.users.length; i++) {
+    for (var j = 0; j < table.users.length; j++) {
+      if (i == j) continue
+
+        // like
+        var likeLink = constants.getDefaultRecord('links')
+        likeLink._id = testUtil.genId('links', linkCount)
+        likeLink.type = util.statics.typeLike
+        likeLink._from = table.users[i]._id
+        likeLink.fromCollectionId = tableIds['users']
+        likeLink._to = table.users[j]._id
+        likeLink.toCollectionId = tableIds['users']
+        table.links.push(likeLink)
+        linkCount++
+
+        // watch
+        var watchLink = constants.getDefaultRecord('links')
+        watchLink._id = testUtil.genId('links', linkCount)
+        watchLink.type = util.statics.typeWatch
+        watchLink._from = table.users[i]._id
+        watchLink.fromCollectionId = tableIds['users']
+        watchLink._to = table.users[j]._id
+        watchLink.toCollectionId = tableIds['users']
+        table.links.push(watchLink)
+        linkCount++
+    }
+  }
 }
 
 function genDocuments() {
   table.documents = []
   table.documents.push(constants.getDefaultRecord('documents'))
-}
-
-function genBeacons() {
-  table.beacons = []
-  for (var i = 0; i < options.beacons; i++) {
-    var beacon = constants.getDefaultRecord('beacons')
-    beacon._id = testUtil.genBeaconId(i)
-    beacon.ssid = beacon.ssid + ' ' + i
-    beacon.bssid = beacon._id.substring(5)
-    beacon._creator = beacon._modifier =
-      testUtil.genId('users', Math.floor((i * options.users) / options.beacons))
-    // Inch our way around the world
-    beacon.location.lat = (beacon.location.lat + (i / 1000)) % 180
-    beacon.location.lng = (beacon.location.lng + (i / 1000)) % 180
-    table.beacons.push(beacon)
-    beaconIds.push(beacon._id)
-  }
 }
 
 function genEntityRecords(parentIds, parentCollectionId, count, entityType, linkType) {
@@ -154,67 +167,84 @@ function genEntityRecords(parentIds, parentCollectionId, count, entityType, link
   for (var p = 0; p < parentIds.length; p++) {
     for (var i = 0; i < count; i++) {
 
-      var newEnt
+      var newEnt = {}
+      if (entityType === util.statics.typeBeacon) newEnt = constants.getDefaultRecord('entities_beacon')
       if (entityType === util.statics.typePlace) newEnt = constants.getDefaultRecord('entities_place')
       if (entityType === util.statics.typeApplink) newEnt = constants.getDefaultRecord('entities_applink')
       if (entityType === util.statics.typePost) newEnt = constants.getDefaultRecord('entities_post')
       if (entityType === util.statics.typeComment) newEnt = constants.getDefaultRecord('entities_comment')
 
       // Entity
-      newEnt._id = testUtil.genId('entities', entityCount)
+      if (entityType === util.statics.typeBeacon) {
+        newEnt._id = testUtil.genBeaconId(i)
+        newEnt.beacon = util.clone(newEnt.beacon)
+        newEnt.beacon.bssid = newEnt._id.substring(5)
+        newEnt.beacon.ssid = newEnt.beacon.ssid + ' ' + (entityCount + 1)
+      }
+      else {
+        newEnt._id = testUtil.genId('entities', entityCount)
+      }
       newEnt.name = newEnt.name + ' ' + (entityCount + 1)
       newEnt._creator = newEnt._modifier = testUtil.genId('users', (entityCount % options.users))
+
       table.entities.push(newEnt)
       entityCount++
 
-      // Link
-      var newLink = constants.getDefaultRecord('links')
-      newLink._id = testUtil.genId('links', linkCount)
-      newLink.type = linkType
-      newLink._from = newEnt._id
-      newLink.fromCollectionId = tableIds['entities']
-      newLink._to = parentIds[p]
-      newLink.toCollectionId = parentCollectionId
-      table.links.push(newLink)
-      linkCount++
+      if (entityType !== util.statics.typeBeacon) {
 
-      // Like
-      if (entityType === util.statics.typePlace) {
-        for (var u = 0; u < options.users; u++) {
-          if (u >= 5) break;
-          var likeLink = constants.getDefaultRecord('links')
-          likeLink._id = testUtil.genId('links', linkCount)
+        // Link
+        var newLink = constants.getDefaultRecord('links')
+        newLink._id = testUtil.genId('links', linkCount)
+        newLink.type = linkType
+        newLink._from = newEnt._id
+        newLink.fromCollectionId = tableIds['entities']
+        newLink._to = parentIds[p]
+        newLink.toCollectionId = parentCollectionId
+        if (entityType === util.statics.typeComment) {
+          newLink.strong = true
+        }
+        table.links.push(newLink)
+        linkCount++
 
-          likeLink.type = util.statics.typeLike
-          likeLink._from = testUtil.genId('users', u)
-          likeLink._to = newEnt._id
+        // Like
+        if (entityType === util.statics.typePlace) {
+          for (var u = 0; u < options.users; u++) {
+            if (u >= 5) break;
+            var likeLink = constants.getDefaultRecord('links')
+            likeLink._id = testUtil.genId('links', linkCount)
 
-          likeLink.fromCollectionId = tableIds['users']
-          likeLink.toCollectionId = tableIds['entities']
-          table.links.push(likeLink)        
-          linkCount++
+            likeLink.type = util.statics.typeLike
+            likeLink._from = testUtil.genId('users', u)
+            likeLink._to = newEnt._id
+
+            likeLink.fromCollectionId = tableIds['users']
+            likeLink.toCollectionId = tableIds['entities']
+            table.links.push(likeLink)        
+            linkCount++
+          }
+        }
+
+        // Watch
+        if (entityType === util.statics.typePlace) {
+          for (var u = 0; u < options.users; u++) {
+            if (u >= 2) break;
+            var watchLink = constants.getDefaultRecord('links')
+            watchLink._id = testUtil.genId('links', linkCount)
+
+            watchLink.type = util.statics.typeWatch
+            watchLink._from = testUtil.genId('users', u)
+            watchLink._to = newEnt._id
+
+            watchLink.fromCollectionId = tableIds['users']
+            watchLink.toCollectionId = tableIds['entities']
+
+            table.links.push(watchLink)        
+            linkCount++
+          }
         }
       }
 
-      // Watch
-      if (entityType === util.statics.typePlace) {
-        for (var u = 0; u < options.users; u++) {
-          if (u >= 2) break;
-          var watchLink = constants.getDefaultRecord('links')
-          watchLink._id = testUtil.genId('links', linkCount)
-
-          watchLink.type = util.statics.typeWatch
-          watchLink._from = testUtil.genId('users', u)
-          watchLink._to = newEnt._id
-
-          watchLink.fromCollectionId = tableIds['users']
-          watchLink.toCollectionId = tableIds['entities']
-
-          table.links.push(watchLink)        
-          linkCount++
-        }
-      }
-
+      if (entityType === util.statics.typeBeacon) beaconIds.push(newEnt._id)
       if (entityType === util.statics.typePlace) placeIds.push(newEnt._id)
       if (entityType === util.statics.typeApplink) applinkIds.push(newEnt._id)
       if (entityType === util.statics.typePost) postIds.push(newEnt._id)

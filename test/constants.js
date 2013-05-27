@@ -9,11 +9,9 @@ var
   timeStampMs = new Date(2001, 0, 1, 0, 0, 0, 555).getTime()  // Same but in milliseconds
   uid1 = '0001.' + timeStamp + '.000001',                     // Standard user
   uid2 = '0001.' + timeStamp + '.000002',                     // Dev user
+  entityId = '0004.' + timeStamp + '.000101',
   bssid = '00:00:00:00:00:01',
-  beaconId = '0008.' + bssid,
-  entityId = '0004.' + timeStamp + '.000001',
-  childEntityId = '0004.' + timeStamp + '.005001',
-  commentEntityId = '0004.' + timeStamp + '.050001',
+  beaconId = '0004.' + bssid,
   documentId = '0007.' + timeStamp + '.000001',
   linkId = '0005.' + timeStamp + '.000001',
   latitude = 47,                                              // Nearby
@@ -56,7 +54,6 @@ defaultRecord.users = defaultRecord.users1 = {
   },
   area: 'Testville, WA',
   developer: false,
-  enabled: true,
 }
 
 defaultRecord.users2 = {
@@ -70,7 +67,6 @@ defaultRecord.users2 = {
   area: 'Testville, WA',
   password: password,
   developer: true,
-  enabled: true,
 }
 
 defaultRecord.documents = {
@@ -79,20 +75,19 @@ defaultRecord.documents = {
   data: {
     androidMinimumVersion:10
   },
-  enabled: true,
 }
 
-defaultRecord.beacons = {
-  _id: beaconId,
-  name: 'Test Beacon Label',
-  ssid: 'Test Beacon',
-  bssid: bssid,
-  type: 'fixed',
-  location: { 
-    lat:latitude, lng:longitude, altitude:0, accuracy:30, speed: 0, geometry:[longitude, latitude] 
+defaultRecord.entities_beacon = {
+  _id: entityId,
+  type: util.statics.typeBeacon,
+  name: 'Beacon',
+  location: { lat:latitude, lng:longitude, altitude:0, accuracy:30, speed: 0, geometry:[longitude, latitude] },
+  beacon: { 
+    ssid: 'Test Beacon',
+    bssid: bssid,
+    level: -80,
   },
-  level: -80,
-  enabled: true,
+  _creator: uid1,
 }
 
 defaultRecord.entities_place = {
@@ -119,7 +114,6 @@ defaultRecord.entities_place = {
   },
   signalFence: -100,
   _creator: uid1,
-  enabled: true,
 }
 
 defaultRecord.entities_applink = {
@@ -131,7 +125,6 @@ defaultRecord.entities_applink = {
   appUrl: "https://www.facebook.com/pages/Bannerwood-Park/143970268959049",
   sdata: { origin : "facebook", validated : 1369167109174.0, likes : 9 },
   _creator: uid1,
-  enabled: true,
 }
 
 defaultRecord.entities_post = {
@@ -142,7 +135,6 @@ defaultRecord.entities_post = {
   description: 'Mona Lisa (also known as La Gioconda or La Joconde) is a 16th-century portrait painted in oil on a poplar panel by Leonardo di ser Piero da Vinci during the Renaissance in Florence, Italy.',
   photo: {prefix:"https://s3.amazonaws.com/3meters_images/test_preview.jpg"},
   _creator: uid1,
-  enabled: true,
 }
 
 defaultRecord.entities_comment = {
@@ -151,14 +143,13 @@ defaultRecord.entities_comment = {
   name: 'Hmmm, not sure what the fuss is',
   description: 'Stuck behind thick plexiglass, tiny, I could hardly see it.',
   _creator: uid1,
-  enabled: true,
 }
 
 defaultRecord.links = {
   _id: linkId,
-  toCollectionId : tableIds['beacons'],
+  toCollectionId : tableIds['entities'],
   fromCollectionId : tableIds['entities'],
-  _to : beaconId,
+  _to : entityId,
   _from : entityId
 }
 
@@ -171,9 +162,9 @@ module.exports = {
   uid1: uid1,
   uid2: uid2,
   password: password,
-  beaconId: beaconId,
   entityId: entityId,
-  childEntityId: childEntityId,
+  bssid: bssid,
+  beaconId: beaconId,
   documentId: documentId,
   linkId: linkId,
   latitude: latitude,
