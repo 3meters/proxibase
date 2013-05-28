@@ -180,6 +180,7 @@ function genEntityRecords(parentIds, parentCollectionId, count, entityType, link
         newEnt.beacon = util.clone(newEnt.beacon)
         newEnt.beacon.bssid = newEnt._id.substring(5)
         newEnt.beacon.ssid = newEnt.beacon.ssid + ' ' + (entityCount + 1)
+        newEnt._owner = util.adminUser._id
       }
       else {
         newEnt._id = testUtil.genId('entities', entityCount)
@@ -203,6 +204,11 @@ function genEntityRecords(parentIds, parentCollectionId, count, entityType, link
         if (entityType === util.statics.typeComment) {
           newLink.strong = true
         }
+        if (entityType === util.statics.typeProximity) {
+          newLink.proximity = { primary: true, signal: -80 }
+          newLink._owner = util.adminUser._id
+        }
+
         table.links.push(newLink)
         linkCount++
 

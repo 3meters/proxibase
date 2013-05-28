@@ -482,7 +482,7 @@ exports.userCanDeleteMultipleDocs = function(test) {
 
 exports.defaultsWork = function(test) {
   t.post({
-    uri: '/data/entities?' + userCred,
+    uri: '/data/entities?' + adminCred,
     body: {data: { 
       type: util.statics.typeBeacon,
       beacon: {
