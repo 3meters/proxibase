@@ -34,6 +34,8 @@ var
       spe: 5,       // post entities per place entity
       ape: 5,       // applinks per place
       cpe: 5,       // comment entities per place and post entity
+      likes: 5,
+      watch: 2,
       database: 'smokeData'
     }
   }
