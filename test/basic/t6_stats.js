@@ -18,25 +18,24 @@ var testEntity = {
   type: util.statics.typePost,
 }
 var testBeacon = {
+  _id : '0004.11:11:11:11:11:11',
+  type : util.statics.typeBeacon,
   name: 'Test Beacon Label',
-  ssid: 'Test Beacon',
-  bssid: '11:11:11:11:11:11',
-  location: {
-    lat: testLatitude,
-    lng: testLongitude,
-    altitude: 12,
-    accuracy: 30,
-  }
-}
-var testObservation = {
-  lat : testLatitude,
-  lng : testLongitude,
-  altitude : 100,
-  accuracy : 50.0
+  beacon: {
+    ssid: 'Test Beacon',
+    bssid: '11:11:11:11:11:11',
+    signal: -80,  
+  },
+  location: { 
+    lat:testLatitude, 
+    lng:testLongitude, 
+    altitude:12, 
+    accuracy:30, 
+    geometry:[testLongitude, testLatitude] 
+  },
 }
 var testStartTime = util.now()
 var _exports = {}  // For commenting out tests
-
 
 exports.getUserSession = function(test) {
   testUtil.getUserSession(function(session) {
@@ -105,7 +104,7 @@ exports.staticsUpdateOnRefresh = function(test) {
       entity:testEntity,
       beacons:[testBeacon],
       primaryBeaconId:testBeacon._id,
-      observation:testObservation
+      skipNotifications: true      
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
