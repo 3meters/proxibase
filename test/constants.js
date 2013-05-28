@@ -85,7 +85,7 @@ defaultRecord.entities_beacon = {
   beacon: { 
     ssid: 'Test Beacon',
     bssid: bssid,
-    level: -80,
+    signal: -80,
   },
   _creator: uid1,
 }
@@ -121,8 +121,11 @@ defaultRecord.entities_applink = {
   type: util.statics.typeApplink,
   name: "Bannerwood Park",
   photo: { prefix:"https://graph.facebook.com/143970268959049/picture?type=large", source:"facebook" },
-  appId: "143970268959049",
-  appUrl: "https://www.facebook.com/pages/Bannerwood-Park/143970268959049",
+  applink: {
+    type: 'foursquare',
+    id: "143970268959049",
+    url: "https://www.facebook.com/pages/Bannerwood-Park/143970268959049",
+  },
   sdata: { origin : "facebook", validated : 1369167109174.0, likes : 9 },
   _creator: uid1,
 }
