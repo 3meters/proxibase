@@ -41,10 +41,10 @@ var testUser2 = {
   password : "12345678",
   enabled: true,
 }
-var testEntity = {
+var testPlace = {
   _id : "0004.111111.11111.111.111111",
   type : util.statics.typePlace,
-  name : "Testing candi",
+  name : "Testing place entity",
   photo: { 
     prefix:"1001_20111224_104245.jpg", 
     source:"aircandi"
@@ -56,7 +56,7 @@ var testEntity = {
   place: { 
     address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065551212", 
     provider:{ 
-      foursquare:"4bcfbae19854d13a82b8f64d" 
+      foursquare:"4bf58dd8d48988d18c941735"
     },
     category:{ 
       id:"4bf58dd8d48988d18c941735", 
@@ -68,37 +68,104 @@ var testEntity = {
     }
   },
 }
-var testEntity2 = {
+var testPlace2 = {
   _id : "0004.111111.11111.111.111112",
-  type : util.statics.typePost,
-  name : "Testing candi 2",
-  photo: { 
-    prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", 
-    source:"aircandi",
-  },
-}
-var testEntity3 = {
-  _id : "0004.111111.11111.111.111113",
   type : util.statics.typePlace,
-  name : "Testing candi 3",
+  name : "Testing place entity",
   photo: { 
-    prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", 
-    source:"aircandi",
+    prefix:"1001_20111224_104245.jpg", 
+    source:"aircandi"
   },
+  signalFence : -100,
   location: { 
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] 
   },
-  place: {},
-  signalFence : -100,
+  place: { 
+    address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065551212", 
+    provider:{ 
+      foursquare:"4bf58dd8d48988d18c941735"
+    },
+    category:{ 
+      id:"4bf58dd8d48988d18c941735", 
+      name : "Baseball Stadium",
+      photo:{
+        prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
+        source : "assets.categories",
+      },
+    }
+  },
 }
-var testEntity4 = {
+var testPlace3 = {
+  _id : "0004.111111.11111.111.111113",
+  type : util.statics.typePlace,
+  name : "Testing place entity",
+  photo: { 
+    prefix:"1001_20111224_104245.jpg", 
+    source:"aircandi"
+  },
+  signalFence : -100,
+  location: { 
+    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] 
+  },
+  place: { 
+    address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065551212", 
+    provider:{ 
+      foursquare:"4bf58dd8d48988d18c941735"
+    },
+    category:{ 
+      id:"4bf58dd8d48988d18c941735", 
+      name : "Baseball Stadium",
+      photo:{
+        prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
+        source : "assets.categories",
+      },
+    }
+  },
+}
+var testPlaceCustom = {
   _id : "0004.111111.11111.111.111114",
+  type : util.statics.typePlace,
+  name : "Testing place entity custom",
+  photo: { 
+    prefix:"1001_20111224_104245.jpg", 
+    source:"aircandi"
+  },
+  signalFence : -100,
+  location: { 
+    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] 
+  },
+  place: { 
+    address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065551212", 
+    provider:{ 
+      user: testUser._id
+    },
+    category:{ 
+      id:"4bf58dd8d48988d18c941735", 
+      name : "Baseball Stadium",
+      photo:{
+        prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
+        source : "assets.categories",
+      },
+    }
+  },
+}
+var testPost = {
+  _id : "0004.111111.11111.111.211111",
+  type : util.statics.typePost,
+  name : "Testing post entity",
+  photo: { 
+    prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", 
+    source:"aircandi",
+  },
+}
+var testComment = {
+  _id : "0004.111111.11111.111.311111",
   type : util.statics.typeComment,
-  name : "Test Comment",
+  name : "Test comment",
   description : "Test comment, much ado about nothing.",
 }
-var testEntity5 = {
-  _id: "0004.111111.11111.111.111115",
+var testApplink = {
+  _id: "0004.111111.11111.111.411111",
   type: util.statics.typeApplink,
   name: "Bannerwood Park",
   photo: { 
@@ -275,7 +342,7 @@ exports.cannotInsertEntityNotLoggedIn = function (test) {
   t.post({
     uri: '/do/insertEntity',
     body: {
-      entity:testEntity, 
+      entity:testPlace, 
       beacons:[testBeacon], 
       primaryBeaconId:testBeacon._id,
       skipNotifications:true
@@ -285,11 +352,11 @@ exports.cannotInsertEntityNotLoggedIn = function (test) {
   })
 }
 
-exports.insertEntity = function (test) {
+exports.insertPlace = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCred,
     body: {
-      entity: testEntity, 
+      entity: testPlace, 
       beacons: [testBeacon], 
       primaryBeaconId: testBeacon._id,
       skipNotifications: true
@@ -298,14 +365,17 @@ exports.insertEntity = function (test) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data[0])
     var savedEnt = body.data[0]
-    t.assert(savedEnt._owner === testUser._id)
+    t.assert(savedEnt._owner === util.adminUser._id)
     t.assert(savedEnt._creator === testUser._id)
     t.assert(savedEnt._modifier === testUser._id)
 
     /* Find and store the primary link that was created by insertEntity */
     t.post({
       uri: '/do/find',
-      body: {table:'links',find:{_to:testBeacon._id, _from:body.data._id, primary:true}}
+      body: {
+        table:'links',
+        find:{ _to:testBeacon._id, _from:body.data._id, primary:true }
+      }
     }, function(err, res, body) {
       t.assert(body.count === 1)
       primaryLink = body.data[0]
@@ -314,59 +384,15 @@ exports.insertEntity = function (test) {
   })
 }
 
-exports.checkInsertEntity = function(test) {
+exports.checkInsertPlace = function(test) {
   t.post({
     uri: '/do/find',
-    body: {table:'entities',find:{_id:testEntity._id}}
-  }, function(err, res, body) {
-    t.assert(body.count === 1)
-    test.done()
-  })
-}
-
-exports.checkInsertEntityLogAction = function(test) {
-  t.post({
-    uri: '/do/find',
-    body: {table:'actions',find:{_target:testEntity._id, type:'insert_entity_content'}}
-  }, function(err, res, body) {
-    t.assert(body.count === 1)
-    test.done()
-  })
-}
-
-exports.insertEntityBeaconAlreadyExists = function (test) {
-  t.post({
-    uri: '/do/insertEntity?' + userCred,
     body: {
-      entity:testEntity2, 
-      beacons:[testBeacon], 
-      primaryBeaconId:testBeacon._id,
-      observation:testObservation,
-      skipNotifications:true
+      table:'entities', 
+      find:{ _id:testPlace._id }
     }
-  }, 201, function(err, res, body) {
-    t.assert(body.count === 1)
-    t.assert(body.data && body.data[0]._id)
-    test.done()
-  })
-}
-
-exports.checkInsertEntityBeaconAlreadyExists = function(test) {
-  t.post({
-    uri: '/do/find',
-    body: {table:'entities',find:{_id:testEntity2._id}}
   }, function(err, res, body) {
     t.assert(body.count === 1)
-    test.done()
-  })
-}
-
-exports.checkInsertLinkToEntity = function(test) {
-  t.post({
-    uri: '/do/find',
-    body: {table:'links',find:{_to:testBeacon._id}}
-  }, function(err, res, body) {
-    t.assert(body.count === 2)
     test.done()
   })
 }
@@ -374,7 +400,10 @@ exports.checkInsertLinkToEntity = function(test) {
 exports.checkInsertBeacon = function(test) {
   t.post({
     uri: '/do/find',
-    body: {table:'beacons', find:{ _id:testBeacon._id }}
+    body: {
+      table:'entities', 
+      find:{ _id:testBeacon._id }
+    }
   }, function(err, res, body) {
     t.assert(body.count === 1)
     // Beacons should be owned by admin
@@ -386,12 +415,112 @@ exports.checkInsertBeacon = function(test) {
   })
 }
 
+exports.checkInsertLinkToBeacon = function(test) {
+  t.post({
+    uri: '/do/find',
+    body: {
+      table:'links',
+      find:{ _to:testBeacon._id }
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    test.done()
+  })
+}
+
+exports.checkInsertPlaceLogAction = function(test) {
+  t.post({
+    uri: '/do/find',
+    body: {
+      table:'actions',
+      find:{ _target:testPlace._id, type:'insert_entity_place_linked'}
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    test.done()
+  })
+}
+
+exports.insertPlaceCustom = function (test) {
+  t.post({
+    uri: '/do/insertEntity?' + userCred,
+    body: {
+      entity: testPlaceCustom, 
+      beacons: [testBeacon], 
+      primaryBeaconId: testBeacon._id,
+      skipNotifications: true
+    }
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data[0])
+    var savedEnt = body.data[0]
+    t.assert(savedEnt._owner === testUser._id)
+    t.assert(savedEnt._creator === testUser._id)
+    t.assert(savedEnt._modifier === testUser._id)
+    test.done()
+  })
+}
+
+exports.checkInsertPlaceCustom = function(test) {
+  t.post({
+    uri: '/do/find',
+    body: {
+      table:'entities', 
+      find:{ _id:testPlaceCustom._id }
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    test.done()
+  })
+}
+
+exports.insertPlaceBeaconAlreadyExists = function (test) {
+  t.post({
+    uri: '/do/insertEntity?' + userCred,
+    body: {
+      entity:testPlace2, 
+      beacons:[testBeacon], 
+      primaryBeaconId:testBeacon._id,
+      skipNotifications:true
+    }
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data[0]._id)
+    test.done()
+  })
+}
+
+exports.checkInsertPlaceBeaconAlreadyExists = function(test) {
+  t.post({
+    uri: '/do/find',
+    body: {
+      table:'entities',
+      find:{ _id:testPlace2._id }
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    test.done()
+  })
+}
+
+exports.checkBeaconLinkCount = function(test) {
+  t.post({
+    uri: '/do/find',
+    body: {
+      table:'links',
+      find:{ _to:testBeacon._id }
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 3)
+    test.done()
+  })
+}
+
 exports.insertPlaceEntityWithNoLinks = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCred,
     body: {
-      entity:testEntity3,
-      observation:testObservation,
+      entity:testPlace3,
       skipNotifications:true
     }
   }, 201, function(err, res, body) {
@@ -403,7 +532,10 @@ exports.insertPlaceEntityWithNoLinks = function (test) {
 exports.checkInsertEntityNoLinks = function(test) {
   t.post({
     uri: '/do/find',
-    body: {table:'entities',find:{_id:testEntity3._id}}
+    body: {
+      table:'entities',
+      find:{_id:testPlace3._id}
+    }
   }, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data[0] && body.data[0].place)
@@ -421,22 +553,23 @@ exports.checkInsertEntityNoLinks = function(test) {
 exports.insertEntityDoNotTrack = function(test) {
   t.post({
     uri: '/data/users/' + testUser._id + '?' + userCred,
-    body: {data: {doNotTrack: true}}
+    body: { 
+      data: { doNotTrack: true }
+    }
   }, function(err, res) {
     t.assert(res.body.data.doNotTrack)
-    var ent = util.clone(testEntity3) // place entity
+    var ent = util.clone(testPlace3) // place entity
     delete ent._id
     ent.name = 'Testing Place Ent with doNotTrack'
     var beacon = util.clone(testBeacon)
-    beacon._id = '0008.44:44:44:44:44:44'
-    beacon.bssid = '44:44:44:44:44:44',
+    beacon._id = '0004.44:44:44:44:44:44'
+    beacon.beacon.bssid = '44:44:44:44:44:44',
     t.post({
       uri: '/do/insertEntity?' + userCred,
       body: {
         entity: ent,
         beacons: [beacon],
         primaryBeaconId: beacon._id,
-        observation: testObservation,
         skipNotifications: true
       }
     }, 201, function(err, res, body) {
@@ -447,7 +580,7 @@ exports.insertEntityDoNotTrack = function(test) {
       t.assert(savedEnt._owner === adminId)
       t.assert(savedEnt._creator === adminId)
       t.assert(savedEnt._modifier === adminId)
-      t.get('/data/beacons/' + beacon._id,
+      t.get('/data/entities/' + beacon._id,
         function(err, res, body) {
           t.assert(body.data[0])
           var savedBeacon = body.data[0]
