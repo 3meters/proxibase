@@ -246,7 +246,7 @@ function check(req, res, code) {
 exports.genBeaconId = function(recNum) {
   var id = pad(recNum + 1, 12)
   id = delineate(id, 2, ':')
-  var prefix = tableIds.beacons + '.'
+  var prefix = tableIds.entities + '.'
   return  prefix + id
 }
 
