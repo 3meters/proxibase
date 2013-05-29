@@ -273,81 +273,65 @@ exports.getSessions = function (test) {
   })
 }
 
-exports.getEntitiesLoadChildren = function (test) {
-  /*
-   * We don't currently populate the smoke test data with any entities that have
-   * both a parent and children.
-   */
+exports.registerDeviceForNotifications = function (test) {
   t.post({
-    uri: '/do/getEntities',
+    uri: '/data/devices?' + userCred,
     body: {
-      entityIds: [constants.entityId], 
-      entityType: 'entities',
-      activeLinks: [ 
-        { type:util.statics.typePost, load: true }, 
-        { type:util.statics.typeApplink, load: true }, 
-        { type:util.statics.typeComment, load: true }, 
-        { type:util.statics.typeProximity, links: true }, 
-      ]
+      data: { 
+        _id: constants.deviceId,
+        _user: testUser._id,
+        registrationId: constants.registrationId,
+        clientVersionCode: 10,
+        clientVersionName: '0.8.12'
+      },
     }
-  }, function(err, res, body) {
-    t.assert(body.count === 1)
-    t.assert(body.data && body.data[0])
-    var record = body.data[0]
-    t.assert(record.entities.length === dbProfile.spe + dbProfile.cpe + dbProfile.ape)
-    t.assert(record.linksOut[0]._to === constants.beaconId)
+  }, 201, function(err, res, body) {
     test.done()
   })
 }
 
-exports.getEntitiesForLocation = function (test) {
+exports.checkRegisterDevice = function(test) {
   t.post({
-    uri: '/do/getEntities',
+    uri: '/do/find',
     body: {
-      entityIds: [constants.beaconId],
-      entityType: 'entities',
-      activeLinks: [ 
-        { type:util.statics.typeProximity, load: true }, 
-      ]
+      table:'devices', 
+      find:{ _id:constants.deviceId }
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data[0])
-    var record = body.data[0]
-    t.assert(record.entities.length === dbProfile.epb)
-    t.assert(body.date)
+    t.assert(body.data[0].registrationId)
     test.done()
   })
 }
 
-exports.getEntitiesForLocationLimited = function (test) {
+exports.updateRegisterdDeviceBeacons = function (test) {
   t.post({
     uri: '/do/getEntities',
     body: {
       entityIds: [constants.beaconId],
       entityType: 'entities',
-      activeLinks: [ 
-        { type:util.statics.typeProximity, load: true, limit: 3 }, 
-      ]
+      registrationId: 'a1a1a1a1a1'
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data[0])
-    var record = body.data[0]
-    t.assert(record.entities.length === 3)
     test.done()
   })
 }
 
-exports.getEntitiesForUser = function (test) {
+exports.checkDeviceBeacons = function(test) {
   t.post({
-    uri: '/do/getEntitiesForUser',
+    uri: '/do/find',
     body: {
-      userId: constants.uid1
+      table:'devices', 
+      find:{ _id:constants.deviceId }
     }
   }, function(err, res, body) {
-    t.assert(body.count === util.statics.optionsLimitDefault)
-    t.assert(body.more === true)
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data[0])
+    t.assert(body.data[0].beacons.length === 1)
+    t.assert(body.data[0].beaconsDate)
     test.done()
   })
 }
