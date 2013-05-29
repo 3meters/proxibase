@@ -215,7 +215,7 @@ function genEntityRecords(parentIds, parentCollectionId, count, entityType, link
         // Like
         if (entityType === util.statics.typePlace) {
           for (var u = 0; u < options.users; u++) {
-            if (u >= constants.dbProfile.likes) break;
+            if (u >= options.likes) break;
             var likeLink = constants.getDefaultRecord('links')
             likeLink._id = testUtil.genId('links', linkCount)
 
@@ -233,7 +233,7 @@ function genEntityRecords(parentIds, parentCollectionId, count, entityType, link
         // Watch
         if (entityType === util.statics.typePlace) {
           for (var u = 0; u < options.users; u++) {
-            if (u >= constants.dbProfile.watch) break;
+            if (u >= options.watch) break;
             var watchLink = constants.getDefaultRecord('links')
             watchLink._id = testUtil.genId('links', linkCount)
 
