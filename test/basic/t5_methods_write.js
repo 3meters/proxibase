@@ -273,6 +273,69 @@ exports.getSessions = function (test) {
   })
 }
 
+exports.registerDeviceForNotifications = function (test) {
+  t.post({
+    uri: '/data/devices?' + userCred,
+    body: {
+      data: { 
+        _id: constants.deviceId,
+        _user: testUser._id,
+        registrationId: constants.registrationId,
+        clientVersionCode: 10,
+        clientVersionName: '0.8.12'
+      },
+    }
+  }, 201, function(err, res, body) {
+    test.done()
+  })
+}
+
+exports.checkRegisterDevice = function(test) {
+  t.post({
+    uri: '/do/find',
+    body: {
+      table:'devices', 
+      find:{ _id:constants.deviceId }
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data[0])
+    t.assert(body.data[0].registrationId)
+    test.done()
+  })
+}
+
+exports.updateRegisterdDeviceBeacons = function (test) {
+  t.post({
+    uri: '/do/getEntities',
+    body: {
+      entityIds: [constants.beaconId],
+      entityType: 'entities',
+      registrationId: 'a1a1a1a1a1'
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data[0])
+    test.done()
+  })
+}
+
+exports.checkDeviceBeacons = function(test) {
+  t.post({
+    uri: '/do/find',
+    body: {
+      table:'devices', 
+      find:{ _id:constants.deviceId }
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data[0])
+    t.assert(body.data[0].beacons.length === 1)
+    t.assert(body.data[0].beaconsDate)
+    test.done()
+  })
+}
+
 exports.cannotInsertEntityNotLoggedIn = function (test) {
   t.post({
     uri: '/do/insertEntity',

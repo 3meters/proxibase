@@ -149,6 +149,34 @@ exports.getEntitiesWithCommentsAndLinkCounts = function (test) {
   })
 }
 
+exports.getEntitiesAndLinkedEntitiesByUser = function (test) {
+  t.post({
+    uri: '/do/getEntities',
+    body: {
+      entityIds: [constants.entityId], 
+      entityType: 'entities',
+      linkWhere: { _creator: constants.uid1 },
+      activeLinks: [ 
+        { type:util.statics.typeComment, load: true, links: false, count: false }, 
+        { type:util.statics.typePost, load: true, links: false, count: false }, 
+        { type:util.statics.typeProximity }, 
+        { type:util.statics.typeApplink }, 
+        { type:util.statics.typeComment }, 
+        { type:util.statics.typeWatch }, 
+        { type:util.statics.typeLike }, 
+      ]
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data[0])
+    var record = body.data[0]
+    t.assert(record.entities && record.entities.length === 2)
+    t.assert(record.entities[0]._creator === constants.uid1)
+    t.assert(record.entities[1]._creator === constants.uid1)
+    test.done()
+  })
+}
+
 exports.getEntitiesForLocation = function (test) {
   t.post({
     uri: '/do/getEntities',
@@ -200,5 +228,59 @@ exports.getEntitiesForUser = function (test) {
     test.done()
   })
 }
+
+exports.getEntitiesForUserPostsOnly = function (test) {
+  t.post({
+    uri: '/do/getEntitiesForUser',
+    body: {
+      userId: constants.uid1,
+      where: { type: { $in:['com.aircandi.post'] }}
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === util.statics.optionsLimitDefault)
+    t.assert(body.more === true)
+    t.assert(body.data && body.data[0] && body.data[0].type === util.statics.typePost)
+    test.done()
+  })
+}
+
+exports.getEntitiesForUserMatchingRegex = function (test) {
+  t.post({
+    uri: '/do/getEntitiesForUser',
+    body: {
+      userId: constants.uid1,
+      where: { name: { $regex:'20101', $options:'i' }}
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.more === false)
+    t.assert(body.data && body.data[0] && body.data[0].type === util.statics.typeComment)
+    test.done()
+  })
+}
+
+exports.getUserMinimum = function (test) {
+  /*
+   * We don't currently populate the smoke test data with any entities that have
+   * both a parent and children.
+   */
+  t.post({
+    uri: '/do/getEntities',
+    body: {
+      entityIds: [constants.uid1], 
+      entityType: 'users',
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data[0])
+    var record = body.data[0]
+    t.assert(!record.linksIn && !record.linksOut)
+    t.assert(!record.linkInCounts && !record.linkOutCounts)
+    t.assert(!record.entities && !record.users)
+    test.done()
+  })
+}
+
+
 
 
