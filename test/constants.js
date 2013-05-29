@@ -14,6 +14,8 @@ var
   beaconId = '0004.' + bssid,
   documentId = '0007.' + timeStamp + '.000001',
   linkId = '0005.' + timeStamp + '.000001',
+  deviceId = '0009.' + timeStamp + '.000001',
+  registrationId = 'a1a1a1a1a1',
   latitude = 47,                                              // Nearby
   longitude = -122,
   password = 'password',
@@ -34,6 +36,8 @@ var
       spe: 5,       // post entities per place entity
       ape: 5,       // applinks per place
       cpe: 5,       // comment entities per place and post entity
+      likes: 5,
+      watch: 2,
       database: 'smokeData'
     }
   }
@@ -170,6 +174,8 @@ module.exports = {
   beaconId: beaconId,
   documentId: documentId,
   linkId: linkId,
+  deviceId: deviceId,
+  registrationId: registrationId,
   latitude: latitude,
   longitude: longitude,
   timeStamp: timeStamp,
