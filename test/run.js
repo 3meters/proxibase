@@ -20,8 +20,8 @@ var genData = require(__dirname + '/../tools/pump/genData')
 var dbProfile = require('./constants').dbProfile
 var testUtil = require('./util')
 var configFile = 'configtest.js'
-var basicDirs = ['basic']
-var testDirs = ['basic', 'oauth', 'perf', 'admin']
+var basicDirs = ['unit', 'basic']
+var testDirs = ['unit', 'basic', 'oauth', 'perf', 'admin']
 var logFile = 'testServer.log'
 var logStream
 var cwd = process.cwd()
@@ -54,6 +54,7 @@ if (cli.basic) testDirs = basicDirs
 if (cli.test) testDirs = [cli.test]
 if (cli.log) logFile = cli.log
 if (cli.disconnected) testUtil.disconnected = true
+
 
 if (cli.server) {
   // This option is used for running tests locally against a remote server

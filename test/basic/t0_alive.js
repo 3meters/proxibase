@@ -214,7 +214,7 @@ exports.checkMissingRequiredObject = function(test) {
   })
 }
 
-exports.checkMissingRequiredObject = function(test) {
+exports.checkMissingRequiredObject2 = function(test) {
   t.post({
     uri: '/check',
     body: {
@@ -257,7 +257,7 @@ exports.checkMissingRequiredNestedScalar = function(test) {
   })
 }
 
-exports.checkStrictWorks= function(test) {
+exports.checkStrictWorks = function(test) {
   t.post({
     uri: '/check',
     body: {
@@ -310,8 +310,7 @@ exports.checkArrayTypesPass = function(test) {
         strict: true
       }
     }
-  }, 400, function(err, res, body) {
-    t.assert(body.error.code === 400.11)
+  }, function(err, res, body) {
     test.done()
   })
 }

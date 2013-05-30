@@ -1,9 +1,10 @@
 /**
- *  Proxibase local suggestSources test
+ *  Proxibase local suggest applinks test
  */
 
 var util = require('proxutils')
 var log = util.log
+var typeApplink = util.statics.typeApplink
 var serviceUri = util.config.service.uri
 var testUtil = require('../util')
 var t = testUtil.treq  // newfangled test helper
@@ -25,25 +26,11 @@ exports.getSessions = function(test) {
   })
 }
 
-exports.ensureRequiredParams = function(test) {
-  var url = serviceUri + '/test/twitter.html'
-  t.post({
-    uri: '/sources/suggest',
-    body: {includeRaw: true}
-  }, 400,
-  function(err, res, body) {
-    t.assert(body && body.error)
-    t.assert(body.error.code === 400.1)  // missingParam
-    t.assert(body.error.appStack)
-    test.done()
-  })
-}
-
 exports.errorOnUnknownParams = function(test) {
   var url = serviceUri + '/test/twitter.html'
   t.post({
-    uri: '/sources/suggest',
-    body: {foo: 'bar', sources: [{type: 'website', id: url}]}
+    uri: '/applinks/suggest',
+    body: {foo: 'bar', appLinkEnts: [], includeRaw: true}
   }, 400,
   function(err, res, body) {
     t.assert(body && body.error)
@@ -53,27 +40,39 @@ exports.errorOnUnknownParams = function(test) {
   })
 }
 
+exports.ensureWorksWithEmpty = function(test) {
+  var url = serviceUri + '/test/twitter.html'
+  t.post({
+    uri: '/applinks/suggest',
+    body: {}
+  }, function(err, res, body) {
+    t.assert(body.data)
+    t.assert(util._.isEmpty(body.data))
+    test.done()
+  })
+}
+
 exports.checkTwitterUrls = function(test) {
   var url = serviceUri + '/test/twitter.html'
   t.post({
-    uri: '/sources/suggest',
-    body: {entity: {sources: [
-      {type: 'website', id: url}
-    ]}, includeRaw: true},
+    uri: '/applinks/suggest',
+    body: {applinkEnts: [
+      {type: typeApplink, applink: {type: 'website', id: url}}
+    ], includeRaw: true},
   },
   function(err, res) {
-    var sources = res.body.data.sources
-    t.assert(sources.length === 2)
-    t.assert(sources[0].type === 'website')
-    var src = sources[1]
-    t.assert(src.type === 'twitter')
-    t.assert(src.id === 'bob')
-    t.assert(src.name === '@bob')
-    t.assert(src.packageName === 'com.twitter.android')
-    t.assert(!src.icon)
-    t.assert(src.data)
-    t.assert(src.data.origin === 'website')
-    t.assert(src.data.originId === url)
+    var applinkEnts = res.body.data.applinkEnts
+    t.assert(applinkEnts.length === 2)
+    t.assert(applinkEnts[0].applink)
+    t.assert(applinkEnts[0].applink.type === 'website')
+    var ent = applinkEnts[1]
+    t.assert(ent.name === '@bob')
+    t.assert(ent.applink.type === 'twitter')
+    t.assert(ent.applink.id === 'bob')
+    t.assert(!ent.applink.icon)
+    t.assert(ent.applink.data)
+    t.assert(ent.applink.data.origin === 'website')
+    t.assert(ent.applink.data.originId === url)
     t.assert(res.body.raw.webSiteCandidates.length === 6)
     test.done()
   })
@@ -83,7 +82,7 @@ exports.checkFacebookUrls = function(test) {
   if (disconnected) return skip(test) // test calls facebook
   var url = serviceUri + '/test/facebook.html'
   t.post({
-    uri: '/sources/suggest',
+    uri: '/applinks/suggest',
     body: {entity: {sources: [
       {type: 'website', id: url}
     ]}}},
@@ -117,7 +116,7 @@ exports.checkFacebookUrls = function(test) {
 
 exports.checkEmailUrls = function(test) {
   t.post({
-    uri: '/sources/suggest',
+    uri: '/applinks/suggest',
     body: {entity: {sources: [
       {type: 'website', id: serviceUri + '/test/email.html'}
     ]}}
@@ -133,7 +132,7 @@ exports.checkEmailUrls = function(test) {
 
 
 exports.checkEmailUrlsWithGet = function(test) {
-  t.get({uri: '/sources/suggest?entity[sources][0][type]=website' +
+  t.get({uri: '/applinks/suggest?entity[sources][0][type]=website' +
     '&entity[sources][0][id]=' + serviceUri + '/test/email.html'},
   function(err, res) {
     var sources = res.body.data.sources
@@ -148,10 +147,10 @@ exports.checkEmailUrlsWithGet = function(test) {
 // users because it serves alcohol. The service should return this source
 // unvalidated and hope for the best on the client where the user can authenticate
 // with facebook directly
-exports.notFoundFacebookSourcePassesThroughUnvalidated = function(test) {
+exports.notFoundFacebookApplinkPassesThroughUnvalidated = function(test) {
   if (disconnected) return skip(test)
   t.post({
-    uri: '/sources/suggest',
+    uri: '/applinks/suggest',
     body: {entity: {sources: [{type: 'facebook', id: '235200356726'}]}}
   }, function(err, res, body) {
     var sources = body.data.sources
@@ -165,10 +164,10 @@ exports.notFoundFacebookSourcePassesThroughUnvalidated = function(test) {
   })
 }
 
-exports.checkBogusSources = function(test) {
+exports.checkBogusApplinks = function(test) {
   if (disconnected) return skip(test)
   t.post({
-    uri: '/sources/suggest',
+    uri: '/applinks/suggest',
     body: {entity: {sources: [{type: 'foursquare', url: 'http://www.google.com'}]}}
   },
   function(err, res, body) {
@@ -177,10 +176,10 @@ exports.checkBogusSources = function(test) {
   })
 }
 
-exports.suggestSourcesFactual = function(test) {
+exports.suggestApplinksFactual = function(test) {
   if (disconnected) return skip(test)
   t.post({
-    uri: '/sources/suggest',
+    uri: '/applinks/suggest',
     body: {entity: {sources: [{type: 'factual', id: '46aef19f-2990-43d5-a9e3-11b78060150c'}]},
              includeRaw: true}
   },
@@ -190,7 +189,7 @@ exports.suggestSourcesFactual = function(test) {
     t.assert(sources[0].type === 'factual')
     t.assert(sources[0].system)
     t.assert(res.body.raw)
-    t.assert(res.body.raw.initialSources)
+    t.assert(res.body.raw.initialApplinks)
     t.assert(res.body.raw.factualCandidates.length > 12)
     t.assert(sources.some(function(source) {
       return (source.type === 'foursquare'
@@ -206,10 +205,10 @@ exports.suggestSourcesFactual = function(test) {
 }
 
 // Combine with next?
-exports.suggestFactualSourcesFromFoursquareId = function(test) {
+exports.suggestFactualApplinksFromFoursquareId = function(test) {
   if (disconnected) return skip(test)
   t.post({
-    uri: '/sources/suggest',
+    uri: '/applinks/suggest',
     body: {entity: {sources: [{type: 'foursquare', id: '4abebc45f964a520a18f20e3'}]}} // Seattle Ballroom in Fremont
   },
   function(err, res, body) {
@@ -237,7 +236,7 @@ exports.suggestFactualSourcesFromFoursquareId = function(test) {
 exports.compareFoursquareToFactual = function(test) {
   if (disconnected) return skip(test)
   t.post({
-    uri: '/sources/suggest',
+    uri: '/applinks/suggest',
     body: {entity: {sources: [{type: 'foursquare', id: '4abebc45f964a520a18f20e3'}]}}  // Seattle Ballroom
   },
   function(err, res) {
@@ -262,7 +261,7 @@ exports.compareFoursquareToFactual = function(test) {
     }))
     t.assert(sources4s.length > 3)
     t.post({
-      uri: '/sources/suggest',
+      uri: '/applinks/suggest',
       // Seattle Ballroom
       body: {entity: {sources: [{type: 'factual', id: '46aef19f-2990-43d5-a9e3-11b78060150c'}]},
              includeRaw: true}
@@ -278,7 +277,7 @@ exports.compareFoursquareToFactual = function(test) {
 exports.getFacebookFromPlaceJoinWithFoursquare = function(test) {
   if (disconnected) return skip(test)
   t.post({
-    uri: '/sources/suggest',
+    uri: '/applinks/suggest',
     body: {
       entity: {
         name: 'The Red Door',
@@ -327,10 +326,10 @@ exports.getFacebookFromPlaceJoinWithFoursquare = function(test) {
   })
 }
 
-exports.suggestSourcesFromWebsite = function(test) {
+exports.suggestApplinksFromWebsite = function(test) {
   if (disconnected) return skip(test)
   t.post({
-    uri: '/sources/suggest',
+    uri: '/applinks/suggest',
     body: {entity: {sources: [{type: 'website', id: 'http://www.massenamodern.com'}]}}
   },
   function(err, res, body) {
@@ -342,10 +341,10 @@ exports.suggestSourcesFromWebsite = function(test) {
   })
 }
 
-exports.suggestSourcesUsingPlace = function(test) {
+exports.suggestApplinksUsingPlace = function(test) {
   if (disconnected) return skip(test)
   t.post({
-    uri: '/sources/suggest',
+    uri: '/applinks/suggest',
     body: {
       entity: {sources: [], // empty because user deleted them all
       place: {provider: {foursquare: '4abebc45f964a520a18f20e3'}}},
