@@ -218,9 +218,10 @@ exports.getEntitiesForLocationLimited = function (test) {
 
 exports.getEntitiesForUser = function (test) {
   t.post({
-    uri: '/do/getEntitiesForUser',
+    uri: '/do/getEntitiesForEntity',
     body: {
-      userId: constants.uid1
+      entityId: constants.uid1,
+      entityType: 'users',
     }
   }, function(err, res, body) {
     t.assert(body.count === util.statics.optionsLimitDefault)
@@ -231,10 +232,11 @@ exports.getEntitiesForUser = function (test) {
 
 exports.getEntitiesForUserPostsOnly = function (test) {
   t.post({
-    uri: '/do/getEntitiesForUser',
+    uri: '/do/getEntitiesForEntity',
     body: {
-      userId: constants.uid1,
-      where: { type: { $in:['com.aircandi.post'] }}
+      entityId: constants.uid1,
+      entityType: 'users',
+      where: { type: { $in:[util.statics.typePost] }}
     }
   }, function(err, res, body) {
     t.assert(body.count === util.statics.optionsLimitDefault)
@@ -246,9 +248,10 @@ exports.getEntitiesForUserPostsOnly = function (test) {
 
 exports.getEntitiesForUserMatchingRegex = function (test) {
   t.post({
-    uri: '/do/getEntitiesForUser',
+    uri: '/do/getEntitiesForEntity',
     body: {
-      userId: constants.uid1,
+      entityId: constants.uid1,
+      entityType: 'users',
       where: { name: { $regex:'20101', $options:'i' }}
     }
   }, function(err, res, body) {
