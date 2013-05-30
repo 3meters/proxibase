@@ -2,21 +2,13 @@
  * util/check unit test
  */
 
+var assert = require('assert')
 var util = require('proxutils')
 var log = util.log
-var logErr = util.logErr
 var tipe = util.type
 var check = util.check
-var _exports = {}
-var go = function(result) {
-  if (tipe.isError(result)) {
-    logErr('Test Failed:', result, true)
-    logErr('Stack:', util.appStack(result.stack))
-    process.exit(1)
-  }
-}
 
-exports.featurePass = function(test) {
+var sch = function() {
 
   var schema = {
     s1: { type: 'string', required: true },
@@ -44,7 +36,10 @@ exports.featurePass = function(test) {
         }}
     },
   }
+  return util.clone(schema)
+}
 
+var val = function() {
   var value = {
     s1: 'hello',
     o1: { s1: 'foo', n1: 1, b1: true },
@@ -53,8 +48,15 @@ exports.featurePass = function(test) {
     a1: ['123', '456', '789'],
     a2: [{s1: 'foo'}, {s1: 'bar'}, {s1: 'baz'}, {s1: 'barney'}],
   }
+  return util.clone(value)
+}
 
-  go(check(value, schema, {strict: true}))
-  log('New Value', value)
+exports.BasicCheckPasses = function(test) {
+  var value = val()
+  var schema = sch()
+  var err = check(value, schema, {strict: true})
+  if (err) throw err
+  assert(value.s2)
+  assert(value.s2 === 'hi')
   test.done()
 }
