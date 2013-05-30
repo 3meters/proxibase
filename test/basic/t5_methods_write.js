@@ -305,7 +305,7 @@ exports.checkRegisterDevice = function(test) {
   })
 }
 
-exports.updateRegisterdDeviceBeacons = function (test) {
+exports.updateRegisteredDeviceBeacons = function (test) {
   t.post({
     uri: '/do/getEntities',
     body: {
@@ -332,6 +332,31 @@ exports.checkDeviceBeacons = function(test) {
     t.assert(body.data && body.data[0])
     t.assert(body.data[0].beacons.length === 1)
     t.assert(body.data[0].beaconsDate)
+    test.done()
+  })
+}
+
+exports.unregisterDeviceForNotifications = function (test) {
+  t.post({
+    uri: '/do/unregisterDevice',
+    body: {
+      registrationId: constants.registrationId,
+    }
+  }, function(err, res, body) {
+    t.assert(body.info.indexOf('deleted') > 0)
+    test.done()
+  })
+}
+
+exports.checkUnregisterDevice = function(test) {
+  t.post({
+    uri: '/do/find',
+    body: {
+      table:'devices', 
+      find:{ _id:constants.deviceId }
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 0)
     test.done()
   })
 }
