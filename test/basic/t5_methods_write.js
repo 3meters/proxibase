@@ -24,6 +24,7 @@ var radiusBig = 10000
 var testUser = {
   _id : "0001.111111.11111.111.111111",
   name : "John Q Test",
+  type: 'user',
   email : "johnqtest@3meters.com",
   password : "12345678",
   photo: { 
@@ -37,6 +38,7 @@ var testUser = {
 var testUser2 = {
   _id : "0001.111111.11111.111.222222",
   name : "John Q Test2",
+  type: 'user',
   email : "johnqtest2@3meters.com",
   password : "12345678",
   enabled: true,
@@ -53,20 +55,18 @@ var testPlace = {
   location: { 
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] 
   },
-  place: { 
-    address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065551212", 
-    provider:{ 
-      foursquare:"4bf58dd8d48988d18c941735"
-    },
-    category:{ 
-      id:"4bf58dd8d48988d18c941735", 
-      name : "Baseball Stadium",
-      photo:{
-        prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
-        source : "assets.categories",
-      },
-    }
+  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065551212", 
+  provider:{ 
+    foursquare:"4bf58dd8d48988d18c941735"
   },
+  category:{ 
+    id:"4bf58dd8d48988d18c941735", 
+    name : "Baseball Stadium",
+    photo:{
+      prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
+      source : "assets.categories",
+    },
+  }
 }
 var testPlace2 = {
   _id : "0004.111111.11111.111.111112",
@@ -80,20 +80,18 @@ var testPlace2 = {
   location: { 
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] 
   },
-  place: { 
-    address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065551212", 
-    provider:{ 
-      foursquare:"4bf58dd8d48988d18c941735"
-    },
-    category:{ 
-      id:"4bf58dd8d48988d18c941735", 
-      name : "Baseball Stadium",
-      photo:{
-        prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
-        source : "assets.categories",
-      },
-    }
+  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065551212", 
+  provider:{ 
+    foursquare:"4bf58dd8d48988d18c941735"
   },
+  category:{ 
+    id:"4bf58dd8d48988d18c941735", 
+    name : "Baseball Stadium",
+    photo:{
+      prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
+      source : "assets.categories",
+    },
+  }
 }
 var testPlace3 = {
   _id : "0004.111111.11111.111.111113",
@@ -107,20 +105,18 @@ var testPlace3 = {
   location: { 
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] 
   },
-  place: { 
-    address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065551212", 
-    provider:{ 
-      foursquare:"4bf58dd8d48988d18c941735"
-    },
-    category:{ 
-      id:"4bf58dd8d48988d18c941735", 
-      name : "Baseball Stadium",
-      photo:{
-        prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
-        source : "assets.categories",
-      },
-    }
+  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065551212", 
+  provider:{ 
+    foursquare:"4bf58dd8d48988d18c941735"
   },
+  category:{ 
+    id:"4bf58dd8d48988d18c941735", 
+    name : "Baseball Stadium",
+    photo:{
+      prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
+      source : "assets.categories",
+    },
+  }
 }
 var testPlaceCustom = {
   _id : "0004.111111.11111.111.111114",
@@ -134,20 +130,18 @@ var testPlaceCustom = {
   location: { 
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] 
   },
-  place: { 
-    address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065551212", 
-    provider:{ 
-      user: testUser._id
-    },
-    category:{ 
-      id:"4bf58dd8d48988d18c941735", 
-      name : "Baseball Stadium",
-      photo:{
-        prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
-        source : "assets.categories",
-      },
-    }
+  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065551212", 
+  provider:{ 
+    user: testUser._id
   },
+  category:{ 
+    id:"4bf58dd8d48988d18c941735", 
+    name : "Baseball Stadium",
+    photo:{
+      prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
+      source : "assets.categories",
+    },
+  }
 }
 var testPost = {
   _id : "0004.111111.11111.111.211111",
@@ -193,11 +187,9 @@ var testBeacon = {
   _id : '0004.11:11:11:11:11:11',
   type : util.statics.typeBeacon,
   name: 'Test Beacon Label',
-  beacon: {
-    ssid: 'Test Beacon',
-    bssid: '11:11:11:11:11:11',
-    signal: -80,  
-  },
+  ssid: 'Test Beacon',
+  bssid: '11:11:11:11:11:11',
+  signal: -80,  
   location: { 
     lat:testLatitude, 
     lng:testLongitude, 
@@ -210,11 +202,9 @@ var testBeacon2 = {
   _id : '0004.22:22:22:22:22:22',
   type : util.statics.typeBeacon,
   name: 'Test Beacon Label 2',
-  beacon: {
-    ssid: 'Test Beacon 2',
-    bssid: '22:22:22:22:22:22',
-    signal: -85,  
-  },
+  ssid: 'Test Beacon 2',
+  bssid: '22:22:22:22:22:22',
+  signal: -85,  
   location: { 
     lat:testLatitude, 
     lng:testLongitude, 
@@ -227,11 +217,9 @@ var testBeacon3 = {
   _id : '0004.33:33:33:33:33:33',
   type : util.statics.typeBeacon,
   name: 'Test Beacon Label 3',
-  beacon: {
-    ssid: 'Test Beacon 3',
-    bssid: '33:33:33:33:33:33',
-    signal: -95,  
-  },
+  ssid: 'Test Beacon 3',
+  bssid: '33:33:33:33:33:33',
+  signal: -95,  
   location: { 
     lat:testLatitude, 
     lng:testLongitude, 

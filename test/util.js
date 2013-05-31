@@ -111,12 +111,14 @@ function TestRequest() {
 
 var testUser = {
   name: 'Test User',
+  type: 'user',
   email: 'test@3meters.com',
   password: 'foobar'
 }
 
 var adminUser = {
-  email: 'admin',
+  type: 'user',
+  email: 'admin',  
   password: 'admin'
 }
 

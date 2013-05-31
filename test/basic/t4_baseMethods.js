@@ -53,7 +53,7 @@ exports.findWithLimitNotSignedIn = function(test) {
   var limit = 10
   t.post({
     uri: '/do/find',
-    body: {table:'entities', limit: limit}
+    body: {table:'places', limit: limit}
   }, function(err, res, body) {
     t.assert(body && body.data)
     t.assert(body.data instanceof Array)
