@@ -218,9 +218,10 @@ exports.getEntitiesForLocationLimited = function (test) {
 
 exports.getEntitiesForUser = function (test) {
   t.post({
-    uri: '/do/getEntitiesForUser',
+    uri: '/do/getEntitiesForEntity',
     body: {
-      userId: constants.uid1
+      entityId: constants.uid1,
+      entityType: 'users',
     }
   }, function(err, res, body) {
     t.assert(body.count === util.statics.optionsLimitDefault)
@@ -231,10 +232,11 @@ exports.getEntitiesForUser = function (test) {
 
 exports.getEntitiesForUserPostsOnly = function (test) {
   t.post({
-    uri: '/do/getEntitiesForUser',
+    uri: '/do/getEntitiesForEntity',
     body: {
-      userId: constants.uid1,
-      where: { type: { $in:['com.aircandi.post'] }}
+      entityId: constants.uid1,
+      entityType: 'users',
+      cursor: { where: { type: { $in:[util.statics.typePost] }}},
     }
   }, function(err, res, body) {
     t.assert(body.count === util.statics.optionsLimitDefault)
@@ -246,15 +248,79 @@ exports.getEntitiesForUserPostsOnly = function (test) {
 
 exports.getEntitiesForUserMatchingRegex = function (test) {
   t.post({
-    uri: '/do/getEntitiesForUser',
+    uri: '/do/getEntitiesForEntity',
     body: {
-      userId: constants.uid1,
-      where: { name: { $regex:'20101', $options:'i' }}
+      entityId: constants.uid1,
+      entityType: 'users',
+      cursor: { where: { name: { $regex:'20101', $options:'i' }}},
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.more === false)
     t.assert(body.data && body.data[0] && body.data[0].type === util.statics.typeComment)
+    test.done()
+  })
+}
+
+exports.getEntitiesForPlacePostsOnly = function (test) {
+  t.post({
+    uri: '/do/getEntitiesForEntity',
+    body: {
+      entityId: constants.entityId, 
+      entityType: 'entities',
+      cursor: { 
+        where: { type: util.statics.typePost }
+      },
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === dbProfile.spe)
+    t.assert(body.more === false)
+    t.assert(body.data && body.data[0] && body.data[0].type === util.statics.typePost)
+    test.done()
+  })
+}
+
+exports.getEntitiesForPlacePostsOnlyLimited = function (test) {
+  t.post({
+    uri: '/do/getEntitiesForEntity',
+    body: {
+      entityId: constants.entityId, 
+      entityType: 'entities',
+      cursor: { 
+        where: { type: util.statics.typePost },        
+        sort: { name: 1 },
+        limit: 3,
+      },
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 3)
+    t.assert(body.more === true)
+    t.assert(body.data && body.data[0])
+    t.assert(body.data[0].type === util.statics.typePost)
+    t.assert(body.data[0].name.indexOf('601') > 0)
+    test.done()
+  })
+}
+
+exports.getEntitiesForPlacePostsOnlyLimitedAndSkip = function (test) {
+  t.post({
+    uri: '/do/getEntitiesForEntity',
+    body: {
+      entityId: constants.entityId, 
+      entityType: 'entities',
+      cursor: { 
+        where: { type: util.statics.typePost },
+        sort: { name: 1 },
+        limit: 3,
+        skip: 2
+      },
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 3)
+    t.assert(body.more === false)
+    t.assert(body.data && body.data[0])
+    t.assert(body.data[0].type === util.statics.typePost)
+    t.assert(body.data[0].name.indexOf('603') > 0)
     test.done()
   })
 }

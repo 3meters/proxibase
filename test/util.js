@@ -9,6 +9,7 @@ var _ = util._
 var assert = require('assert')
 var request = require('request')
 var constants = require('./constants')
+var tableIds = util.statics.collectionIds
 
 assert(util.truthy, 'The proxibase utils are not loaded properly, bailing')
 util.setConfig('configtest.js')
@@ -246,7 +247,7 @@ function check(req, res, code) {
 exports.genBeaconId = function(recNum) {
   var id = pad(recNum + 1, 12)
   id = delineate(id, 2, ':')
-  var prefix = tableIds.entities + '.'
+  var prefix = tableIds.beacons + '.'
   return  prefix + id
 }
 
