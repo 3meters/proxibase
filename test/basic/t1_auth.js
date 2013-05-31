@@ -19,6 +19,7 @@ var adminSession = {}
 var _exports = {}                    // for commenting out tests
 var testUser = {
   name: 'AuthTestUser',
+  type: 'user',
   email: 'authtest@3meters.com',
   password: 'foobar'
 }
@@ -346,9 +347,13 @@ exports.userCannotAddUserViaRest = function(test) {
 exports.annonymousUserCannotCreateUserViaApiWithoutSecret = function(test) {
   t.post({
     uri: '/user/create',
-    body: {data: {name: 'AuthTestUser2',
-      email: 'authtest2@3meters.com',
-      password: 'foobar'}
+    body: {
+      data: {
+        name: 'AuthTestUser2',
+        type: 'user',
+        email: 'authtest2@3meters.com',
+        password: 'foobar'
+      }
     },
   }, 400, function(err, res, body) {
     t.assert(body.error.code === 400.1)
@@ -361,7 +366,9 @@ exports.annonymousUserCannotCreateUserViaApiWithWrongSecret = function(test) {
   t.post({
     uri: '/user/create',
     body: {
-      data: {name: 'AuthTestUser2',
+      data: {
+        name: 'AuthTestUser2',
+        type: 'user',
         email: 'authtest2@3meters.com',
         password: 'foobar'
       },
@@ -380,6 +387,7 @@ exports.annonymousUserCannotCreateUserViaApiWithoutWhitelistedEmail = function(t
     body: {
       data: {
         name: 'AuthTestUserShouldFail',
+        type: 'user',
         email: 'authBest@3meters.com',
         password: 'foobar'
       },
@@ -398,6 +406,7 @@ exports.annonymousUserCanCreateUserViaApi = function(test) {
     body: {
       data: {
         name: 'AuthTestUser2',
+        type: 'user',
         email: 'authtest2@3meters.com',
         password: 'foobar'
       },

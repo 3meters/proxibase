@@ -141,6 +141,7 @@ function genUsers() {
         likeLink.fromCollectionId = tableIds['users']
         likeLink._to = table.users[j]._id
         likeLink.toCollectionId = tableIds['users']
+        likeLink._owner = table.users[i]._id
         table['links'].push(likeLink)
         linkCount++
 
@@ -152,6 +153,7 @@ function genUsers() {
         watchLink.fromCollectionId = tableIds['users']
         watchLink._to = table.users[j]._id
         watchLink.toCollectionId = tableIds['users']
+        likeLink._owner = table.users[i]._id
         table['links'].push(watchLink)
         linkCount++
     }
@@ -200,6 +202,8 @@ function genEntityRecords(parentIds, parentCollectionId, count, entityType, link
         newLink.fromCollectionId = tableIds[tableName]
         newLink._to = parentIds[p]
         newLink.toCollectionId = parentCollectionId
+        newLink._owner = newEnt._creator
+
 
         if (entityType === util.statics.typeComment) {
           newLink.strong = true
@@ -226,6 +230,8 @@ function genEntityRecords(parentIds, parentCollectionId, count, entityType, link
 
             likeLink.fromCollectionId = tableIds['users']
             likeLink.toCollectionId = tableIds[tableName]
+            likeLink._owner = testUtil.genId('users', u)
+
             table['links'].push(likeLink)        
             linkCount++
           }
@@ -244,6 +250,7 @@ function genEntityRecords(parentIds, parentCollectionId, count, entityType, link
 
             watchLink.fromCollectionId = tableIds['users']
             watchLink.toCollectionId = tableIds[tableName]
+            likeLink._owner = testUtil.genId('users', u)
 
             table['links'].push(watchLink)        
             linkCount++
