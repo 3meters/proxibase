@@ -11,11 +11,13 @@ var user1Cred
 var user2Cred
 var user1 = {
   name: 'Perm Test User 1',
+  type: 'user',
   email: 'permtest1@3meters.com',
   password: 'foobar'
 }
 var user2 = {
   name: 'Perm Test User 2',
+  type: 'user',
   email: 'permtest2@3meters.com',
   password: 'foobar'
 }

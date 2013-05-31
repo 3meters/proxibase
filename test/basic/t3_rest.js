@@ -39,10 +39,10 @@ exports.getUserSession = function(test) {
 }
 
 exports.genIdWorks = function(test) {
-  t.get('/data/entities/genId',
+  t.get('/data/places/genId',
   function(err, res, body) {
     t.assert(body.data._id)
-    t.assert(body.data._id.slice(0, 4) === '0004')
+    t.assert(body.data._id.slice(0, 4) === '0013')
     test.done()
   })
 }
@@ -188,7 +188,7 @@ exports.updateCanCreatedNestedObject = function(test) {
 
 exports.cannotAddDocMissingRequiredField = function(test) {
   t.post({
-    uri: '/data/entities?' + userCred,
+    uri: '/data/places?' + userCred,
     body: {data: {name: 'Test Entity Missing its type'}}
   }, 400, function(err, res, body) {
     t.assert(body.error.code === 400.1) // missingParam
@@ -482,14 +482,14 @@ exports.userCanDeleteMultipleDocs = function(test) {
 
 exports.defaultsWork = function(test) {
   t.post({
-    uri: '/data/entities?' + adminCred,
-    body: {data: { 
-      type: util.statics.typeBeacon,
-      beacon: {
+    uri: '/data/beacons?' + adminCred,
+    body: {
+      data: { 
+        type: util.statics.typeBeacon,
         bssid: '01:10:11:22:44:66',
-        ssid: 'Rest test beacon'
+        ssid: 'Rest test beacon',
       }
-    }}
+    }
   }, 201, function(err, res, body) {
     t.assert(body.data.enabled === true)
     test.done()
@@ -538,15 +538,13 @@ exports.admiCanReadSystemCollections = function(test) {
 
 exports.usersCannotSkipSafeInsert = function(test) {
   t.post({
-    uri: '/data/entities?' + userCred,
+    uri: '/data/beacons?' + userCred,
     body: {
       data: { 
         _id: 'bogusid1',
         type: util.statics.typeBeacon,
-        beacon: {
-          bssid: '01:10:11:22:44:88',
-          bogusField: 'I am a bogus field'
-        }
+        bssid: '01:10:11:22:44:88',
+        bogusField: 'I am a bogus field'
       },
       skipValidation: true 
     }
@@ -557,15 +555,13 @@ exports.usersCannotSkipSafeInsert = function(test) {
 
 exports.adminsCanSkipSafeInsert = function(test) {
   t.post({
-    uri: '/data/entities?' + adminCred,
+    uri: '/data/beacons?' + adminCred,
     body: {
       data: { 
         _id: 'bogusid1',
         type: util.statics.typeBeacon,
-        beacon: {
-          bssid: '01:10:11:22:44:88',
-          bogusField: 'I am a bogus field'
-        }
+        bssid: '01:10:11:22:44:88',
+        bogusField: 'I am a bogus field'
       },
       skipValidation: true 
     }
@@ -576,12 +572,10 @@ exports.adminsCanSkipSafeInsert = function(test) {
 
 exports.usersCannotSkipSafeUpdate = function(test) {
   t.post({
-    uri: '/data/entities/bogusid1?' + userCred,
+    uri: '/data/beacons/bogusid1?' + userCred,
     body: {
       data: {
-        beacon: {
-          bogusField2: 'I am a bogus field too'
-        }
+        bogusField2: 'I am a bogus field too'
       },
       skipValidation: true
     }
@@ -592,12 +586,10 @@ exports.usersCannotSkipSafeUpdate = function(test) {
 
 exports.adminsCanSkipSafeUpdate = function(test) {
   t.post({
-    uri: '/data/entities/bogusid1?' + adminCred,
+    uri: '/data/beacons/bogusid1?' + adminCred,
     body: {
       data: {
-        beacon: {
-          bogusField2: 'I am a bogus field too'
-        }
+        bogusField2: 'I am a bogus field too'
       },
       skipValidation: true
     }
@@ -610,7 +602,7 @@ exports.adminsCanSkipSafeUpdate = function(test) {
 
 exports.countByFailsOnBogusFields = function(test) {
   t.get({
-    uri: '/data/entities?countBy=_foo,bar'
+    uri: '/data/beacons?countBy=_foo,bar'
   }, 400, function(err, res, body) {
     t.assert(body.error.code === 400.11)
     test.done()
@@ -619,7 +611,7 @@ exports.countByFailsOnBogusFields = function(test) {
 
 exports.deleteBogusRecord = function(test) {
  t.delete({
-    uri: '/data/entities/bogusid1?' + adminCred,
+    uri: '/data/beacons/bogusid1?' + adminCred,
   }, function(err, res, body) {
     t.assert(body.count === 1)
     test.done()
@@ -648,37 +640,40 @@ exports.formatDatesWorks = function(test) {
 
 exports.countByWorks = function(test) {
   t.get({
-    uri: '/data/entities?countBy=_owner'
+    uri: '/data/links?countBy=_owner'
   }, function(err, res, body) {
     // These are based on data in template test database
     t.assert(body.count >= 10)
-    t.assert(body.data[0].countBy === 2060)
+    t.assert(body.data[0].countBy === 3009)
     test.done()
   })
 }
 
 exports.countByMultipleFieldsWorks = function(test) {
   t.get({
-    uri: '/data/entities?countBy=_owner,type'
+    uri: '/data/links?countBy=_owner,type'
   }, function(err, res, body) {
     // These are based on data in template test database
     t.assert(body.count >= 40)
     body.data.forEach(function(elm) {
       switch (elm.type) {
-        case 'com.aircandi.place':
-          t.assert(elm.countBy === 50)
-          break
-        case 'com.aircandi.post':
+        case 'post':
           t.assert(elm.countBy === 250)
           break
-        case 'com.aircandi.applink':
+        case 'applink':
           t.assert(elm.countBy === 250)
           break
-        case 'com.aircandi.comment':
+        case 'comment':
           t.assert(elm.countBy === 1500)
           break
-        case 'com.aircandi.beacon':
-          t.assert(elm.countBy <= 10)
+        case 'proximity':
+          t.assert(elm.countBy <= 500)
+          break
+        case 'like':
+          t.assert(elm.countBy === 1009 || elm.countBy === 509 || elm.countBy === 9)
+          break
+        case 'watch':
+          t.assert(elm.countBy === 1090)
           break
         default:
           t.assert(false, 'Unexpected type ' + elm.type)
