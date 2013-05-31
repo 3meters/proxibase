@@ -14,6 +14,7 @@ var adminCred
 var testUser = {
   _id : "0001.111111.11111.111.111111",
   name : "John Q Test",
+  type: 'user',
   email : "johnqtest@3meters.com",
   password : "12345678",
   photo: { 
