@@ -114,7 +114,7 @@ function run(callback) {
 }
 
 function genUsers() {
-  table.users = []
+  table['users'] = []
   for (var i = 0; i < options.users; i++) {
     var user = constants.getDefaultRecord('users')
     user._id = testUtil.genId('users', i)
@@ -137,7 +137,7 @@ function genUsers() {
         likeLink.fromCollectionId = tableIds['users']
         likeLink._to = table.users[j]._id
         likeLink.toCollectionId = tableIds['users']
-        table.links.push(likeLink)
+        table['links'].push(likeLink)
         linkCount++
 
         // watch
@@ -148,21 +148,21 @@ function genUsers() {
         watchLink.fromCollectionId = tableIds['users']
         watchLink._to = table.users[j]._id
         watchLink.toCollectionId = tableIds['users']
-        table.links.push(watchLink)
+        table['links'].push(watchLink)
         linkCount++
     }
   }
 }
 
 function genDocuments() {
-  table.documents = []
-  table.documents.push(constants.getDefaultRecord('documents'))
+  table['documents'] = []
+  table['documents'].push(constants.getDefaultRecord('documents'))
 }
 
 function genEntityRecords(parentIds, parentCollectionId, count, entityType, linkType) {
 
-  table.entities = table.entities || []
-  table.links = table.links || []
+  table['entities'] = table['entities'] || []
+  table['links'] = table['links'] || []
 
   for (var p = 0; p < parentIds.length; p++) {
     for (var i = 0; i < count; i++) {
@@ -188,7 +188,7 @@ function genEntityRecords(parentIds, parentCollectionId, count, entityType, link
       newEnt.name = newEnt.name + ' ' + (entityCount + 1)
       newEnt._creator = newEnt._modifier = testUtil.genId('users', (entityCount % options.users))
 
-      table.entities.push(newEnt)
+      table['entities'].push(newEnt)
       entityCount++
 
       if (entityType !== util.statics.typeBeacon) {
@@ -209,7 +209,7 @@ function genEntityRecords(parentIds, parentCollectionId, count, entityType, link
           newLink._owner = util.adminUser._id
         }
 
-        table.links.push(newLink)
+        table['links'].push(newLink)
         linkCount++
 
         // Like
@@ -225,7 +225,7 @@ function genEntityRecords(parentIds, parentCollectionId, count, entityType, link
 
             likeLink.fromCollectionId = tableIds['users']
             likeLink.toCollectionId = tableIds['entities']
-            table.links.push(likeLink)        
+            table['links'].push(likeLink)        
             linkCount++
           }
         }
@@ -244,7 +244,7 @@ function genEntityRecords(parentIds, parentCollectionId, count, entityType, link
             watchLink.fromCollectionId = tableIds['users']
             watchLink.toCollectionId = tableIds['entities']
 
-            table.links.push(watchLink)        
+            table['links'].push(watchLink)        
             linkCount++
           }
         }
