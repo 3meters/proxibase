@@ -35,7 +35,7 @@ var placeIds = []
 var postIds = []
 var applinkIds = []
 var commentIds = []
-var entityCount = 0
+var entityCount = { applinks: 0, beacons: 0, comments: 0, places: 0, posts: 0 }
 var linkCount = 0
 
 module.exports = function(profile, callback) {
@@ -90,18 +90,22 @@ function run(callback) {
 
   log('generating users')
   genUsers()
+
   log('generating beacons')
   genEntityRecords([0], null, options.beacons, util.statics.typeBeacon, null)
+
   log('generating places')
-  genEntityRecords(beaconIds, tableIds['entities'], options.epb, util.statics.typePlace, util.statics.typeProximity)
+  genEntityRecords(beaconIds, tableIds['beacons'], options.epb, util.statics.typePlace, util.statics.typeProximity)
+
   log('generating posts')
-  genEntityRecords(placeIds, tableIds['entities'], options.spe, util.statics.typePost, util.statics.typePost)
+  genEntityRecords(placeIds, tableIds['places'], options.spe, util.statics.typePost, util.statics.typePost)
+
   log('generating applinks')
-  genEntityRecords(placeIds, tableIds['entities'], options.ape, util.statics.typeApplink, util.statics.typeApplink)
+  genEntityRecords(placeIds, tableIds['places'], options.ape, util.statics.typeApplink, util.statics.typeApplink)
   
-  var placeAndPostIds = placeIds.concat(postIds)
   log('generating comments')
-  genEntityRecords(placeAndPostIds, tableIds['entities'], options.cpe, util.statics.typeComment, util.statics.typeComment)
+  var placeAndPostIds = placeIds.concat(postIds)
+  genEntityRecords(placeAndPostIds, tableIds['places'], options.cpe, util.statics.typeComment, util.statics.typeComment)
 
   saveAll(function(err) {
     if (err) return callback(err)
@@ -161,35 +165,30 @@ function genDocuments() {
 
 function genEntityRecords(parentIds, parentCollectionId, count, entityType, linkType) {
 
-  table['entities'] = table['entities'] || []
+  var tableName = entityType + "s"
+  table[tableName] = table[tableName] || []
   table['links'] = table['links'] || []
 
   for (var p = 0; p < parentIds.length; p++) {
     for (var i = 0; i < count; i++) {
 
-      var newEnt = {}
-      if (entityType === util.statics.typeBeacon) newEnt = constants.getDefaultRecord('entities_beacon')
-      if (entityType === util.statics.typePlace) newEnt = constants.getDefaultRecord('entities_place')
-      if (entityType === util.statics.typeApplink) newEnt = constants.getDefaultRecord('entities_applink')
-      if (entityType === util.statics.typePost) newEnt = constants.getDefaultRecord('entities_post')
-      if (entityType === util.statics.typeComment) newEnt = constants.getDefaultRecord('entities_comment')
+      var newEnt = constants.getDefaultRecord(tableName)
 
       // Entity
       if (entityType === util.statics.typeBeacon) {
         newEnt._id = testUtil.genBeaconId(i)
-        newEnt.beacon = util.clone(newEnt.beacon)
-        newEnt.beacon.bssid = newEnt._id.substring(5)
-        newEnt.beacon.ssid = newEnt.beacon.ssid + ' ' + (entityCount + 1)
+        newEnt.bssid = newEnt._id.substring(5)
+        newEnt.ssid = newEnt.ssid + ' ' + (entityCount[tableName] + 1)
         newEnt._owner = util.adminUser._id
       }
       else {
-        newEnt._id = testUtil.genId('entities', entityCount)
+        newEnt._id = testUtil.genId(tableName, entityCount[tableName])
       }
-      newEnt.name = newEnt.name + ' ' + (entityCount + 1)
-      newEnt._creator = newEnt._modifier = testUtil.genId('users', (entityCount % options.users))
+      newEnt.name = newEnt.name + ' ' + (entityCount[tableName] + 1)
+      newEnt._creator = newEnt._modifier = testUtil.genId('users', (entityCount[tableName] % options.users))
 
-      table['entities'].push(newEnt)
-      entityCount++
+      table[tableName].push(newEnt)
+      entityCount[tableName]++
 
       if (entityType !== util.statics.typeBeacon) {
 
@@ -198,13 +197,15 @@ function genEntityRecords(parentIds, parentCollectionId, count, entityType, link
         newLink._id = testUtil.genId('links', linkCount)
         newLink.type = linkType
         newLink._from = newEnt._id
-        newLink.fromCollectionId = tableIds['entities']
+        newLink.fromCollectionId = tableIds[tableName]
         newLink._to = parentIds[p]
         newLink.toCollectionId = parentCollectionId
+
         if (entityType === util.statics.typeComment) {
           newLink.strong = true
         }
-        if (entityType === util.statics.typeProximity) {
+
+        if (entityType === util.statics.typePlace) {
           newLink.proximity = { primary: true, signal: -80 }
           newLink._owner = util.adminUser._id
         }
@@ -224,7 +225,7 @@ function genEntityRecords(parentIds, parentCollectionId, count, entityType, link
             likeLink._to = newEnt._id
 
             likeLink.fromCollectionId = tableIds['users']
-            likeLink.toCollectionId = tableIds['entities']
+            likeLink.toCollectionId = tableIds[tableName]
             table['links'].push(likeLink)        
             linkCount++
           }
@@ -242,7 +243,7 @@ function genEntityRecords(parentIds, parentCollectionId, count, entityType, link
             watchLink._to = newEnt._id
 
             watchLink.fromCollectionId = tableIds['users']
-            watchLink.toCollectionId = tableIds['entities']
+            watchLink.toCollectionId = tableIds[tableName]
 
             table['links'].push(watchLink)        
             linkCount++

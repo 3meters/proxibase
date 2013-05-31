@@ -46,6 +46,7 @@ function addSystemFields(record) {
 
 defaultRecord.users = defaultRecord.users1 = {
   _id: uid1,
+  type: util.statics.typeUser,
   name: 'Test User',
   email: 'test@3meters.com',
   photo: { 
@@ -143,8 +144,8 @@ defaultRecord.comments = {
 
 defaultRecord.links = {
   _id: linkId,
-  _to : entityId,
-  _from : entityId
+  _to : placeId,
+  _from : postId
 }
 
 for (tableName in defaultRecord) {
