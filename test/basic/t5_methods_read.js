@@ -236,7 +236,7 @@ exports.getEntitiesForUserPostsOnly = function (test) {
     body: {
       entityId: constants.uid1,
       entityType: 'users',
-      where: { type: { $in:[util.statics.typePost] }}
+      cursor: { where: { type: { $in:[util.statics.typePost] }}},
     }
   }, function(err, res, body) {
     t.assert(body.count === util.statics.optionsLimitDefault)
@@ -252,12 +252,75 @@ exports.getEntitiesForUserMatchingRegex = function (test) {
     body: {
       entityId: constants.uid1,
       entityType: 'users',
-      where: { name: { $regex:'20101', $options:'i' }}
+      cursor: { where: { name: { $regex:'20101', $options:'i' }}},
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.more === false)
     t.assert(body.data && body.data[0] && body.data[0].type === util.statics.typeComment)
+    test.done()
+  })
+}
+
+exports.getEntitiesForPlacePostsOnly = function (test) {
+  t.post({
+    uri: '/do/getEntitiesForEntity',
+    body: {
+      entityId: constants.entityId, 
+      entityType: 'entities',
+      cursor: { 
+        where: { type: util.statics.typePost }
+      },
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === dbProfile.spe)
+    t.assert(body.more === false)
+    t.assert(body.data && body.data[0] && body.data[0].type === util.statics.typePost)
+    test.done()
+  })
+}
+
+exports.getEntitiesForPlacePostsOnlyLimited = function (test) {
+  t.post({
+    uri: '/do/getEntitiesForEntity',
+    body: {
+      entityId: constants.entityId, 
+      entityType: 'entities',
+      cursor: { 
+        where: { type: util.statics.typePost },        
+        sort: { name: 1 },
+        limit: 3,
+      },
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 3)
+    t.assert(body.more === true)
+    t.assert(body.data && body.data[0])
+    t.assert(body.data[0].type === util.statics.typePost)
+    t.assert(body.data[0].name.indexOf('601') > 0)
+    test.done()
+  })
+}
+
+exports.getEntitiesForPlacePostsOnlyLimitedAndSkip = function (test) {
+  t.post({
+    uri: '/do/getEntitiesForEntity',
+    body: {
+      entityId: constants.entityId, 
+      entityType: 'entities',
+      cursor: { 
+        where: { type: util.statics.typePost },
+        sort: { name: 1 },
+        limit: 3,
+        skip: 2
+      },
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 3)
+    t.assert(body.more === false)
+    t.assert(body.data && body.data[0])
+    t.assert(body.data[0].type === util.statics.typePost)
+    t.assert(body.data[0].name.indexOf('603') > 0)
     test.done()
   })
 }
