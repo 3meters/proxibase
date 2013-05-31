@@ -14,9 +14,13 @@ var sch = function() {
     s1: { type: 'string', required: true },
     s2: { type: 'string', default: 'hi' },
     o1: { type: 'object', value: {
-      s1: {type: 'string'},
-      n1: {type: 'number'},
-      b1: {type: 'boolean'},
+      s1: { type: 'string' },
+      s2: { type: 'string', default: 'hi' },
+      s3: { type: 'string', default: '' },
+      n1: { type: 'number' },
+      n2: { type: 'number', default: 1 },
+      n3: { type: 'number', default: 0 },
+      b1: { type: 'boolean' },
     }},
     o2: {
       type: 'object', value: {
@@ -58,5 +62,9 @@ exports.BasicCheckPasses = function(test) {
   if (err) throw err
   assert(value.s2)
   assert(value.s2 === 'hi')
+  assert(value.o1)
+  assert(value.o1.s2 === 'hi')
+  assert(value.o1.n2 === 1)
+  assert(value.o1.n3 === 0)
   test.done()
 }
