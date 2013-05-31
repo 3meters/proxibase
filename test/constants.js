@@ -7,25 +7,21 @@ var
   _ = require('underscore'),                                  // For cloning objects
   timeStamp = '010101.00000.555',                             // Jan 1 2000 + 555 miliseconds
   timeStampMs = new Date(2001, 0, 1, 0, 0, 0, 555).getTime()  // Same but in milliseconds
-  uid1 = '0001.' + timeStamp + '.000001',                     // Standard user
-  uid2 = '0001.' + timeStamp + '.000002',                     // Dev user
-  entityId = '0004.' + timeStamp + '.000101',
+  uid1 = util.statics.collectionIds.users + '.' + timeStamp + '.000001',                     // Standard user
+  uid2 = util.statics.collectionIds.users + '.' + timeStamp + '.000002',                     // Dev user
   bssid = '00:00:00:00:00:01',
-  beaconId = '0004.' + bssid,
-  documentId = '0007.' + timeStamp + '.000001',
-  linkId = '0005.' + timeStamp + '.000001',
-  deviceId = '0009.' + timeStamp + '.000001',
+  beaconId = util.statics.collectionIds.beacons + '.' + bssid,
+  applinkId = util.statics.collectionIds.applinks + '.' + timeStamp + '.000001',
+  commentId = util.statics.collectionIds.comments + '.' + timeStamp + '.000001',
+  placeId = util.statics.collectionIds.places + '.' + timeStamp + '.000001',
+  postId = util.statics.collectionIds.posts + '.' + timeStamp + '.000001',
+  documentId = util.statics.collectionIds.documents + '.' + timeStamp + '.000001',
+  linkId = util.statics.collectionIds.links + '.'  + timeStamp + '.000001',
+  deviceId = util.statics.collectionIds.devices + '.'  + timeStamp + '.000001',
   registrationId = 'a1a1a1a1a1',
   latitude = 47,                                              // Nearby
   longitude = -122,
   password = 'password',
-  tableIds = {
-    users: '0001',
-    entities: '0004',
-    links: '0005',
-    beacons: '0008',
-    documents: '0007'
-  },
   recordLimit = 1000,
   defaultRecord = {},
   dbProfile = {
@@ -81,61 +77,54 @@ defaultRecord.documents = {
   },
 }
 
-defaultRecord.entities_beacon = {
-  _id: entityId,
+defaultRecord.beacons = {
+  _id: beaconId,
   type: util.statics.typeBeacon,
   name: 'Beacon',
   location: { lat:latitude, lng:longitude, altitude:0, accuracy:30, speed: 0, geometry:[longitude, latitude] },
-  beacon: { 
-    ssid: 'Test Beacon',
-    bssid: bssid,
-    signal: -80,
-  },
+  ssid: 'Test Beacon',
+  bssid: bssid,
+  signal: -80,
   _creator: uid1,
 }
 
-defaultRecord.entities_place = {
-  _id: entityId,
+defaultRecord.places = {
+  _id: placeId,
   type: util.statics.typePlace,
   name: 'Museum of Modern Art',
   subtitle: 'Contemporary Galleries: 1980-Now',
   description: 'The Museum of Modern Art is a place that fuels creativity, ignites minds, and provides inspiration. With extraordinary exhibitions and the world\'s finest collection of modern and contemporary art, MoMA is dedicated to the conversation between the past and the present, the established and the experimental. Our mission is helping you understand and enjoy the art of our time.',
   photo: { prefix:"https://s3.amazonaws.com/3meters_images/test_preview.jpg", source:"aircandi" },
-  location: { lat:latitude, lng:longitude, altitude:0, accuracy:30, speed: 0, geometry:[longitude, latitude] },
-  place: { 
-    address:"123 Central Park", city:"New York", region:"NY", country:"USA", phone:"2065551212", 
-    provider:{ 
-      foursquare:"4bcfbae19854d13a82b8f64d" 
-    },
-    category:{ 
-      id:"4bf58dd8d48988d18c941735", 
-      name : "Baseball Stadium",
-      photo:{
-        prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
-        source : "assets.categories",
-      },
-    }
-  },
   signalFence: -100,
+  location: { lat:latitude, lng:longitude, altitude:0, accuracy:30, speed: 0, geometry:[longitude, latitude] },
+  address:"123 Central Park", city:"New York", region:"NY", country:"USA", phone:"2065551212", 
+  provider:{ 
+    foursquare:"4bcfbae19854d13a82b8f64d" 
+  },
+  category:{ 
+    id:"4bf58dd8d48988d18c941735", 
+    name : "Baseball Stadium",
+    photo:{
+      prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
+      source : "assets.categories",
+    },
+  },
   _creator: uid1,
 }
 
-defaultRecord.entities_applink = {
-  _id: entityId,
-  type: util.statics.typeApplink,
+defaultRecord.applinks = {
+  _id: applinkId,
+  type: util.statics.typeApplink + '.foursquare',
   name: "Bannerwood Park",
   photo: { prefix:"https://graph.facebook.com/143970268959049/picture?type=large", source:"facebook" },
-  applink: {
-    type: 'foursquare',
-    id: "143970268959049",
-    url: "https://www.facebook.com/pages/Bannerwood-Park/143970268959049",
-  },
+  appId: "143970268959049",
+  url: "https://www.facebook.com/pages/Bannerwood-Park/143970268959049",
   sdata: { origin : "facebook", validated : 1369167109174.0, likes : 9 },
   _creator: uid1,
 }
 
-defaultRecord.entities_post = {
-  _id: entityId,
+defaultRecord.posts = {
+  _id: postId,
   type: util.statics.typePost,
   name: 'Mona Lisa',
   subtitle: 'Leonardo daVinci',
@@ -144,8 +133,8 @@ defaultRecord.entities_post = {
   _creator: uid1,
 }
 
-defaultRecord.entities_comment = {
-  _id: entityId,
+defaultRecord.comments = {
+  _id: commentId,
   type: util.statics.typeComment,
   name: 'Hmmm, not sure what the fuss is',
   description: 'Stuck behind thick plexiglass, tiny, I could hardly see it.',
@@ -154,8 +143,6 @@ defaultRecord.entities_comment = {
 
 defaultRecord.links = {
   _id: linkId,
-  toCollectionId : tableIds['entities'],
-  fromCollectionId : tableIds['entities'],
   _to : entityId,
   _from : entityId
 }
@@ -169,19 +156,21 @@ module.exports = {
   uid1: uid1,
   uid2: uid2,
   password: password,
-  entityId: entityId,
+  documentId: documentId,
+  deviceId: deviceId,
+  linkId: linkId,
   bssid: bssid,
   beaconId: beaconId,
-  documentId: documentId,
-  linkId: linkId,
-  deviceId: deviceId,
+  applinkId: applinkId,
+  commentId: commentId,
+  placeId: placeId,
+  postId: postId,
   registrationId: registrationId,
   latitude: latitude,
   longitude: longitude,
   timeStamp: timeStamp,
   timeStampMs: timeStampMs,
   recordLimit: recordLimit,
-  tableIds: _.clone(tableIds),
   dbProfile: _.clone(dbProfile)
 }
 
