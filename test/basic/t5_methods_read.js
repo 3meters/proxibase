@@ -46,8 +46,7 @@ exports.getEntitiesMinimum = function (test) {
   t.post({
     uri: '/do/getEntities',
     body: {
-      entityIds: [constants.entityId], 
-      entityType: 'entities',
+      entityIds: [constants.placeId], 
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
@@ -68,8 +67,7 @@ exports.getEntitiesMaximum = function (test) {
   t.post({
     uri: '/do/getEntities',
     body: {
-      entityIds: [constants.entityId], 
-      entityType: 'entities',
+      entityIds: [constants.placeId], 
       activeLinks: [ 
         { type:util.statics.typeProximity, load: true, links: true, count: true, direction: 'both' }, 
         { type:util.statics.typeApplink, load: true, links: true, count: true, direction: 'both' }, 
@@ -87,8 +85,7 @@ exports.getEntitiesMaximum = function (test) {
     t.assert(record.linksOut && record.linksOut.length === 1)
     t.assert(record.linkInCounts && record.linkInCounts.length === 5)
     t.assert(record.linkOutCounts && record.linkOutCounts.length === 1)
-    t.assert(record.entities && record.entities.length === dbProfile.spe + dbProfile.cpe + dbProfile.ape + 1)
-    t.assert(record.users && record.users.length === dbProfile.likes)
+    t.assert(record.entities && record.entities.length === dbProfile.spe + dbProfile.cpe + dbProfile.ape + dbProfile.likes + 1)
     test.done()
   })
 }
@@ -101,8 +98,7 @@ exports.getEntitiesWithComments = function (test) {
   t.post({
     uri: '/do/getEntities',
     body: {
-      entityIds: [constants.entityId], 
-      entityType: 'entities',
+      entityIds: [constants.placeId], 
       activeLinks: [ 
         { type:util.statics.typeComment, load: true, links: false, count: false }, 
       ]
@@ -126,8 +122,7 @@ exports.getEntitiesWithCommentsAndLinkCounts = function (test) {
   t.post({
     uri: '/do/getEntities',
     body: {
-      entityIds: [constants.entityId], 
-      entityType: 'entities',
+      entityIds: [constants.placeId], 
       activeLinks: [ 
         { type:util.statics.typeComment, load: true, links: false, count: false }, 
         { type:util.statics.typeProximity }, 
@@ -154,8 +149,7 @@ exports.getEntitiesAndLinkedEntitiesByUser = function (test) {
   t.post({
     uri: '/do/getEntities',
     body: {
-      entityIds: [constants.entityId], 
-      entityType: 'entities',
+      entityIds: [constants.placeId], 
       linkWhere: { _creator: constants.uid1 },
       activeLinks: [ 
         { type:util.statics.typeComment, load: true, links: false, count: false }, 
@@ -222,10 +216,9 @@ exports.getEntitiesForUser = function (test) {
     uri: '/do/getEntitiesForEntity',
     body: {
       entityId: constants.uid1,
-      entityType: 'users',
     }
   }, function(err, res, body) {
-    t.assert(body.count === util.statics.optionsLimitDefault)
+    t.assert(body.count === util.statics.optionsLimitDefault * 2)
     t.assert(body.more === true)
     test.done()
   })
@@ -236,7 +229,6 @@ exports.getEntitiesForUserPostsOnly = function (test) {
     uri: '/do/getEntitiesForEntity',
     body: {
       entityId: constants.uid1,
-      entityType: 'users',
       cursor: { where: { type: { $in:[util.statics.typePost] }}},
     }
   }, function(err, res, body) {
@@ -252,13 +244,12 @@ exports.getEntitiesForUserMatchingRegex = function (test) {
     uri: '/do/getEntitiesForEntity',
     body: {
       entityId: constants.uid1,
-      entityType: 'users',
-      cursor: { where: { name: { $regex:'20101', $options:'i' }}},
+      cursor: { where: { name: { $regex:'2401', $options:'i' }}},
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.more === false)
-    t.assert(body.data && body.data[0] && body.data[0].type === util.statics.typeComment)
+    t.assert(body.data && body.data[0] && body.data[0].type === util.statics.typePost)
     test.done()
   })
 }
@@ -267,8 +258,7 @@ exports.getEntitiesForPlacePostsOnly = function (test) {
   t.post({
     uri: '/do/getEntitiesForEntity',
     body: {
-      entityId: constants.entityId, 
-      entityType: 'entities',
+      entityId: constants.placeId, 
       cursor: { 
         where: { type: util.statics.typePost }
       },
@@ -285,8 +275,7 @@ exports.getEntitiesForPlacePostsOnlyLimited = function (test) {
   t.post({
     uri: '/do/getEntitiesForEntity',
     body: {
-      entityId: constants.entityId, 
-      entityType: 'entities',
+      entityId: constants.placeId, 
       cursor: { 
         where: { type: util.statics.typePost },        
         sort: { name: 1 },
@@ -298,7 +287,7 @@ exports.getEntitiesForPlacePostsOnlyLimited = function (test) {
     t.assert(body.more === true)
     t.assert(body.data && body.data[0])
     t.assert(body.data[0].type === util.statics.typePost)
-    t.assert(body.data[0].name.indexOf('601') > 0)
+    t.assert(body.data[0].name.indexOf('Lisa 1') > 0)
     test.done()
   })
 }
@@ -307,8 +296,7 @@ exports.getEntitiesForPlacePostsOnlyLimitedAndSkip = function (test) {
   t.post({
     uri: '/do/getEntitiesForEntity',
     body: {
-      entityId: constants.entityId, 
-      entityType: 'entities',
+      entityId: constants.placeId, 
       cursor: { 
         where: { type: util.statics.typePost },
         sort: { name: 1 },
@@ -321,7 +309,7 @@ exports.getEntitiesForPlacePostsOnlyLimitedAndSkip = function (test) {
     t.assert(body.more === false)
     t.assert(body.data && body.data[0])
     t.assert(body.data[0].type === util.statics.typePost)
-    t.assert(body.data[0].name.indexOf('603') > 0)
+    t.assert(body.data[0].name.indexOf('Lisa 3') > 0)
     test.done()
   })
 }
@@ -335,7 +323,6 @@ exports.getUserMinimum = function (test) {
     uri: '/do/getEntities',
     body: {
       entityIds: [constants.uid1], 
-      entityType: 'users',
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
