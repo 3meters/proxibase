@@ -23,7 +23,7 @@ var user2 = {
 }
 var doc1 = {
   name: 'Doc1',
-  sdata: { foo: 'bar' }
+  data: { foo: 'bar' }
 }
 var _exports = {}                    // for commenting out tests
 
