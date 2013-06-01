@@ -26,20 +26,6 @@ exports.getSessions = function(test) {
   })
 }
 
-exports.errorOnUnknownParams = function(test) {
-  var url = serviceUri + '/test/twitter.html'
-  t.post({
-    uri: '/applinks/suggest',
-    body: {foo: 'bar', appLinkEnts: [], includeRaw: true}
-  }, 400,
-  function(err, res, body) {
-    t.assert(body && body.error)
-    t.assert(body.error.code === 400.11)  // badParam
-    t.assert(body.error.appStack)
-    test.done()
-  })
-}
-
 exports.ensureWorksWithEmpty = function(test) {
   var url = serviceUri + '/test/twitter.html'
   t.post({
@@ -56,23 +42,25 @@ exports.checkTwitterUrls = function(test) {
   var url = serviceUri + '/test/twitter.html'
   t.post({
     uri: '/applinks/suggest',
-    body: {applinkEnts: [
-      {type: typeApplink, applink: {type: 'website', id: url}}
-    ], includeRaw: true},
+    body: {
+      place: {
+        applinks: [
+          {type: 'website', id: url}
+        ],
+      },
+      includeRaw: true},
   },
   function(err, res) {
-    var applinkEnts = res.body.data.applinkEnts
-    t.assert(applinkEnts.length === 2)
-    t.assert(applinkEnts[0].applink)
-    t.assert(applinkEnts[0].applink.type === 'website')
-    var ent = applinkEnts[1]
-    t.assert(ent.name === '@bob')
-    t.assert(ent.applink.type === 'twitter')
-    t.assert(ent.applink.id === 'bob')
-    t.assert(!ent.applink.icon)
-    t.assert(ent.applink.data)
-    t.assert(ent.applink.data.origin === 'website')
-    t.assert(ent.applink.data.originId === url)
+    var applinks = res.body.data.place.applinks
+    t.assert(applinks.length === 2)
+    t.assert(applinks[0].type === 'website')
+    var applink = applinks[1]
+    t.assert(applink.name === '@bob')
+    t.assert(applink.type === 'twitter')
+    t.assert(applink.id === 'bob')
+    t.assert(applink.data)
+    t.assert(applink.data.origin === 'website')
+    t.assert(applink.data.originId === url)
     t.assert(res.body.raw.webSiteCandidates.length === 6)
     test.done()
   })
