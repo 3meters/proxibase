@@ -33,7 +33,7 @@ exports.ensureWorksWithEmpty = function(test) {
     body: {}
   }, function(err, res, body) {
     t.assert(body.data)
-    t.assert(util._.isEmpty(body.data))
+    t.assert(util._.isEmpty(body.data.place))
     test.done()
   })
 }
@@ -61,6 +61,8 @@ exports.checkTwitterUrls = function(test) {
     t.assert(applink.data)
     t.assert(applink.data.origin === 'website')
     t.assert(applink.data.originId === url)
+    t.assert(res.body.raw)
+    t.assert(res.body.raw.webSiteCandidates)
     t.assert(res.body.raw.webSiteCandidates.length === 6)
     test.done()
   })
