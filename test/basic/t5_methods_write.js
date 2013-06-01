@@ -167,7 +167,7 @@ var testApplink = {
     source:"facebook",
   },
   appId: "143970268959049",
-  sdata: { 
+  data: { 
     origin : "facebook", validated : 1369167109174.0, likes : 9 
   },
 }
