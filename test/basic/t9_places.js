@@ -19,16 +19,14 @@ var adminCred
 var testLatitude = 46.1
 var testLongitude = -121.1
 var testEntity = {
+      type : util.statics.typePlace,
+      name : "Test Place Entity Suggest Sources",
       photo: {
         prefix: "https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
         sourceName: "aircandi",
       },
       signalFence : -100,
-      name : "Test Place Entity Suggest Sources",
-      type : util.statics.typePlace,
-      place: {lat:testLatitude, lng:testLongitude},
-      visibility : "public",
-      isCollection: true,
+      location: { lat:testLatitude, lng:testLongitude },
       enabled : true,
       locked : false,
     }
@@ -58,7 +56,7 @@ exports.getCategories = function(test) {
   })
 }
 
-exports.getSources = function(test) {
+_exports.getSources = function(test) {
   t.get({uri: '/sources'}, function(err, res) {
     var sources = res.body.data
     t.assert(sources && sources.length > 5)
@@ -86,12 +84,12 @@ exports.getPlacesNearLocationFoursquare = function(test) {
     var places = res.body.data
     t.assert(places.length === 10)
     places.forEach(function(place) {
-      t.assert(place.place.provider)
-      if (place.place.provider.foursquare === ballRoomId) foundBallroom++
-      t.assert(place.place.category)
-      t.assert(place.place.category.name)
-      t.assert(place.place.category.photo)
-      t.assert(/^\/img\/categories\/foursquare\/.*_88\.png$/.test(place.place.category.photo.prefix))
+      t.assert(place.provider)
+      if (place.provider.foursquare === ballRoomId) foundBallroom++
+      t.assert(place.category)
+      t.assert(place.category.name)
+      t.assert(place.category.photo)
+      t.assert(/^\/img\/categories\/foursquare\/.*_88\.png$/.test(place.category.photo.prefix))
       var sources = place.sources
       t.assert(sources)
       t.assert(sources.length)
@@ -99,9 +97,6 @@ exports.getPlacesNearLocationFoursquare = function(test) {
         t.assert(source.type)
         t.assert(source.id || source.url)
         t.assert(!source.icon)
-        if (source.type === 'twitter') {
-          t.assert('com.twitter.android' === source.packageName )
-        }
       })
     })
     t.assert(foundBallroom === 1)
@@ -124,7 +119,7 @@ exports.getPlacesNearLocationExcludeWorks = function(test) {
   }, function(err, res) {
     var places = res.body.data
     places.forEach(function(place) {
-      t.assert(place.place.id !== ballRoomId)
+      t.assert(place.provider.foursquare.id !== ballRoomId)
     })
     test.done()
   })
@@ -148,7 +143,7 @@ exports.getPlacesNearLocationLargeRadius = function(test) {
   })
 }
 
-exports.getPlacesNearLocationFactual = function(test) {
+_exports.getPlacesNearLocationFactual = function(test) {
   if (disconnected) return skip(test)
   var ballRoomId = '46aef19f-2990-43d5-a9e3-11b78060150c'
   var roxyId = '2bd21139-1907-4126-9443-65a2e48e1717' // Roxy's Diner
@@ -226,7 +221,7 @@ exports.getPlacesNearLocationFactual = function(test) {
   }
 }
 
-exports.getPlacesNearLocationGoogle = function(test) {
+_exports.getPlacesNearLocationGoogle = function(test) {
   if (disconnected) return skip(test)
 
   var ballRoomId = 'f0147a535bedf4bb948f35379873cab0747ba9e2'
@@ -294,8 +289,8 @@ exports.getPlacesNearLocationGoogle = function(test) {
 exports.insertEntitySuggestSources = function(test) {
   if (disconnected) return skip(test)
   var body = {
-    suggestSources: true,
     entity: util.clone(testEntity),
+    suggestSources: true,
     includeRaw: true,
   }
   body.entity.sources = [{
@@ -356,7 +351,7 @@ exports.insertPlaceEntitySuggestSourcesFromFactual = function(test) {
 // entities and multiple place providers. Subject to
 // breaks if the providers change data or are
 // unavailable.
-exports.getPlacesInsertEntityGetPlaces = function(test) {
+_exports.getPlacesInsertEntityGetPlaces = function(test) {
 
   if (disconnected) return skip(test)
   var ballRoomId = '4abebc45f964a520a18f20e3' // Ball Room, Fremont Seattle
@@ -376,12 +371,12 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
     var hasFactualProviderId = 0
     t.assert(places.length > 10)
     places.forEach(function(place) {
-      t.assert(place.place.provider)
-      if (place.place.provider.factual) {
+      t.assert(place.provider)
+      if (place.provider.factual) {
         hasFactualProviderId++
-        t.assert(place.place.provider.foursquare) // we merged them
+        t.assert(place.provider.foursquare) // we merged them
       }
-      if (ladroId === place.place.provider.foursquare) {
+      if (ladroId === place.provider.foursquare) {
         ladro = place
       }
     })
@@ -395,7 +390,11 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
     // Insert ladro as an entity
     t.post({
       uri: '/do/insertEntity?' + userCred,
-      body: {entity: ladro, suggestSources: true, includeRaw: true}
+      body: {
+        entity: ladro, 
+        suggestSources: true, 
+        includeRaw: true
+      }
     }, 201, function(err, res, body) {
       t.assert(body.data[0].sources)
       var sources = body.data[0].sources
@@ -416,9 +415,8 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
         body: {entity: {
           name: 'A user-created Test Entity Inside the BallRoom',
           type : util.statics.typePlace,
-          place: {provider: {aircandi: user._id}, lat: 47.6521, lng: -122.3530},
-          visibility : "public",
-          isCollection: true,
+          provider: { user: user._id },
+          location: { lat: 47.6521, lng: -122.3530 },
           enabled : true,
           locked : false,
         }}
@@ -432,9 +430,8 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
           body: {entity: {
             name: 'A user-created Entity At George\'s House',
             type : util.statics.typePlace,
-            place: {provider: {aircandi: user._id}, lat: 47.664525, lng: -122.354787},
-            visibility : "public",
-            isCollection: true,
+            provider: {user: user._id}, 
+            location: {lat: 47.664525, lng: -122.354787},
             enabled : true,
             locked : false,
           }}
@@ -457,15 +454,15 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
             var foundNewEnt = 0
             var foundNewEnt2 = 0
             places.forEach(function(place) {
-              t.assert(place.place.provider)
-              if (place.place.provider.foursquare === ladroId) foundLadro++
+              t.assert(place.provider)
+              if (place.provider.foursquare === ladroId) foundLadro++
               if (place._id && place._id === newEnt._id) {
                 foundNewEnt++
-                t.assert(place.place.provider.aircandi === user._id)
+                t.assert(place.provider.aircandi === user._id)
               }
               if (place._id && place._id === newEnt2._id) {
                 foundNewEnt2++
-                t.assert(place.place.provider.aircandi === user._id)
+                t.assert(place.rovider.aircandi === user._id)
               }
             })
             t.assert(foundLadro === 1)
@@ -489,10 +486,10 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
               places.forEach(function(place) {
                 if (place._id && place._id === newEnt._id) foundNewEnt++
                 if (place._id && place._id === newEnt2._id) foundNewEnt2++
-                t.assert(place.place.provider)
-                if (place.place.provider.foursquare === ladroId) {
+                t.assert(place.provider)
+                if (place.provider.foursquare === ladroId) {
                   foundLadro++
-                  t.assert(place.place.provider.factual) // should have been added to the map
+                  t.assert(place.provider.factual) // should have been added to the map
                 }
               })
               t.assert(foundLadro === 1)
@@ -527,7 +524,10 @@ exports.getPlacePhotos = function(test) {
   if (disconnected) return skip(test)
   t.post({
     uri: '/places/getPhotos',
-    body: {provider: 'foursquare', id: '4abebc45f964a520a18f20e3'}
+    body: {
+      provider: 'foursquare', 
+      id: '4abebc45f964a520a18f20e3'
+    }
   }, function(err, res, body) {
     t.assert(body.data.length > 10)
     test.done()
