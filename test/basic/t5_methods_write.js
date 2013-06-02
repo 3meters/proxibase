@@ -91,7 +91,7 @@ var testPlace2 = {
       prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
       source : "assets.categories",
     },
-  }
+  },
 }
 var testPlace3 = {
   _id : "0013.111111.11111.111.111113",
@@ -116,7 +116,7 @@ var testPlace3 = {
       prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
       source : "assets.categories",
     },
-  }
+  },
 }
 var testPlaceCustom = {
   _id : "0013.111111.11111.111.111114",
@@ -141,10 +141,11 @@ var testPlaceCustom = {
       prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
       source : "assets.categories",
     },
-  }
+  },
+  locked: true,
 }
 var testPost = {
-  _id : "0014.111111.11111.111.211111",
+  _id : "0014.111111.11111.111.111111",
   type : util.statics.typePost,
   name : "Testing post entity",
   photo: { 
@@ -153,13 +154,25 @@ var testPost = {
   },
 }
 var testComment = {
-  _id : "0012.111111.11111.111.311111",
+  _id : "0012.111111.11111.111.111111",
   type : util.statics.typeComment,
   name : "Test comment",
   description : "Test comment, much ado about nothing.",
 }
+var testComment2 = {
+  _id : "0012.111111.11111.111.111112",
+  type : util.statics.typeComment,
+  name : "Test comment for locked entity",
+  description : "Test comment, much ado about nothing.",
+}
+var testComment3 = {
+  _id : "0012.111111.11111.111.111113",
+  type : util.statics.typeComment,
+  name : "Another test comment for locked entity",
+  description : "Test comment, much ado about nothing.",
+}
 var testApplink = {
-  _id: "0010.111111.11111.111.411111",
+  _id: "0010.111111.11111.111.111111",
   type: util.statics.typeApplink,
   name: "Bannerwood Park",
   photo: { 
@@ -1070,22 +1083,143 @@ exports.checkDeleteLinkLogActions = function(test) {
   })
 }
 
-exports.userCannotCommentOnLockedRecord = function(test) {
-  log('nyi')
-  test.done()
+exports.nonOwnerCannotCommentOnLockedRecord = function(test) {
+  t.post({
+    uri: '/do/insertEntity?' + user2Cred,
+    body: {
+      entity: testComment2, 
+      link: {
+        _to: testPlaceCustom._id,
+        type: util.statics.typeComment,
+        strong: true,
+      },
+      skipNotifications: true
+    }
+  }, 401, function(err, res, body) {
+    t.assert(body.error && body.error.code === 401.6)
+    test.done()
+  })
 }
 
-exports.userCannotLinkToLockedRecord = function(test) {
-  log('nyi')
-  test.done()
+exports.ownerCanCommentOnLockedRecord = function(test) {
+  t.post({
+    uri: '/do/insertEntity?' + userCred,
+    body: {
+      entity: testComment2, 
+      link: {
+        _to: testPlaceCustom._id,
+        type: util.statics.typeComment,
+        strong: true,
+      },
+      skipNotifications: true
+    }
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data[0])
+    test.done()
+  })
+}
+
+exports.checkOwnerInsertedCommentOnLockedRecord = function (test) {
+  t.post({
+    uri: '/do/find',
+    body: {
+      table:'comments', 
+      find:{ _id:testComment2._id }
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    test.done()
+  })
 }
 
 exports.adminCanCommentOnLockedRecord = function(test) {
-  log('nyi')
-  test.done()
+  t.post({
+    uri: '/do/insertEntity?' + adminCred,
+    body: {
+      entity: testComment3, 
+      link: {
+        _to: testPlaceCustom._id,
+        type: util.statics.typeComment,
+        strong: true,
+      },
+      skipNotifications: true
+    }
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data[0])
+    test.done()
+  })
 }
 
-exports.adminCanLinkToLockedRecord = function(test) {
-  log('nyi')
-  test.done()
+exports.checkAdminInsertedCommentOnLockedRecord = function (test) {
+  t.post({
+    uri: '/do/find',
+    body: {
+      table:'comments', 
+      find:{ _id:testComment3._id }
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    test.done()
+  })
+}
+
+exports.nonOwnerCannotUpdateLockedRecord = function(test) {
+  testPlaceCustom.name = 'Testing non owner update of locked entity'
+  t.post({
+    uri: '/do/updateEntity?' + user2Cred,
+    body: {
+      entity:testPlaceCustom
+    }
+  }, 401, function(err, res, body) {
+    t.assert(body.error && body.error.code === 401.6)
+    test.done()
+  })
+}
+
+exports.ownerCanUpdateLockedRecord = function(test) {
+  testPlaceCustom.name = 'Testing owner update of locked entity'
+  t.post({
+    uri: '/do/updateEntity?' + userCred,
+    body: {
+      entity:testPlaceCustom
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data._id)
+    test.done()
+  })
+}
+
+exports.checkOwnerUpdatedLockedRecord = function (test) {
+  t.get({
+    uri: '/data/places/' + testPlaceCustom._id
+  }, function(err, res, body) {
+    t.assert(body.data && body.data[0] && body.data[0].name === 'Testing owner update of locked entity')
+    test.done()
+  })
+}
+
+exports.adminCanUpdateLockedRecord = function(test) {
+  testPlaceCustom.name = 'Testing admin update of locked entity'
+  t.post({
+    uri: '/do/updateEntity?' + adminCred,
+    body: {
+      entity:testPlaceCustom
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data._id)
+    test.done()
+  })
+}
+
+exports.checkAdminUpdatedLockedRecord = function (test) {
+  t.get({
+    uri: '/data/places/' + testPlaceCustom._id
+  }, function(err, res, body) {
+    t.assert(body.data && body.data[0] && body.data[0].name === 'Testing admin update of locked entity')
+    test.done()
+  })
 }
