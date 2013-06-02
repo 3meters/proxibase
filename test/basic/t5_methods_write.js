@@ -44,7 +44,7 @@ var testUser2 = {
   enabled: true,
 }
 var testPlace = {
-  _id : "0004.111111.11111.111.111111",
+  _id : "0013.111111.11111.111.111111",
   type : util.statics.typePlace,
   name : "Testing place entity",
   photo: { 
@@ -69,7 +69,7 @@ var testPlace = {
   }
 }
 var testPlace2 = {
-  _id : "0004.111111.11111.111.111112",
+  _id : "0013.111111.11111.111.111112",
   type : util.statics.typePlace,
   name : "Testing place entity",
   photo: { 
@@ -94,7 +94,7 @@ var testPlace2 = {
   }
 }
 var testPlace3 = {
-  _id : "0004.111111.11111.111.111113",
+  _id : "0013.111111.11111.111.111113",
   type : util.statics.typePlace,
   name : "Testing place entity",
   photo: { 
@@ -119,7 +119,7 @@ var testPlace3 = {
   }
 }
 var testPlaceCustom = {
-  _id : "0004.111111.11111.111.111114",
+  _id : "0013.111111.11111.111.111114",
   type : util.statics.typePlace,
   name : "Testing place entity custom",
   photo: { 
@@ -144,7 +144,7 @@ var testPlaceCustom = {
   }
 }
 var testPost = {
-  _id : "0004.111111.11111.111.211111",
+  _id : "0014.111111.11111.111.211111",
   type : util.statics.typePost,
   name : "Testing post entity",
   photo: { 
@@ -153,13 +153,13 @@ var testPost = {
   },
 }
 var testComment = {
-  _id : "0004.111111.11111.111.311111",
+  _id : "0012.111111.11111.111.311111",
   type : util.statics.typeComment,
   name : "Test comment",
   description : "Test comment, much ado about nothing.",
 }
 var testApplink = {
-  _id: "0004.111111.11111.111.411111",
+  _id: "0010.111111.11111.111.411111",
   type: util.statics.typeApplink,
   name: "Bannerwood Park",
   photo: { 
@@ -172,8 +172,8 @@ var testApplink = {
   },
 }
 var testLink = {
-  _to : '0008.11:11:11:11:11:22',
-  _from : '0004.111111.11111.111.111111',
+  _to : '0011.11:11:11:11:11:22',
+  _from : '0013.111111.11111.111.111111',
   proximity: {
     primary: true,
     signal: -100
@@ -184,7 +184,7 @@ var newTestLink = {
   _from : '0004.111111.11111.111.111111',
 }
 var testBeacon = {
-  _id : '0004.11:11:11:11:11:11',
+  _id : '0011.11:11:11:11:11:11',
   type : util.statics.typeBeacon,
   name: 'Test Beacon Label',
   ssid: 'Test Beacon',
@@ -199,7 +199,7 @@ var testBeacon = {
   },
 }
 var testBeacon2 = {
-  _id : '0004.22:22:22:22:22:22',
+  _id : '0011.22:22:22:22:22:22',
   type : util.statics.typeBeacon,
   name: 'Test Beacon Label 2',
   ssid: 'Test Beacon 2',
@@ -214,7 +214,7 @@ var testBeacon2 = {
   },
 }
 var testBeacon3 = {
-  _id : '0004.33:33:33:33:33:33',
+  _id : '0011.33:33:33:33:33:33',
   type : util.statics.typeBeacon,
   name: 'Test Beacon Label 3',
   ssid: 'Test Beacon 3',
@@ -399,7 +399,7 @@ exports.checkInsertPlace = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'entities', 
+      table:'places', 
       find:{ _id:testPlace._id }
     }
   }, function(err, res, body) {
@@ -412,7 +412,7 @@ exports.checkInsertBeacon = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'entities', 
+      table:'beacons', 
       find:{ _id:testBeacon._id }
     }
   }, function(err, res, body) {
@@ -476,7 +476,7 @@ exports.checkInsertPlaceCustom = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'entities', 
+      table:'places', 
       find:{ _id:testPlaceCustom._id }
     }
   }, function(err, res, body) {
@@ -505,7 +505,7 @@ exports.checkInsertPlaceBeaconAlreadyExists = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'entities',
+      table:'places',
       find:{ _id:testPlace2._id }
     }
   }, function(err, res, body) {
@@ -544,12 +544,12 @@ exports.checkInsertEntityNoLinks = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'entities',
+      table:'places',
       find:{_id:testPlace3._id}
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
-    t.assert(body.data[0] && body.data[0].place)
+    t.assert(body.data && body.data[0])
     var ent = body.data[0]
     t.assert(ent.location.lat && ent.location.lng)
     t.assert(ent.location.geometry)
@@ -573,8 +573,8 @@ exports.insertEntityDoNotTrack = function(test) {
     delete ent._id
     ent.name = 'Testing Place Ent with doNotTrack'
     var beacon = util.clone(testBeacon)
-    beacon._id = '0004.44:44:44:44:44:44'
-    beacon.beacon.bssid = '44:44:44:44:44:44',
+    beacon._id = '0011.44:44:44:44:44:44'
+    beacon.bssid = '44:44:44:44:44:44',
     t.post({
       uri: '/do/insertEntity?' + userCred,
       body: {
@@ -591,7 +591,7 @@ exports.insertEntityDoNotTrack = function(test) {
       t.assert(savedEnt._owner === adminId)
       t.assert(savedEnt._creator === adminId)
       t.assert(savedEnt._modifier === adminId)
-      t.get('/data/entities/' + beacon._id,
+      t.get('/data/beacons/' + beacon._id,
         function(err, res, body) {
           t.assert(body.data[0])
           var savedBeacon = body.data[0]
@@ -734,7 +734,7 @@ exports.checkTrackEntityProximityLinkFromEntity1ToBeacon2 = function(test) {
     trackingLink = body.data[0]
     t.assert(body.count === 1)
     t.assert(body.data[0].proximity.primary === true)
-    t.assert(body.data[0].proximity.signal === testBeacon2.beacon.signal)
+    t.assert(body.data[0].proximity.signal === testBeacon2.signal)
     test.done()
   })
 }
@@ -837,21 +837,21 @@ exports.checkBeaconLocationUpdate = function (test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'entities', 
+      table:'beacons', 
       find:{ _id:testBeacon._id }
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data[0].location.lat === 47.1)
     t.assert(body.data[0].location.lng === -122.1)
-    t.assert(body.data[0].beacon.signal === -79)
+    t.assert(body.data[0].signal === -79)
     test.done()
   })
 }
 
 exports.cannotDeleteEntityWhenNotSignedIn = function (test) {
   t.del({
-    uri: '/data/entities/' + testBeacon._id
+    uri: '/data/beacons/' + testBeacon._id
   }, 401, function(err, res, body) {
     test.done()
   })
@@ -859,7 +859,7 @@ exports.cannotDeleteEntityWhenNotSignedIn = function (test) {
 
 exports.userCannotDeleteBeaconEntitySheCreated = function (test) {
   t.del({
-    uri: '/data/entities/' + testBeacon._id + '?' + userCred
+    uri: '/data/beacons/' + testBeacon._id + '?' + userCred
   }, 401, function(err, res, body) {
     test.done()
   })
@@ -867,7 +867,7 @@ exports.userCannotDeleteBeaconEntitySheCreated = function (test) {
 
 exports.adminCanDeleteBeaconEntityUserCreated = function (test) {
   t.del({
-    uri: '/data/entities/' + testBeacon._id + '?' + adminCred
+    uri: '/data/beacons/' + testBeacon._id + '?' + adminCred
   }, function(err, res, body) {
     test.done()
   })
@@ -896,7 +896,7 @@ exports.checkInsertComment = function (test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'entities', 
+      table:'comments', 
       find:{ _id:testComment._id }
     }
   }, function(err, res, body) {
@@ -940,7 +940,7 @@ exports.updateEntity = function (test) {
 
 exports.checkUpdateEntity = function (test) {
   t.get({
-    uri: '/data/entities/' + testPlace._id
+    uri: '/data/places/' + testPlace._id
   }, function(err, res, body) {
     t.assert(body.data && body.data[0] && body.data[0].name === 'Testing super candi')
     test.done()
@@ -996,7 +996,7 @@ exports.checkDeleteEntity = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'entities',
+      table:'places',
       find:{
         _id:testPlace._id
       }
@@ -1027,7 +1027,7 @@ exports.checkDeleteStrongLinkedEntity = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'entities',
+      table:'comments',
       find:{
         _id:testComment._id
       }

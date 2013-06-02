@@ -85,6 +85,10 @@ exports.cannotCreateStatsAsUser = function(test) {
   })
 }
 
+/*
+ * Jay: usersByEntity needs to be updated to work across all entity 
+ * collections.
+ */
 exports.adminCanRefreshStat = function(test) {
   t.get({
     uri: '/stats/usersByEntity?refresh=true&' + adminCred
