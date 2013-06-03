@@ -46,7 +46,6 @@ function addSystemFields(record) {
 
 defaultRecord.users = defaultRecord.users1 = {
   _id: uid1,
-  type: util.statics.typeUser,
   name: 'Test User',
   email: 'test@3meters.com',
   photo: { 
@@ -72,7 +71,7 @@ defaultRecord.users2 = {
 
 defaultRecord.documents = {
   _id: documentId,
-  type : 'com.aircandi.document.version',
+  type : 'version',
   data: {
     androidMinimumVersion:10
   },
@@ -80,7 +79,6 @@ defaultRecord.documents = {
 
 defaultRecord.beacons = {
   _id: beaconId,
-  type: util.statics.typeBeacon,
   name: 'Beacon',
   location: { lat:latitude, lng:longitude, altitude:0, accuracy:30, speed: 0, geometry:[longitude, latitude] },
   ssid: 'Test Beacon',
@@ -91,7 +89,6 @@ defaultRecord.beacons = {
 
 defaultRecord.places = {
   _id: placeId,
-  type: util.statics.typePlace,
   name: 'Museum of Modern Art',
   subtitle: 'Contemporary Galleries: 1980-Now',
   description: 'The Museum of Modern Art is a place that fuels creativity, ignites minds, and provides inspiration. With extraordinary exhibitions and the world\'s finest collection of modern and contemporary art, MoMA is dedicated to the conversation between the past and the present, the established and the experimental. Our mission is helping you understand and enjoy the art of our time.',
@@ -126,7 +123,6 @@ defaultRecord.applinks = {
 
 defaultRecord.posts = {
   _id: postId,
-  type: util.statics.typePost,
   name: 'Mona Lisa',
   subtitle: 'Leonardo daVinci',
   description: 'Mona Lisa (also known as La Gioconda or La Joconde) is a 16th-century portrait painted in oil on a poplar panel by Leonardo di ser Piero da Vinci during the Renaissance in Florence, Italy.',
@@ -136,7 +132,6 @@ defaultRecord.posts = {
 
 defaultRecord.comments = {
   _id: commentId,
-  type: util.statics.typeComment,
   name: 'Hmmm, not sure what the fuss is',
   description: 'Stuck behind thick plexiglass, tiny, I could hardly see it.',
   _creator: uid1,
