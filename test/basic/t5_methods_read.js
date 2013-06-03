@@ -68,14 +68,15 @@ exports.getEntitiesMaximum = function (test) {
     uri: '/do/getEntities',
     body: {
       entityIds: [constants.placeId], 
-      activeLinks: [ 
-        { type:util.statics.typeProximity, load: true, links: true, count: true, direction: 'both' }, 
-        { type:util.statics.typeApplink, load: true, links: true, count: true, direction: 'both' }, 
-        { type:util.statics.typeComment, load: true, links: true, count: true, direction: 'both' }, 
-        { type:util.statics.typePost, load: true, links: true, count: true, direction: 'both' }, 
-        { type:util.statics.typeWatch, load: true, links: true, count: true, direction: 'both' }, 
-        { type:util.statics.typeLike, load: true, links: true, count: true, direction: 'both' }, 
-      ]
+      links: {
+        active: [ 
+          { type:util.statics.typeProximity, load: true, links: true, count: true, direction: 'both' }, 
+          { type:util.statics.typeApplink, load: true, links: true, count: true, direction: 'both' }, 
+          { type:util.statics.typeComment, load: true, links: true, count: true, direction: 'both' }, 
+          { type:util.statics.typePost, load: true, links: true, count: true, direction: 'both' }, 
+          { type:util.statics.typeWatch, load: true, links: true, count: true, direction: 'both' }, 
+          { type:util.statics.typeLike, load: true, links: true, count: true, direction: 'both' }, 
+        ]},
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
@@ -99,9 +100,10 @@ exports.getEntitiesWithComments = function (test) {
     uri: '/do/getEntities',
     body: {
       entityIds: [constants.placeId], 
-      activeLinks: [ 
-        { type:util.statics.typeComment, load: true, links: false, count: false }, 
-      ]
+      links: {
+        active: [ 
+          { type:util.statics.typeComment, load: true, links: false, count: false }, 
+        ]},
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
@@ -123,15 +125,16 @@ exports.getEntitiesWithCommentsAndLinkCounts = function (test) {
     uri: '/do/getEntities',
     body: {
       entityIds: [constants.placeId], 
-      activeLinks: [ 
-        { type:util.statics.typeComment, load: true, links: false, count: false }, 
-        { type:util.statics.typeProximity }, 
-        { type:util.statics.typeApplink }, 
-        { type:util.statics.typeComment }, 
-        { type:util.statics.typePost }, 
-        { type:util.statics.typeWatch }, 
-        { type:util.statics.typeLike }, 
-      ]
+      links: {
+        active: [ 
+          { type:util.statics.typeComment, load: true, links: false, count: false }, 
+          { type:util.statics.typeProximity }, 
+          { type:util.statics.typeApplink }, 
+          { type:util.statics.typeComment }, 
+          { type:util.statics.typePost }, 
+          { type:util.statics.typeWatch }, 
+          { type:util.statics.typeLike }, 
+        ]},
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
@@ -150,16 +153,17 @@ exports.getEntitiesAndLinkedEntitiesByUser = function (test) {
     uri: '/do/getEntities',
     body: {
       entityIds: [constants.placeId], 
-      linkWhere: { _creator: constants.uid1 },
-      activeLinks: [ 
-        { type:util.statics.typeComment, load: true, links: false, count: false }, 
-        { type:util.statics.typePost, load: true, links: false, count: false }, 
-        { type:util.statics.typeProximity }, 
-        { type:util.statics.typeApplink }, 
-        { type:util.statics.typeComment }, 
-        { type:util.statics.typeWatch }, 
-        { type:util.statics.typeLike }, 
-      ]
+      links: {
+        where: { _creator: constants.uid1 },
+        active: [ 
+          { type:util.statics.typeComment, load: true, links: false, count: false }, 
+          { type:util.statics.typePost, load: true, links: false, count: false }, 
+          { type:util.statics.typeProximity }, 
+          { type:util.statics.typeApplink }, 
+          { type:util.statics.typeComment }, 
+          { type:util.statics.typeWatch }, 
+          { type:util.statics.typeLike }, 
+        ]},
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
@@ -178,9 +182,10 @@ exports.getEntitiesForLocation = function (test) {
     body: {
       entityIds: [constants.beaconId],
       entityType: 'entities',
-      activeLinks: [ 
-        { type:util.statics.typeProximity, load: true }, 
-      ]
+      links: {
+        active: [ 
+          { type:util.statics.typeProximity, load: true }, 
+        ]},
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
@@ -198,9 +203,10 @@ exports.getEntitiesForLocationLimited = function (test) {
     body: {
       entityIds: [constants.beaconId],
       entityType: 'entities',
-      activeLinks: [ 
-        { type:util.statics.typeProximity, load: true, limit: 3 }, 
-      ]
+      links: {
+        active: [ 
+          { type:util.statics.typeProximity, load: true, limit: 3 }, 
+        ]},
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
@@ -334,7 +340,4 @@ exports.getUserMinimum = function (test) {
     test.done()
   })
 }
-
-
-
 
