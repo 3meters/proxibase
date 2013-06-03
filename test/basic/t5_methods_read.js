@@ -216,6 +216,7 @@ exports.getEntitiesForUser = function (test) {
     uri: '/do/getEntitiesForEntity',
     body: {
       entityId: constants.uid1,
+      entityTypes: [util.statics.typePlace, util.statics.typePost],
     }
   }, function(err, res, body) {
     t.assert(body.count === util.statics.optionsLimitDefault * 2)
@@ -229,7 +230,7 @@ exports.getEntitiesForUserPostsOnly = function (test) {
     uri: '/do/getEntitiesForEntity',
     body: {
       entityId: constants.uid1,
-      cursor: { where: { type: { $in:[util.statics.typePost] }}},
+      entityTypes: [util.statics.typePost],
     }
   }, function(err, res, body) {
     t.assert(body.count === util.statics.optionsLimitDefault)
@@ -244,6 +245,7 @@ exports.getEntitiesForUserMatchingRegex = function (test) {
     uri: '/do/getEntitiesForEntity',
     body: {
       entityId: constants.uid1,
+      entityTypes: [util.statics.typePlace, util.statics.typePost],
       cursor: { where: { name: { $regex:'2401', $options:'i' }}},
     }
   }, function(err, res, body) {
@@ -259,9 +261,7 @@ exports.getEntitiesForPlacePostsOnly = function (test) {
     uri: '/do/getEntitiesForEntity',
     body: {
       entityId: constants.placeId, 
-      cursor: { 
-        where: { type: util.statics.typePost }
-      },
+      entityTypes: [util.statics.typePost],
     }
   }, function(err, res, body) {
     t.assert(body.count === dbProfile.spe)
@@ -276,8 +276,8 @@ exports.getEntitiesForPlacePostsOnlyLimited = function (test) {
     uri: '/do/getEntitiesForEntity',
     body: {
       entityId: constants.placeId, 
+      entityTypes: [util.statics.typePost],
       cursor: { 
-        where: { type: util.statics.typePost },        
         sort: { name: 1 },
         limit: 3,
       },
@@ -297,8 +297,8 @@ exports.getEntitiesForPlacePostsOnlyLimitedAndSkip = function (test) {
     uri: '/do/getEntitiesForEntity',
     body: {
       entityId: constants.placeId, 
+      entityTypes: [util.statics.typePost],
       cursor: { 
-        where: { type: util.statics.typePost },
         sort: { name: 1 },
         limit: 3,
         skip: 2
