@@ -20,7 +20,7 @@ var testLatitude = 46.1
 var testLongitude = -121.1
 var testEntity = {
       type : util.statics.typePlace,
-      name : "Test Place Entity Suggest Sources",
+      name : "Test Place Entity Suggest Applinks",
       photo: {
         prefix: "https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
         sourceName: "aircandi",
@@ -56,15 +56,6 @@ exports.getCategories = function(test) {
   })
 }
 
-_exports.getSources = function(test) {
-  t.get({uri: '/sources'}, function(err, res) {
-    var sources = res.body.data
-    t.assert(sources && sources.length > 5)
-    t.assert(sources[0].icon.length > 20)
-    // TODO:  run a reqest on the icon and confirm that it is a valid png
-    test.done()
-  })
-}
 
 exports.getPlacesNearLocationFoursquare = function(test) {
   if (disconnected) return skip(test)
@@ -90,10 +81,10 @@ exports.getPlacesNearLocationFoursquare = function(test) {
       t.assert(place.category.name)
       t.assert(place.category.photo)
       t.assert(/^\/img\/categories\/foursquare\/.*_88\.png$/.test(place.category.photo.prefix))
-      var sources = place.sources
-      t.assert(sources)
-      t.assert(sources.length)
-      sources.forEach(function(source) {
+      var applinks = place.applinks
+      t.assert(applinks)
+      t.assert(applinks.length)
+      applinks.forEach(function(source) {
         t.assert(source.type)
         t.assert(source.id || source.url)
         t.assert(!source.icon)
@@ -178,22 +169,22 @@ _exports.getPlacesNearLocationFactual = function(test) {
     insertEnt(roxys[0])
   })
 
-  // Insert the roxy diner and make sure her sources come out right
+  // Insert the roxy diner and make sure her applinks come out right
   function insertEnt(roxy) {
     t.post({
       uri: '/do/insertEntity?' + userCred,
       body: {
         entity: roxy,
-        suggestSources: true,
+        suggestApplinks: true,
         includeRaw: true,
       }
     }, 201, function(err, res) {
       t.assert(res.body.data.length)
       var savedRoxy = res.body.data[0]
       t.assert(savedRoxy.place.provider.factual === roxy.place.provider.factual)
-      var sources = savedRoxy.sources
-      t.assert(sources && sources.length >= 2) // a website and a twitter account
-      sources.forEach(function(source) {
+      var applinks = savedRoxy.applinks
+      t.assert(applinks && applinks.length >= 2) // a website and a twitter account
+      applinks.forEach(function(source) {
         t.assert(source.type)
         if (source.type === 'factual') t.assert(source.system)
         t.assert(source.id || source.url)
@@ -201,17 +192,17 @@ _exports.getPlacesNearLocationFactual = function(test) {
         t.assert(source.data)
         t.assert(source.data.origin)
       })
-      t.assert(sources.some(function(source) {
+      t.assert(applinks.some(function(source) {
         return (source.type === 'foursquare'
             && source.photo
             && source.photo.prefix
             && source.photo.suffix
           )
       }))
-      t.assert(sources.some(function(source) {
+      t.assert(applinks.some(function(source) {
         return (source.type === 'facebook')
       }))
-      t.assert(sources.some(function(source) {
+      t.assert(applinks.some(function(source) {
         return (source.type === 'factual'
             && source.system
           )
@@ -250,9 +241,9 @@ _exports.getPlacesNearLocationGoogle = function(test) {
       if (place.place.provider.google) {
         googleProvided++
         t.assert(place.place.provider.googleReference, place.place)
-        t.assert(place.sources.some(function(source) {
+        t.assert(place.applinks.some(function(source) {
           return (source.type === 'google')
-        }), place.sources)
+        }), place.applinks)
       }
       if (place.place.provider.factual) {
         factualProvided++
@@ -270,7 +261,7 @@ _exports.getPlacesNearLocationGoogle = function(test) {
         t.assert(place.place.state)
         t.assert(place.place.cc, place.place)
         t.assert(place.place.postalCode)
-        t.assert(place.sources.some(function(source) {
+        t.assert(place.applinks.some(function(source) {
           return (source.type === 'website')
         }))
       }
@@ -286,59 +277,61 @@ _exports.getPlacesNearLocationGoogle = function(test) {
 }
 
 
-exports.insertEntitySuggestSources = function(test) {
+exports.insertEntitySuggestApplinks = function(test) {
   if (disconnected) return skip(test)
   var body = {
     entity: util.clone(testEntity),
-    suggestSources: true,
+    suggestApplinks: true,
     includeRaw: true,
   }
-  body.entity.sources = [{
+  body.entity.applinks = [{
     type: 'website',
     id: 'http://www.massenamodern.com'
   }]
   t.post({uri: '/do/insertEntity?' + userCred, body: body}, 201,
     function(err, res, body) {
-      t.assert(res.body.data[0].sources)
-      var sources = res.body.data[0].sources
-      t.assert(sources.length === 2)
-      t.assert(sources[1].type === 'twitter')
-      t.assert(sources[1].id === 'massenamodern')
+      t.assert(res.body.data && res.body.data.length)
+      var place = res.body.data[0]
+      t.assert(place.applinks)
+      var applinks = place.applinks
+      t.assert(applinks.length === 2)
+      t.assert(applinks[1].type === 'twitter')
+      t.assert(applinks[1].id === 'massenamodern')
       test.done()
     }
   )
 }
 
-exports.insertPlaceEntitySuggestSourcesFromFactual = function(test) {
+exports.insertPlaceEntitySuggestApplinksFromFactual = function(test) {
   if (disconnected) return skip(test)
   var body = {
-    suggestSources: true,
+    suggestApplinks: true,
     entity: _.clone(testEntity),
   }
-  body.entity.sources = [{
+  body.entity.applinks = [{
     type: 'foursquare',
     id: '4abebc45f964a520a18f20e3'  // Seattle Ballroom
   }]
   t.post({uri: '/do/insertEntity?' + userCred, body: body}, 201,
     function(err, res) {
-      t.assert(res.body.data[0].sources)
-      var sources = res.body.data[0].sources
-      t.assert(sources.length > 3) 
-      t.assert(sources.some(function(source) {
+      t.assert(res.body.data[0].applinks)
+      var applinks = res.body.data[0].applinks
+      t.assert(applinks.length > 3) 
+      t.assert(applinks.some(function(source) {
         return (source.type === 'foursquare'
             && source.id === '4abebc45f964a520a18f20e3'
           )
       }))
-      t.assert(sources.some(function(source) {
+      t.assert(applinks.some(function(source) {
         return (source.type === 'facebook')
       }))
-      t.assert(sources.some(function(source) {
+      t.assert(applinks.some(function(source) {
         return (source.type === 'website')
       }))
-      t.assert(sources.some(function(source) {
+      t.assert(applinks.some(function(source) {
         return (source.type === 'factual')
       }))
-      t.assert(sources.some(function(source) {
+      t.assert(applinks.some(function(source) {
         return (source.type === 'twitter')
       }))
       test.done()
@@ -392,14 +385,14 @@ _exports.getPlacesInsertEntityGetPlaces = function(test) {
       uri: '/do/insertEntity?' + userCred,
       body: {
         entity: ladro, 
-        suggestSources: true, 
+        suggestApplinks: true, 
         includeRaw: true
       }
     }, 201, function(err, res, body) {
-      t.assert(body.data[0].sources)
-      var sources = body.data[0].sources
+      t.assert(body.data[0].applinks)
+      var applinks = body.data[0].applinks
       var srcMap = {}
-      sources.forEach(function(source) {
+      applinks.forEach(function(source) {
         srcMap[source.type] = srcMap[source.type] || 0
         srcMap[source.type]++
       })

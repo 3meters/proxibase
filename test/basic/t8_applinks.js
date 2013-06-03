@@ -73,10 +73,14 @@ exports.checkFacebookUrls = function(test) {
   var url = serviceUri + '/test/facebook.html'
   t.post({
     uri: '/applinks/suggest',
-    body: {place: {applinks: [
-      {type: 'website', id: url}
-    ]}}},
-  function(err, res) {
+    body: {
+      place: {applinks: [
+        {type: 'website', id: url}
+      ]},
+      includeRaw: true,
+      timeout: 20
+    },
+  }, function(err, res) {
     var applinks = res.body.data.place.applinks
     t.assert(applinks.length === 5)
     // make a map of the results array by id
@@ -169,7 +173,7 @@ exports.suggestApplinksFactual = function(test) {
   t.post({
     uri: '/applinks/suggest',
     body: {place: {applinks: [{type: 'factual', id: '46aef19f-2990-43d5-a9e3-11b78060150c'}]},
-             includeRaw: true}
+             includeRaw: true, timeout: 20}
   },
   function(err, res) {
     var applinks = res.body.data.place.applinks
@@ -197,7 +201,9 @@ exports.suggestFactualApplinksFromFoursquareId = function(test) {
   if (disconnected) return skip(test)
   t.post({
     uri: '/applinks/suggest',
-    body: {place: {applinks: [{type: 'foursquare', id: '4abebc45f964a520a18f20e3'}]}} // Seattle Ballroom in Fremont
+    body: {place: {applinks: [{type: 'foursquare', id: '4abebc45f964a520a18f20e3'}]},
+    includeRaw: true,
+    timeout: 20} // Seattle Ballroom in Fremont
   },
   function(err, res, body) {
     var applinks = body.data.place.applinks
@@ -225,7 +231,9 @@ exports.compareFoursquareToFactual = function(test) {
   if (disconnected) return skip(test)
   t.post({
     uri: '/applinks/suggest',
-    body: {place: {applinks: [{type: 'foursquare', id: '4abebc45f964a520a18f20e3'}]}}  // Seattle Ballroom
+    body: {place: {applinks: [{type: 'foursquare', id: '4abebc45f964a520a18f20e3'}]}, // Seattle Ballroom
+    includeRaw: true,
+    timeout: 20}
   },
   function(err, res) {
     var applinks4s = res.body.data.place.applinks
@@ -251,12 +259,15 @@ exports.compareFoursquareToFactual = function(test) {
     t.post({
       uri: '/applinks/suggest',
       // Seattle Ballroom
-      body: {place: {applinks: [{type: 'factual', id: '46aef19f-2990-43d5-a9e3-11b78060150c'}]},
-             includeRaw: true}
+      body: {
+        place: {applinks: [{type: 'factual', id: '46aef19f-2990-43d5-a9e3-11b78060150c'}]},
+        includeRaw: true,
+        timeout: 20
+      }
     }, function(err, res) {
       var applinksFact = res.body.data.place.applinks
       t.assert(applinksFact.length > 3)
-      t.assert(applinksFact.length === applinks4s.length)
+      t.assert(applinksFact.length === applinks4s.length, {applinks4s: applinks4s})
       test.done()
     })
   })
@@ -277,6 +288,7 @@ exports.getFacebookFromPlaceJoinWithFoursquare = function(test) {
         }],
       },
       includeRaw: true,
+      timeout: 20,
     },
   },
   function(err, res, body) {
@@ -339,9 +351,10 @@ exports.suggestApplinksUsingPlace = function(test) {
       place: {
         provider: {foursquare: '4abebc45f964a520a18f20e3'},
         applinks: [], // empty because user deleted them all
-      }
-    },
-    includeRaw: true,
+      },
+      includeRaw: true,
+      timeout: 20,
+    }
   }, function(err, res, body) {
     var applinks = body.data.place.applinks
     t.assert(applinks.length > 3)

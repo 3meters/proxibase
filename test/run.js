@@ -39,7 +39,7 @@ process.chdir(__dirname)
 cli
   .option('-c, --config <file>', 'Config file [configtest.js]')
   .option('-s, --server <url>', 'Server url')
-  .option('-t, --test <dir>', 'Test')
+  .option('-t, --test <dir>', 'Only run the specified test directory')
   .option('-b, --basic', 'Only run the basic tests')
   .option('-n, --none', 'Do not run any tests -- just ensure the test db')
   .option('-e, --empty', 'run against an empty database')
@@ -245,7 +245,7 @@ function ensureServer(cb) {
 
 
 function runTests() {
-  if (cli.none) finish()
+  if (cli.none) return finish()
   log('\nTesting: ' + serverUrl)
   log('Test dirs: ' + testDirs)
   reporter.run(testDirs, false, finish)
