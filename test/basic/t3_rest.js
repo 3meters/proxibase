@@ -620,12 +620,12 @@ exports.deleteBogusRecord = function(test) {
   })
 }
 
-exports.readValidatorsWork = function(test) {
+exports.entityValidatorsWork = function(test) {
   t.get('/data/places?limit=5',
   function(err, res, body) {
     t.assert(body.data && body.data.length)
     body.data.forEach(function(place) {
-      t.assert(place.etype === 'place')
+      t.assert(place.schema === 'place')
     })
     test.done()
   })

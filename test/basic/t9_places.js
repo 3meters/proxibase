@@ -134,7 +134,9 @@ exports.getPlacesNearLocationLargeRadius = function(test) {
   })
 }
 
-_exports.getPlacesNearLocationFactual = function(test) {
+exports.getPlacesNearLocationFactual = function(test) {
+  log('Fix:')
+  return test.done()
   if (disconnected) return skip(test)
   var ballRoomId = '46aef19f-2990-43d5-a9e3-11b78060150c'
   var roxyId = '2bd21139-1907-4126-9443-65a2e48e1717' // Roxy's Diner
@@ -212,7 +214,9 @@ _exports.getPlacesNearLocationFactual = function(test) {
   }
 }
 
-_exports.getPlacesNearLocationGoogle = function(test) {
+exports.getPlacesNearLocationGoogle = function(test) {
+  log('Fix:')
+  return test.done()
   if (disconnected) return skip(test)
 
   var ballRoomId = 'f0147a535bedf4bb948f35379873cab0747ba9e2'
