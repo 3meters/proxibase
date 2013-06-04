@@ -620,6 +620,17 @@ exports.deleteBogusRecord = function(test) {
   })
 }
 
+exports.readValidatorsWork = function(test) {
+  t.get('/data/places?limit=5',
+  function(err, res, body) {
+    t.assert(body.data && body.data.length)
+    body.data.forEach(function(place) {
+      t.assert(place.etype === 'place')
+    })
+    test.done()
+  })
+}
+
 exports.sortWorks = function(test) {
   t.get('/data/users?sort[_id]=-1',
   function(err, res, body) {
@@ -631,6 +642,7 @@ exports.sortWorks = function(test) {
     test.done()
   })
 }
+
 exports.formatDatesWorks = function(test) {
   t.get('/data/users?datesToUTC=1',
   function(err, res, body) {
