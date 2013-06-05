@@ -241,7 +241,7 @@ exports.getEntitiesForUserPostsOnly = function (test) {
   }, function(err, res, body) {
     t.assert(body.count === util.statics.optionsLimitDefault)
     t.assert(body.more === true)
-    t.assert(body.data && body.data[0] && body.data[0].type === util.statics.typePost)
+    t.assert(body.data && body.data[0] && body.data[0].schema === util.statics.typePost)
     test.done()
   })
 }
@@ -257,7 +257,7 @@ exports.getEntitiesForUserMatchingRegex = function (test) {
   }, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.more === false)
-    t.assert(body.data && body.data[0] && body.data[0].type === util.statics.typePost)
+    t.assert(body.data && body.data[0] && body.data[0].schema === util.statics.typePost)
     test.done()
   })
 }
@@ -272,7 +272,7 @@ exports.getEntitiesForPlacePostsOnly = function (test) {
   }, function(err, res, body) {
     t.assert(body.count === dbProfile.spe)
     t.assert(body.more === false)
-    t.assert(body.data && body.data[0] && body.data[0].type === util.statics.typePost)
+    t.assert(body.data && body.data[0] && body.data[0].schema === util.statics.typePost)
     test.done()
   })
 }
@@ -292,7 +292,7 @@ exports.getEntitiesForPlacePostsOnlyLimited = function (test) {
     t.assert(body.count === 3)
     t.assert(body.more === true)
     t.assert(body.data && body.data[0])
-    t.assert(body.data[0].type === util.statics.typePost)
+    t.assert(body.data[0].schema === util.statics.typePost)
     t.assert(body.data[0].name.indexOf('Lisa 1') > 0)
     test.done()
   })
@@ -314,7 +314,7 @@ exports.getEntitiesForPlacePostsOnlyLimitedAndSkip = function (test) {
     t.assert(body.count === 3)
     t.assert(body.more === false)
     t.assert(body.data && body.data[0])
-    t.assert(body.data[0].type === util.statics.typePost)
+    t.assert(body.data[0].schema === util.statics.typePost)
     t.assert(body.data[0].name.indexOf('Lisa 3') > 0)
     test.done()
   })
