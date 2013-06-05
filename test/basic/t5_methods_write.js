@@ -888,10 +888,11 @@ exports.insertComment = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCred,
     body: {
-      entity: testComment, 
+      entity: testComment,
       link: {
         _to: testPlace._id,
         strong: true,
+        type: util.statics.typeComment
       },
       skipNotifications: true
     }
@@ -906,8 +907,8 @@ exports.checkInsertComment = function (test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'comments', 
-      find:{ _id:testComment._id }
+      table:'comments',
+      find: { _id: testComment._id }
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
@@ -923,7 +924,7 @@ exports.checkInsertCommentLink = function (test) {
       find:{ 
         _from:testComment._id,
         _to:testPlace._id,
-        schema:util.statics.typeComment,
+        type:util.statics.typeComment,
       }
     }
   }, function(err, res, body) {
@@ -1087,6 +1088,7 @@ exports.nonOwnerCannotCommentOnLockedRecord = function(test) {
       entity: testComment2, 
       link: {
         _to: testPlaceCustom._id,
+        type: util.statics.typeComment,
         strong: true,
       },
       skipNotifications: true
@@ -1104,6 +1106,7 @@ exports.ownerCanCommentOnLockedRecord = function(test) {
       entity: testComment2, 
       link: {
         _to: testPlaceCustom._id,
+        type: util.statics.typeComment,
         strong: true,
       },
       skipNotifications: true
@@ -1135,6 +1138,7 @@ exports.adminCanCommentOnLockedRecord = function(test) {
       entity: testComment3, 
       link: {
         _to: testPlaceCustom._id,
+        type: util.statics.typeComment,
         strong: true,
       },
       skipNotifications: true
