@@ -21,7 +21,7 @@ var testEntity = {
   name : "Test Place Entity Suggest Applinks",
   photo: {
     prefix: "https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
-    sourceName: "aircandi",
+    source: "aircandi",
   },
   signalFence : -100,
   enabled : true,
@@ -108,6 +108,7 @@ exports.getPlacesNearLocationExcludeWorks = function(test) {
   })
 }
 
+// worth its weight?
 exports.getPlacesNearLocationLargeRadius = function(test) {
   if (disconnected) return skip(test)
   t.post({
@@ -119,14 +120,12 @@ exports.getPlacesNearLocationLargeRadius = function(test) {
       limit: 20,
     }
   }, function(err, res, body) {
-    t.asssert(20 === body.data.count)
+    t.assert(20 === body.count)
     test.done()
   })
 }
 
 exports.getPlacesNearLocationFactual = function(test) {
-  log('Fix:')
-  return test.done()
   if (disconnected) return skip(test)
   var ballRoomId = '46aef19f-2990-43d5-a9e3-11b78060150c'
   var roxyId = '2bd21139-1907-4126-9443-65a2e48e1717' // Roxy's Diner
@@ -134,8 +133,7 @@ exports.getPlacesNearLocationFactual = function(test) {
   t.post({
     uri: '/places/getNearLocation',
     body: {
-      latitude: 47.6521,
-      longitude: -122.3530,   // The Ballroom, Fremont, Seattle
+      location: ballRoomLoc,
       provider: 'factual',
       radius: 500,
       limit: 10,
@@ -146,16 +144,16 @@ exports.getPlacesNearLocationFactual = function(test) {
     var places = res.body.data
     t.assert(places.length >= 8)
     places.forEach(function(place) {
-      t.assert(place.place)
-      t.assert(place.place.provider)
-      t.assert(place.place.provider.factual)
-      t.assert(ballRoomId !== place.place.provider.factual) //excluded
-      t.assert(place.place.category)
-      t.assert(place.place.category.name)
-      t.assert(place.place.category.photo)
+      t.assert(place)
+      t.assert(place.provider)
+      t.assert(place.provider.factual)
+      t.assert(ballRoomId !== place.provider.factual) //excluded
+      t.assert(place.category)
+      t.assert(place.category.name)
+      t.assert(place.category.photo)
     })
-    var roxys = places.filter(function(e) {
-      return (e.place.provider.factual === roxyId) // Roxy's Diner
+    var roxys = places.filter(function(place) {
+      return (place.provider.factual === roxyId) // Roxy's Diner
     })
     t.assert(roxys.length === 1)
     insertEnt(roxys[0])
@@ -173,30 +171,30 @@ exports.getPlacesNearLocationFactual = function(test) {
     }, 201, function(err, res) {
       t.assert(res.body.data.length)
       var savedRoxy = res.body.data[0]
-      t.assert(savedRoxy.place.provider.factual === roxy.place.provider.factual)
+      t.assert(savedRoxy.provider.factual === roxy.provider.factual)
       var applinks = savedRoxy.applinks
       t.assert(applinks && applinks.length >= 2) // a website and a twitter account
-      applinks.forEach(function(source) {
-        t.assert(source.type)
-        if (source.type === 'factual') t.assert(source.system)
-        t.assert(source.id || source.url)
-        t.assert(!source.icon)
-        t.assert(source.data)
-        t.assert(source.data.origin)
+      applinks.forEach(function(applink) {
+        t.assert(applink.type)
+        if (applink.type === 'factual') t.assert(applink.system)
+        t.assert(applink.id || applink.url)
+        t.assert(!applink.icon)
+        t.assert(applink.data)
+        t.assert(applink.data.origin)
       })
-      t.assert(applinks.some(function(source) {
-        return (source.type === 'foursquare'
-            && source.photo
-            && source.photo.prefix
-            && source.photo.suffix
+      t.assert(applinks.some(function(applink) {
+        return (applink.type === 'foursquare'
+            && applink.photo
+            && applink.photo.prefix
+            && applink.photo.suffix
           )
       }))
-      t.assert(applinks.some(function(source) {
-        return (source.type === 'facebook')
+      t.assert(applinks.some(function(applink) {
+        return (applink.type === 'facebook')
       }))
-      t.assert(applinks.some(function(source) {
-        return (source.type === 'factual'
-            && source.system
+      t.assert(applinks.some(function(applink) {
+        return (applink.type === 'factual'
+            && applink.system
           )
       }))
       test.done()
@@ -218,8 +216,7 @@ exports.getPlacesNearLocationGoogle = function(test) {
   t.post({
     uri: '/places/getNearLocation',
     body: {
-      latitude: 47.6521,
-      longitude: -122.3530,   // The Ballroom, Fremont, Seattle
+      location: ballRoomLoc,
       provider: 'google',
       radius: 100,
       limit: 10,
@@ -230,38 +227,32 @@ exports.getPlacesNearLocationGoogle = function(test) {
     var places = res.body.data
     t.assert(places.length >= 8)
     places.forEach(function(place) {
-      t.assert(place.place)
-      t.assert(place.place.provider)
-      if (place.place.provider.google) {
+      t.assert(place)
+      t.assert(place.provider)
+      if (place.provider.google) {
         googleProvided++
-        t.assert(place.place.provider.googleReference, place.place)
-        t.assert(place.applinks.some(function(source) {
-          return (source.type === 'google')
-        }), place.applinks)
+        t.assert(place.provider.googleReference, place)
       }
-      if (place.place.provider.factual) {
+      if (place.provider.factual) {
         factualProvided++
       }
-      // Not all places returned need to have place.place.provider.google
+      // Not all places returned need to have place.provider.google
       // They can be entities we already have in our system given by
       // foursquare, factual, or user
-      t.assert(ballRoomId !== place.place.provider.google) //excluded
-      t.assert(place.place.lat)
-      t.assert(place.place.lng)
-      if (roxyId === place.place.provider.google) {
+      t.assert(ballRoomId !== place.provider.google) //excluded
+      t.assert(place.location.lat)
+      t.assert(place.location.lng)
+      if (roxyId === place.provider.google) {
         foundRoxy++
-        t.assert(place.place.address)
-        t.assert(place.place.city)
-        t.assert(place.place.state)
-        t.assert(place.place.cc, place.place)
-        t.assert(place.place.postalCode)
-        t.assert(place.applinks.some(function(source) {
-          return (source.type === 'website')
-        }))
+        t.assert(place.address)
+        t.assert(place.city)
+        t.assert(place.region)
+        t.assert(place.country)
+        t.assert(place.postalCode)
       }
-      t.assert(place.place.category)
-      t.assert(place.place.category.name)
-      t.assert(place.place.category.photo)
+      t.assert(place.category)
+      t.assert(place.category.name)
+      t.assert(place.category.photo)
     })
     t.assert(1 === foundRoxy)
     t.assert(googleProvided)
@@ -315,22 +306,22 @@ exports.insertPlaceEntitySuggestApplinksFromFactual = function(test) {
       t.assert(res.body.data[0].applinks)
       var applinks = res.body.data[0].applinks
       t.assert(applinks.length > 3) 
-      t.assert(applinks.some(function(source) {
-        return (source.type === 'foursquare'
-            && source.id === '4abebc45f964a520a18f20e3'
+      t.assert(applinks.some(function(applink) {
+        return (applink.type === 'foursquare'
+            && applink.id === '4abebc45f964a520a18f20e3'
           )
       }))
-      t.assert(applinks.some(function(source) {
-        return (source.type === 'facebook')
+      t.assert(applinks.some(function(applink) {
+        return (applink.type === 'facebook')
       }))
-      t.assert(applinks.some(function(source) {
-        return (source.type === 'website')
+      t.assert(applinks.some(function(applink) {
+        return (applink.type === 'website')
       }))
-      t.assert(applinks.some(function(source) {
-        return (source.type === 'factual')
+      t.assert(applinks.some(function(applink) {
+        return (applink.type === 'factual')
       }))
-      t.assert(applinks.some(function(source) {
-        return (source.type === 'twitter')
+      t.assert(applinks.some(function(applink) {
+        return (applink.type === 'twitter')
       }))
       test.done()
     }
@@ -389,9 +380,9 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
       t.assert(body.data[0].applinks)
       var applinks = body.data[0].applinks
       var srcMap = {}
-      applinks.forEach(function(source) {
-        srcMap[source.type] = srcMap[source.type] || 0
-        srcMap[source.type]++
+      applinks.forEach(function(applink) {
+        srcMap[applink.type] = srcMap[applink.type] || 0
+        srcMap[applink.type]++
       })
       t.assert(srcMap.factual === 1)
       t.assert(srcMap.website === 1)
@@ -404,7 +395,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
         uri: '/do/insertEntity?' + userCred,
         body: {entity: {
           name: 'A user-created Test Entity Inside the BallRoom',
-          type : util.statics.typePlace,
+          schema : util.statics.typePlace,
           provider: { user: user._id },
           location: { lat: 47.6521, lng: -122.3530 },
           enabled : true,
@@ -419,7 +410,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
           uri: '/do/insertEntity?' + userCred,
           body: {entity: {
             name: 'A user-created Entity At George\'s House',
-            type : util.statics.typePlace,
+            schema : util.statics.typePlace,
             provider: {user: user._id}, 
             location: {lat: 47.664525, lng: -122.354787},
             enabled : true,
@@ -433,8 +424,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
           t.post({
             uri: '/places/getNearLocation',
             body: {
-              latitude: 47.6521,
-              longitude: -122.3530,
+              location: ballRoomLoc,
               provider: 'foursquare',
             }
           }, function(err, res, body) {
@@ -464,8 +454,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
             t.post({
               uri: '/places/getNearLocation',
               body: {
-                latitude: 47.6521,
-                longitude: -122.3530,
+                location: ballRoomLoc,
                 provider: 'factual',
               }
             }, function(err, res, body) {
@@ -490,8 +479,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
               t.post({
                 uri: '/places/getNearLocation',
                 body: {
-                  latitude: 47.6521,
-                  longitude: -122.3530,
+                  location: ballRoomLoc,
                   provider: 'foursquare',
                   excludePlaceIds: [newEnt._id],
                 }
