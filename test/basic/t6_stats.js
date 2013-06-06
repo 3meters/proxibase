@@ -15,11 +15,11 @@ var testLatitude = 46.1
 var testLongitude = -121.1
 var testEntity = {
   name: "StatsTest Entity 1",
-  type: util.statics.typePost,
+  type: util.statics.schemaPost,
 }
 var testBeacon = {
   _id : '0004.11:11:11:11:11:11',
-  type : util.statics.typeBeacon,
+  type : util.statics.schemaBeacon,
   name: 'Test Beacon Label',
   beacon: {
     ssid: 'Test Beacon',

@@ -17,7 +17,7 @@ var user
 var userCred
 var adminCred
 var testEntity = {
-  schema : util.statics.typePlace,
+  schema : util.statics.schemaPlace,
   name : "Test Place Entity Suggest Applinks",
   photo: {
     prefix: "https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
@@ -395,7 +395,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
         uri: '/do/insertEntity?' + userCred,
         body: {entity: {
           name: 'A user-created Test Entity Inside the BallRoom',
-          schema : util.statics.typePlace,
+          schema : util.statics.schemaPlace,
           provider: { user: user._id },
           location: { lat: 47.6521, lng: -122.3530 },
           enabled : true,
@@ -410,7 +410,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
           uri: '/do/insertEntity?' + userCred,
           body: {entity: {
             name: 'A user-created Entity At George\'s House',
-            schema : util.statics.typePlace,
+            schema : util.statics.schemaPlace,
             provider: {user: user._id}, 
             location: {lat: 47.664525, lng: -122.354787},
             enabled : true,

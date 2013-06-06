@@ -203,7 +203,7 @@ _exports.canUpdateNestedArrays = function(test) {
   t.post({
     uri: '/data/entities?' + userCred,
     body: {data: {
-      type: util.statics.typePlace,
+      type: util.statics.schemaPlace,
       name: 'Test Entity With Comments',
       comments: [
         {name: 'Comment 1', description: 'I am comment 1'},
@@ -487,7 +487,7 @@ exports.defaultsWork = function(test) {
     uri: '/data/beacons?' + adminCred,
     body: {
       data: { 
-        type: util.statics.typeBeacon,
+        type: util.statics.schemaBeacon,
         bssid: '01:10:11:22:44:66',
         ssid: 'Rest test beacon',
       }
@@ -544,7 +544,7 @@ exports.usersCannotSkipSafeInsert = function(test) {
     body: {
       data: { 
         _id: 'bogusid1',
-        type: util.statics.typeBeacon,
+        type: util.statics.schemaBeacon,
         bssid: '01:10:11:22:44:88',
         bogusField: 'I am a bogus field'
       },
@@ -561,7 +561,7 @@ exports.adminsCanSkipSafeInsert = function(test) {
     body: {
       data: { 
         _id: 'bogusid1',
-        type: util.statics.typeBeacon,
+        type: util.statics.schemaBeacon,
         bssid: '01:10:11:22:44:88',
         bogusField: 'I am a bogus field'
       },
