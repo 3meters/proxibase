@@ -84,8 +84,8 @@ exports.getEntitiesMaximum = function (test) {
     var record = body.data[0]
     t.assert(record.linksIn && record.linksIn.length === dbProfile.spe + dbProfile.cpe + dbProfile.ape + dbProfile.likes + dbProfile.watch)
     t.assert(record.linksOut && record.linksOut.length === 1)
-    t.assert(record.linkInCounts && record.linkInCounts.length === 5)
-    t.assert(record.linkOutCounts && record.linkOutCounts.length === 1)
+    t.assert(record.linksInCounts && record.linksInCounts.length === 5)
+    t.assert(record.linksOutCounts && record.linksOutCounts.length === 1)
     t.assert(record.entities && record.entities.length === dbProfile.spe + dbProfile.cpe + dbProfile.ape + dbProfile.likes + 1)
     test.done()
   })
@@ -110,7 +110,7 @@ exports.getEntitiesWithComments = function (test) {
     t.assert(body.data && body.data[0])
     var record = body.data[0]
     t.assert(!record.linksIn && !record.linksOut)
-    t.assert(!record.linkInCounts && !record.linkOutCounts)
+    t.assert(!record.linksInCounts && !record.linksOutCounts)
     t.assert(record.entities && record.entities.length === dbProfile.cpe)
     test.done()
   })
@@ -140,8 +140,8 @@ exports.getEntitiesWithCommentsAndLinkCounts = function (test) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data[0])
     var record = body.data[0]
-    t.assert(record.linkInCounts && record.linkInCounts.length === 5)
-    t.assert(record.linkOutCounts && record.linkOutCounts.length === 1)
+    t.assert(record.linksInCounts && record.linksInCounts.length === 5)
+    t.assert(record.linksOutCounts && record.linksOutCounts.length === 1)
     t.assert(!record.linksIn && !record.linksOut)
     t.assert(record.entities && record.entities.length === dbProfile.cpe)
     test.done()
@@ -219,10 +219,10 @@ exports.getEntitiesForLocationLimited = function (test) {
 
 exports.getEntitiesForUser = function (test) {
   t.post({
-    uri: '/do/getEntitiesForEntity',
+    uri: '/do/getEntitiesByOwner',
     body: {
       entityId: constants.uid1,
-      entityTypes: [util.statics.typePlace, util.statics.typePost],
+      entitySchemas: [util.statics.typePlace, util.statics.typePost],
     }
   }, function(err, res, body) {
     t.assert(body.count === util.statics.optionsLimitDefault * 2)
@@ -233,10 +233,10 @@ exports.getEntitiesForUser = function (test) {
 
 exports.getEntitiesForUserPostsOnly = function (test) {
   t.post({
-    uri: '/do/getEntitiesForEntity',
+    uri: '/do/getEntitiesByOwner',
     body: {
       entityId: constants.uid1,
-      entityTypes: [util.statics.typePost],
+      entitySchemas: [util.statics.typePost],
     }
   }, function(err, res, body) {
     t.assert(body.count === util.statics.optionsLimitDefault)
@@ -248,10 +248,10 @@ exports.getEntitiesForUserPostsOnly = function (test) {
 
 exports.getEntitiesForUserMatchingRegex = function (test) {
   t.post({
-    uri: '/do/getEntitiesForEntity',
+    uri: '/do/getEntitiesByOwner',
     body: {
       entityId: constants.uid1,
-      entityTypes: [util.statics.typePlace, util.statics.typePost],
+      entitySchemas: [util.statics.typePlace, util.statics.typePost],
       cursor: { where: { name: { $regex:'2401', $options:'i' }}},
     }
   }, function(err, res, body) {
@@ -267,7 +267,7 @@ exports.getEntitiesForPlacePostsOnly = function (test) {
     uri: '/do/getEntitiesForEntity',
     body: {
       entityId: constants.placeId, 
-      entityTypes: [util.statics.typePost],
+      linkTypes: [util.statics.typePost],
     }
   }, function(err, res, body) {
     t.assert(body.count === dbProfile.spe)
@@ -282,7 +282,7 @@ exports.getEntitiesForPlacePostsOnlyLimited = function (test) {
     uri: '/do/getEntitiesForEntity',
     body: {
       entityId: constants.placeId, 
-      entityTypes: [util.statics.typePost],
+      linkTypes: [util.statics.typePost],
       cursor: { 
         sort: { name: 1 },
         limit: 3,
@@ -303,7 +303,7 @@ exports.getEntitiesForPlacePostsOnlyLimitedAndSkip = function (test) {
     uri: '/do/getEntitiesForEntity',
     body: {
       entityId: constants.placeId, 
-      entityTypes: [util.statics.typePost],
+      linkTypes: [util.statics.typePost],
       cursor: { 
         sort: { name: 1 },
         limit: 3,
