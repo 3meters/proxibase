@@ -16,20 +16,17 @@ var skip = testUtil.skip
 var user
 var userCred
 var adminCred
-var testLatitude = 46.1
-var testLongitude = -121.1
 var testEntity = {
-      schema : util.statics.typePlace,
-      name : "Test Place Entity Suggest Applinks",
-      photo: {
-        prefix: "https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
-        sourceName: "aircandi",
-      },
-      signalFence : -100,
-      location: { lat:testLatitude, lng:testLongitude },
-      enabled : true,
-      locked : false,
-    }
+  schema : util.statics.typePlace,
+  name : "Test Place Entity Suggest Applinks",
+  photo: {
+    prefix: "https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
+    sourceName: "aircandi",
+  },
+  signalFence : -100,
+  enabled : true,
+  locked : false,
+}
 var _exports = {} // for commenting out tests
 
 var ballRoomLoc = {
