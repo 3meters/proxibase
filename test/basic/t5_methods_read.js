@@ -71,9 +71,9 @@ exports.getEntitiesMaximum = function (test) {
       links: {
         active: [ 
           { type:util.statics.typeProximity, load: true, links: true, count: true, direction: 'both' }, 
-          { type:util.statics.typeApplink, load: true, links: true, count: true, direction: 'both' }, 
-          { type:util.statics.typeComment, load: true, links: true, count: true, direction: 'both' }, 
-          { type:util.statics.typePost, load: true, links: true, count: true, direction: 'both' }, 
+          { type:util.statics.schemaApplink, load: true, links: true, count: true, direction: 'both' }, 
+          { type:util.statics.schemaComment, load: true, links: true, count: true, direction: 'both' }, 
+          { type:util.statics.schemaPost, load: true, links: true, count: true, direction: 'both' }, 
           { type:util.statics.typeWatch, load: true, links: true, count: true, direction: 'both' }, 
           { type:util.statics.typeLike, load: true, links: true, count: true, direction: 'both' }, 
         ]},
@@ -102,7 +102,7 @@ exports.getEntitiesWithComments = function (test) {
       entityIds: [constants.placeId], 
       links: {
         active: [ 
-          { type:util.statics.typeComment, load: true, links: false, count: false }, 
+          { type:util.statics.schemaComment, load: true, links: false, count: false }, 
         ]},
     }
   }, function(err, res, body) {
@@ -127,11 +127,11 @@ exports.getEntitiesWithCommentsAndLinkCounts = function (test) {
       entityIds: [constants.placeId], 
       links: {
         active: [ 
-          { type:util.statics.typeComment, load: true, links: false, count: false }, 
+          { type:util.statics.schemaComment, load: true, links: false, count: false }, 
           { type:util.statics.typeProximity }, 
-          { type:util.statics.typeApplink }, 
-          { type:util.statics.typeComment }, 
-          { type:util.statics.typePost }, 
+          { type:util.statics.schemaApplink }, 
+          { type:util.statics.schemaComment }, 
+          { type:util.statics.schemaPost }, 
           { type:util.statics.typeWatch }, 
           { type:util.statics.typeLike }, 
         ]},
@@ -156,11 +156,11 @@ exports.getEntitiesAndLinkedEntitiesByUser = function (test) {
       links: {
         where: { _creator: constants.uid1 },
         active: [ 
-          { type:util.statics.typeComment, load: true, links: false, count: false }, 
-          { type:util.statics.typePost, load: true, links: false, count: false }, 
+          { type:util.statics.schemaComment, load: true, links: false, count: false }, 
+          { type:util.statics.schemaPost, load: true, links: false, count: false }, 
           { type:util.statics.typeProximity }, 
-          { type:util.statics.typeApplink }, 
-          { type:util.statics.typeComment }, 
+          { type:util.statics.schemaApplink }, 
+          { type:util.statics.schemaComment }, 
           { type:util.statics.typeWatch }, 
           { type:util.statics.typeLike }, 
         ]},
@@ -222,7 +222,7 @@ exports.getEntitiesForUser = function (test) {
     uri: '/do/getEntitiesByOwner',
     body: {
       entityId: constants.uid1,
-      entitySchemas: [util.statics.typePlace, util.statics.typePost],
+      entitySchemas: [util.statics.schemaPlace, util.statics.schemaPost],
     }
   }, function(err, res, body) {
     t.assert(body.count === util.statics.optionsLimitDefault * 2)
@@ -236,12 +236,12 @@ exports.getEntitiesForUserPostsOnly = function (test) {
     uri: '/do/getEntitiesByOwner',
     body: {
       entityId: constants.uid1,
-      entitySchemas: [util.statics.typePost],
+      entitySchemas: [util.statics.schemaPost],
     }
   }, function(err, res, body) {
     t.assert(body.count === util.statics.optionsLimitDefault)
     t.assert(body.more === true)
-    t.assert(body.data && body.data[0] && body.data[0].schema === util.statics.typePost)
+    t.assert(body.data && body.data[0] && body.data[0].schema === util.statics.schemaPost)
     test.done()
   })
 }
@@ -251,13 +251,13 @@ exports.getEntitiesForUserMatchingRegex = function (test) {
     uri: '/do/getEntitiesByOwner',
     body: {
       entityId: constants.uid1,
-      entitySchemas: [util.statics.typePlace, util.statics.typePost],
+      entitySchemas: [util.statics.schemaPlace, util.statics.schemaPost],
       cursor: { where: { name: { $regex:'2401', $options:'i' }}},
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.more === false)
-    t.assert(body.data && body.data[0] && body.data[0].schema === util.statics.typePost)
+    t.assert(body.data && body.data[0] && body.data[0].schema === util.statics.schemaPost)
     test.done()
   })
 }
@@ -267,12 +267,12 @@ exports.getEntitiesForPlacePostsOnly = function (test) {
     uri: '/do/getEntitiesForEntity',
     body: {
       entityId: constants.placeId, 
-      linkTypes: [util.statics.typePost],
+      linkTypes: [util.statics.schemaPost],
     }
   }, function(err, res, body) {
     t.assert(body.count === dbProfile.spe)
     t.assert(body.more === false)
-    t.assert(body.data && body.data[0] && body.data[0].schema === util.statics.typePost)
+    t.assert(body.data && body.data[0] && body.data[0].schema === util.statics.schemaPost)
     test.done()
   })
 }
@@ -282,7 +282,7 @@ exports.getEntitiesForPlacePostsOnlyLimited = function (test) {
     uri: '/do/getEntitiesForEntity',
     body: {
       entityId: constants.placeId, 
-      linkTypes: [util.statics.typePost],
+      linkTypes: [util.statics.schemaPost],
       cursor: { 
         sort: { name: 1 },
         limit: 3,
@@ -292,7 +292,7 @@ exports.getEntitiesForPlacePostsOnlyLimited = function (test) {
     t.assert(body.count === 3)
     t.assert(body.more === true)
     t.assert(body.data && body.data[0])
-    t.assert(body.data[0].schema === util.statics.typePost)
+    t.assert(body.data[0].schema === util.statics.schemaPost)
     t.assert(body.data[0].name.indexOf('Lisa 1') > 0)
     test.done()
   })
@@ -303,7 +303,7 @@ exports.getEntitiesForPlacePostsOnlyLimitedAndSkip = function (test) {
     uri: '/do/getEntitiesForEntity',
     body: {
       entityId: constants.placeId, 
-      linkTypes: [util.statics.typePost],
+      linkTypes: [util.statics.schemaPost],
       cursor: { 
         sort: { name: 1 },
         limit: 3,
@@ -314,7 +314,7 @@ exports.getEntitiesForPlacePostsOnlyLimitedAndSkip = function (test) {
     t.assert(body.count === 3)
     t.assert(body.more === false)
     t.assert(body.data && body.data[0])
-    t.assert(body.data[0].schema === util.statics.typePost)
+    t.assert(body.data[0].schema === util.statics.schemaPost)
     t.assert(body.data[0].name.indexOf('Lisa 3') > 0)
     test.done()
   })

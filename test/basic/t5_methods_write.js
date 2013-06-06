@@ -43,7 +43,7 @@ var testUser2 = {
 }
 var testPlace = {
   _id : "0013.111111.11111.111.111111",
-  schema : util.statics.typePlace,
+  schema : util.statics.schemaPlace,
   name : "Testing place entity",
   photo: { 
     prefix:"1001_20111224_104245.jpg", 
@@ -68,7 +68,7 @@ var testPlace = {
 }
 var testPlace2 = {
   _id : "0013.111111.11111.111.111112",
-  schema : util.statics.typePlace,
+  schema : util.statics.schemaPlace,
   name : "Testing place entity",
   photo: { 
     prefix:"1001_20111224_104245.jpg", 
@@ -93,7 +93,7 @@ var testPlace2 = {
 }
 var testPlace3 = {
   _id : "0013.111111.11111.111.111113",
-  schema : util.statics.typePlace,
+  schema : util.statics.schemaPlace,
   name : "Testing place entity",
   photo: { 
     prefix:"1001_20111224_104245.jpg", 
@@ -118,7 +118,7 @@ var testPlace3 = {
 }
 var testPlaceCustom = {
   _id : "0013.111111.11111.111.111114",
-  schema : util.statics.typePlace,
+  schema : util.statics.schemaPlace,
   name : "Testing place entity custom",
   photo: { 
     prefix:"1001_20111224_104245.jpg", 
@@ -144,7 +144,7 @@ var testPlaceCustom = {
 }
 var testPost = {
   _id : "0014.111111.11111.111.111111",
-  schema : util.statics.typePost,
+  schema : util.statics.schemaPost,
   name : "Testing post entity",
   photo: { 
     prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", 
@@ -153,25 +153,25 @@ var testPost = {
 }
 var testComment = {
   _id : "0012.111111.11111.111.111111",
-  schema : util.statics.typeComment,
+  schema : util.statics.schemaComment,
   name : "Test comment",
   description : "Test comment, much ado about nothing.",
 }
 var testComment2 = {
   _id : "0012.111111.11111.111.111112",
-  schema : util.statics.typeComment,
+  schema : util.statics.schemaComment,
   name : "Test comment for locked entity",
   description : "Test comment, much ado about nothing.",
 }
 var testComment3 = {
   _id : "0012.111111.11111.111.111113",
-  schema : util.statics.typeComment,
+  schema : util.statics.schemaComment,
   name : "Another test comment for locked entity",
   description : "Test comment, much ado about nothing.",
 }
 var testApplink = {
   _id: "0010.111111.11111.111.111111",
-  schema: util.statics.typeApplink,
+  schema: util.statics.schemaApplink,
   name: "Bannerwood Park",
   photo: { 
     prefix:"https://graph.facebook.com/143970268959049/picture?type=large", 
@@ -196,7 +196,7 @@ var newTestLink = {
 }
 var testBeacon = {
   _id : '0011.11:11:11:11:11:11',
-  schema : util.statics.typeBeacon,
+  schema : util.statics.schemaBeacon,
   name: 'Test Beacon Label',
   ssid: 'Test Beacon',
   bssid: '11:11:11:11:11:11',
@@ -211,7 +211,7 @@ var testBeacon = {
 }
 var testBeacon2 = {
   _id : '0011.22:22:22:22:22:22',
-  schema : util.statics.typeBeacon,
+  schema : util.statics.schemaBeacon,
   name: 'Test Beacon Label 2',
   ssid: 'Test Beacon 2',
   bssid: '22:22:22:22:22:22',
@@ -226,7 +226,7 @@ var testBeacon2 = {
 }
 var testBeacon3 = {
   _id : '0011.33:33:33:33:33:33',
-  schema : util.statics.typeBeacon,
+  schema : util.statics.schemaBeacon,
   name: 'Test Beacon Label 3',
   ssid: 'Test Beacon 3',
   bssid: '33:33:33:33:33:33',
@@ -892,7 +892,7 @@ exports.insertComment = function (test) {
       link: {
         _to: testPlace._id,
         strong: true,
-        type: util.statics.typeComment
+        type: util.statics.schemaComment
       },
       skipNotifications: true
     }
@@ -924,7 +924,7 @@ exports.checkInsertCommentLink = function (test) {
       find:{ 
         _from:testComment._id,
         _to:testPlace._id,
-        type:util.statics.typeComment,
+        type:util.statics.schemaComment,
       }
     }
   }, function(err, res, body) {
@@ -1088,7 +1088,7 @@ exports.nonOwnerCannotCommentOnLockedRecord = function(test) {
       entity: testComment2, 
       link: {
         _to: testPlaceCustom._id,
-        type: util.statics.typeComment,
+        type: util.statics.schemaComment,
         strong: true,
       },
       skipNotifications: true
@@ -1106,7 +1106,7 @@ exports.ownerCanCommentOnLockedRecord = function(test) {
       entity: testComment2, 
       link: {
         _to: testPlaceCustom._id,
-        type: util.statics.typeComment,
+        type: util.statics.schemaComment,
         strong: true,
       },
       skipNotifications: true
@@ -1138,7 +1138,7 @@ exports.adminCanCommentOnLockedRecord = function(test) {
       entity: testComment3, 
       link: {
         _to: testPlaceCustom._id,
-        type: util.statics.typeComment,
+        type: util.statics.schemaComment,
         strong: true,
       },
       skipNotifications: true

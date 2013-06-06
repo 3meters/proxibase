@@ -92,20 +92,20 @@ function run(callback) {
   genUsers()
 
   log('generating beacons')
-  genEntityRecords([0], null, options.beacons, util.statics.typeBeacon, null)
+  genEntityRecords([0], null, options.beacons, util.statics.schemaBeacon, null)
 
   log('generating places')
-  genEntityRecords(beaconIds, tableIds['beacons'], options.epb, util.statics.typePlace, util.statics.typeProximity)
+  genEntityRecords(beaconIds, tableIds['beacons'], options.epb, util.statics.schemaPlace, util.statics.typeProximity)
 
   log('generating posts')
-  genEntityRecords(placeIds, tableIds['places'], options.spe, util.statics.typePost, util.statics.typePost)
+  genEntityRecords(placeIds, tableIds['places'], options.spe, util.statics.schemaPost, util.statics.schemaPost)
 
   log('generating applinks')
-  genEntityRecords(placeIds, tableIds['places'], options.ape, util.statics.typeApplink, util.statics.typeApplink)
+  genEntityRecords(placeIds, tableIds['places'], options.ape, util.statics.schemaApplink, util.statics.schemaApplink)
   
   log('generating comments')
   var placeAndPostIds = placeIds.concat(postIds)
-  genEntityRecords(placeAndPostIds, tableIds['places'], options.cpe, util.statics.typeComment, util.statics.typeComment)
+  genEntityRecords(placeAndPostIds, tableIds['places'], options.cpe, util.statics.schemaComment, util.statics.schemaComment)
 
   saveAll(function(err) {
     if (err) return callback(err)
@@ -177,7 +177,7 @@ function genEntityRecords(parentIds, parentCollectionId, count, entityType, link
       var newEnt = constants.getDefaultRecord(tableName)
 
       // Entity
-      if (entityType === util.statics.typeBeacon) {
+      if (entityType === util.statics.schemaBeacon) {
         newEnt._id = testUtil.genBeaconId(i)
         newEnt.bssid = newEnt._id.substring(5)
         newEnt.ssid = newEnt.ssid + ' ' + (entityCount[tableName] + 1)
@@ -192,7 +192,7 @@ function genEntityRecords(parentIds, parentCollectionId, count, entityType, link
       table[tableName].push(newEnt)
       entityCount[tableName]++
 
-      if (entityType !== util.statics.typeBeacon) {
+      if (entityType !== util.statics.schemaBeacon) {
 
         // Link
         var newLink = constants.getDefaultRecord('links')
@@ -205,11 +205,11 @@ function genEntityRecords(parentIds, parentCollectionId, count, entityType, link
         newLink._owner = newEnt._creator
 
 
-        if (entityType === util.statics.typeComment) {
+        if (entityType === util.statics.schemaComment) {
           newLink.strong = true
         }
 
-        if (entityType === util.statics.typePlace) {
+        if (entityType === util.statics.schemaPlace) {
           newLink.proximity = { primary: true, signal: -80 }
           newLink._owner = util.adminUser._id
         }
@@ -218,7 +218,7 @@ function genEntityRecords(parentIds, parentCollectionId, count, entityType, link
         linkCount++
 
         // Like
-        if (entityType === util.statics.typePlace) {
+        if (entityType === util.statics.schemaPlace) {
           for (var u = 0; u < options.users; u++) {
             if (u >= options.likes) break;
             var likeLink = constants.getDefaultRecord('links')
@@ -238,7 +238,7 @@ function genEntityRecords(parentIds, parentCollectionId, count, entityType, link
         }
 
         // Watch
-        if (entityType === util.statics.typePlace) {
+        if (entityType === util.statics.schemaPlace) {
           for (var u = 0; u < options.users; u++) {
             if (u >= options.watch) break;
             var watchLink = constants.getDefaultRecord('links')
@@ -258,11 +258,11 @@ function genEntityRecords(parentIds, parentCollectionId, count, entityType, link
         }
       }
 
-      if (entityType === util.statics.typeBeacon) beaconIds.push(newEnt._id)
-      if (entityType === util.statics.typePlace) placeIds.push(newEnt._id)
-      if (entityType === util.statics.typeApplink) applinkIds.push(newEnt._id)
-      if (entityType === util.statics.typePost) postIds.push(newEnt._id)
-      if (entityType === util.statics.typeComment) commentIds.push(newEnt._id)
+      if (entityType === util.statics.schemaBeacon) beaconIds.push(newEnt._id)
+      if (entityType === util.statics.schemaPlace) placeIds.push(newEnt._id)
+      if (entityType === util.statics.schemaApplink) applinkIds.push(newEnt._id)
+      if (entityType === util.statics.schemaPost) postIds.push(newEnt._id)
+      if (entityType === util.statics.schemaComment) commentIds.push(newEnt._id)
 
     }
   }

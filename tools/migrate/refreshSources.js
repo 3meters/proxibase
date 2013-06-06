@@ -44,7 +44,7 @@ function updateEnt(skip) {
     uri: server + '/do/find?' + cred,
     body: {
       collection: 'entities',
-      find: {type: util.statics.typePlace},
+      find: {type: util.statics.schemaPlace},
       sort: {_id: 1},
       limit: 1,
       skip: skip,
