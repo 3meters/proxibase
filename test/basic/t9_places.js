@@ -7,7 +7,6 @@
  */
 
 var util = require('proxutils')
-var _ = util._
 var log = util.log
 var testUtil = require('../util')
 var t = testUtil.treq  // newfangled test helper
@@ -165,39 +164,55 @@ exports.getPlacesNearLocationFactual = function(test) {
       uri: '/do/insertEntity?' + userCred,
       body: {
         entity: roxy,
-        suggestApplinks: true,
+        insertApplinks: true,
         includeRaw: true,
       }
-    }, 201, function(err, res) {
-      t.assert(res.body.data.length)
+    }, 201, function(err, res, body) {
+      t.assert(body.data.length)
       var savedRoxy = res.body.data[0]
       t.assert(savedRoxy.provider.factual === roxy.provider.factual)
-      var applinks = savedRoxy.applinks
-      t.assert(applinks && applinks.length >= 2) // a website and a twitter account
-      applinks.forEach(function(applink) {
-        t.assert(applink.type)
-        if (applink.type === 'factual') t.assert(applink.system)
-        t.assert(applink.id || applink.url)
-        t.assert(!applink.icon)
-        t.assert(applink.data)
-        t.assert(applink.data.origin)
+      t.post({
+        uri: '/do/getEntities?' + userCred,
+        body: {
+          entityIds: [savedRoxy._id],
+          links: {
+            active: [
+              { type: util.statics.schemaApplink, load: true, },
+            ]
+          }
+        }
+      }, function(err, res, body) {
+        t.assert(body.data && body.data.length)
+        var roxEnt = body.data[0]
+        t.assert(savedRoxy._id === roxEnt._id)
+        t.assert(roxEnt.applinks && roxEnt.applinks.length)
+        var applinks = roxEnt.applinks
+        t.assert(applinks.length >= 2) // a website and a twitter account
+        applinks.forEach(function(applink) {
+          t.assert(applink.type)
+          if (applink.type === 'factual') t.assert(applink.system)
+          t.assert(applink.id || applink.url)
+          t.assert(!applink.icon)
+          t.assert(applink.data)
+          t.assert(applink.data.origin)
+        })
+        t.assert(applinks.some(function(applink) {
+          return (applink.type === 'foursquare'
+              && applink.photo
+              && applink.photo.prefix
+              && applink.photo.suffix
+            )
+        }))
+        t.assert(applinks.some(function(applink) {
+          return (applink.type === 'facebook')
+        }))
+        t.assert(applinks.some(function(applink) {
+          return (applink.type === 'factual'
+              && applink.system
+            )
+        }))
+        test.done()
       })
-      t.assert(applinks.some(function(applink) {
-        return (applink.type === 'foursquare'
-            && applink.photo
-            && applink.photo.prefix
-            && applink.photo.suffix
-          )
-      }))
-      t.assert(applinks.some(function(applink) {
-        return (applink.type === 'facebook')
-      }))
-      t.assert(applinks.some(function(applink) {
-        return (applink.type === 'factual'
-            && applink.system
-          )
-      }))
-      test.done()
     })
   }
 }
@@ -268,7 +283,7 @@ exports.insertEntitySuggestApplinks = function(test) {
   if (disconnected) return skip(test)
   var body = {
     entity: util.clone(testEntity),
-    suggestApplinks: true,
+    insertApplinks: true,
     includeRaw: true,
   }
   body.entity.applinks = [{
@@ -294,8 +309,8 @@ exports.insertPlaceEntitySuggestApplinksFromFactual = function(test) {
   return test.done()
   if (disconnected) return skip(test)
   var body = {
-    suggestApplinks: true,
-    entity: _.clone(testEntity),
+    insertApplinks: true,
+    entity: util.clone(testEntity),
   }
   body.entity.applinks = [{
     type: 'foursquare',
@@ -373,7 +388,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
       uri: '/do/insertEntity?' + userCred,
       body: {
         entity: ladro, 
-        suggestApplinks: true, 
+        insertApplinks: true, 
         includeRaw: true
       }
     }, 201, function(err, res, body) {
