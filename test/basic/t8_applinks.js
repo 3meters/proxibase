@@ -302,7 +302,7 @@ exports.getFacebookFromPlaceJoinWithFoursquare = function(test) {
         && applink.photo
         && applink.photo.prefix
         && applink.photo.suffix
-        && applink.photo.sourceName === 'foursquare')
+        && applink.photo.source === 'foursquare')
     }))
     t.assert(applinks.some(function(applink) {
       return (applink.type === 'facebook'
@@ -312,7 +312,7 @@ exports.getFacebookFromPlaceJoinWithFoursquare = function(test) {
         && applink.data.validated
         && applink.photo
         && applink.photo.prefix
-        && applink.photo.sourceName === 'facebook')
+        && applink.photo.source === 'facebook')
     }))
     t.assert(applinks.every(function(applink) {
       return (applink.id !== '427679707274727'  // This facebook entry fails the popularity contest
