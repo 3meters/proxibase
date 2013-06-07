@@ -130,7 +130,8 @@ var testPlaceCustom = {
   },
   address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065551212", 
   provider:{ 
-    user: testUser._id
+    aircandi: true,
+    // user: testUser._id
   },
   category:{ 
     id:"4bf58dd8d48988d18c941735", 
