@@ -107,23 +107,6 @@ exports.getPlacesNearLocationExcludeWorks = function(test) {
   })
 }
 
-// worth its weight?
-_exports.getPlacesNearLocationLargeRadius = function(test) {
-  if (disconnected) return skip(test)
-  t.post({
-    uri: '/places/getNearLocation?' + userCred,
-    body: {
-      provider: 'foursquare',
-      location: ballRoomLoc,
-      radius: 10000,
-      limit: 20,
-    }
-  }, function(err, res, body) {
-    t.assert(20 === body.count)
-    test.done()
-  })
-}
-
 exports.getPlacesNearLocationFactual = function(test) {
   if (disconnected) return skip(test)
   var ballRoomId = '46aef19f-2990-43d5-a9e3-11b78060150c'
@@ -275,34 +258,6 @@ exports.getPlacesNearLocationGoogle = function(test) {
   })
 }
 
-
-// This doesn't make sense with the new work flow
-// Users need to create a new raw place, then suggest applinks
-// Leaving in for posterity now
-_exports.insertEntitySuggestApplinks = function(test) {
-  if (disconnected) return skip(test)
-  var body = {
-    entity: util.clone(testEntity),
-    insertApplinks: true,
-    includeRaw: true,
-  }
-  body.entity.applinks = [{
-    type: 'website',
-    id: 'http://www.massenamodern.com'
-  }]
-  t.post({uri: '/do/insertEntity?' + userCred, body: body}, 201,
-    function(err, res, body) {
-      t.assert(res.body.data && res.body.data.length)
-      var place = res.body.data[0]
-      t.assert(place.applinks)
-      var applinks = place.applinks
-      t.assert(applinks.length === 2)
-      t.assert(applinks[1].type === 'twitter')
-      t.assert(applinks[1].id === 'massenamodern')
-      test.done()
-    }
-  )
-}
 
 // I think this test is covered by the previous and the next
 _exports.insertPlaceEntitySuggestApplinksFromFactual = function(test) {
