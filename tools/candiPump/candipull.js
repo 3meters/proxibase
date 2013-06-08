@@ -179,12 +179,12 @@ function processEntities(iTable, cb) {
     candi[i]._id = genId(2, candi[i].CreatedDate * 1000, candi[i].Id);
   }
 
-  // hook up _parent
+  // hook up _to
   for (var i = 0; i < candi.length; i++) {
     if (candi[i].Parent) {
       for (var j = 0; j < candi.length; j++) {
         if (candi[i].Parent === candi[j].Id) {
-          candi[i]._parent = candi[j]._id;
+          candi[i]._to = candi[j]._id;
           j = candi.length; // break loop
         }
       }
@@ -225,7 +225,7 @@ function processEntities(iTable, cb) {
     e.modifiedDate = d.modifiedDate = c.ModifiedDate * 1000;
 
     // entitity fields
-    if (c._parent) e._parent = c._parent;
+    if (c._to) e._to = c._to;
     e.type = c.Type;
     if (c.name) e.name = c.name;
     if (c.Subtitle) e.subtitle = c.Subtitle;
