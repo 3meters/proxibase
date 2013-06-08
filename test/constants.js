@@ -115,7 +115,7 @@ defaultRecord.applinks = {
   type: 'foursquare',
   name: "Bannerwood Park",
   photo: { prefix:"https://graph.facebook.com/143970268959049/picture?type=large", source:"facebook" },
-  appId: "143970268959049",
+  id: "143970268959049",
   url: "https://www.facebook.com/pages/Bannerwood-Park/143970268959049",
   data: { origin : "facebook", validated : 1369167109174.0, likes : 9 },
   _creator: uid1,
