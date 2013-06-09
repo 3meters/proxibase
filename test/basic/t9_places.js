@@ -339,7 +339,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
         srcMap[applink.type] = srcMap[applink.type] || 0
         srcMap[applink.type]++
       })
-      // t.assert(srcMap.factual === 1)
+      t.assert(srcMap.factual === 1)
       t.assert(srcMap.website === 1)
       t.assert(srcMap.foursquare === 1)
       t.assert(srcMap.facebook >= 1)
@@ -397,9 +397,8 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
               if (place.provider.foursquare === ladroId) foundLadro++
               if (place._id && place._id === newEnt._id) {
                 foundNewEnt++
-                // t.assert(place.provider.aircandi === user._id)
                 t.assert(place.provider.aircandi)
-                t.assert(place.provider.aircandi === 'aircandi')  // should be en
+                t.assert(place.provider.aircandi === 'aircandi')
               }
               if (place._id && place._id === newEnt2._id) {
                 foundNewEnt2++
