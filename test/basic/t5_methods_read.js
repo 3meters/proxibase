@@ -154,7 +154,7 @@ exports.getEntitiesAndLinkedEntitiesByUser = function (test) {
     body: {
       entityIds: [constants.placeId], 
       links: {
-        where: { _creator: constants.uid1 },
+        loadWhere: { _creator: constants.uid1 },
         active: [ 
           { type:util.statics.schemaComment, load: true, links: false, count: false }, 
           { type:util.statics.schemaPost, load: true, links: false, count: false }, 
@@ -181,7 +181,6 @@ exports.getEntitiesForLocation = function (test) {
     uri: '/do/getEntities',
     body: {
       entityIds: [constants.beaconId],
-      entityType: 'entities',
       links: {
         active: [ 
           { type:util.statics.typeProximity, load: true }, 
@@ -202,7 +201,6 @@ exports.getEntitiesForLocationLimited = function (test) {
     uri: '/do/getEntities',
     body: {
       entityIds: [constants.beaconId],
-      entityType: 'entities',
       links: {
         active: [ 
           { type:util.statics.typeProximity, load: true, limit: 3 }, 
@@ -267,12 +265,12 @@ exports.getEntitiesForPlacePostsOnly = function (test) {
     uri: '/do/getEntitiesForEntity',
     body: {
       entityId: constants.placeId, 
-      linkTypes: [util.statics.schemaPost],
+      linkTypes: [util.statics.typePost],
     }
   }, function(err, res, body) {
     t.assert(body.count === dbProfile.spe)
     t.assert(body.more === false)
-    t.assert(body.data && body.data[0] && body.data[0].schema === util.statics.schemaPost)
+    t.assert(body.data && body.data[0] && body.data[0].schema === util.statics.typePost)
     test.done()
   })
 }
@@ -282,7 +280,7 @@ exports.getEntitiesForPlacePostsOnlyLimited = function (test) {
     uri: '/do/getEntitiesForEntity',
     body: {
       entityId: constants.placeId, 
-      linkTypes: [util.statics.schemaPost],
+      linkTypes: [util.statics.typePost],
       cursor: { 
         sort: { name: 1 },
         limit: 3,
@@ -292,7 +290,7 @@ exports.getEntitiesForPlacePostsOnlyLimited = function (test) {
     t.assert(body.count === 3)
     t.assert(body.more === true)
     t.assert(body.data && body.data[0])
-    t.assert(body.data[0].schema === util.statics.schemaPost)
+    t.assert(body.data[0].schema === util.statics.typePost)
     t.assert(body.data[0].name.indexOf('Lisa 1') > 0)
     test.done()
   })
@@ -303,7 +301,7 @@ exports.getEntitiesForPlacePostsOnlyLimitedAndSkip = function (test) {
     uri: '/do/getEntitiesForEntity',
     body: {
       entityId: constants.placeId, 
-      linkTypes: [util.statics.schemaPost],
+      linkTypes: [util.statics.typePost],
       cursor: { 
         sort: { name: 1 },
         limit: 3,
@@ -314,7 +312,7 @@ exports.getEntitiesForPlacePostsOnlyLimitedAndSkip = function (test) {
     t.assert(body.count === 3)
     t.assert(body.more === false)
     t.assert(body.data && body.data[0])
-    t.assert(body.data[0].schema === util.statics.schemaPost)
+    t.assert(body.data[0].schema === util.statics.typePost)
     t.assert(body.data[0].name.indexOf('Lisa 3') > 0)
     test.done()
   })
