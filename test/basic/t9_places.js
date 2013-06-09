@@ -186,7 +186,7 @@ exports.getPlacesNearLocationFactual = function(test) {
 }
 
 exports.getPlacesNearLocationGoogle = function(test) {
-  // if (disconnected) return skip(test)
+  if (disconnected) return skip(test)
 
   var ballRoomId = 'f0147a535bedf4bb948f35379873cab0747ba9e2'
   var roxyId = 'd9083f5df362b2ed27c9e10339c9510960192624'
