@@ -205,7 +205,9 @@ function genEntityRecords(parentIds, parentCollectionId, count, entityType, link
         newLink._owner = newEnt._creator
 
 
-        if (entityType === util.statics.schemaComment) {
+        if (entityType === util.statics.schemaComment 
+          || entityType === util.statics.schemaPost
+          || entityType === util.statics.schemaApplink) {
           newLink.strong = true
         }
 
