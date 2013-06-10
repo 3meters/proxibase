@@ -67,6 +67,9 @@ else {auto_reconnect: true
   config = util.config
   serverUrl = testUtil.serverUrl = config.service.url
 
+  if (config.db.database) {
+    dbProfile.smokeTest.database = config.db.database
+  }
   // Make sure the right database exists and the test server is running
   ensureDb(dbProfile.smokeTest, function(err) {
     if (err) throw err
