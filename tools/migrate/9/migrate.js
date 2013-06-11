@@ -151,7 +151,7 @@ migrateDoc.entities = function(doc, cb) {
     switch (doc.type) {
       case 'com.aircandi.candi.place':
         if (!doc.place) return crash(doc)
-        var place = makePlaceFromEntity(doc)
+        var place = makePlace(doc)
         // TODO: fix up links to beacons here or in link pass?
         request.post({
           uri: newUri + '/data/places?' + newCred,
@@ -194,7 +194,9 @@ migrateDoc.entities = function(doc, cb) {
       var comment = {
         _owner: old._creator,
         _creator: old._creator,
+        _modifier: old._creator,
         createdDate: old.createdDate,
+        modifiedDate: old.createdDate,
         description: old.description,
       }
       comment._id = util.genId(newCollections.comments, old.createdDate)
@@ -208,8 +210,8 @@ migrateDoc.entities = function(doc, cb) {
           uri: newUri + '/data/links?' + newCred,
           body: {data: {
             _id: util.genId(newCollections.links, old.createdDate),
-            _from: comment._id,
-            _to: newEntId,
+            _from: newEntId,  // is this right?
+            _to: comment._id,
           }}
         }, function(err, res, body) {
           if (err) throw err
@@ -231,7 +233,26 @@ migrateDoc.entities = function(doc, cb) {
 
     function migrateApplink(source, next) {
       position++
-      return next()
+      var applink = makeApplink(doc, source, position)
+      request.post({
+        uri: newUri + '/data/applinks?' + newCred,
+        body: {data: applink},
+      }, function(err, res, body) {
+        if (err) throw err
+        if (201 !== res.statusCode) return crash(body)
+        request.post({
+          uri: newUri + '/data/links?' + newCred,
+          body: {data: {
+            _id: util.genId(newCollections.links, doc.createdDate),
+            _from: newEntId,
+            _to: applink._id,
+          }}
+        }, function(err, res, body) {
+          if (err) throw err
+          if (201 !== res.statusCode) return crash(body)
+          return next()
+        })
+      })
     }
   }
 
@@ -263,7 +284,7 @@ function write(doc, cName, cb) {
 }
 
 
-function makePlaceFromEntity(doc) {
+function makePlace(doc) {
   var place = {}
   copySysProps(place, doc)
   place._id = fixId(doc._id, 'places')
@@ -290,7 +311,12 @@ function makePlaceFromEntity(doc) {
   }
   if (doc.place.provider && doc.place.id) {
     place.provider = {}
-    place.provider[doc.place.provider] = doc.place.id
+    if ('user' === doc.place.provider) {
+      place.provider['aircandi'] = 'aircandi'
+    }
+    else {
+      place.provider[doc.place.provider] = doc.place.id
+    }
   }
   if (doc.place.contact && doc.place.contact.phone) {
     place.phone = doc.place.contact.phone
@@ -298,6 +324,21 @@ function makePlaceFromEntity(doc) {
   if (doc.photo) place.photo = fixPhoto(doc.photo)
   if (doc.signalFence) place.signalFence = doc.signalFence
   return place
+}
+
+
+function makeApplink(doc, source, position) {
+  var applink = {
+    _id: util.genId(newCollections.applinks, doc.createdDate),
+    type: source.type,
+    position: position,
+  }
+  if (doc.name) applink.name = doc.name
+  if (source.id) applink.id = source.id
+  if (source.url) applink.url = source.url
+  if (source.data) applink.data = source.data
+  if (source.photo) applink.photo = fixPhoto(source.photo)
+  return applink
 }
 
 
