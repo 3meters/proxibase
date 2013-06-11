@@ -4,6 +4,8 @@
 
 var util = require('proxutils')
 var log = util.log
+var logErr = util.logErr
+
 var request = require('request').defaults({
   json: true,
   strictSSL: false,
@@ -11,27 +13,35 @@ var request = require('request').defaults({
 var async = require('async')
 var assert = require('assert')
 
+var errors = []
+
 var oldUri = 'https://localhost:5543'
-var oldUri = 'https://api.aircandi.com'
+// var oldUri = 'https://api.aircandi.com'
 var newUri = 'https://localhost:6643'
 var oldCred = ''
 var newCred = ''
 
-var cold = {
-  users: '0001',
+var oldCollections = {
+  // users: '0001',
+  // documents: '0007',
+  // devices: '0009'
   entities: '0004',
-  links: '0005',
-  actions: '0006',
-  documents: '0007',
-  beacons: '0008',
-  devices: '0009'
+  // links: '0005',
+  // beacons: '0008',
 }
 
-var cnew = util.statics.collectionIds
+// Reverse map of old collections by Ids
+oldCollectionMap = {}
+for (var key in oldCollections) {
+  oldCollectionMap[oldCollections[key]] = key
+}
+
+var newCollections = util.statics.collectionIds
 
 function run() {
   signin(function() {
-    async.eachSeries(Object.keys(cold), migrateCollection, finish)
+    log('Migrating: ', oldCollections)
+    async.eachSeries(Object.keys(oldCollections), migrateCollection, finish)
   })
 }
 
@@ -71,82 +81,259 @@ function getDoc(cName, i, cb) {
   request.get(uri, function(err, res, body) {
     if (err) return cb(err)
     var doc = body.data[0]
-    fixIds(doc, cName)
-    if (!migrate[cName]) return cb()
-    migrate[cName](doc, function(err) {
+    assert(doc && doc._id, body)
+    log(doc._id)
+    migrateDoc(doc, cName, function(err) {
       if (err) throw err
       if (body.more) {
         i++
         getDoc(cName, i, cb) // recurse
       }
       else {
-        log('Migrated ' + i + ' ' + cName)
+        log('Read ' + i + ' ' + cName)
         cb()  // done, call back
       }
     })
   })
 }
 
+function migrateDoc(doc, cName, cb) {
+  fixIds(doc, cName)
+  if (migrateDoc[cName]) return migrateDoc[cName](doc, cb)
+  else cb()
+}
+
 function fixIds(doc, cName) {
-  if (doc._id)       doc._id =       fixId(doc._id, cName)
-  if (doc._owner)    doc._owner =    fixId(doc._owner, 'users')
-  if (doc._creator)  doc._creator =  fixId(doc._creator, 'users')
+  if (!doc) throw new Error('Missing doc')
+  if (doc._id) {
+    if (cName && newCollections[cName]) {
+      doc._id = fixId(doc._id, cName)
+    }
+  }
+  if (doc._owner) doc._owner = fixId(doc._owner, 'users')
+  if (doc._creator) doc._creator = fixId(doc._creator, 'users')
   if (doc._modifier) doc._modifier = fixId(doc._modifier, 'users')
 }
 
 function fixId(id, cName) {
+  if (!id) throw new Error()
+  if (!(cName && newCollections[cName])) throw new Error('bad cName ' + cName)
   var idParts = id.split('.')
-  idParts[0] = cnew[cName] // replace old collection id with new
+  idParts[0] = newCollections[cName] // replace old collection id with new
   return idParts.join('.')
 }
 
-var migrate = {}
-
-migrate.users = function(doc, cb) {
-  write('users', doc, cb)
+migrateDoc.users = function(doc, cb) {
+  write(doc, 'users', cb)
 }
 
-migrate.entities = function(doc, cb) {
+migrateDoc.documents = function(doc, cb) {
+  write(doc, 'documents', cb)
+}
+
+migrateDoc.devices = function(doc, cb) {
+  if (doc.beacons) {
+    for (var i = doc.beacons.length; i--;) {
+      doc.beacons[i] = fixId(doc.beacons[i], 'beacons')
+    }
+  }
+  write(doc, 'devices', cb)
+}
+
+migrateDoc.entities = function(doc, cb) {
+
+  var newEntId = ''
+
+  migrateEntity()
+
+  function migrateEntity() {
+
+    switch (doc.type) {
+      case 'com.aircandi.candi.place':
+        if (!doc.place) return crash(doc)
+        var place = makePlaceFromEntity(doc)
+        // TODO: fix up links to beacons here or in link pass?
+        request.post({
+          uri: newUri + '/data/places?' + newCred,
+          body: {data: place},
+        }, function(err, res, body) {
+          if (err) throw err
+          if (201 !== res.statusCode) return crash(body)
+          newEntId = place._id
+          return finishEnt()
+        })
+        break
+
+      case 'com.aircandi.candi.picture':
+        return cb()
+        break
+
+      case 'com.aircandi.candi.post':
+        return cb() // only 1 in db, fix manually
+        break
+
+      default:
+        throw new Error('Unknown entity type: ' + doc.type)
+    }
+
+    function finishEnt(err) {
+      if (err) throw err
+      migrateComments()
+    }
+  }
+
+  function migrateComments() {
+
+    if (!(doc.comments && doc.comments.length)) {
+      return migrateApplinks()
+    }
+
+    async.eachSeries(doc.comments, migrateComment, migrateApplinks)
+
+    function migrateComment(old, next) {
+      var comment = {
+        _owner: old._creator,
+        _creator: old._creator,
+        createdDate: old.createdDate,
+        description: old.description,
+      }
+      comment._id = util.genId(newCollections.comments, old.createdDate)
+      request.post({
+        uri: newUri + '/data/comments?' + newCred,
+        body: {data: comment},
+      }, function(err, res, body) {
+        if (err) throw (err)
+        if (201 !== res.statusCode) return crash(body)
+        request.post({
+          uri: newUri + '/data/links?' + newCred,
+          body: {data: {
+            _id: util.genId(newCollections.links, old.createdDate),
+            _from: comment._id,
+            _to: newEntId,
+          }}
+        }, function(err, res, body) {
+          if (err) throw err
+          if (201 !== res.statusCode) return crash(body)
+          next()
+        })
+      })
+    }
+  }
+
+  function migrateApplinks(err) {
+    if (err) throw err
+    if (!(doc.sources && doc.sources.length)) {
+      return finish()
+    }
+
+    var position = 0
+    async.eachSeries(doc.sources, migrateApplink, finish)
+
+    function migrateApplink(source, next) {
+      position++
+      return next()
+    }
+  }
+
+
+  function finish(err) {
+    if (err) throw err
+    cb()
+  }
+}
+
+migrateDoc.links = function(doc, cb) {
   cb()
 }
 
-migrate.actions = function(doc, cb) {
+migrateDoc.beacons = function(doc, cb) {
   cb()
 }
 
-migrate.links = function(doc, cb) {
-  cb()
-}
 
-migrate.documents = function(doc, cb) {
-  cb()
-}
-
-migrate.beacons = function(doc, cb) {
-  cb()
-}
-
-migrate.devices = function(doc, cb) {
-  cb()
-}
-
-var errors = []
-function write(cName, doc, cb) {
+function write(doc, cName, cb) {
   request.post({
     uri: newUri + '/data/' + cName + '?' + newCred,
     body: {data: doc},
   }, function(err, res, body) {
-    if (err) {
-      errors.push(doc._id)
-      util.logErr(err)
-    }
+    if (err) throw err
+    if (201 != res.statusCode) return crash(body)
     return cb(err)
   })
 }
 
+
+function makePlaceFromEntity(doc) {
+  var place = {}
+  copySysProps(place, doc)
+  place._id = fixId(doc._id, 'places')
+  if (doc.place.location) {
+    oldLoc = doc.place.location
+    place.location = {
+       lat: oldLoc.lat,
+       lng: oldLoc.lng
+    }
+    place.address = oldLoc.address
+    place.city = oldLoc.city
+    place.region = oldLoc.state
+    place.country = oldLoc.cc
+    place.postalCode = oldLoc.postalCode
+  }
+  if (doc.place.category) {
+    place.category = {
+      id: doc.place.category.id,
+      name: doc.place.category.name,
+      photo: {
+        prefix: doc.place.category.icon
+      }
+    }
+  }
+  if (doc.place.provider && doc.place.id) {
+    place.provider = {}
+    place.provider[doc.place.provider] = doc.place.id
+  }
+  if (doc.place.contact && doc.place.contact.phone) {
+    place.phone = doc.place.contact.phone
+  }
+  if (doc.photo) place.photo = fixPhoto(doc.photo)
+  if (doc.signalFence) place.signalFence = doc.signalFence
+  return place
+}
+
+
+function copySysProps(newDoc, oldDoc) {
+  assert(newDoc && oldDoc)
+  if (oldDoc.name) newDoc.name = oldDoc.name
+  if (oldDoc._owner) newDoc._owner = oldDoc._owner
+  if (oldDoc._creator) newDoc._creator = oldDoc._creator
+  if (oldDoc._modifier) newDoc._modifier = oldDoc._modifier
+  if (oldDoc.createdDate) newDoc.createdDate = oldDoc.createdDate
+  if (oldDoc.modifiedDate) newDoc.modifiedDate = oldDoc.modifiedDate
+  if (oldDoc.locked) newDoc.locked = oldDoc.locked
+  if (oldDoc.system) newDoc.system = oldDoc.system
+  if (oldDoc.enabled) newDoc.enabled = oldDoc.enabled
+}
+
+
+function fixPhoto(old) {
+  var photo = {}
+  if (old.prefix) photo.prefix = old.prefix
+  if (old.suffix) photo.suffix = old.suffix
+  if (old.height) photo.height = old.height
+  if (old.width) photo.width = old.width
+  if (old.sourceName) photo.source = old.sourceName
+  if (old.createdAt) photo.createdDate = old.createdAt
+  return photo
+}
+
+function crash(err) {
+  if (util.isError(err)) throw err
+  logErr(err)
+  throw new Error('Crash')
+}
+
 function finish(err) {
   if (err) throw err
-  log('Migrated: ', cold)
   if (errors.length) {
     log('Errors: ', errors)
   }
