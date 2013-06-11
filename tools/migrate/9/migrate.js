@@ -2,20 +2,37 @@
  * Migrate from version 8 to version 9 schema
  */
 
+var util = require('proxutils')
+var log = util.log
 var r = require('request')
   .defaults({
     json: true,
     strictSSL: false,
   })
+var async = require('async')
 var assert = require('assert')
-var util = require('proxutils')
-var log = util.log
 
 var oldUri = 'https://localhost:5543'
 var oldUri = 'https://api.aircandi.com'
 var newUri = 'https://localhost:6643'
 var oldCred = ''
 var newCred = ''
+
+var cold = {
+  actions: true,
+  devices: true,
+  users: true,
+  entities: true,
+  links: true,
+  documents: true,
+  beacons: true,
+}
+
+function run() {
+  signin(function() {
+    async.eachSeries(Object.keys(cold), migrate, finish)
+  })
+}
 
 function getCred(uri, cb) {
   r.post({
@@ -44,9 +61,14 @@ function signin(cb) {
   })
 }
 
-signin(function() {
-  log('oldCred: ' + oldCred)
-  log('newCred: ' + newCred)
-})
+function migrate(cName, cb) {
+  cb()
+}
 
+function finish(err) {
+  if (err) throw err
+  log('migrated ', cold)
+}
+
+run()
 
