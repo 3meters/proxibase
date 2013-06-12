@@ -25,9 +25,9 @@ var oldCollections = {
   // users: '0001',
   // documents: '0007',
   // devices: '0009'
-  entities: '0004',
+  // entities: '0004',
+  beacons: '0008',
   // links: '0005',
-  // beacons: '0008',
 }
 
 // Reverse map of old collections by Ids
@@ -142,8 +142,7 @@ migrateDoc.devices = function(doc, cb) {
 
 migrateDoc.entities = function(doc, cb) {
 
-  var newEntId = ''
-
+  var newDoc = {}
   migrateEntity()
 
   function migrateEntity() {
@@ -153,19 +152,20 @@ migrateDoc.entities = function(doc, cb) {
         if (!doc.place) return crash(doc)
         var place = makePlace(doc)
         // TODO: fix up links to beacons here or in link pass?
-        request.post({
-          uri: newUri + '/data/places?' + newCred,
-          body: {data: place},
-        }, function(err, res, body) {
-          if (err) throw err
-          if (201 !== res.statusCode) return crash(body)
-          newEntId = place._id
+        write(place, 'places', function(err, savedPlace) {
+          newDoc = savedPlace
           return finishEnt()
         })
         break
 
       case 'com.aircandi.candi.picture':
-        return cb()
+        var post = makeBaseEntity(doc)
+        copySysProps(post, doc)
+        post._id = fixId(doc._id, 'posts')
+        write(post, 'posts', function(err, savedPost) {
+          newDoc = savedPost
+          return finishEnt()
+        })
         break
 
       case 'com.aircandi.candi.post':
@@ -200,22 +200,10 @@ migrateDoc.entities = function(doc, cb) {
         description: old.description,
       }
       comment._id = util.genId(newCollections.comments, old.createdDate)
-      request.post({
-        uri: newUri + '/data/comments?' + newCred,
-        body: {data: comment},
-      }, function(err, res, body) {
-        if (err) throw (err)
-        if (201 !== res.statusCode) return crash(body)
-        request.post({
-          uri: newUri + '/data/links?' + newCred,
-          body: {data: {
-            _id: util.genId(newCollections.links, old.createdDate),
-            _from: newEntId,  // is this right?
-            _to: comment._id,
-          }}
-        }, function(err, res, body) {
-          if (err) throw err
-          if (201 !== res.statusCode) return crash(body)
+      write(comment, 'comments', function(err, savedComment) {
+        var link = makeLink(savedComment, newDoc)
+        link.type = 'content' // comment?
+        write(link, 'links', function(err, savedLink) {
           next()
         })
       })
@@ -234,22 +222,10 @@ migrateDoc.entities = function(doc, cb) {
     function migrateApplink(source, next) {
       position++
       var applink = makeApplink(doc, source, position)
-      request.post({
-        uri: newUri + '/data/applinks?' + newCred,
-        body: {data: applink},
-      }, function(err, res, body) {
-        if (err) throw err
-        if (201 !== res.statusCode) return crash(body)
-        request.post({
-          uri: newUri + '/data/links?' + newCred,
-          body: {data: {
-            _id: util.genId(newCollections.links, doc.createdDate),
-            _from: newEntId,
-            _to: applink._id,
-          }}
-        }, function(err, res, body) {
-          if (err) throw err
-          if (201 !== res.statusCode) return crash(body)
+      write(applink, 'applinks', function(err, savedApplink) {
+        var link = makeLink(savedApplink, newDoc)
+        link.type = 'content'
+        write(link, 'links', function(err, savedLink) {
           return next()
         })
       })
@@ -268,7 +244,25 @@ migrateDoc.links = function(doc, cb) {
 }
 
 migrateDoc.beacons = function(doc, cb) {
-  cb()
+  var beacon = makeBaseEntity(doc)
+  beacon._id = fixId(doc._id, 'beacons')
+  beacon.bssid = doc.bssid
+  beacon.ssid = doc.ssid
+  // Not sure about these next two.  leaving out for now.
+  // if (doc.label) beacon.subtitle = doc.label
+  //  if (doc.visibility) beacon.visibility = doc.visibility
+  beacon.type = doc.beaconType
+  var loc = {}
+  if (doc.latitude) loc.lat = doc.latitude
+  if (doc.longitude) loc.lng = doc.longitude
+  if (doc.altitude) loc.altitude = doc.altitude
+  if (doc.accuracy) loc.accuracy = doc.accuracy
+  if (doc.bearing) loc.bearing = doc.bearing
+  if (doc.speed) loc.speed = doc.speed
+  beacon.location = loc
+  copySysProps(beacon, doc)
+
+  write(beacon, 'beacons', cb)
 }
 
 
@@ -279,13 +273,13 @@ function write(doc, cName, cb) {
   }, function(err, res, body) {
     if (err) throw err
     if (201 != res.statusCode) return crash(body)
-    return cb(err)
+    return cb(err, body.data)
   })
 }
 
 
 function makePlace(doc) {
-  var place = {}
+  var place = makeBaseEntity(doc)
   copySysProps(place, doc)
   place._id = fixId(doc._id, 'places')
   if (doc.place.location) {
@@ -321,11 +315,32 @@ function makePlace(doc) {
   if (doc.place.contact && doc.place.contact.phone) {
     place.phone = doc.place.contact.phone
   }
-  if (doc.photo) place.photo = fixPhoto(doc.photo)
-  if (doc.signalFence) place.signalFence = doc.signalFence
   return place
 }
 
+function makeBaseEntity(doc) {
+  var ent = {}
+  if (doc.photo) ent.photo = fixPhoto(doc.photo)
+  if (doc.signalFence) ent.signalFence = doc.signalFence
+  if (doc.subtitle) ent.subtitle = doc.subtitle
+  if (doc.description) ent.description = doc.description
+  return ent
+}
+
+function makeLink(fromDoc, toDoc, date, owner) { // owner is optional
+  date = date || fromDoc.createdDate || toDoc.createdDate || util.now()
+  owner = owner || fromDoc._owner || toDoc._owner || util.adminUser._id  // is this right?
+  return {
+    _id: util.genId(newCollections.links, date),
+    _from: fromDoc._id,
+    _to: toDoc._id,
+    createdDate: date,
+    modifiedDate: date,
+    _owner: owner,
+    _creator: owner,
+    _modifier: owner,
+  }
+}
 
 function makeApplink(doc, source, position) {
   var applink = {
