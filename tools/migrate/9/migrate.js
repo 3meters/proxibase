@@ -26,8 +26,8 @@ var oldCollections = {
   // documents: '0007',
   // devices: '0009'
   // entities: '0004',
-  beacons: '0008',
-  // links: '0005',
+  // beacons: '0008',
+  links: '0005',
 }
 
 // Reverse map of old collections by Ids
@@ -240,6 +240,15 @@ migrateDoc.entities = function(doc, cb) {
 }
 
 migrateDoc.links = function(doc, cb) {
+  if ('browse' === doc.type) return cb() // is this ok?  
+  // types are now 'proximity' or 'content'
+  var link = {}
+  copySysProps(link, doc)
+  link._id = fixId(doc._id, 'links')
+  link._from = fixId(doc._from, oldCollectionMap[doc._from])
+  link._to = fixId(doc._to, oldCollectionMap[doc._to])
+  log('debug oldlink', doc)
+  log('debug newlink', link)
   cb()
 }
 
