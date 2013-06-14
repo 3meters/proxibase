@@ -5,21 +5,52 @@
 var util = require('proxutils')
 var log = util.log
 var logErr = util.logErr
+var tipe = util.tipe
+var dblib = require('proxdb')
+var dbOld
+var db
 
+/*
 var request = require('request').defaults({
   json: true,
   strictSSL: false,
 })
+*/
 var async = require('async')
 var assert = require('assert')
+var client = require('mongodb').MongoClient
 
-var errors = []
 
-var oldUri = 'https://localhost:5543'
+function connect(cb) {
+
+  connectOld()
+
+  function connectOld() {
+    client.connect('mongodb://localhost:27017/proxm', function(err, conn) {
+      if (err) throw err
+      if (!conn) throw new Error('Failed to connect to old db')
+      dbOld = conn
+      connectNew()
+    })
+  }
+
+  function connectNew() {
+    // Connect to mongo, load current schemas, ensure the admin user
+    dblib.init({db: {host: 'localhost', port: 27017, database: 'prox'}},
+    function(err, conn) {
+      if (err) throw err
+      if (!conn) throw new Error('Failed to connect to new db')
+      db = conn
+      cb()
+    })
+  }
+}
+
+// var oldUri = 'https://localhost:5543'
 // var oldUri = 'https://api.aircandi.com'
-var newUri = 'https://localhost:6643'
-var oldCred = ''
-var newCred = ''
+// var newUri = 'https://localhost:6643'
+// var oldCred = ''
+// var newCred = ''
 
 var oldCollections = {
   // users: '0001',
@@ -31,15 +62,19 @@ var oldCollections = {
 }
 
 // Reverse map of old collections by Ids
-oldCollectionMap = {}
-for (var key in oldCollections) {
-  oldCollectionMap[oldCollections[key]] = key
+oldCollectionMap = {
+   '0001': 'users',
+   '0007': 'documents',
+   '0009': 'devices',
+   '0004': 'entities',
+   '0008': 'beacons',
+   '0005': 'links',
 }
 
 var newCollections = util.statics.collectionIds
 
 function run() {
-  signin(function() {
+  connect(function() {
     log('Migrating: ', oldCollections)
     async.eachSeries(Object.keys(oldCollections), migrateCollection, finish)
   })
@@ -76,7 +111,30 @@ function migrateCollection(cName, cb) {
   getDoc(cName, 0, cb)
 }
 
+// recursively iterate through the collection, one document at a time
+// until none are left.
 function getDoc(cName, i, cb) {
+  var cl = dbOld.collection(cName)
+  cl.findOne({}, {sort:{_id:1}, skip:i})
+    .toArray(function(err, data) {
+      if (err) throw err
+      if (data.length) {
+        migrateDoc(data[0], cName, function(err) {
+          if (err) throw err
+          // increment and recurse
+          i++
+          getDoc(cName, i, cb)
+        })
+      }
+      else {
+        // finished with this collection
+        log('Read ' + i + ' ' + cName)
+        return cb()
+      }
+    })
+}
+
+/*
   var uri = oldUri + '/data/' + cName + '?sort[_id]=1&limit=1&skip=' + i + '&' + oldCred
   request.get(uri, function(err, res, body) {
     if (err) return cb(err)
@@ -96,6 +154,7 @@ function getDoc(cName, i, cb) {
     })
   })
 }
+*/
 
 function migrateDoc(doc, cName, cb) {
   fixIds(doc, cName)
@@ -240,16 +299,35 @@ migrateDoc.entities = function(doc, cb) {
 }
 
 migrateDoc.links = function(doc, cb) {
-  if ('browse' === doc.type) return cb() // is this ok?  
+  if ('browse' === doc.type) return cb() // don't care any more
+
   // types are now 'proximity' or 'content'
-  var link = {}
-  copySysProps(link, doc)
-  link._id = fixId(doc._id, 'links')
-  link._from = fixId(doc._from, oldCollectionMap[doc._from])
-  link._to = fixId(doc._to, oldCollectionMap[doc._to])
-  log('debug oldlink', doc)
-  log('debug newlink', link)
-  cb()
+  var oldFromCname = oldCollectionMap[doc._from.split('.')[0]]
+  var oldToCname = oldCollectionMap[doc._to.split('.')[0]]
+  log('debug ofc ' + oldFromCname)
+  log('debug tfc ' + oldToCname)
+  checkEnt('from')
+
+  function checkEnt(dest) {
+    var id = ''
+    if ('from' === dest) {
+      if ('entities' !== oldFromCname) return checkEnt('to')
+      oldId = doc._from
+    }
+    else {
+      if ('entities' !== oldToCname) return finish()
+    }
+
+    function finish() {
+      copySysProps(link, doc)
+      link._id = fixId(doc._id, 'links')
+      link._from = fixId(doc._from, oldFromCname)
+      link._to = fixId(doc._to, oldFromCname)
+      log('debug oldlink', doc)
+      log('debug newlink', link)
+      cb()
+    }
+  }
 }
 
 migrateDoc.beacons = function(doc, cb) {
@@ -276,6 +354,12 @@ migrateDoc.beacons = function(doc, cb) {
 
 
 function write(doc, cName, cb) {
+  db[cName].safeInsert(doc, {user: util.adminUser._id}, function(err, savedDoc) {
+    if (err) throw err
+    if (!savedDoc) return crash(doc)
+    cb(err, savedDoc)
+  })
+  /*
   request.post({
     uri: newUri + '/data/' + cName + '?' + newCred,
     body: {data: doc},
@@ -284,6 +368,7 @@ function write(doc, cName, cb) {
     if (201 != res.statusCode) return crash(body)
     return cb(err, body.data)
   })
+  */
 }
 
 
