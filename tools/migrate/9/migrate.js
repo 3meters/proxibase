@@ -1,5 +1,7 @@
 /**
  * Migrate from version 8 to version 9 schema
+ *   Assumes the old database is on the same server
+ *   named prox8
  */
 
 var util = require('proxutils')
@@ -10,23 +12,16 @@ var dblib = require('proxdb')
 var dbOld
 var db
 
-/*
-var request = require('request').defaults({
-  json: true,
-  strictSSL: false,
-})
-*/
 var async = require('async')
 var assert = require('assert')
 var client = require('mongodb').MongoClient
-
 
 function connect(cb) {
 
   connectOld()
 
   function connectOld() {
-    client.connect('mongodb://localhost:27017/proxm', function(err, conn) {
+    client.connect('mongodb://localhost:27017/prox8', function(err, conn) {
       if (err) throw err
       if (!conn) throw new Error('Failed to connect to old db')
       dbOld = conn
@@ -46,18 +41,12 @@ function connect(cb) {
   }
 }
 
-// var oldUri = 'https://localhost:5543'
-// var oldUri = 'https://api.aircandi.com'
-// var newUri = 'https://localhost:6643'
-// var oldCred = ''
-// var newCred = ''
-
 var oldCollections = {
-  // users: '0001',
-  // documents: '0007',
-  // devices: '0009'
-  // entities: '0004',
-  // beacons: '0008',
+  users: '0001',
+  documents: '0007',
+  devices: '0009',
+  entities: '0004',
+  beacons: '0008',
   links: '0005',
 }
 
@@ -69,6 +58,7 @@ oldCollectionMap = {
    '0004': 'entities',
    '0008': 'beacons',
    '0005': 'links',
+   '0006': 'actions',
 }
 
 var newCollections = util.statics.collectionIds
@@ -108,56 +98,28 @@ function signin(cb) {
 }
 
 function migrateCollection(cName, cb) {
+  log('Migrating ' + cName)
   getDoc(cName, 0, cb)
 }
 
-// recursively iterate through the collection, one document at a time
-// until none are left.
 function getDoc(cName, i, cb) {
-  log('debug cName ' + cName)
-  var docs = dbOld.collection(cName).find() // docs is mongodb cursor
-  while (docs.hasNext()) {
-    var doc = docs.next()
-    migrateDoc(doc, cName, function(err) {})
-    /*
-      if (data.length) {
-        migrateDoc(data[0], cName, function(err) {
-          if (err) throw err
-          // increment and recurse
-          i++
-          getDoc(cName, i, cb)
-        })
-      }
-      else {
-        // finished with this collection
-        log('Read ' + i + ' ' + cName)
-        return cb()
-      }
-    })
-    */
-}
-
-/*
-  var uri = oldUri + '/data/' + cName + '?sort[_id]=1&limit=1&skip=' + i + '&' + oldCred
-  request.get(uri, function(err, res, body) {
-    if (err) return cb(err)
-    var doc = body.data[0]
-    assert(doc && doc._id, body)
-    log(doc._id)
+  dbOld.collection(cName).find({}, {
+    sort: {_id: 1},
+    limit: 1,
+    skip: i,
+  }).nextObject(function(err, doc) {
+    if (err) throw err
+    if (!doc) {
+      log('Processed ' + i + ' ' + cName)
+      return cb() // finished reading this collection
+    }
     migrateDoc(doc, cName, function(err) {
       if (err) throw err
-      if (body.more) {
-        i++
-        getDoc(cName, i, cb) // recurse
-      }
-      else {
-        log('Read ' + i + ' ' + cName)
-        cb()  // done, call back
-      }
+      i++
+      getDoc(cName, i, cb)  // recurse
     })
   })
 }
-*/
 
 function migrateDoc(doc, cName, cb) {
   fixIds(doc, cName)
@@ -186,6 +148,12 @@ function fixId(id, cName) {
 }
 
 migrateDoc.users = function(doc, cb) {
+  if (doc._id === util.adminUser._id) return cb()
+  if (doc.photo) doc.photo = fixPhoto(doc.photo)
+  doc.developer = doc.isDeveloper
+  delete doc.isDeveloper
+  doc.area = doc.location
+  delete doc.location
   write(doc, 'users', cb)
 }
 
@@ -303,6 +271,8 @@ migrateDoc.entities = function(doc, cb) {
 
 migrateDoc.links = function(doc, cb) {
   if ('browse' === doc.type) return cb() // don't care any more
+  log('reading link: ' + doc._id)
+  return cb()
 
   // types are now 'proximity' or 'content'
   var oldFromCname = oldCollectionMap[doc._from.split('.')[0]]
@@ -357,21 +327,12 @@ migrateDoc.beacons = function(doc, cb) {
 
 
 function write(doc, cName, cb) {
-  db[cName].safeInsert(doc, {user: util.adminUser._id}, function(err, savedDoc) {
+  db[cName].safeInsert(doc, {user: util.adminUser},
+  function(err, savedDoc) {
     if (err) throw err
     if (!savedDoc) return crash(doc)
     cb(err, savedDoc)
   })
-  /*
-  request.post({
-    uri: newUri + '/data/' + cName + '?' + newCred,
-    body: {data: doc},
-  }, function(err, res, body) {
-    if (err) throw err
-    if (201 != res.statusCode) return crash(body)
-    return cb(err, body.data)
-  })
-  */
 }
 
 
@@ -487,9 +448,9 @@ function crash(err) {
 
 function finish(err) {
   if (err) throw err
-  if (errors.length) {
-    log('Errors: ', errors)
-  }
+  dbOld.close()
+  db.close()
+  log('Finished ok')
 }
 
 run()
