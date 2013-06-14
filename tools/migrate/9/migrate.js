@@ -114,10 +114,12 @@ function migrateCollection(cName, cb) {
 // recursively iterate through the collection, one document at a time
 // until none are left.
 function getDoc(cName, i, cb) {
-  var cl = dbOld.collection(cName)
-  cl.findOne({}, {sort:{_id:1}, skip:i})
-    .toArray(function(err, data) {
-      if (err) throw err
+  log('debug cName ' + cName)
+  var docs = dbOld.collection(cName).find() // docs is mongodb cursor
+  while (docs.hasNext()) {
+    var doc = docs.next()
+    migrateDoc(doc, cName, function(err) {})
+    /*
       if (data.length) {
         migrateDoc(data[0], cName, function(err) {
           if (err) throw err
@@ -132,6 +134,7 @@ function getDoc(cName, i, cb) {
         return cb()
       }
     })
+    */
 }
 
 /*
