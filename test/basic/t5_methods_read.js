@@ -219,7 +219,7 @@ exports.getEntitiesForUser = function (test) {
   t.post({
     uri: '/do/getEntitiesByOwner',
     body: {
-      entityId: constants.uid1,
+      ownerId: constants.uid1,
       entitySchemas: [util.statics.schemaPlace, util.statics.schemaPost],
     }
   }, function(err, res, body) {
@@ -233,7 +233,7 @@ exports.getEntitiesForUserPostsOnly = function (test) {
   t.post({
     uri: '/do/getEntitiesByOwner',
     body: {
-      entityId: constants.uid1,
+      ownerId: constants.uid1,
       entitySchemas: [util.statics.schemaPost],
     }
   }, function(err, res, body) {
@@ -248,7 +248,7 @@ exports.getEntitiesForUserMatchingRegex = function (test) {
   t.post({
     uri: '/do/getEntitiesByOwner',
     body: {
-      entityId: constants.uid1,
+      ownerId: constants.uid1,
       entitySchemas: [util.statics.schemaPlace, util.statics.schemaPost],
       cursor: { where: { name: { $regex:'2401', $options:'i' }}},
     }
