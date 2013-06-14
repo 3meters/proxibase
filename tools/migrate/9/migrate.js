@@ -42,11 +42,11 @@ function connect(cb) {
 }
 
 var oldCollections = {
-  users: '0001',
-  documents: '0007',
-  devices: '0009',
-  entities: '0004',
-  beacons: '0008',
+  // users: '0001',
+  // documents: '0007',
+  // devices: '0009',
+  // entities: '0004',
+  // beacons: '0008',
   links: '0005',
 }
 
@@ -271,35 +271,71 @@ migrateDoc.entities = function(doc, cb) {
 
 migrateDoc.links = function(doc, cb) {
   if ('browse' === doc.type) return cb() // don't care any more
-  log('reading link: ' + doc._id)
-  return cb()
-
   // types are now 'proximity' or 'content'
-  var oldFromCname = oldCollectionMap[doc._from.split('.')[0]]
-  var oldToCname = oldCollectionMap[doc._to.split('.')[0]]
-  log('debug ofc ' + oldFromCname)
-  log('debug tfc ' + oldToCname)
-  checkEnt('from')
+  log('processing link', doc)
 
-  function checkEnt(dest) {
-    var id = ''
-    if ('from' === dest) {
-      if ('entities' !== oldFromCname) return checkEnt('to')
-      oldId = doc._from
-    }
-    else {
-      if ('entities' !== oldToCname) return finish()
-    }
+  var link = {}
+  copySysProps(link, doc)
+  link._id = doc._id
 
-    function finish() {
-      copySysProps(link, doc)
-      link._id = fixId(doc._id, 'links')
+  var oldFromCname = oldCollectionMap[doc.fromCollectionId]
+  var oldToCname = oldCollectionMap[doc.toCollectionId]
+
+  log('from c ' + oldFromCname)
+  log('  to c ' + oldToCname)
+
+  migrateFrom()
+
+  function migrateFrom() {
+    if ('0004' !== doc.fromCollectionId) {
       link._from = fixId(doc._from, oldFromCname)
-      link._to = fixId(doc._to, oldFromCname)
-      log('debug oldlink', doc)
-      log('debug newlink', link)
-      cb()
+      return migrateTo()
     }
+    getLinkedEntityId(doc._from, function(err, id) {
+      link._from = id
+      migrateTo()
+    })
+  }
+
+  function migrateTo() {
+    if ('0004' !== doc.toCollectionId) {
+      link._to = fixId(doc._to, oldToCname)
+      return finish()
+    }
+    getLinkedEntityId(doc._to, function(err, id) {
+      link._to = id
+      finish()
+    })
+  }
+
+  // Linked document is an entity.  Must figure out
+  // which new collection it has become based on type
+  function getLinkedEntityId(entId, cb) {
+    var newCname = ''
+    read(entId, 'entities', function(err, ent) {
+      switch(ent.type) {
+        case 'com.aircandi.candi.place':
+          newCname = 'places'
+          break
+        case 'com.aircandi.candi.picture':
+          newCname = 'posts'
+          break
+        case 'com.aircandi.candi.post':
+          newCname = 'posts'
+          break
+        default:
+            throw new Error('Unrecognized entity type ', from.type)
+      }
+      cb(null, fixId(entId, newCname))
+    })
+  }
+
+
+  function finish() {
+    log('old link', doc)
+    log('new link', link)
+    // write(link, 'links', cb)
+    cb()
   }
 }
 
@@ -326,6 +362,16 @@ migrateDoc.beacons = function(doc, cb) {
 }
 
 
+// Read one doc from the old database
+function read(id, cName, cb) {
+  dbOld.collection(cName).findOne({_id: id}, function(err, doc) {
+    if (err) throw err
+    if (!doc) throw new Error('Could not find doc ' + id + ' in ' + cName)
+    return cb(null, doc)
+  })
+}
+
+// Write one doc to the new database
 function write(doc, cName, cb) {
   db[cName].safeInsert(doc, {user: util.adminUser},
   function(err, savedDoc) {
