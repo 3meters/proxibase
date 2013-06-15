@@ -6,7 +6,6 @@
 
 var util = require('proxutils')
 var log = util.log
-var logErr = util.logErr
 var tipe = util.tipe
 var dblib = require('proxdb')
 var dbOld
@@ -42,11 +41,11 @@ function connect(cb) {
 }
 
 var oldCollections = {
-  // users: '0001',
-  // documents: '0007',
-  // devices: '0009',
-  // entities: '0004',
-  // beacons: '0008',
+  users: '0001',
+  documents: '0007',
+  devices: '0009',
+  entities: '0004',
+  beacons: '0008',
   links: '0005',
 }
 
@@ -269,20 +268,24 @@ migrateDoc.entities = function(doc, cb) {
   }
 }
 
-migrateDoc.links = function(doc, cb) {
-  if ('browse' === doc.type) return cb() // don't care any more
+migrateDoc.links = function(doc, callback) {
+  if ('browse' === doc.type) return callback() // don't care any more
   // types are now 'proximity' or 'content'
-  log('processing link', doc)
 
   var link = {}
   copySysProps(link, doc)
   link._id = doc._id
+  link.type = doc.type
+  if ('content' === doc.type) link.strong = true
+  if ('proximity' === doc.type && doc.signal) {
+    link.proximity = {
+      primary: doc.primary,
+      signal: doc.signal,
+    }
+  }
 
   var oldFromCname = oldCollectionMap[doc.fromCollectionId]
   var oldToCname = oldCollectionMap[doc.toCollectionId]
-
-  log('from c ' + oldFromCname)
-  log('  to c ' + oldToCname)
 
   migrateFrom()
 
@@ -313,6 +316,10 @@ migrateDoc.links = function(doc, cb) {
   function getLinkedEntityId(entId, cb) {
     var newCname = ''
     read(entId, 'entities', function(err, ent) {
+      if (!ent) {
+        log ('Skipping link:', doc)
+        return callback()
+      }
       switch(ent.type) {
         case 'com.aircandi.candi.place':
           newCname = 'places'
@@ -332,10 +339,7 @@ migrateDoc.links = function(doc, cb) {
 
 
   function finish() {
-    log('old link', doc)
-    log('new link', link)
-    // write(link, 'links', cb)
-    cb()
+    write(link, 'links', callback)
   }
 }
 
@@ -344,9 +348,6 @@ migrateDoc.beacons = function(doc, cb) {
   beacon._id = fixId(doc._id, 'beacons')
   beacon.bssid = doc.bssid
   beacon.ssid = doc.ssid
-  // Not sure about these next two.  leaving out for now.
-  // if (doc.label) beacon.subtitle = doc.label
-  //  if (doc.visibility) beacon.visibility = doc.visibility
   beacon.type = doc.beaconType
   var loc = {}
   if (doc.latitude) loc.lat = doc.latitude
@@ -366,7 +367,7 @@ migrateDoc.beacons = function(doc, cb) {
 function read(id, cName, cb) {
   dbOld.collection(cName).findOne({_id: id}, function(err, doc) {
     if (err) throw err
-    if (!doc) throw new Error('Could not find doc ' + id + ' in ' + cName)
+    if (!doc) log('Could not find doc ' + id + ' in ' + cName)
     return cb(null, doc)
   })
 }
@@ -488,7 +489,7 @@ function fixPhoto(old) {
 
 function crash(err) {
   if (util.isError(err)) throw err
-  logErr(err)
+  log(err)
   throw new Error('Crash')
 }
 
