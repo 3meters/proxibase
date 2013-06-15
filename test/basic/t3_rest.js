@@ -637,7 +637,7 @@ exports.entityValidatorsWork = function(test) {
 exports.sortWorks = function(test) {
   t.get('/data/users?sort[_id]=-1',
   function(err, res, body) {
-    var lastId = '9999.999999.99999.999.999999'
+    var lastId = util.statics.collectionIds.users + '.999999.99999.999.999999'
     body.data.forEach(function(user, i) {
       t.assert(user._id < lastId, i)
       lastId = user._id
