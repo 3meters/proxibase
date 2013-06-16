@@ -42,7 +42,9 @@ exports.genIdWorks = function(test) {
   t.get('/data/places/genId',
   function(err, res, body) {
     t.assert(body.data._id)
-    t.assert(body.data._id.slice(0, 4) === '0013')
+    var schemaId = body.data._id.split('.')[0]
+    t.assert(schemaId)
+    t.assert(schemaId === util.statics.collectionIds.places)
     test.done()
   })
 }
@@ -397,8 +399,9 @@ exports.adminCannotUpdateNonExistantDoc = function(test) {
 }
 
 exports.canAddDocsWithPreexitingIds = function(test) {
-  var newDocId1 = '0007.060101.55664.234.11111'
-  var newDocId2 = '0007.060101.55664.234.22222'
+  var docClId = util.statics.collectionIds.documents
+  var newDocId1 = docClId + '.060101.55664.234.11111'
+  var newDocId2 = docClId + '.060101.55664.234.22222'
   t.post({
     uri: '/data/documents?' + userCred,
     body: {data: {_id: newDocId1, name: 'I have my own id'}}
@@ -418,7 +421,7 @@ exports.canAddDocsWithPreexitingIds = function(test) {
 exports.cannotAddDocWithMissMatchedTableId = function(test) {
   t.post({
     uri: '/data/documents?' + userCred,
-    body: {data: {_id: '0005.060101.55664.234.34567', name: 'My id points to the wrong collection'}}
+    body: {data: {_id: '1.060101.55664.234.34567', name: 'My id points to the wrong collection'}}
   }, 400, function(err, res, body) {
     test.done()
   })
@@ -634,7 +637,7 @@ exports.entityValidatorsWork = function(test) {
 exports.sortWorks = function(test) {
   t.get('/data/users?sort[_id]=-1',
   function(err, res, body) {
-    var lastId = '9999.999999.99999.999.999999'
+    var lastId = util.statics.collectionIds.users + '.999999.99999.999.999999'
     body.data.forEach(function(user, i) {
       t.assert(user._id < lastId, i)
       lastId = user._id

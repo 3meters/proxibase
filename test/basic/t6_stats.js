@@ -18,7 +18,7 @@ var testEntity = {
   type: util.statics.schemaPost,
 }
 var testBeacon = {
-  _id : '0004.11:11:11:11:11:11',
+  _id : util.statics.collectionIds.beacons + '.11:11:11:11:11:11',
   type : util.statics.schemaBeacon,
   name: 'Test Beacon Label',
   beacon: {

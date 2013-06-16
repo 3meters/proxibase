@@ -5,6 +5,7 @@
 var util = require('proxutils')
 var log = util.log
 var adminId = util.adminUser._id
+var clIds = util.statics.collectionIds
 var testUtil = require('../util')
 var t = testUtil.treq
 var constants = require('../constants')
@@ -22,7 +23,7 @@ var testLongitude2 = -122.1
 var radiusTiny = 0.000001
 var radiusBig = 10000
 var testUser = {
-  _id : "0001.111111.11111.111.111111",
+  _id : clIds.users + ".111111.11111.111.111111",
   name : "John Q Test",
   email : "johnqtest@3meters.com",
   password : "12345678",
@@ -35,14 +36,14 @@ var testUser = {
   enabled: true,
 }
 var testUser2 = {
-  _id : "0001.111111.11111.111.222222",
+  _id : clIds.users + ".111111.11111.111.222222",
   name : "John Q Test2",
   email : "johnqtest2@3meters.com",
   password : "12345678",
   enabled: true,
 }
 var testPlace = {
-  _id : "0013.111111.11111.111.111111",
+  _id : clIds.places + ".111111.11111.111.111111",
   schema : util.statics.schemaPlace,
   name : "Testing place entity",
   photo: { 
@@ -67,7 +68,7 @@ var testPlace = {
   }
 }
 var testPlace2 = {
-  _id : "0013.111111.11111.111.111112",
+  _id : clIds.places + ".111111.11111.111.111112",
   schema : util.statics.schemaPlace,
   name : "Testing place entity",
   photo: { 
@@ -92,7 +93,7 @@ var testPlace2 = {
   },
 }
 var testPlace3 = {
-  _id : "0013.111111.11111.111.111113",
+  _id : clIds.places + ".111111.11111.111.111113",
   schema : util.statics.schemaPlace,
   name : "Testing place entity",
   photo: { 
@@ -117,7 +118,7 @@ var testPlace3 = {
   },
 }
 var testPlaceCustom = {
-  _id : "0013.111111.11111.111.111114",
+  _id : clIds.places + ".111111.11111.111.111114",
   schema : util.statics.schemaPlace,
   name : "Testing place entity custom",
   photo: { 
@@ -144,7 +145,7 @@ var testPlaceCustom = {
   locked: true,
 }
 var testPost = {
-  _id : "0014.111111.11111.111.111111",
+  _id : clIds.posts + ".111111.11111.111.111111",
   schema : util.statics.schemaPost,
   name : "Testing post entity",
   photo: { 
@@ -153,25 +154,25 @@ var testPost = {
   },
 }
 var testComment = {
-  _id : "0012.111111.11111.111.111111",
+  _id : clIds.comments + ".111111.11111.111.111111",
   schema : util.statics.schemaComment,
   name : "Test comment",
   description : "Test comment, much ado about nothing.",
 }
 var testComment2 = {
-  _id : "0012.111111.11111.111.111112",
+  _id : clIds.comments + ".111111.11111.111.111112",
   schema : util.statics.schemaComment,
   name : "Test comment for locked entity",
   description : "Test comment, much ado about nothing.",
 }
 var testComment3 = {
-  _id : "0012.111111.11111.111.111113",
+  _id : clIds.comments + ".111111.11111.111.111113",
   schema : util.statics.schemaComment,
   name : "Another test comment for locked entity",
   description : "Test comment, much ado about nothing.",
 }
 var testApplink = {
-  _id: "0010.111111.11111.111.111111",
+  _id: clIds.applinks + ".111111.11111.111.111111",
   schema: util.statics.schemaApplink,
   name: "Bannerwood Park",
   photo: { 
@@ -183,20 +184,18 @@ var testApplink = {
     origin : "facebook", validated : 1369167109174.0, likes : 9 
   },
 }
+
 var testLink = {
-  _to : '0011.11:11:11:11:11:22',
-  _from : '0013.111111.11111.111.111111',
+  _to : clIds.beacons + '.11:11:11:11:11:22',
+  _from : clIds.places + '.111111.11111.111.111111',
   proximity: {
     primary: true,
     signal: -100
   }
 }
-var newTestLink = {
-  _to : '0004.111111.11111.111.111112',
-  _from : '0004.111111.11111.111.111111',
-}
+
 var testBeacon = {
-  _id : '0011.11:11:11:11:11:11',
+  _id : clIds.beacons + '.11:11:11:11:11:11',
   schema : util.statics.schemaBeacon,
   name: 'Test Beacon Label',
   ssid: 'Test Beacon',
@@ -211,7 +210,7 @@ var testBeacon = {
   },
 }
 var testBeacon2 = {
-  _id : '0011.22:22:22:22:22:22',
+  _id : clIds.beacons + '.22:22:22:22:22:22',
   schema : util.statics.schemaBeacon,
   name: 'Test Beacon Label 2',
   ssid: 'Test Beacon 2',
@@ -226,7 +225,7 @@ var testBeacon2 = {
   },
 }
 var testBeacon3 = {
-  _id : '0011.33:33:33:33:33:33',
+  _id : clIds.beacons + '.33:33:33:33:33:33',
   schema : util.statics.schemaBeacon,
   name: 'Test Beacon Label 3',
   ssid: 'Test Beacon 3',
@@ -585,7 +584,7 @@ exports.insertEntityDoNotTrack = function(test) {
     delete ent._id
     ent.name = 'Testing Place Ent with doNotTrack'
     var beacon = util.clone(testBeacon)
-    beacon._id = '0011.44:44:44:44:44:44'
+    beacon._id = util.statics.collectionIds.beacons + '.44:44:44:44:44:44'
     beacon.bssid = '44:44:44:44:44:44',
     t.post({
       uri: '/do/insertEntity?' + userCred,
