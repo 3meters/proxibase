@@ -11,8 +11,9 @@ var dbProfile = constants.dbProfile.smokeTest
 var userCred
 var user2Cred
 var adminCred
+var usersClId = util.statics.collectionIds.users
 var testUser = {
-  _id : "0001.111111.11111.111.111111",
+  _id : usersClId + ".111111.11111.111.111111",
   name : "John Q Test",
   type: 'user',
   email : "johnqtest@3meters.com",

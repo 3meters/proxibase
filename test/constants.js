@@ -3,8 +3,8 @@
  */
 
 var
+  util = require('proxutils')
   assert = require('assert'),
-  _ = require('underscore'),                                  // For cloning objects
   timeStamp = '010101.00000.555',                             // Jan 1 2000 + 555 miliseconds
   timeStampMs = new Date(2001, 0, 1, 0, 0, 0, 555).getTime()  // Same but in milliseconds
   uid1 = util.statics.collectionIds.users + '.' + timeStamp + '.000001',                     // Standard user
@@ -167,11 +167,11 @@ module.exports = {
   timeStamp: timeStamp,
   timeStampMs: timeStampMs,
   recordLimit: recordLimit,
-  dbProfile: _.clone(dbProfile)
+  dbProfile: util._.clone(dbProfile)
 }
 
 module.exports.getDefaultRecord = function(tableName) {
   assert(defaultRecord[tableName], 'No default record for ' + tableName)
-  return _.clone(defaultRecord[tableName])
+  return util._.clone(defaultRecord[tableName])
 }
 
