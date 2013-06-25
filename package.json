@@ -16,7 +16,7 @@
 
   "dependencies": {
     "tipe": "*",
-    "chek": "git+ssh://git@github.com:3meters/chek.git",
+    "chk": "git+ssh://git@github.com:3meters/chk.git",
     "express": "*",
     "mongodb": "*",
     "underscore": "*",
