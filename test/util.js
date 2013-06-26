@@ -4,14 +4,14 @@
 
 var util = require('proxutils')
 var log = util.log
-var type = util.type
+var tipe = util.tipe
 var _ = util._
 var assert = require('assert')
 var request = require('request')
 var constants = require('./constants')
 var tableIds = util.statics.collectionIds
 
-assert(util.truthy, 'The proxibase utils are not loaded properly, bailing')
+assert(tipe.isTruthy, 'The proxibase utils are not loaded properly, bailing')
 util.setConfig('configtest.js')
 
 // Base Uri all test requests call, can be overridden by callers
