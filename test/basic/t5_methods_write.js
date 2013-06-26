@@ -172,7 +172,6 @@ var testComment3 = {
   description : "Test comment, much ado about nothing.",
 }
 var testApplink = {
-  _id: clIds.applinks + ".111111.11111.111.111111",
   schema: util.statics.schemaApplink,
   name: "Bannerwood Park",
   photo: { 
@@ -860,6 +859,8 @@ exports.checkBeaconLocationUpdate = function (test) {
   })
 }
 
+/* Permissions */
+
 exports.cannotDeleteEntityWhenNotSignedIn = function (test) {
   t.del({
     uri: '/data/beacons/' + testBeacon._id
@@ -883,6 +884,8 @@ exports.adminCanDeleteBeaconEntityUserCreated = function (test) {
     test.done()
   })
 }
+
+/* Insert, update, and delete entities */
 
 exports.insertComment = function (test) {
   t.post({
@@ -1219,5 +1222,34 @@ exports.checkAdminUpdatedLockedRecord = function (test) {
   }, function(err, res, body) {
     t.assert(body.data && body.data[0] && body.data[0].name === 'Testing admin update of locked entity')
     test.done()
+  })
+}
+
+/* Replace an entity set */
+
+exports.addEntitySet = function (test) {
+  t.post({
+    uri: '/do/replaceEntitiesForEntity?' + userCred,
+    body: {
+      entityId: testPlace2._id,
+      entities: [
+        util.clone(testApplink),
+        util.clone(testApplink),
+        util.clone(testApplink)],
+      linkType: util.statics.typeApplink,
+      skipActivityDate: true
+    }
+  }, 200, function(err, res, body) {
+    t.assert(body.info.indexOf('replaced') > 0)
+    t.post({
+      uri: '/do/find',
+      body: {
+        table:'applinks',
+        find: { _to: testPlace2._id, type: util.statics.typeApplink }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 3)
+      test.done()
+    })
   })
 }
