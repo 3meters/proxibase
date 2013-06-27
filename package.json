@@ -16,7 +16,7 @@
 
   "dependencies": {
     "tipe": "*",
-    "chk": "git+ssh://git@github.com:3meters/chk.git",
+    "chk": "git://github.com/3meters/chk.git",
     "express": "*",
     "mongodb": "*",
     "underscore": "*",
@@ -24,7 +24,7 @@
     "nodeunit": "*",
     "async": "*",
     "nodemailer": "*",
-    "superagent": "0.14.2",
+    "superagent": "*",
     "request": "*",
     "authom": "*",
     "cheerio": "*",
