@@ -45,7 +45,7 @@ exports.checkTwitterUrls = function(test) {
     body: {
       place: {
         applinks: [
-          {type: 'website', id: url}
+          {type: 'website', appId: url}
         ],
       },
       includeRaw: true},
@@ -57,7 +57,7 @@ exports.checkTwitterUrls = function(test) {
     var applink = applinks[1]
     t.assert(applink.name === '@bob')
     t.assert(applink.type === 'twitter')
-    t.assert(applink.id === 'bob')
+    t.assert(applink.appId === 'bob')
     t.assert(applink.data)
     t.assert(applink.data.origin === 'website')
     t.assert(applink.data.originId === url)
@@ -75,7 +75,7 @@ exports.checkFacebookUrls = function(test) {
     uri: '/applinks/suggest',
     body: {
       place: {applinks: [
-        {type: 'website', id: url}
+        {type: 'website', appId: url}
       ]},
       includeRaw: true,
       timeout: 20
@@ -87,14 +87,14 @@ exports.checkFacebookUrls = function(test) {
     var map = {}
     applinks = applinks.slice(1)
     applinks.forEach(function(applink, i) {
-      t.assert(applink.id)
+      t.assert(applink.appId)
       t.assert(applink.type === 'facebook')
       t.assert(applink.photo)
       t.assert(applink.photo.prefix)
       t.assert(applink.data)
       t.assert(applink.data.origin === 'website')
       t.assert(applink.data.originId === url)
-      map[applink.id] = applink
+      map[applink.appId] = applink
     })
     t.assert(Object.keys(map).length === applinks.length)  // no dupes by id
     t.assert(map['620955808'])
@@ -110,14 +110,14 @@ exports.checkEmailUrls = function(test) {
   t.post({
     uri: '/applinks/suggest',
     body: {place: {applinks: [
-      {type: 'website', id: serviceUri + '/test/email.html'}
+      {type: 'website', appId: serviceUri + '/test/email.html'}
     ]}}
   },
   function(err, res) {
     var applinks = res.body.data.place.applinks
     t.assert(applinks.length === 2)
     t.assert(applinks[1].type === 'email')
-    t.assert(applinks[1].id === 'george@3meters.com')
+    t.assert(applinks[1].appId === 'george@3meters.com')
     test.done()
   })
 }
@@ -125,12 +125,12 @@ exports.checkEmailUrls = function(test) {
 
 exports.checkEmailUrlsWithGet = function(test) {
   t.get({uri: '/applinks/suggest?place[applinks][0][type]=website' +
-    '&place[applinks][0][id]=' + serviceUri + '/test/email.html'},
+    '&place[applinks][0][appId]=' + serviceUri + '/test/email.html'},
   function(err, res) {
     var applinks = res.body.data.place.applinks
     t.assert(applinks.length === 2)
     t.assert(applinks[1].type === 'email')
-    t.assert(applinks[1].id === 'george@3meters.com')
+    t.assert(applinks[1].appId === 'george@3meters.com')
     test.done()
   })
 }
@@ -143,12 +143,14 @@ exports.notFoundFacebookApplinkPassesThroughUnvalidated = function(test) {
   if (disconnected) return skip(test)
   t.post({
     uri: '/applinks/suggest',
-    body: {place: {applinks: [{type: 'facebook', id: '235200356726'}]}}
+    body: {
+      place: {applinks: [{type: 'facebook', appId: '235200356726'}]}
+    }
   }, function(err, res, body) {
     var applinks = body.data.place.applinks
     t.assert(applinks && 1 === applinks.length)
     var applink = applinks[0]
-    t.assert(applink.id === '235200356726')
+    t.assert(applink.appId === '235200356726')
     t.assert(applink.data)
     t.assert(!applink.data.validated)
     t.assert(!applink.photo)
@@ -160,7 +162,9 @@ exports.checkBogusApplinks = function(test) {
   if (disconnected) return skip(test)
   t.post({
     uri: '/applinks/suggest',
-    body: {place: {applinks: [{type: 'foursquare', url: 'http://www.google.com'}]}}
+    body: {
+      place: {applinks: [{type: 'foursquare', appUrl: 'http://www.google.com'}]}
+    }
   },
   function(err, res, body) {
     t.assert(body.data.place.applinks.length === 0)
@@ -172,8 +176,11 @@ exports.suggestApplinksFactual = function(test) {
   if (disconnected) return skip(test)
   t.post({
     uri: '/applinks/suggest',
-    body: {place: {applinks: [{type: 'factual', id: '46aef19f-2990-43d5-a9e3-11b78060150c'}]},
-             includeRaw: true, timeout: 20}
+    body: {
+      place: {applinks: [{type: 'factual', appId: '46aef19f-2990-43d5-a9e3-11b78060150c'}]},
+      includeRaw: true, 
+      timeout: 20
+    }
   },
   function(err, res) {
     var applinks = res.body.data.place.applinks
@@ -201,16 +208,18 @@ exports.suggestFactualApplinksFromFoursquareId = function(test) {
   if (disconnected) return skip(test)
   t.post({
     uri: '/applinks/suggest',
-    body: {place: {applinks: [{type: 'foursquare', id: '4abebc45f964a520a18f20e3'}]},
-    includeRaw: true,
-    timeout: 20} // Seattle Ballroom in Fremont
+    body: {
+      place: {applinks: [{type: 'foursquare', appId: '4abebc45f964a520a18f20e3'}]},
+      includeRaw: true,
+      timeout: 20
+    } // Seattle Ballroom in Fremont
   },
   function(err, res, body) {
     var applinks = body.data.place.applinks
     t.assert(applinks.length > 3)
     t.assert(applinks.some(function(applink) {
       return (applink.type === 'foursquare'
-          && applink.id === '4abebc45f964a520a18f20e3'
+          && applink.appId === '4abebc45f964a520a18f20e3'
         )
     }))
     t.assert(applinks.some(function(applink) {
@@ -231,15 +240,19 @@ exports.compareFoursquareToFactual = function(test) {
   if (disconnected) return skip(test)
   t.post({
     uri: '/applinks/suggest',
-    body: {place: {applinks: [{type: 'foursquare', id: '4abebc45f964a520a18f20e3'}]}, // Seattle Ballroom
-    includeRaw: true,
-    timeout: 20}
+    body: {
+      place: {
+        applinks: [{type: 'foursquare', appId: '4abebc45f964a520a18f20e3'}]
+      }, // Seattle Ballroom
+      includeRaw: true,
+      timeout: 20
+    }
   },
   function(err, res) {
     var applinks4s = res.body.data.place.applinks
     t.assert(applinks4s.some(function(applink) {
       return (applink.type === 'foursquare'
-        && applink.id === '4abebc45f964a520a18f20e3'
+        && applink.appId === '4abebc45f964a520a18f20e3'
         && applink.data.validated
         && applink.photo
         && applink.photo.prefix
@@ -260,7 +273,7 @@ exports.compareFoursquareToFactual = function(test) {
       uri: '/applinks/suggest',
       // Seattle Ballroom
       body: {
-        place: {applinks: [{type: 'factual', id: '46aef19f-2990-43d5-a9e3-11b78060150c'}]},
+        place: {applinks: [{type: 'factual', appId: '46aef19f-2990-43d5-a9e3-11b78060150c'}]},
         includeRaw: true,
         timeout: 20
       }
@@ -283,7 +296,7 @@ exports.getFacebookFromPlaceJoinWithFoursquare = function(test) {
         location: {lat: 47.65, lng: -122.35},
         applinks: [{
           type: 'foursquare',
-          id: '42893400f964a5204c231fe3',
+          appId: '42893400f964a5204c231fe3',
           name: 'The Red Door',
         }],
       },
@@ -296,7 +309,7 @@ exports.getFacebookFromPlaceJoinWithFoursquare = function(test) {
     t.assert(applinks && applinks.length)
     t.assert(applinks.some(function(applink) {
       return (applink.type === 'foursquare'
-        && applink.id === '42893400f964a5204c231fe3'
+        && applink.appId === '42893400f964a5204c231fe3'
         && applink.data
         && applink.data.validated
         && applink.photo
@@ -306,7 +319,7 @@ exports.getFacebookFromPlaceJoinWithFoursquare = function(test) {
     }))
     t.assert(applinks.some(function(applink) {
       return (applink.type === 'facebook'
-        && applink.id === '155509047801321'
+        && applink.appId === '155509047801321'
         && applink.name
         && applink.data
         && applink.data.validated
@@ -315,7 +328,7 @@ exports.getFacebookFromPlaceJoinWithFoursquare = function(test) {
         && applink.photo.source === 'facebook')
     }))
     t.assert(applinks.every(function(applink) {
-      return (applink.id !== '427679707274727'  // This facebook entry fails the popularity contest
+      return (applink.appId !== '427679707274727'  // This facebook entry fails the popularity contest
         && !applink.icon)  // depricated
     }))
     var raw = res.body.raw
@@ -332,13 +345,13 @@ exports.suggestApplinksFromWebsite = function(test) {
   if (disconnected) return skip(test)
   t.post({
     uri: '/applinks/suggest',
-    body: {place: {applinks: [{type: 'website', id: 'http://www.massenamodern.com'}]}}
+    body: {place: {applinks: [{type: 'website', appId: 'http://www.massenamodern.com'}]}}
   },
   function(err, res, body) {
     var applinks = body.data.place.applinks
     t.assert(applinks.length === 2)
     t.assert(applinks[1].type === 'twitter')
-    t.assert(applinks[1].id === 'massenamodern')
+    t.assert(applinks[1].appId === 'massenamodern')
     test.done()
   })
 }

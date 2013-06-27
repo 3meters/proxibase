@@ -173,14 +173,26 @@ var testComment3 = {
 }
 var testApplink = {
   schema: util.statics.schemaApplink,
-  name: "Bannerwood Park",
+  name: "Applink",
   photo: { 
     prefix:"https://graph.facebook.com/143970268959049/picture?type=large", 
     source:"facebook",
   },
   appId: "143970268959049",
   data: { 
-    origin : "facebook", validated : 1369167109174.0, likes : 9 
+    origin : "facebook", validated : 1369167109174.0, likes : 100
+  },
+}
+var testApplink2 = {
+  schema: util.statics.schemaApplink,
+  name: "Applink New",
+  photo: { 
+    prefix:"https://graph.facebook.com/143970268959049/picture?type=large", 
+    source:"facebook",
+  },
+  appId: "143970268959049",
+  data: { 
+    origin : "facebook", validated : 1369167109174.0, likes : 100
   },
 }
 
@@ -305,14 +317,13 @@ exports.checkRegisterDevice = function(test) {
 
 exports.updateRegisteredDeviceBeacons = function (test) {
   t.post({
-    uri: '/do/getEntities',
+    uri: '/do/getEntitiesByProximity',
     body: {
-      entityIds: [constants.beaconId],
-      entityType: 'entities',
-      registrationId: 'a1a1a1a1a1'
+      beaconIds: [constants.beaconId],
+      registrationId: constants.registrationId
     }
   }, function(err, res, body) {
-    t.assert(body.count === 1)
+    t.assert(body.count === 5)
     t.assert(body.data && body.data[0])
     test.done()
   })
@@ -1244,12 +1255,72 @@ exports.addEntitySet = function (test) {
     t.post({
       uri: '/do/find',
       body: {
-        table:'applinks',
+        table:'links',
         find: { _to: testPlace2._id, type: util.statics.typeApplink }
       }
     }, function(err, res, body) {
       t.assert(body.count === 3)
-      test.done()
+
+      t.post({
+        uri: '/do/find',
+        body: {
+          table:'applinks',
+          find: { name:'Applink' }
+        }
+      }, function(err, res, body) {
+        t.assert(body.count === 3)
+        test.done()
+      })
+    })
+  })
+}
+
+exports.replaceEntitySet = function (test) {
+  t.post({
+    uri: '/do/replaceEntitiesForEntity?' + userCred,
+    body: {
+      entityId: testPlace2._id,
+      entities: [
+        util.clone(testApplink2),
+        util.clone(testApplink2),
+        util.clone(testApplink2)],
+      linkType: util.statics.typeApplink,
+      skipActivityDate: true
+    }
+  }, 200, function(err, res, body) {
+    t.assert(body.info.indexOf('replaced') > 0)
+    /* Confirm new links */
+    t.post({
+      uri: '/do/find',
+      body: {
+        table:'links',
+        find: { _to: testPlace2._id, type: util.statics.typeApplink }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 3)
+
+      /* Confirm new applinks */
+      t.post({
+        uri: '/do/find',
+        body: {
+          table:'applinks',
+          find: { name:'Applink New' }
+        }
+      }, function(err, res, body) {
+        t.assert(body.count === 3)
+
+        /* Confirm old applinks are gone */
+        t.post({
+          uri: '/do/find',
+          body: {
+            table:'applinks',
+            find: { name:'Applink' }
+          }
+        }, function(err, res, body) {
+          t.assert(body.count === 0)
+          test.done()
+        })
+      })
     })
   })
 }
