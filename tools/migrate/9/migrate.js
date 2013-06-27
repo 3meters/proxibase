@@ -454,8 +454,8 @@ function makeApplink(doc, source, position) {
     position: position,
   }
   if (doc.name) applink.name = doc.name
-  if (source.id) applink.id = source.id
-  if (source.url) applink.url = source.url
+  if (source.id) applink.appId = source.id
+  if (source.url) applink.appUrl = source.url
   if (source.data) applink.data = source.data
   if (source.photo) applink.photo = fixPhoto(source.photo)
   return applink

@@ -160,7 +160,7 @@ exports.getPlacesNearLocationFactual = function(test) {
       applinks.forEach(function(applink) {
         t.assert(applink.type)
         if (applink.type === 'factual') t.assert(applink.system)
-        t.assert(applink.id || applink.url)
+        t.assert(applink.appId || applink.appUrl)
         t.assert(!applink.icon)
         t.assert(applink.data)
         t.assert(applink.data.origin)
@@ -261,7 +261,7 @@ exports.insertPlaceEntitySuggestApplinksFromFactual = function(test) {
       t.assert(applinks.length > 3)
       t.assert(applinks.some(function(applink) {
         return (applink.type === 'foursquare'
-            && applink.id === '4abebc45f964a520a18f20e3'
+            && applink.appId === '4abebc45f964a520a18f20e3'
           )
       }))
       t.assert(applinks.some(function(applink) {
