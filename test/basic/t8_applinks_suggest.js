@@ -1,5 +1,5 @@
 /**
- *  Proxibase local suggest applinks test
+ *  Proxibase applink suggest test
  */
 
 var util = require('proxutils')
@@ -309,6 +309,10 @@ exports.getFacebookFromPlaceJoinWithFoursquare = function(test) {
         type: 'foursquare',
         appId: '42893400f964a5204c231fe3',
         name: 'The Red Door',
+        photo: {
+          prefix: 'http://www.myimage.com/foo.jpeg',
+          source: 'aircandi'
+        },
       }],
       includeRaw: true,
       timeout: 20,
@@ -323,9 +327,8 @@ exports.getFacebookFromPlaceJoinWithFoursquare = function(test) {
         && applink.data
         && applink.data.validated
         && applink.photo
-        && applink.photo.prefix
-        && applink.photo.suffix
-        && applink.photo.source === 'foursquare')
+        && applink.photo.prefix === 'http://www.myimage.com/foo.jpeg' // don't overwrite photo
+        && applink.photo.source === 'aircandi')
     }))
     t.assert(applinks.some(function(applink) {
       return (applink.type === 'facebook'
