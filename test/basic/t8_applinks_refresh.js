@@ -84,8 +84,8 @@ exports.appLinkPositionSortWorks = function(test) {
     body: {
       applinks: [
         {type: 'facebook', appId: '155509047801321'},
-        {type: 'website', position: 2, appId: 'www.reddoorseattle.com'},
-        {type: 'yelp', position: 1, appId: 'q20FkqFbmdOhfSEhaT5IHg'},
+        {type: 'website', position: 1, appId: 'www.reddoorseattle.com'},
+        {type: 'yelp', position: 0, appId: 'q20FkqFbmdOhfSEhaT5IHg'},
         {type: 'foursquare', appId: '42893400f964a5204c231fe3'},
       ]
     }
@@ -93,11 +93,11 @@ exports.appLinkPositionSortWorks = function(test) {
     t.assert(body.data)
     t.assert(4 === body.data.length)
     t.assert('yelp' === body.data[0].type)
-    t.assert(body.data[0].position)
+    t.assert(body.data[0].position === 0)
     t.assert('website' === body.data[1].type)
     t.assert(body.data[1].data)
     t.assert(body.data[1].data.validated)
-    t.assert(body.data[1].position)
+    t.assert(body.data[1].position === 1)
     t.assert('foursquare' === body.data[2].type)
     t.assert(body.data[2].data)
     t.assert(body.data[2].data.validated)
