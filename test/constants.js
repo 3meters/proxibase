@@ -95,10 +95,10 @@ defaultRecord.places = {
   photo: { prefix:"https://s3.amazonaws.com/3meters_images/test_preview.jpg", source:"aircandi" },
   signalFence: -100,
   location: { lat:latitude, lng:longitude, altitude:0, accuracy:30, speed: 0, geometry:[longitude, latitude] },
-  address:"123 Central Park", city:"New York", region:"NY", country:"USA", phone:"2065551212", 
-  provider:{ 
-    foursquare:"4bcfbae19854d13a82b8f64d" 
-  },
+  address:"123 Central Park", city:"New York", region:"NY", country:"USA", // phone:"2065551212", 
+  // provider:{ 
+  //  foursquare:"4bcfbae19854d13a82b8f64d" 
+  // },
   category:{ 
     id:"4bf58dd8d48988d18c941735", 
     name : "Baseball Stadium",
