@@ -192,8 +192,8 @@ exports.suggestApplinksFactual = function(test) {
   function(err, res) {
     var applinks = res.body.data
     t.assert(applinks.length > 4)
-    t.assert(applinks[0].type === 'factual')
-    t.assert(applinks[0].system)
+    // t.assert(applinks[0].type === 'factual')
+    // t.assert(applinks[0].system)
     t.assert(res.body.raw)
     t.assert(res.body.raw.initialApplinks)
     t.assert(res.body.raw.factualCandidates.length > 12)
@@ -234,11 +234,11 @@ exports.suggestFactualApplinksFromFoursquareId = function(test) {
       return (applink.type === 'facebook')
     }))
     t.assert(applinks.some(function(applink) {
-      return (applink.type === 'factual')
-    }))
-    t.assert(applinks.some(function(applink) {
       return (applink.type === 'website')
     }))
+    applinks.forEach(function(applink) {
+      t.assert(applink.type !== 'factual')
+    })
     test.done()
   })
 }
@@ -267,14 +267,9 @@ exports.compareFoursquareToFactual = function(test) {
         && !applink.icon
       )
     }))
-    t.assert(applinks4s.some(function(applink) {
-      return (applink.type === 'factual'
-        && applink.data.validated
-        && applink.system
-        && !applink.photo
-        && !applink.icon
-      )
-    }))
+    applinks4s.forEach(function(applink) {
+      t.assert(applink.type !== 'factual')
+    })
     t.assert(applinks4s.length > 3)
     t.post({
       uri: '/applinks/suggest',

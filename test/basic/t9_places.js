@@ -159,7 +159,7 @@ exports.getPlacesNearLocationFactual = function(test) {
       t.assert(applinks.length >= 2)
       applinks.forEach(function(applink) {
         t.assert(applink.type)
-        if (applink.type === 'factual') t.assert(applink.system)
+        t.assert(applink.type !== 'factual')
         t.assert(applink.appId || applink.appUrl)
         t.assert(!applink.icon)
         t.assert(applink.data)
@@ -174,11 +174,6 @@ exports.getPlacesNearLocationFactual = function(test) {
       }))
       t.assert(applinks.some(function(applink) {
         return (applink.type === 'facebook')
-      }))
-      t.assert(applinks.some(function(applink) {
-        return (applink.type === 'factual'
-            && applink.system
-          )
       }))
       test.done()
     })
@@ -267,11 +262,11 @@ exports.insertPlaceEntitySuggestApplinksFromFactual = function(test) {
         return (applink.type === 'website')
       }))
       t.assert(applinks.some(function(applink) {
-        return (applink.type === 'factual')
-      }))
-      t.assert(applinks.some(function(applink) {
         return (applink.type === 'twitter')
       }))
+      applinks.forEach(function(applink) {
+        t.assert(applink.type !== 'factual')
+      })
       test.done()
     }
   )
@@ -335,7 +330,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
         srcMap[applink.type] = srcMap[applink.type] || 0
         srcMap[applink.type]++
       })
-      t.assert(srcMap.factual === 1)
+      t.assert(util.tipe.isUndefined(srcMap.factual))
       t.assert(srcMap.website === 1)
       t.assert(srcMap.foursquare === 1)
       t.assert(srcMap.facebook >= 1)
