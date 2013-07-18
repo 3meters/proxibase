@@ -54,9 +54,9 @@ var testPlace = {
   location: { 
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] 
   },
-  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065551212", 
+  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065550001", 
   provider:{ 
-    foursquare:"4bf58dd8d48988d18c941735"
+    foursquare:"0001"
   },
   category:{ 
     id:"4bf58dd8d48988d18c941735", 
@@ -79,9 +79,9 @@ var testPlace2 = {
   location: { 
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] 
   },
-  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065551212", 
+  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"206550002", 
   provider:{ 
-    foursquare:"4bf58dd8d48988d18c941735"
+    foursquare:"0002"
   },
   category:{ 
     id:"4bf58dd8d48988d18c941735", 
@@ -104,9 +104,9 @@ var testPlace3 = {
   location: { 
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] 
   },
-  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065551212", 
+  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065550003", 
   provider:{ 
-    foursquare:"4bf58dd8d48988d18c941735"
+    foursquare:"0004"
   },
   category:{ 
     id:"4bf58dd8d48988d18c941735", 
@@ -129,7 +129,7 @@ var testPlaceCustom = {
   location: { 
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] 
   },
-  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065551212", 
+  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065550004", 
   provider:{ 
     aircandi: true,
     // user: testUser._id
@@ -591,6 +591,8 @@ exports.insertEntityDoNotTrack = function(test) {
   }, function(err, res) {
     t.assert(res.body.data.doNotTrack)
     var ent = util.clone(testPlace3) // place entity
+    delete ent.phone
+    delete ent.provider
     delete ent._id
     ent.name = 'Testing Place Ent with doNotTrack'
     var beacon = util.clone(testBeacon)

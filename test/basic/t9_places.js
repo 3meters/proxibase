@@ -159,7 +159,7 @@ exports.getPlacesNearLocationFactual = function(test) {
       t.assert(applinks.length >= 2)
       applinks.forEach(function(applink) {
         t.assert(applink.type)
-        if (applink.type === 'factual') t.assert(applink.system)
+        t.assert(applink.type !== 'factual')
         t.assert(applink.appId || applink.appUrl)
         t.assert(!applink.icon)
         t.assert(applink.data)
@@ -174,11 +174,6 @@ exports.getPlacesNearLocationFactual = function(test) {
       }))
       t.assert(applinks.some(function(applink) {
         return (applink.type === 'facebook')
-      }))
-      t.assert(applinks.some(function(applink) {
-        return (applink.type === 'factual'
-            && applink.system
-          )
       }))
       test.done()
     })
@@ -242,10 +237,6 @@ exports.getPlacesNearLocationGoogle = function(test) {
   })
 }
 
-exports.insertDuplicatePlaceMergesIt = function(test) {
-  log('NYI:')
-  test.done()
-}
 
 exports.insertPlaceEntitySuggestApplinksFromFactual = function(test) {
   if (disconnected) return skip(test)
@@ -271,11 +262,11 @@ exports.insertPlaceEntitySuggestApplinksFromFactual = function(test) {
         return (applink.type === 'website')
       }))
       t.assert(applinks.some(function(applink) {
-        return (applink.type === 'factual')
-      }))
-      t.assert(applinks.some(function(applink) {
         return (applink.type === 'twitter')
       }))
+      applinks.forEach(function(applink) {
+        t.assert(applink.type !== 'factual')
+      })
       test.done()
     }
   )
@@ -339,7 +330,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
         srcMap[applink.type] = srcMap[applink.type] || 0
         srcMap[applink.type]++
       })
-      t.assert(srcMap.factual === 1)
+      t.assert(util.tipe.isUndefined(srcMap.factual))
       t.assert(srcMap.website === 1)
       t.assert(srcMap.foursquare === 1)
       t.assert(srcMap.facebook >= 1)
@@ -452,6 +443,65 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
             })
           })
         })
+      })
+    })
+  })
+}
+
+exports.insertDuplicatePlaceMergesIt = function(test) {
+  placeId = ''
+  t.post({
+    uri: '/do/insertEntity?' + userCred,
+    body: {
+      entity: {
+        name: 'Zoka1',
+        schema: util.statics.schemaPlace,
+        provider: {
+          foursquare: '41b3a100f964a520681e1fe3',
+        },
+        phone: '2065454277',
+      }
+    }
+  }, 201, function(err, res, body) {
+    t.assert(body.data && body.data.length)
+    placeId = body.data[0]._id
+    t.post({
+      uri: '/do/insertEntity?' + userCred,
+      body: {
+        entity: {
+          name: 'Zoka2',
+          schema: util.statics.schemaPlace,
+          provider: {
+            factual: 'fdc45418-be3b-4ab9-92d6-62ae6fb6ce48',
+          },
+          phone: '2065454277',
+        }
+      }
+    }, 201, function(err, res, body) {
+      t.assert(body.data && body.data.length)
+      var place = body.data[0]
+      t.assert(placeId === place._id) // proves merged on phone number
+      t.assert('Zoka1' === place.name)
+      t.assert(place.provider.foursquare)
+      t.post({
+        uri: '/do/insertEntity?' + userCred,
+        body: {
+          entity: {
+            name: 'Zoka3',
+            schema: util.statics.schemaPlace,
+            provider: {
+              factual: 'fdc45418-be3b-4ab9-92d6-62ae6fb6ce48',
+            },
+          }
+        }
+      }, 201, function(err, res, body) {
+        t.assert(body.data && body.data.length)
+        var place = body.data[0]
+        t.assert(placeId === place._id) // proves merged on provider Id
+        t.assert('Zoka1' === place.name)
+        t.assert(place.provider.foursquare)
+        t.assert(place.provider.factual)
+        test.done()
       })
     })
   })
