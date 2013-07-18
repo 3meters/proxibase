@@ -216,46 +216,37 @@ exports.getEntitiesForLocationLimited = function (test) {
   })
 }
 
-exports.getEntitiesForUser = function (test) {
+exports.getEntitiesCreatedByUser = function (test) {
   t.post({
-    uri: '/do/getEntitiesByOwner',
+    uri: '/do/getEntitiesForEntity',
     body: {
-      ownerId: constants.uid1,
-      entitySchemas: [util.statics.schemaPlace, util.statics.schemaPost],
-    }
-  }, function(err, res, body) {
-    t.assert(body.count === util.statics.optionsLimitDefault * 2)
-    t.assert(body.more === true)
-    test.done()
-  })
-}
-
-exports.getEntitiesForUserPostsOnly = function (test) {
-  t.post({
-    uri: '/do/getEntitiesByOwner',
-    body: {
-      ownerId: constants.uid1,
-      entitySchemas: [util.statics.schemaPost],
+      entityId: constants.uid1,
+      cursor: { 
+        linkTypes: [util.statics.typeCreate], 
+        direction: 'out',
+      },
     }
   }, function(err, res, body) {
     t.assert(body.count === util.statics.optionsLimitDefault)
     t.assert(body.more === true)
-    t.assert(body.data && body.data[0] && body.data[0].schema === util.statics.schemaPost)
     test.done()
   })
 }
 
-exports.getEntitiesForUserMatchingRegex = function (test) {
+exports.getEntitiesCreatedByUserPostsOnly = function (test) {
   t.post({
-    uri: '/do/getEntitiesByOwner',
+    uri: '/do/getEntitiesForEntity',
     body: {
-      ownerId: constants.uid1,
-      entitySchemas: [util.statics.schemaPlace, util.statics.schemaPost],
-      cursor: { where: { name: { $regex:'2401', $options:'i' }}},
+      entityId: constants.uid1,
+      cursor: { 
+        linkTypes: [util.statics.typeCreate], 
+        schemas: [util.statics.schemaPost], 
+        direction: 'out',
+      },
     }
   }, function(err, res, body) {
-    t.assert(body.count === 1)
-    t.assert(body.more === false)
+    t.assert(body.count === util.statics.optionsLimitDefault)
+    t.assert(body.more === true)
     t.assert(body.data && body.data[0] && body.data[0].schema === util.statics.schemaPost)
     test.done()
   })
@@ -266,7 +257,9 @@ exports.getEntitiesForPlacePostsOnly = function (test) {
     uri: '/do/getEntitiesForEntity',
     body: {
       entityId: constants.placeId, 
-      linkTypes: [util.statics.typePost],
+      cursor: { 
+        linkTypes: [util.statics.typePost], 
+      },
     }
   }, function(err, res, body) {
     t.assert(body.count === dbProfile.spe)
@@ -281,8 +274,8 @@ exports.getEntitiesForPlacePostsOnlyLimited = function (test) {
     uri: '/do/getEntitiesForEntity',
     body: {
       entityId: constants.placeId, 
-      linkTypes: [util.statics.typePost],
       cursor: { 
+        linkTypes: [util.statics.typePost], 
         sort: { name: 1 },
         limit: 3,
       },
@@ -302,8 +295,8 @@ exports.getEntitiesForPlacePostsOnlyLimitedAndSkip = function (test) {
     uri: '/do/getEntitiesForEntity',
     body: {
       entityId: constants.placeId, 
-      linkTypes: [util.statics.typePost],
       cursor: { 
+        linkTypes: [util.statics.typePost], 
         sort: { name: 1 },
         limit: 3,
         skip: 2
