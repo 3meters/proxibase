@@ -97,9 +97,9 @@ exports.fieldsParamWorks = function(test) {
   t.get({
     uri: '/data/documents/' + testDoc1._id + '?fields=name'
   }, function(err, res, body) {
-    t.assert(body.data[0])
-    t.assert(body.data[0].name)
-    t.assert(!body.data[0].data)
+    t.assert(body.data)
+    t.assert(body.data.name)
+    t.assert(!body.data.data)
     test.done()
   })
 }
@@ -327,10 +327,10 @@ exports.checkUpdatedDoc = function(test) {
   t.get({
     uri: '/data/documents/' + testDoc1._id
   }, function(err, res, body) {
-    t.assert(body.data && body.data[0])
-    t.assert(body.data[0].name === 'Changed Name')
+    t.assert(body.data && body.data)
+    t.assert(body.data.name === 'Changed Name')
     // Ensures modified date is getting set on update
-    t.assert(body.data[0].modifiedDate > testDoc1Saved.modifiedDate)
+    t.assert(body.data.modifiedDate > testDoc1Saved.modifiedDate)
     test.done()
   })
 }
@@ -452,10 +452,10 @@ exports.checkLink = function(test) {
   t.get({
     uri: '/data/links/' + linkId
   }, function(err, res, body) {
-    t.assert(body.data[0]._from = testDoc1._id)
-    t.assert(body.data[0]._to = testDoc2._id)
-    t.assert(body.data[0].fromCollectionId = documentsSchemaId)
-    t.assert(body.data[0].toCollectionId = documentsSchemaId)
+    t.assert(body.data._from = testDoc1._id)
+    t.assert(body.data._to = testDoc2._id)
+    t.assert(body.data.fromCollectionId = documentsSchemaId)
+    t.assert(body.data.toCollectionId = documentsSchemaId)
     test.done()
   })
 }
@@ -646,6 +646,18 @@ exports.sortWorks = function(test) {
   })
 }
 
+exports.linkedWorks = function(test) {
+  t.post({
+    uri: '/find/users?' + userCred,
+    body: {
+      links: [{to: 'users'}],
+    }
+  }, function(err, res, body) {
+    test.done()
+  })
+}
+
+
 exports.formatDatesWorks = function(test) {
   t.get('/data/users?datesToUTC=1',
   function(err, res, body) {
@@ -699,6 +711,8 @@ exports.countByMultipleFieldsWorks = function(test) {
     test.done()
   })
 }
+
+
 
 // This has to be the last test because all subsequent logins will fail
 // since it deletes all the sessions
