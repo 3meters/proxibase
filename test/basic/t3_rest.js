@@ -673,7 +673,7 @@ exports.countByWorks = function(test) {
   }, function(err, res, body) {
     // These are based on data in template test database
     t.assert(body.count >= 10)
-    t.assert(body.data[0].countBy === 3009)
+    t.assert(body.data[0].countBy === 5009)
     test.done()
   })
 }
@@ -703,6 +703,9 @@ exports.countByMultipleFieldsWorks = function(test) {
           break
         case 'watch':
           t.assert(elm.countBy === 1090)
+          break
+        case 'create':
+          t.assert(elm.countBy === 2000 || elm.countBy === 500)
           break
         default:
           t.assert(false, 'Unexpected type ' + elm.type)
