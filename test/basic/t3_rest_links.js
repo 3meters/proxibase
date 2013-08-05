@@ -30,7 +30,7 @@ exports.getUserSession = function(test) {
 }
 
 
-exports.canAddLinkedData = function(test) {
+exports.addLinkedData = function(test) {
   t.post({
     uri: '/data/documents?' + userCred,
     body: {data: {_id: 'do.linkdoc1', name: 'LinkDoc1'}}
@@ -53,7 +53,7 @@ exports.canAddLinkedData = function(test) {
           }, 201, function(err, res, body) {
             t.post({
               uri: '/data/links?' + userCred,
-              body: {data: {_to: userId, _from: 'do.linkDoc3', type: 'viewedBy'}}
+              body: {data: {_to: userId, _from: 'do.linkdoc3', type: 'viewedBy'}}
             }, 201, function(err, res, body) {
               test.done()
             })
@@ -111,4 +111,38 @@ exports.findLinksFieldFilterWorks = function(test) {
   })
 }
 
+exports.findFromLinksWorks = function(test) {
+  query.body = {links: [{from: 'documents'}]}
+  t.post(query, function(err, res, body) {
+    t.assert(body.data.from_documents)
+    t.assert(1 === body.data.from_documents.length)
+    t.assert('do.linkdoc3' === body.data.from_documents[0]._id)
+    t.assert('viewedBy' === body.data.from_documents[0].linkType)
+    test.done()
+  })
+}
 
+exports.findLinksNameAliasingWithAsWorks = function(test) {
+  query.body = {links: [{to: 'documents', as: 'myLinkedDocs'}]}
+  t.post(query, function(err, res, body) {
+    t.assert(!body.data.to_documents)
+    t.assert(2 === body.data.myLinkedDocs.length)
+    test.done()
+  })
+}
+
+exports.findLinksLimitsWork = function(test) {
+  query.body = {links: [{to: 'documents', limit: 1}]}
+  t.post(query, function(err, res, body) {
+    t.assert(1 === body.data.to_documents.length)
+    test.done()
+  })
+}
+
+exports.findLinksLimitTooBigFailsProperly = function(test) {
+  query.body = {links: [{to: 'documents', limit: 5000}]}
+  t.post(query, 400, function(err, res, body) {
+    t.assert(400.13 === body.error.code)  // bad value
+    test.done()
+  })
+}
