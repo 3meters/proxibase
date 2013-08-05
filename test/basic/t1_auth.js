@@ -350,7 +350,6 @@ exports.annonymousUserCannotCreateUserViaApiWithoutSecret = function(test) {
     body: {
       data: {
         name: 'AuthTestUser2',
-        type: 'user',
         email: 'authtest2@3meters.com',
         password: 'foobar'
       }
@@ -368,7 +367,6 @@ exports.annonymousUserCannotCreateUserViaApiWithWrongSecret = function(test) {
     body: {
       data: {
         name: 'AuthTestUser2',
-        type: 'user',
         email: 'authtest2@3meters.com',
         password: 'foobar'
       },
@@ -387,7 +385,6 @@ exports.annonymousUserCannotCreateUserViaApiWithoutWhitelistedEmail = function(t
     body: {
       data: {
         name: 'AuthTestUserShouldFail',
-        type: 'user',
         email: 'authBest@3meters.com',
         password: 'foobar'
       },
@@ -406,7 +403,6 @@ exports.annonymousUserCanCreateUserViaApi = function(test) {
     body: {
       data: {
         name: 'AuthTestUser2',
-        type: 'user',
         email: 'authtest2@3meters.com',
         password: 'foobar'
       },
