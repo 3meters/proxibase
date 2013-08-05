@@ -37,7 +37,7 @@ exports.canAddLinkedData = function(test) {
   }, 201, function(err, res, body) {
     t.post({
       uri: '/data/documents?' + userCred,
-      body: {data: {_id: 'do.linkdoc2', name: 'LinkDoc2'}}
+      body: {data: {_id: 'do.linkdoc2', name: 'LinkDoc2', data: {foo: 'bar'}}}
     }, 201, function(err, res, body) {
       t.post({
         uri: '/data/documents?' + userCred,
@@ -82,6 +82,33 @@ exports.findLinksWorks = function(test) {
   t.post(query, function(err, res, body) {
     t.assert(body.data.to_documents)
     t.assert(2 === body.data.to_documents.length)
+    t.assert('do.linkdoc2' === body.data.to_documents[0]._id)  // default sort by most recent
+    t.assert(body.data.to_documents[0].data)  // includes all fields
     test.done()
   })
 }
+
+exports.findLinksByLinkTypeWorks = function(test) {
+  query.body = {links: [{to: 'documents', linkType: 'watch'}]}
+  t.post(query, function(err, res, body) {
+    t.assert(body.data.to_documents_watch)
+    t.assert(1 === body.data.to_documents_watch.length)
+    t.assert('watch' === body.data.to_documents_watch[0].linkType)
+    test.done()
+  })
+}
+
+exports.findLinksFieldFilterWorks = function(test) {
+  query.body = {links: [{to: 'documents', fields: ['name']}]}
+  t.post(query, function(err, res, body) {
+    t.assert(body.data.to_documents)
+    t.assert(2 === body.data.to_documents.length)
+    t.assert(body.data.to_documents[0].name)
+    t.assert(body.data.to_documents[1].name)
+    t.assert(!body.data.to_documents[0].data)
+    t.assert(!body.data.to_documents[1].data)
+    test.done()
+  })
+}
+
+

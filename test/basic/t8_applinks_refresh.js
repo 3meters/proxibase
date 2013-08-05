@@ -18,6 +18,8 @@ var _exports = {} // for commenting out tests
 
 exports.refreshApplinksFailsProperlyOnBogusWebsite = function(test) {
   if (disconnected) return skip(test)
+  log('skipping:')
+  return test.done()
   t.post({
     uri: '/applinks/refresh',
     body: {
