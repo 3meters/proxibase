@@ -139,8 +139,10 @@ function genUsers() {
         likeLink.type = util.statics.typeLike
         likeLink._from = table.users[i]._id
         likeLink.fromCollectionId = tableIds['users']
+        likeLink.fromSchema = 'user'
         likeLink._to = table.users[j]._id
         likeLink.toCollectionId = tableIds['users']
+        likeLink.toSchema = 'user'
         likeLink._owner = table.users[i]._id
         table['links'].push(likeLink)
         linkCount++
@@ -151,8 +153,10 @@ function genUsers() {
         watchLink.type = util.statics.typeWatch
         watchLink._from = table.users[i]._id
         watchLink.fromCollectionId = tableIds['users']
+        watchLink.fromSchema = 'user'
         watchLink._to = table.users[j]._id
         watchLink.toCollectionId = tableIds['users']
+        watchLink.toSchema = 'user'
         likeLink._owner = table.users[i]._id
         table['links'].push(watchLink)
         linkCount++
@@ -165,7 +169,7 @@ function genDocuments() {
   table['documents'].push(constants.getDefaultRecord('documents'))
 }
 
-function genEntityRecords(parentIds, parentCollectionId, count, entityType, linkType) {
+function genEntityRecords(parentIds, parentCollectionName, count, entityType, linkType) {
 
   var tableName = entityType + "s"
   table[tableName] = table[tableName] || []
@@ -200,10 +204,11 @@ function genEntityRecords(parentIds, parentCollectionId, count, entityType, link
         newLink.type = linkType
         newLink._from = newEnt._id
         newLink.fromCollectionId = tableIds[tableName]
+        newLink.fromSchema = util.statics.collectionSchemaMap[tableName]
         newLink._to = parentIds[p]
-        newLink.toCollectionId = parentCollectionId
+        newLink.toCollectionId = tableIds[parentCollectionName]
+        newLink.toSchema = util.statics.collectionSchemaMap[parentCollectionName]
         newLink._owner = newEnt._creator
-
 
         if (entityType === util.statics.schemaComment 
           || entityType === util.statics.schemaPost
@@ -219,6 +224,27 @@ function genEntityRecords(parentIds, parentCollectionId, count, entityType, link
         table['links'].push(newLink)
         linkCount++
 
+        // Create
+        var createLink = constants.getDefaultRecord('links')
+        createLink._id = testUtil.genId('links', linkCount)
+
+        createLink.type = util.statics.typeCreate
+        createLink._from = newEnt._creator
+        createLink.fromCollectionId = tableIds['users']
+        createLink.fromSchema = util.statics.collectionSchemaMap['users']
+
+        createLink._to = newEnt._id
+        createLink.toCollectionId = tableIds[tableName]
+        createLink.toSchema = util.statics.collectionSchemaMap[tableName]
+        createLink._owner = newEnt._creator
+
+        if (entityType === util.statics.schemaPlace) {
+          createLink._owner = util.adminUser._id
+        }
+
+        table['links'].push(createLink)        
+        linkCount++
+
         // Like
         if (entityType === util.statics.schemaPlace) {
           for (var u = 0; u < options.users; u++) {
@@ -228,10 +254,12 @@ function genEntityRecords(parentIds, parentCollectionId, count, entityType, link
 
             likeLink.type = util.statics.typeLike
             likeLink._from = testUtil.genId('users', u)
-            likeLink._to = newEnt._id
-
             likeLink.fromCollectionId = tableIds['users']
+            likeLink.fromSchema = util.statics.collectionSchemaMap['users']
+
+            likeLink._to = newEnt._id
             likeLink.toCollectionId = tableIds[tableName]
+            likeLink.toSchema = util.statics.collectionSchemaMap[tableName]
             likeLink._owner = testUtil.genId('users', u)
 
             table['links'].push(likeLink)        
@@ -248,10 +276,12 @@ function genEntityRecords(parentIds, parentCollectionId, count, entityType, link
 
             watchLink.type = util.statics.typeWatch
             watchLink._from = testUtil.genId('users', u)
-            watchLink._to = newEnt._id
-
             watchLink.fromCollectionId = tableIds['users']
+            watchLink.fromSchema = util.statics.collectionSchemaMap['users']
+
+            watchLink._to = newEnt._id
             watchLink.toCollectionId = tableIds[tableName]
+            watchLink.toSchema = util.statics.collectionSchemaMap[tableName]
             likeLink._owner = testUtil.genId('users', u)
 
             table['links'].push(watchLink)        
