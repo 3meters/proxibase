@@ -6,34 +6,13 @@ var util = require('proxutils')
 var log = util.log
 var testUtil = require('../util')
 var t = testUtil.treq
+var testUserId
 var userSession
 var userCred
 var adminSession
 var adminCred
 var oldUserCount
-var testLatitude = 46.1
-var testLongitude = -121.1
-var testEntity = {
-  name: "StatsTest Entity 1",
-  type: util.statics.schemaPost,
-}
-var testBeacon = {
-  _id : util.statics.collectionIds.beacons + '.11:11:11:11:11:11',
-  type : util.statics.schemaBeacon,
-  name: 'Test Beacon Label',
-  beacon: {
-    ssid: 'Test Beacon',
-    bssid: '11:11:11:11:11:11',
-    signal: -80,  
-  },
-  location: { 
-    lat:testLatitude, 
-    lng:testLongitude, 
-    altitude:12, 
-    accuracy:30, 
-    geometry:[testLongitude, testLatitude] 
-  },
-}
+
 var testStartTime = util.now()
 var _exports = {}  // For commenting out tests
 
@@ -41,6 +20,7 @@ exports.getUserSession = function(test) {
   testUtil.getUserSession(function(session) {
     userSession = session
     userCred = 'user=' + session._owner + '&session=' + session.key
+    testUserId = session._owner
     testUtil.getAdminSession(function(session) {
       adminSession = session
       adminCred = 'user=' + session._owner + '&session=' + session.key
@@ -57,21 +37,21 @@ exports.statsWelcomeWorks = function(test) {
   })
 }
 
-exports.badStatName404s = function(test){
+exports.badStatName404s = function(test) {
   t.get({
-    uri: '/stats/usersByEntityyyy' + adminCred
+    uri: '/stats/linksFromUsersBogus' + adminCred
   }, 404, function(err, res, body) {
     test.done()
   })
 }
 
 
-exports.statsCollectionStartsEmpty = function(test){
+exports.statsCollectionCreatesFirstTimeAsAnnon = function(test){
   t.get({
-    uri: '/stats/usersByEntity'
+    uri: '/stats/linksFromUsers'
   }, function(err, res, body){
     t.assert(body.data)
-    t.assert(!body.data.length)
+    t.assert(body.data.length)
     test.done()
   })
 }
@@ -79,24 +59,27 @@ exports.statsCollectionStartsEmpty = function(test){
 
 exports.cannotCreateStatsAsUser = function(test) {
   t.get({
-    uri: '/stats/usersByEntity?refresh=true&' + userCred
+    uri: '/stats/linksFromUsers?refresh=true&' + userCred
   }, 401, function(err, res, body){
     test.done()
   })
 }
 
-/*
- * Jay: usersByEntity needs to be updated to work across all entity 
- * collections.
- */
-exports.adminCanRefreshStat = function(test) {
-  log('fix')
-  return test.done()
+exports.statUserFilterWorks = function(test) {
   t.get({
-    uri: '/stats/usersByEntity?refresh=true&' + adminCred
+    uri: '/stats/linksFromUsers/' + testUserId + '?' + userCred
+  }, function(err, res, body) {
+    t.assert(body.data)
+    t.assert(0 === body.data.length)
+    test.done()
+  })
+}
+
+exports.adminCanRefreshStat = function(test) {
+  t.get({
+    uri: '/stats/linksFromUsers?refresh=true&' + adminCred
   }, function(err, res, body){
     t.assert(body.data.length)
-    oldUserCount = body.data.length
     test.done()
   })
 }
@@ -104,107 +87,49 @@ exports.adminCanRefreshStat = function(test) {
 // Add a new Entity by a new user, then update the statistics and ensure
 // that his new contribution appears in the stat
 exports.staticsUpdateOnRefresh = function(test) {
-  log('fix')
-  return test.done()
   t.post({
-    uri: '/do/insertEntity?' + userCred,
+    uri: '/data/links?' + userCred,
     body: {
-      entity:testEntity,
-      beacons:[testBeacon],
-      primaryBeaconId:testBeacon._id,
-      skipNotifications: true      
+      data: {
+        _from: testUserId,
+        _to: testUserId,
+        type: 'like'
+      }
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
-    t.assert(body.data && body.data[0]._id)
     t.get({
-      uri: '/stats/usersByEntity?refresh=true&' + adminCred
+      uri: '/stats/linksFromUsers/' + testUserId + '?refresh=true&' + adminCred
     }, function(err, res2, body){
       t.assert(body.data.length)
-      t.assert(body.data.length === (oldUserCount + 1))
+      t.assert(1 === body.data.length)
+      t.assert(testUserId === body.data[0]._user)
+      t.assert('users' === body.data[0].collection)
+      t.assert('like' === body.data[0].linkType)
+      t.assert(1 === body.data[0].count)
       test.done()
     })
   })
 }
 
 exports.statsPassThroughFindCriteria = function(test) {
-  log('fix')
-  return test.done()
   t.get({
-    uri: '/stats/usersByEntity?find={"_id":"' + userSession._owner + '"}'
+    uri: '/stats/linksFromUsers?find[linkType]=watch'
   }, function(err, res, body) {
-    t.assert(body.data.length === 1)
+    t.assert(body.data.length)
+    body.data.forEach(function(doc) {
+      t.assert('watch' === doc.linkType)
+    })
     test.done()
   })
 }
 
-exports.statsLookupsWork = function(test) {
-  log('fix')
-  return test.done()
+exports.statsCanTurnLookupsOff = function(test) {
   t.get({
-    uri: '/stats/usersByEntity?find={"_id":"' + userSession._owner + '"}&lookups=true'
+    uri: '/stats/linksFromUsers?lookups=0'
   }, function(err, res, body) {
-    t.assert(body.data[0].name === 'Test User')
-    test.done()
-  })
-}
-
-exports.statsWorkFromDoFind = function(test) {
-  log('fix')
-  return test.done()
-  t.post({
-    uri: '/do/find',
-    body: {
-      stat: 'usersByEntity',
-      ids: [userSession._owner]
-    }
-  }, function(err, res, body) {
-    t.assert(body.data[0]._id === userSession._owner)
-    test.done()
-  })
-}
-
-exports.statsWorkFromDoFindWithRefresh = function(test) {
-  log('fix')
-  return test.done()
-  t.post({
-    uri: '/do/find?' + adminCred,
-    body: {
-      stat: 'usersByEntity',
-      ids: [userSession._owner],
-      refresh: true
-    }
-  }, function(err, res, body) {
-    t.assert(body.data[0]._id === userSession._owner)
-    test.done()
-  })
-}
-
-exports.statsFromDoFindFailRefreshAsUser = function(test) {
-  log('fix')
-  return test.done()
-  t.post({
-    uri: '/do/find?' + userCred,
-    body: {
-      stat: 'usersByEntity',
-      ids: [userSession._owner],
-      refresh: true
-    }
-  }, 401, function(err, res, body) {
-    test.done()
-  })
-}
-
-exports.statsFailProperlyFromDoFind = function(test) {
-  log('fix')
-  return test.done()
-  t.post({
-    uri: '/do/find',
-    body: {
-      stat: 'usersByEntityBogus',
-      ids: [userSession._owner]
-    }
-  }, 404, function(err, res, body) {
+    t.assert(body.data[0]._user)
+    t.assert(!body.data[0].user)
     test.done()
   })
 }
