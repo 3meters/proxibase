@@ -11,7 +11,7 @@ var userSession
 var userCred
 var adminSession
 var adminCred
-var oldUserCount
+var oldLinkCount
 
 var testStartTime = util.now()
 var _exports = {}  // For commenting out tests
@@ -70,7 +70,10 @@ exports.statUserFilterWorks = function(test) {
     uri: '/stats/linksFromUsers/' + testUserId + '?' + userCred
   }, function(err, res, body) {
     t.assert(body.data)
-    t.assert(0 === body.data.length)
+    oldLinkCount = 0
+    body.data.forEach(function(stat) {
+      oldLinkCount += stat.count
+    })
     test.done()
   })
 }
@@ -84,8 +87,8 @@ exports.adminCanRefreshStat = function(test) {
   })
 }
 
-// Add a new Entity by a new user, then update the statistics and ensure
-// that his new contribution appears in the stat
+// Add a new link from the test user liking himself, then update
+// the statistics and ensure that his new link appears in the stats
 exports.staticsUpdateOnRefresh = function(test) {
   t.post({
     uri: '/data/links?' + userCred,
@@ -102,11 +105,16 @@ exports.staticsUpdateOnRefresh = function(test) {
       uri: '/stats/linksFromUsers/' + testUserId + '?refresh=true&' + adminCred
     }, function(err, res2, body){
       t.assert(body.data.length)
-      t.assert(1 === body.data.length)
-      t.assert(testUserId === body.data[0]._user)
-      t.assert('users' === body.data[0].collection)
-      t.assert('like' === body.data[0].linkType)
-      t.assert(1 === body.data[0].count)
+      var newLinkCount = 0
+      body.data.forEach(function(stat) {
+        newLinkCount += stat.count
+      })
+      t.assert(newLinkCount === oldLinkCount + 1)
+      t.assert(body.data.some(function(stat) {
+        return testUserId === stat._user
+          && 'users' === stat.collection
+          && 'like' === stat.linkType
+      }))
       test.done()
     })
   })

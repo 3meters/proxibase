@@ -16,9 +16,10 @@ var adminCred
 var _exports = {} // for commenting out tests
 
 
-exports.refreshApplinksFailsProperlyOnBogusWebsite = function(test) {
+// This test won't work when connecting through a tmobile hotspot and
+// possibly other walled gardens, so removing for now
+_exports.refreshApplinksFailsProperlyOnBogusWebsite = function(test) {
   if (disconnected) return skip(test)
-  log('skipping:')
   return test.done()
   t.post({
     uri: '/applinks/refresh',
