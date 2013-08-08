@@ -350,7 +350,6 @@ exports.annonymousUserCannotCreateUserViaApiWithoutSecret = function(test) {
     body: {
       data: {
         name: 'AuthTestUser2',
-        type: 'user',
         email: 'authtest2@3meters.com',
         password: 'foobar'
       }
@@ -368,7 +367,6 @@ exports.annonymousUserCannotCreateUserViaApiWithWrongSecret = function(test) {
     body: {
       data: {
         name: 'AuthTestUser2',
-        type: 'user',
         email: 'authtest2@3meters.com',
         password: 'foobar'
       },
@@ -387,7 +385,6 @@ exports.annonymousUserCannotCreateUserViaApiWithoutWhitelistedEmail = function(t
     body: {
       data: {
         name: 'AuthTestUserShouldFail',
-        type: 'user',
         email: 'authBest@3meters.com',
         password: 'foobar'
       },
@@ -406,7 +403,6 @@ exports.annonymousUserCanCreateUserViaApi = function(test) {
     body: {
       data: {
         name: 'AuthTestUser2',
-        type: 'user',
         email: 'authtest2@3meters.com',
         password: 'foobar'
       },
@@ -432,17 +428,16 @@ exports.newUserCanSignIn = function(test) {
 
 _exports.newUserEmailValidateUrlWorksSlowly = function(test) {
   t.get('/data/users/' + newUserId, function(err, res, body) {
-    t.assert(body.data.length)
-    t.assert(body.data[0].validationNotifyDate)
-    t.assert(!body.data[0].validationDate)
+    t.assert(body.data.validationNotifyDate)
+    t.assert(!body.data.validationDate)
     t.get({
       uri: newUserEmailValidateUrl.slice(testUtil.serverUrl.length),
       json: false  // call is redirected to an html page
     }, function(err, res, body) {
       t.get('/data/users/' + newUserId, function(err, res, body) {
-        t.assert(body.data.length)
-        t.assert(body.data[0].validationDate)
-        t.assert(body.data[0].validationDate > body.data[0].validationNotifyDate)
+        t.assert(body.data)
+        t.assert(body.data.validationDate)
+        t.assert(body.data.validationDate > body.data.validationNotifyDate)
         test.done()
       })
     })
@@ -452,9 +447,9 @@ _exports.newUserEmailValidateUrlWorksSlowly = function(test) {
 exports.newUserEmailValidateUrlWorksFaster = function(test) {
   if (testUtil.disconnected) return testUtil.skip(test)
   t.get('/data/users/' + newUserId, function(err, res, body) {
-    t.assert(body.data.length)
-    t.assert(body.data[0].validationNotifyDate)
-    t.assert(!body.data[0].validationDate)
+    t.assert(body.data)
+    t.assert(body.data.validationNotifyDate)
+    t.assert(!body.data.validationDate)
 
     // Fire without waiting for the callback
     t.get(newUserEmailValidateUrl.slice(testUtil.serverUrl.length))
@@ -463,9 +458,8 @@ exports.newUserEmailValidateUrlWorksFaster = function(test) {
     // call to redirect the user to http://aircandi.com
     setTimeout(function() {
       t.get('/data/users/' + newUserId, function(err, res, body) {
-        t.assert(body.data.length)
-        t.assert(body.data[0].validationDate)
-        t.assert(body.data[0].validationDate > body.data[0].validationNotifyDate)
+        t.assert(body.data.validationDate)
+        t.assert(body.data.validationDate > body.data.validationNotifyDate)
         test.done()
       })
     }, 300)

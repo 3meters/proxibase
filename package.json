@@ -32,9 +32,7 @@
     "node-gcm": "0.9.4",
     "url2png": "*",
     "knox": "*",
-    "aws-sdk": "*",
-    "moment": "*",
-    "tee-1": "*"
+    "moment": "*"
   },
 
   "repository": "git://github.com:3meters/proxibase",
