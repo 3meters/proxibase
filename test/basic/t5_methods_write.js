@@ -616,8 +616,8 @@ exports.insertEntityDoNotTrack = function(test) {
       t.assert(savedEnt._modifier === adminId)
       t.get('/data/beacons/' + beacon._id,
         function(err, res, body) {
-          t.assert(body.data[0])
-          var savedBeacon = body.data[0]
+          t.assert(body.data)
+          var savedBeacon = body.data
           t.assert(savedBeacon._owner === adminId)
           t.assert(savedBeacon._creator === adminId)
           t.assert(savedBeacon._modifier === adminId)
@@ -969,7 +969,7 @@ exports.checkUpdateEntity = function (test) {
   t.get({
     uri: '/data/places/' + testPlace._id
   }, function(err, res, body) {
-    t.assert(body.data && body.data[0] && body.data[0].name === 'Testing super candi')
+    t.assert(body.data && body.data && body.data.name === 'Testing super candi')
     test.done()
   })
 }
@@ -989,7 +989,7 @@ exports.checkInsertedLink = function(test) {
   t.get({
     uri: '/data/links/' + testLink._id
   }, function(err, res, body) {
-    t.assert(body.data && body.data[0] && body.data[0]._id === testLink._id)
+    t.assert(body.data && body.data && body.data._id === testLink._id)
     test.done()
   })
 
@@ -1210,7 +1210,7 @@ exports.checkOwnerUpdatedLockedRecord = function (test) {
   t.get({
     uri: '/data/places/' + testPlaceCustom._id
   }, function(err, res, body) {
-    t.assert(body.data && body.data[0] && body.data[0].name === 'Testing owner update of locked entity')
+    t.assert(body.data && body.data && body.data.name === 'Testing owner update of locked entity')
     test.done()
   })
 }
@@ -1233,7 +1233,7 @@ exports.checkAdminUpdatedLockedRecord = function (test) {
   t.get({
     uri: '/data/places/' + testPlaceCustom._id
   }, function(err, res, body) {
-    t.assert(body.data && body.data[0] && body.data[0].name === 'Testing admin update of locked entity')
+    t.assert(body.data && body.data && body.data.name === 'Testing admin update of locked entity')
     test.done()
   })
 }
