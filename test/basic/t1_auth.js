@@ -1,10 +1,6 @@
 /**
  *  Proxibase basic authencation test
  *
- *      Covers most basic user creation and authentication pahts.
- *      However does not cover email validation scenarios.  Those 
- *      require a working sendmail server that is not supplied 
- *      by defalt on Windows.  Find those in tests/auth/
  */
 
 var util = require('proxutils')
