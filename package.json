@@ -16,7 +16,7 @@
 
   "dependencies": {
     "tipe": "*",
-    "chk": "*",
+    "chk": "0.1.0",
     "express": "*",
     "mongodb": "*",
     "underscore": "*",
