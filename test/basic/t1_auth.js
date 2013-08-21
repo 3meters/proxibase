@@ -495,6 +495,34 @@ exports.reqValidateWorksForAdmins = function(test) {
   })
 }
 
+exports.userCanInviteNewUser = function(test) {
+  t.post({
+    uri: '/user/invite?' + userCred,
+    body: {
+      emails: ['test@3meters.com'],
+      name: 'Test User From t1_auth',
+      message:  'This is soooo cool',
+    }
+  }, function(err, res, body) {
+    t.assert(body.errors && !body.errors.length)
+    t.assert(body.results && body.results.length)
+    // Check the db for whitelisted records
+    t.post({
+      uri: '/find/documents?' + userCred,
+      body: {
+        find: {
+          type: 'validUser',
+          'data.email': 'test@3meters.com'
+        }
+      }
+    }, function(err, res, body) {
+      t.assert(body.data)
+      t.assert(body.data.length)
+      test.done()
+    })
+  })
+}
+
 exports.userCanSignOut = function(test) {
   t.get('/auth/signout?' + userCred,
   function(err, res, body) {
