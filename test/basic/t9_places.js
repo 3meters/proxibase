@@ -57,6 +57,29 @@ exports.getCategories = function(test) {
   })
 }
 
+exports.getPlacesNearLocationFailsProperlyWithBadLimits = function(test) {
+  var post = {
+    uri: '/places/getNearLocation',
+    body: {
+      location: ballRoomLoc,
+      provider: 'foursquare',
+      includeRaw: false,
+      limit: 100,
+    }
+  }
+  t.post(post, 400, function(err, res, body) {
+    t.assert(body.error)
+    t.assert(400.13 === body.error.code)
+    // Google has a lower limit
+    post.body.provider = 'google'
+    post.body.limit = 30
+    t.post(post, 400, function(err, res, body) {
+      t.assert(body.error)
+      t.assert(400.13 === body.error.code)
+      test.done()
+    })
+  })
+}
 
 exports.getPlacesNearLocationFoursquare = function(test) {
   if (disconnected) return skip(test)
