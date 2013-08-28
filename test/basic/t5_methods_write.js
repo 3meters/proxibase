@@ -908,7 +908,7 @@ exports.checkInsertCandigramBounce = function(test) {
 
 exports.moveCandigram = function(test) {
   t.post({
-    uri: '/do/moveCandigram?' + userCred,
+    uri: '/do/moveCandigrams?' + userCred,
     body: {
       entityIds:[testCandigramBounce._id], 
       method: 'proximity',
@@ -927,7 +927,7 @@ exports.checkPlaceLinkInactive = function (test) {
     body: {
       table:'links', 
       find:{ 
-        _from:textCandigramBounce._id,
+        _from:testCandigramBounce._id,
         _to:testPlace._id,
         type:util.statics.schemaCandigram,
       }
@@ -946,14 +946,14 @@ exports.checkPlaceLinkActive = function (test) {
     body: {
       table:'links', 
       find:{ 
-        _from: textCandigramBounce._id,
+        _from: testCandigramBounce._id,
         type: util.statics.schemaCandigram,
         inactive: false,
       }
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
-    t.assert(body.data && body.data[0]))
+    t.assert(body.data && body.data[0])
     test.done()
   })
 }
