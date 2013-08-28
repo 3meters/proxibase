@@ -153,6 +153,33 @@ var testPost = {
     source:"aircandi",
   },
 }
+var testCandigramBounce = {
+  _id : clIds.candigrams + ".111111.11111.111.111111",
+  schema : util.statics.schemaCandigram,
+  type : "bounce",
+  location: { 
+    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] 
+  },  
+  name : "Testing candigram entity",
+  photo: { 
+    prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", 
+    source:"aircandi",
+  },
+}
+var testCandigramTour = {
+  _id : clIds.candigrams + ".111111.11111.111.222222",
+  schema : util.statics.schemaCandigram,
+  type : "tour",
+  duration: 60000,
+  location: { 
+    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] 
+  },  
+  name : "Testing candigram entity",
+  photo: { 
+    prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", 
+    source:"aircandi",
+  },
+}
 var testComment = {
   _id : clIds.comments + ".111111.11111.111.111111",
   schema : util.statics.schemaComment,
@@ -834,6 +861,99 @@ exports.checkTrackEntityNoBeaconsLogAction = function(test) {
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
+    test.done()
+  })
+}
+
+/* Move candigram */
+
+/* testPlace hasn't been deleted yet */
+
+exports.insertCandigramBounce = function (test) {
+  testCandigramBounce.hopLastDate = util.now()
+  t.post({
+    uri: '/do/insertEntity?' + userCred,
+    body: {
+      entity: testCandigramBounce, 
+      link: {
+        _to: testPlace._id,
+        strong: false,
+        type: util.statics.schemaCandigram
+      },
+      skipNotifications: true
+    }
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data[0])
+    var savedEnt = body.data[0]
+    t.assert(savedEnt._owner === testUser._id)
+    t.assert(savedEnt._creator === testUser._id)
+    t.assert(savedEnt._modifier === testUser._id)
+    test.done()
+  })
+}
+
+exports.checkInsertCandigramBounce = function(test) {
+  t.post({
+    uri: '/do/find',
+    body: {
+      table:'candigrams', 
+      find:{ _id:testCandigramBounce._id }
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    test.done()
+  })
+}
+
+exports.moveCandigram = function(test) {
+  t.post({
+    uri: '/do/moveCandigram?' + userCred,
+    body: {
+      entityIds:[testCandigramBounce._id], 
+      method: 'proximity',
+      skipNotifications: true
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data[0])
+    test.done()
+  })
+}
+
+exports.checkPlaceLinkInactive = function (test) {
+  t.post({
+    uri: '/do/find',
+    body: {
+      table:'links', 
+      find:{ 
+        _from:textCandigramBounce._id,
+        _to:testPlace._id,
+        type:util.statics.schemaCandigram,
+      }
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data[0])
+    t.assert(body.data[0].inactive === true)
+    test.done()
+  })
+}
+
+exports.checkPlaceLinkActive = function (test) {
+  t.post({
+    uri: '/do/find',
+    body: {
+      table:'links', 
+      find:{ 
+        _from: textCandigramBounce._id,
+        type: util.statics.schemaCandigram,
+        inactive: false,
+      }
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data[0]))
     test.done()
   })
 }
