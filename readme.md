@@ -281,7 +281,7 @@ Refreshing statitics requires admin credentials since the operation can be expen
 ### Recurring Tasks
 The service supports a built-in recurring task scheduler based on the later module, https://github.com/bunkat/later.  It enables admins to insert, update, or remove scheduled tasks via the rest api.  
 
-When the server starts, it reads all task documents from the tasks collection, and starts later tasks based on those documents.  Tasks can be inserted, updated, or removed dynamically.  Tasks run privately exported methods server.  The tasks schema extends the _base schema with these fields:
+When the server starts, it reads all task documents from the tasks collection, and starts later tasks based on those documents.  Tasks can be inserted, updated, or removed dynamically.  Tasks execute trusted server methods.  The tasks schema extends the _base schema with these fields:
 
 
 ```js
