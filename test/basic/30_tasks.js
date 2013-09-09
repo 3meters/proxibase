@@ -7,41 +7,38 @@ var log = util.log
 var testUtil = require('../util')
 var t = testUtil.treq
 var constants = require('../constants')
+var userId
+var adminId
 var userCred
 var adminCred
+var taskId
+var docCount
 var staticVersion = util.statics.clientVersion
 var _exports = {} // for commenting out tests
+var later = require('later')
 
-
-// Get user and admin sessions and store the credentials in module globals
-exports.getSessions = function (test) {
-  testUtil.getUserSession(function(session) {
-    userCred = 'user=' + session._owner + '&session=' + session.key
-    testUtil.getAdminSession(function(session) {
-      adminCred = 'user=' + session._owner + '&session=' + session.key
-      test.done()
-    })
-  })
-}
-
-var sched1 = {"s": [0,1,2]}
+var sched1 =  later.parse.cron('*/1 * * * * *', true) // every second
+var sched2 =  later.parse.cron('*/2 * * * * *', true) // every second second
 
 var task1 = {
-  "schedule":{
-    "schedules": [ sched1 ]
-  },
+  "name": "task1",
+  "schedule": sched1,
   "module":"utils",
   "method":"log",
   "args": ["What follows should be an object:", {"n1":2,"s1":"foo"}]
 }
 
-var task2 = {
-  "schedule":{
-    "schedules": [ sched1 ]
-  },
-  "module":"utils",
-  "method":"db.documents.safeInsert",
-  "args": [{"type":"taskTest"}]
+// Get user and admin sessions and store the credentials in module globals
+exports.getSessions = function (test) {
+  testUtil.getUserSession(function(session) {
+    userId = session._owner
+    userCred = 'user=' + userId + '&session=' + session.key
+    testUtil.getAdminSession(function(session) {
+      adminId = session._owner
+      adminCred = 'user=' + adminId + '&session=' + session.key
+      test.done()
+    })
+  })
 }
 
 exports.usersCannotPostTasks = function(test) {
@@ -58,21 +55,76 @@ exports.adminCanPostTasks = function(test) {
     uri: '/data/tasks?' + adminCred,
     body: { data: task1 }
   }, 201, function(err, res, body) {
+    t.assert(body.data && body.data._id)
+    taskId = body.data._id
     test.done()
   })
 }
 
-exports.dbCommandsWork = function(test) {
+exports.adminCanUpdateTasks = function(test) {
+  var task = util.clone(task1)
+  task.schedule = sched2
   t.post({
-    uri: '/data/tasks?' + adminCred,
-    body: { data: task2 }
-  }, 201, function(err, res, body) {
-    setTimeout(function(){
-      t.get('/data/documents?find[type]=taskTest',
-        function(err, res, body) {
-          t.assert(3 === body.length)
-          test.done()
-        })
-    }, 4000)
+    uri: '/data/tasks/' + taskId + '?' + adminCred,
+    body: { data: task }
+  }, function(err, res, body) {
+    t.assert(util._.isEqual(body.data.schedule, sched2))
+    test.done()
   })
 }
+
+exports.adminCanDeleteTasks = function(test) {
+  t.delete({
+    uri: '/data/tasks/' + taskId + '?' + adminCred,
+  }, function(err, res, body) {
+    test.done()
+  })
+}
+
+// start a task which inserts one new document per second.
+// Wait a couple of seconds and then query the db for those
+// documents.
+exports.restInsertAsTaskWorks = function(test) {
+  t.post({
+    uri: '/data/tasks?' + adminCred,
+    body: { data: {
+      name:     'task2',
+      schedule: sched1,
+      module:   'utils',
+      method:   'db.documents.safeInsert',
+      args:     [{type: 'taskTest'}, {user: {_id: adminId, role: 'admin'}}]
+    }}
+  }, 201, function(err, res, body) {
+    taskId = body.data._id
+    setTimeout(function(){
+      t.get('/data/documents?find[type]=taskTest',
+      function(err, res, body) {
+        t.assert(body.data.length >= 2)
+        test.done()
+      })
+    }, 2500)
+  })
+}
+
+exports.canStopInsertTask = function(test) {
+  t.delete({
+    uri: '/data/tasks/' + taskId + '?' + adminCred,
+  }, function (err, res, body) {
+    t.get('/data/tasks?' + adminCred, function(err, res, body) {
+      t.assert(body.data && 0 === body.data.length)  // all tasks records are gone
+      t.get('/data/documents?find[type]=taskTest',
+      function(err, res, body) {
+        t.assert(body.data)
+        docCount = body.data.length  // count records inserted by recurring task
+        setTimeout(function() {
+          t.get('/data/documents?find[type]=taskTest',
+          function() {
+            t.assert(body.data && docCount === body.data.length)  // make sure we have no new records
+            test.done()
+          })
+        }, 1500)
+      })
+    })
+  })
+}
+
