@@ -264,7 +264,7 @@ Updates every record in a table.  Usefull when you need to re-run triggers on al
 
 <a name="stats">
 ### Statistics
-Site statistics are acceessed via 
+Site statistics are acceessed via
 
     GET /stats
 
@@ -278,7 +278,24 @@ will return a collection of the statistics.  These are ordinary monogodb collect
 
 Refreshing statitics requires admin credentials since the operation can be expensive
 
+### Recurring Tasks
+The service supports a built-in recurring task scheduler based on the later module, https://github.com/bunkat/later.  It enables admins to insert, update, or remove scheduled tasks via the rest api.  
 
+When the server starts, it reads all task documents from the tasks collection, and starts later tasks based on those documents.  Tasks can be inserted, updated, or removed dynamically.  Tasks execute trusted server methods.  The tasks schema extends the _base schema with these fields:
+
+
+```js
+  {
+    schedule: {type: 'object', required: true, value: {
+      // See http://bunkat.github.io/later/schedules.html
+      schedules:  {type: 'array', required: true},
+      exceptions: {type: 'array'}
+    }},
+    module:   {type: 'string', required: true},   // relative to prox/lib
+    method:   {type: 'string', required: true},   // must be exported
+    args:     {type: 'array'},                    // arguments passed to method
+  },
+```
 ## Wiki
 * (proxibase/wiki/)
 

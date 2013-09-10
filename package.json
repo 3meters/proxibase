@@ -32,7 +32,8 @@
     "node-gcm": "0.9.4",
     "url2png": "*",
     "knox": "*",
-    "moment": "*"
+    "moment": "*",
+    "later": "*"
   },
 
   "repository": "git://github.com:3meters/proxibase",
