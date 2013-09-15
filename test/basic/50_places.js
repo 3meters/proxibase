@@ -49,7 +49,7 @@ exports.getSessions = function(test) {
 exports.getCategories = function(test) {
   t.get({uri: '/places/getCategories'}, function(err, res) {
     var cats = res.body.data
-    t.assert(cats && cats.length > 5)
+    t.assert(res.body.count > 300)
     t.assert(cats[0].photo)
     t.assert(cats[0].photo.prefix.length > 20)
     // TODO:  run a reqest on the icon and confirm that it is a valid png
