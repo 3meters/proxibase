@@ -3,6 +3,7 @@
  */
 
 var util = require('../../lib/utils')   // load proxibase util extensions
+var log = util.log
 var call = util.callService
 var request = require('request')
 var cli = require('commander')
@@ -18,38 +19,32 @@ var cats4sFile = 'cats4s.csv'
 var catsFactFile = 'catsFact.csv'
 var catsCandi = []
 var suffix = '.png'
-var providers = ['factual', 'google']
+var providers = ['factual', 'google', 'foursquare']
 var sizes = ['88', 'bg_88'] // the first is the default
 var wb = null // Excel workbook
 
 
 // Command line interface
 cli
+  .option('-r, --refresh', 'Refresh category cache from foursquare')
   .option('-i, --icons', 'Refresh icon cache')
+  .option('-f, --factual', 'Refresh factual categories')
   .parse(process.argv)
 
 
 function start() {
 
-  function deleteAllFiles(dir) {
-    var fileNames = fs.readdirSync(dir)
-    fileNames.forEach(function(fileName) {
-      try {fs.unlinkSync(path.join(dir, fileName))} catch(e) {} // swallow errors
-    })
-  }
-
   log('Deleting old files')
   try {fs.unlinkSync(cats4sFile)} catch(e) {}
   try {fs.unlinkSync(catsFactFile)} catch(e) {}
-  try {fs.unlinkSync(catsJsonFile)} catch(e) {}
-  try {fs.unlinkSync(path.join(assetsDir, catsJsonFile))} catch(e) {}
 
   providers.forEach(function(provider) {
-    deleteAllFiles(path.join(iconDir, provider))
+    var mapFileName = 'cat_map_' + provider + '.json'
+    try {fs.unlinkSync(mapFileName)} catch (e) {}
+    try {fs.unlinkSync(path.join(assetsDir, mapFileName))} catch (e) {}
   })
 
   if (cli.icons) {
-    deleteAllFiles(path.join(iconDir, 'foursquare'))
     deleteAllFiles(iconDir)
   }
 
@@ -98,13 +93,19 @@ function getCandiCats() {
 }
 
 function getFoursquareCats() {
+  if (!cli.refresh) return scarfFoursquareIcons()
   var foursquareCats = {names: [], icons: []}
   call.foursquare({path: 'categories', logReq: true}, function(err, res) {
     if (err) throw err
+    var nCats = {}
     var cats = res.body.response.categories
 
     foursquareCats = parse4sCats(cats)
     cats = cats.concat(catsCandi) // graft in our own categories
+    cats.forEach(function(cat) {
+      nCats[cat.id] = cat
+    })
+    cats = nCats  // cats is now a map, not an array
     log('Writing ' + catsJsonFile)
     fs.writeFileSync(catsJsonFile, JSON.stringify(cats))
     fs.writeFileSync(path.join(assetsDir, catsJsonFile), JSON.stringify(cats))
@@ -124,10 +125,6 @@ function getIcon(icon, cb) {
       .on('error', function(err) {return cb(err)})
       .on('close', function() {
         log(fileName)
-        fs.linkSync(
-          path.join(iconDir, fileName),
-          path.join(iconDir, 'foursquare', fileName)
-        )
         return cb()
       })
     )
@@ -142,6 +139,8 @@ function scarfFoursquareIcons(icons) {
   })
 }
 
+// Create links in the icon dir for custom candi categories
+// to their best apporimate 4square icon
 function linkCandiIcons() {
   var sheet = wb.Sheets['map_candi_foursquare']
   sheet.data.forEach(function(row) {
@@ -161,6 +160,7 @@ function linkCandiIcons() {
 // This is a non-used intermediate file.  Copy paste it into the spreadsheet
 // If factual changes their categories enough to warrant remapping
 function getFactualCats() {
+  if (!cli.factual) return mapCats()
   var factualNames = []
   var uri = 'https://raw.github.com/Factual/places/master/categories/factual_taxonomy.json'
   log('Getting factual categories')
@@ -180,29 +180,28 @@ function getFactualCats() {
     log('Writing ' + catsFactFile)
     writeCsvFile(catsFactFile, factualNames, function(err) {
       if (err) throw err
-      mapIcons()
+      finish()
     })
   })
 }
 
-
-function mapIcons() {
+// map provider id to candi id based on the spreadsheet
+// and write out to a .json file
+function mapCats() {
   providers.forEach(function(provider) {
-    log('Mapping ' + provider + ' icons to foursquare icons')
-    var sheet = wb.Sheets['map_' + provider + '_foursquare']
+    util.log('Mapping ' + provider + ' categories to aircandi categories')
+    var map = {}
+    var mapFileName = 'cat_map_' + provider + '.json'
+    var sheet = wb.Sheets['map_' + provider + '_candi']
     sheet.data.forEach(function(row) {
-      sizes.forEach(function(size) {
-        var iconName = row[0] + '_' + size + suffix
-        var iconName4s = row[2] + '_' + size + suffix
-        fs.linkSync(
-          path.join(iconDir, iconName4s),
-          path.join(iconDir, provider, iconName)
-        )
-      })
+      map[row[0]] = row[2] // map each id
     })
+    fs.writeFileSync(mapFileName, JSON.stringify(map))
+    fs.writeFileSync(path.join(assetsDir, mapFileName), JSON.stringify(map))
   })
   finish()
 }
+
 
 function parse4sCats(categories) {
   var names = []
