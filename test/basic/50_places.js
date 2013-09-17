@@ -59,8 +59,7 @@ exports.getCategories = function(test) {
       t.assert(cat.photo)
       t.assert(cat.photo.prefix.length > 20)
       var iconFileName = path.join(util.statics.assetsDir, cat.photo.prefix)
-      // log(iconFileName)
-      // t.assert(fs.existsSync(iconFileName))
+      t.assert(fs.existsSync(iconFileName))
     }
     test.done()
   })
