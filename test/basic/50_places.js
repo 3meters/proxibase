@@ -9,6 +9,8 @@
 var util = require('proxutils')
 var log = util.log
 var testUtil = require('../util')
+var fs = require('fs')
+var path = require('path')
 var t = testUtil.treq  // newfangled test helper
 var disconnected = testUtil.disconnected
 var skip = testUtil.skip
@@ -49,10 +51,17 @@ exports.getSessions = function(test) {
 exports.getCategories = function(test) {
   t.get({uri: '/places/getCategories'}, function(err, res) {
     var cats = res.body.data
-    t.assert(res.body.count > 300)
-    t.assert(cats[0].photo)
-    t.assert(cats[0].photo.prefix.length > 20)
-    // TODO:  run a reqest on the icon and confirm that it is a valid png
+    t.assert(Object.keys(cats).length > 300)
+    for (var id in cats) {
+      var cat = cats[id]
+      t.assert(cat.id)
+      t.assert(cat.name)
+      t.assert(cat.photo)
+      t.assert(cat.photo.prefix.length > 20)
+      var iconFileName = path.join(util.statics.assetsDir, cat.photo.prefix)
+      // log(iconFileName)
+      // t.assert(fs.existsSync(iconFileName))
+    }
     test.done()
   })
 }

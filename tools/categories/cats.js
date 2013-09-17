@@ -69,92 +69,104 @@ function start() {
     }
     sheet.data = rows
   })
-  getCandiCats()
-}
-
-// Transform the human written candi categorys in the mapper spreadsheet
-// into an array of nested categories using the same shape as foursquare
-// Only supports one level of category nesting, and parents must come first
-function getCandiCats() {
-  var map = {}
-  wb.Sheets['candi'].data.forEach(function(row) {
-    var cat = {
-      id: row[0],
-      name: row[1],
-      categories: [],
-    }
-    var parent = row[2]
-    if (!parent) map[cat.id] = cat
-    else map[parent].categories.push(cat)
-  })
-  for (key in map) { catsCandi.push(map[key]) }
   getFoursquareCats()
 }
 
+
+// Get the current 4s categories from their public web service
 function getFoursquareCats() {
   var cats = {}
   log('Fetching foursquare cats')
   call.foursquare({path: 'categories', logReq: true}, function(err, res) {
     if (err) throw err
-    cats = res.body.response.categories
-    cats = cats.concat(catsCandi)    // graft in our own categories
 
-    log('debug 4s cats + candi cats:', cats)
-    var arCats = parseCats(cats)
-    log('fscats', parsed)
-    cats.forEach(function(cat) {
-      nCats[cat.id] = cat
-    })
-    cats = nCats  // cats is now a map, not an array
-    log('merged cats', cats)
-    log('Writing ' + catsJsonFile)
-    fs.writeFileSync(catsJsonFile, JSON.stringify(cats))
-    fs.writeFileSync(path.join(assetsDir, catsJsonFile), JSON.stringify(cats))
-    log('Writing ' + cats4sFile)
-    writeCsvFile(cats4sFile, foursquareCats.names, function(err) {
+    cats = flatten(res.body.response.categories)
+
+    writeCsvFile(cats4sFile, cats, function(err) {
       if (err) throw err
-      scarfFoursquareIcons(foursquareCats.icons)
+      scarfFoursquareIcons(icons, cats)
     })
   })
 }
 
-function scarfFoursquareIcons(icons) {
-  if (!cli.icons) return getFactualCats()
+
+// Recursively un-nest 4square's nested hirearchy of categories into
+// a single-level map with each category including its parent.
+// In passing, load the module global icons array
+function flatten(categories) {
+  var flatCats = {}
+  _flatten(null, categories)
+
+  function _flatten(parent, categories) {
+    var flatCat = {}
+    categories.forEach(function(category) {
+      if (category.categories && category.categories.length) {
+        _flatten(category, category.categories) // recurse
+      }
+      // Parse the names for the csv output file
+      flatCat = {id: category.id, name: category.name}
+      if (parent) {
+        flatCat.parentId = parent.id
+        flatCat.parentName = parent.name
+      }
+      flatCats[flatCat.id] = flatCat
+
+      // Extract the icon map to the assets file
+      sizes.forEach(function(size) {
+        icons.push({
+          id: category.id,
+          size: size,
+          suffix: category.icon.suffix,
+          uri: category.icon.prefix + size + category.icon.suffix
+        })
+      })
+    })
+  }
+  return flatCats
+}
+
+
+function scarfFoursquareIcons(icons, cats) {
+  if (!cli.icons) return graftCandiCats(cats)
+
   log('Scarfing ' + icons.length + ' icons: ')
   async.forEachSeries(icons, getIcon, function(err) {
     if (err) throw err
-    linkCandiIcons()
+    graftCandiCats(cats)
   })
-}
 
-function getIcon(icon, cb) {
-  var fileName = icon.id + '_' + icon.size + icon.suffix
-  // TODO:  check for a 200 reqest status before piping to write stream
-  request.get(icon.uri)
-    .pipe(fs.createWriteStream(path.join(iconDir, fileName))
+  function getIcon(icon, cb) {
+    var fileName = icon.id + '_' + icon.size + icon.suffix
+    // TODO:  check for a 200 reqest status before piping to write stream
+    request.get(icon.uri)
+      .pipe(fs.createWriteStream(path.join(iconDir, fileName))
       .on('error', function(err) {return cb(err)})
       .on('close', function() {
         log(fileName)
         return cb()
       })
     )
+  }
 }
 
 
-// Create links in the icon dir for custom candi categories
-// to their best apporimate 4square icon
-function linkCandiIcons() {
-  var sheet = wb.Sheets['map_candi_foursquare']
-  sheet.data.forEach(function(row) {
-    sizes.forEach(function(size) {
-      var idCandi = row[0]
-      var id4s = row[2]
-      fs.linkSync(
-        path.join(iconDir, id4s + '_' + size + suffix),
-        path.join(iconDir, idCandi + '_' + size + suffix)
-      )
-    })
+// Transform the human written candi categorys in the mapper spreadsheet
+// into an array of nested categories using the same shape as foursquare
+// Only supports one level of category nesting, and parents must come first
+function graftCandiCats(cats) {
+  log('Grafting in custom candi categories')
+  var map = {}
+  wb.Sheets['candi'].data.forEach(function(row) {
+    var cat = {
+      id: row[0],
+      name: row[1],
+      parentId: row[2],
+      parentName: row[3],
+    }
+    cats[cat.id] = cat
   })
+
+  writeJsonFileSync(catsJsonFile, cats)
   getFactualCats()
 }
 
@@ -178,10 +190,9 @@ function getFactualCats() {
       }
       factualNames.push(cat)
     }
-    log('Writing ' + catsFactFile)
     writeCsvFile(catsFactFile, factualNames, function(err) {
       if (err) throw err
-      finish()
+      mapCats()
     })
   })
 }
@@ -197,62 +208,37 @@ function mapCats() {
     sheet.data.forEach(function(row) {
       map[row[0]] = row[2] // map each id
     })
-    fs.writeFileSync(mapFileName, JSON.stringify(map))
-    fs.writeFileSync(path.join(assetsDir, mapFileName), JSON.stringify(map))
+    writeJsonFileSync(mapFileName, map)
   })
   finish()
 }
 
 
-function parseCats(categories) {
-  var parsedCats = {}
-  _parseCats(null, categories)
-
-  function _parseCats(parent, categories) {
-    var parsedCat = {}
-    categories.forEach(function(category) {
-      if (category.categories && category.categories.length) {
-        _parseCats(category, category.categories) // recurse
-      }
-      // Parse the names for the csv output file
-      parsedCat = {id: category.id, name: category.name}
-      if (parent) {
-        parsedCat.parentId = parent.id
-        parsedCat.parentName = parent.name
-      }
-      parsedCats[parsedCat[id]] = parsedCat
-      // Extract the icon map to the assets file
-      sizes.forEach(function(size) {
-        icons.push({
-          id: category.id,
-          size: size,
-          suffix: category.icon.suffix,
-          uri: category.icon.prefix + size + category.icon.suffix
-        })
-      })
-      // Prune properties we don't use
-      delete category.pluralName
-      delete category.shortName
-      delete category.icon
-    })
-  }
-  return parsedCats
+// Helper that serialize a json file to the current directory
+// and a copy to the assets directory
+function writeJsonFileSync(fileName, obj) {
+  fs.writeFileSync(fileName, JSON.stringify(obj))
+  fs.writeFileSync(path.join(assetsDir, fileName), JSON.stringify(obj))
+  log('JSON file ' + fileName + ' written')
 }
 
 
-function writeCsvFile(fileName, names, cb) {
+// Helper that writes a csv file of a category map using writeStream,
+// mainly as an excersize in using writeStream
+function writeCsvFile(fileName, cats, cb) {
   var ws = fs.createWriteStream(path.join(__dirname, fileName))
-  names.forEach(function(name) {
-    ws.write(name.id + ',' + name.name + ',')
-    if (name.parentId) ws.write(name.parentId)
+  for (var id in cats) {
+    var cat = cats[id]
+    ws.write(cat.id + ',' + cat.name + ',')
+    if (cat.parentId) ws.write(cat.parentId)
     ws.write(',')
-    if (name.parentName) ws.write(name.parentName)
+    if (cat.parentName) ws.write(cat.parentName)
     ws.write('\n')
-  })
+  }
   ws.destroySoon()
   ws.on('error', function(err) {cb(err)})
   ws.on('close', function() {
-    log(fileName + ' written')
+    log('Csv file ' + fileName + ' written')
     cb()
   })
 }
