@@ -20,15 +20,14 @@ var catsFactFile = 'catsFact.csv'
 var catsCandi = []
 var suffix = '.png'
 var providers = ['factual', 'google', 'foursquare']
+var icons = []
 var sizes = ['88', 'bg_88'] // the first is the default
 var wb = null // Excel workbook
 
 
 // Command line interface
 cli
-  .option('-r, --refresh', 'Refresh category cache from foursquare')
   .option('-i, --icons', 'Refresh icon cache')
-  .option('-f, --factual', 'Refresh factual categories')
   .parse(process.argv)
 
 
@@ -93,19 +92,21 @@ function getCandiCats() {
 }
 
 function getFoursquareCats() {
-  if (!cli.refresh) return scarfFoursquareIcons()
-  var foursquareCats = {names: [], icons: []}
+  var cats = {}
+  log('Fetching foursquare cats')
   call.foursquare({path: 'categories', logReq: true}, function(err, res) {
     if (err) throw err
-    var nCats = {}
-    var cats = res.body.response.categories
+    cats = res.body.response.categories
+    cats = cats.concat(catsCandi)    // graft in our own categories
 
-    foursquareCats = parse4sCats(cats)
-    cats = cats.concat(catsCandi) // graft in our own categories
+    log('debug 4s cats + candi cats:', cats)
+    var arCats = parseCats(cats)
+    log('fscats', parsed)
     cats.forEach(function(cat) {
       nCats[cat.id] = cat
     })
     cats = nCats  // cats is now a map, not an array
+    log('merged cats', cats)
     log('Writing ' + catsJsonFile)
     fs.writeFileSync(catsJsonFile, JSON.stringify(cats))
     fs.writeFileSync(path.join(assetsDir, catsJsonFile), JSON.stringify(cats))
@@ -114,6 +115,15 @@ function getFoursquareCats() {
       if (err) throw err
       scarfFoursquareIcons(foursquareCats.icons)
     })
+  })
+}
+
+function scarfFoursquareIcons(icons) {
+  if (!cli.icons) return getFactualCats()
+  log('Scarfing ' + icons.length + ' icons: ')
+  async.forEachSeries(icons, getIcon, function(err) {
+    if (err) throw err
+    linkCandiIcons()
   })
 }
 
@@ -130,14 +140,6 @@ function getIcon(icon, cb) {
     )
 }
 
-function scarfFoursquareIcons(icons) {
-  if (!cli.icons) return getFactualCats()
-  log('Scarfing ' + icons.length + ' icons: ')
-  async.forEachSeries(icons, getIcon, function(err) {
-    if (err) throw err
-    linkCandiIcons()
-  })
-}
 
 // Create links in the icon dir for custom candi categories
 // to their best apporimate 4square icon
@@ -160,7 +162,6 @@ function linkCandiIcons() {
 // This is a non-used intermediate file.  Copy paste it into the spreadsheet
 // If factual changes their categories enough to warrant remapping
 function getFactualCats() {
-  if (!cli.factual) return mapCats()
   var factualNames = []
   var uri = 'https://raw.github.com/Factual/places/master/categories/factual_taxonomy.json'
   log('Getting factual categories')
@@ -203,23 +204,23 @@ function mapCats() {
 }
 
 
-function parse4sCats(categories) {
-  var names = []
-  var icons = []
-  parseCats(null, categories)
+function parseCats(categories) {
+  var parsedCats = {}
+  _parseCats(null, categories)
 
-  function parseCats(parent, categories) {
+  function _parseCats(parent, categories) {
+    var parsedCat = {}
     categories.forEach(function(category) {
       if (category.categories && category.categories.length) {
-        parseCats(category, category.categories) // recurse
+        _parseCats(category, category.categories) // recurse
       }
       // Parse the names for the csv output file
-      var name = {id: category.id, name: category.name}
+      parsedCat = {id: category.id, name: category.name}
       if (parent) {
-        name.parentId = parent.id
-        name.parentName = parent.name
+        parsedCat.parentId = parent.id
+        parsedCat.parentName = parent.name
       }
-      names.push(name)
+      parsedCats[parsedCat[id]] = parsedCat
       // Extract the icon map to the assets file
       sizes.forEach(function(size) {
         icons.push({
@@ -235,7 +236,7 @@ function parse4sCats(categories) {
       delete category.icon
     })
   }
-  return {names: names, icons: icons}
+  return parsedCats
 }
 
 
