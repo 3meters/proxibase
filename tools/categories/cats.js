@@ -43,9 +43,15 @@ function start() {
     try {fs.unlinkSync(path.join(assetsDir, mapFileName))} catch (e) {}
   })
 
+
   if (cli.icons) {
-    deleteAllFiles(iconDir)
+    log('Deleting icons')
+    var fileNames = fs.readdirSync(iconDir)
+    fileNames.forEach(function(fileName) {
+      try {fs.unlinkSync(path.join(dir, fileName))} catch(e) {} // swallow errors
+    })
   }
+
 
   // This is a very low-level parser for xlsx files, but it was the
   // best I could find.  One would think something like the work below should
