@@ -67,7 +67,7 @@ exports.getCategories = function(test) {
 
 exports.getPlacesNearLocationFailsProperlyWithBadLimits = function(test) {
   var post = {
-    uri: '/places/nearLocation',
+    uri: '/places/near',
     body: {
       location: ballRoomLoc,
       provider: 'foursquare',
@@ -93,7 +93,7 @@ exports.getPlacesNearLocationFoursquare = function(test) {
   if (disconnected) return skip(test)
   var ballRoomId = '4abebc45f964a520a18f20e3'
   t.post({
-    uri: '/places/nearLocation',
+    uri: '/places/near',
     body: {
       location: ballRoomLoc,
       provider: 'foursquare',
@@ -122,7 +122,7 @@ exports.getPlacesNearLocationExcludeWorks = function(test) {
   if (disconnected) return skip(test)
   var ballRoomId = '4abebc45f964a520a18f20e3'
   t.post({
-    uri: '/places/nearLocation',
+    uri: '/places/near',
     body: {
       location: ballRoomLoc,
       provider: 'foursquare',
@@ -144,7 +144,7 @@ exports.getPlacesNearLocationFactual = function(test) {
   var roxyId = '2bd21139-1907-4126-9443-65a2e48e1717' // Roxy's Diner
   var foundRoxy = false
   t.post({
-    uri: '/places/nearLocation',
+    uri: '/places/near',
     body: {
       location: ballRoomLoc,
       provider: 'factual',
@@ -221,7 +221,7 @@ exports.getPlacesNearLocationGoogle = function(test) {
   var googleProvided = 0
   var factualProvided = 0
   t.post({
-    uri: '/places/nearLocation',
+    uri: '/places/near',
     body: {
       location: ballRoomLoc,
       provider: 'google',
@@ -316,7 +316,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
 
   // Fire up radar from the Ball Room
   t.post({
-    uri: '/places/nearLocation',
+    uri: '/places/near',
     body: {
       location:  ballRoomLoc,
       provider: 'foursquare',
@@ -403,7 +403,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
 
           // Run radar again
           t.post({
-            uri: '/places/nearLocation',
+            uri: '/places/near',
             body: {
               location: ballRoomLoc,
               provider: 'foursquare',
@@ -433,7 +433,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
             // Now run radar with factual as the provider, ensuring the same
             // results, joining on phone number
             t.post({
-              uri: '/places/nearLocation',
+              uri: '/places/near',
               body: {
                 location: ballRoomLoc,
                 provider: 'factual',
@@ -458,7 +458,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
 
               // Confirm that excludePlaceIds works for our entities
               t.post({
-                uri: '/places/nearLocation',
+                uri: '/places/near',
                 body: {
                   location: ballRoomLoc,
                   provider: 'foursquare',
