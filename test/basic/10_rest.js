@@ -634,6 +634,20 @@ exports.entityValidatorsWork = function(test) {
   })
 }
 
+exports.sortsDescendingByIdByDefault = function(test) {
+  t.get('/data/documents',
+  function(err, res, body) {
+    docs = body.data
+    t.assert(docs && docs.length)
+    var id = 'us.999999'
+    docs.forEach(function(doc) {
+      t.assert(id > doc._id)
+      id = doc._id
+    })
+    test.done()
+  })
+}
+
 exports.sortWorks = function(test) {
   t.get('/data/users?sort[_id]=-1',
   function(err, res, body) {
