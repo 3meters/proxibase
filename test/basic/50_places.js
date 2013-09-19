@@ -141,15 +141,15 @@ exports.getPlacesNearLocationExcludeWorks = function(test) {
 exports.getPlacesNearLocationFactual = function(test) {
   if (disconnected) return skip(test)
   var ballRoomId = '46aef19f-2990-43d5-a9e3-11b78060150c'
-  var roxyId = '2bd21139-1907-4126-9443-65a2e48e1717' // Roxy's Diner
+  var roxyId = '021d77ee-2db5-4300-ae2b-5f841df77a4e'
   var foundRoxy = false
   t.post({
     uri: '/places/near',
     body: {
       location: ballRoomLoc,
       provider: 'factual',
-      radius: 500,
-      limit: 10,
+      radius: 200,
+      limit: 20,
       excludePlaceIds: [ballRoomId],
       includeRaw: true,
     }
