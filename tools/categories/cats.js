@@ -14,6 +14,7 @@ var path = require('path')
 var iconDir = '../../assets/img/categories'
 var assetsDir = '../../assets'
 var catsJsonFile = 'categories.json'
+var catMapJsonFile = 'catmap.json'
 var catMapper = 'categorymap.xlsx'
 var cats4sFile = 'cats4s.csv'
 var catsFactFile = 'catsFact.csv'
@@ -85,6 +86,19 @@ function getFoursquareCats() {
   log('Fetching foursquare cats')
   call.foursquare({path: 'categories', logReq: true}, function(err, res) {
     if (err) throw err
+
+    var intCats = util.clone(res.body.response.categories)
+    wb.Sheets['candi'].data.forEach(function(row) {
+      var cat = {
+        id: row[0],
+        name: row[1],
+        parentId: row[2],
+        parentName: row[3],
+      }
+      cats[cat.id] = cat
+    })
+
+
 
     cats = flatten(res.body.response.categories)
 
