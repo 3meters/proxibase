@@ -16,8 +16,7 @@ old
 
 !package.json
 !categories.json
-!catmap.json
-!/tools/categories
+!catmap*.json
 !/assets/
 !/assets/prox.log
 !/assets/proxerr.log

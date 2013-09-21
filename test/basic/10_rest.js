@@ -634,15 +634,15 @@ exports.entityValidatorsWork = function(test) {
   })
 }
 
-exports.sortsDescendingByIdByDefault = function(test) {
+exports.sortsDescendingByModifiedDateByDefault = function(test) {
   t.get('/data/documents',
   function(err, res, body) {
     docs = body.data
     t.assert(docs && docs.length)
-    var id = 'us.999999'
+    var modDate = Infinity
     docs.forEach(function(doc) {
-      t.assert(id > doc._id)
-      id = doc._id
+      t.assert(modDate > doc.modifiedDate)
+      modDate = doc.modifiedDate
     })
     test.done()
   })
