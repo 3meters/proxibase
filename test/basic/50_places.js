@@ -66,16 +66,7 @@ exports.getSessions = function(test) {
 exports.getCategories = function(test) {
   t.get({uri: '/places/categories'}, function(err, res) {
     var cats = res.body.data
-    t.assert(Object.keys(cats).length > 300)
-    for (var id in cats) {
-      var cat = cats[id]
-      t.assert(cat.id)
-      t.assert(cat.name)
-      t.assert(cat.photo)
-      t.assert(cat.photo.prefix.length > 20)
-      var iconFileName = path.join(util.statics.assetsDir, cat.photo.prefix)
-      t.assert(fs.existsSync(iconFileName))
-    }
+    t.assert(cats.length === 11)
     test.done()
   })
 }
@@ -122,10 +113,13 @@ exports.getPlacesNearLocationFoursquare = function(test) {
     places.forEach(function(place) {
       t.assert(place.provider)
       if (place.provider.foursquare === ballRoomId) foundBallroom++
-      t.assert(place.category)
-      t.assert(place.category.name)
-      t.assert(place.category.photo)
-      t.assert(/^\/img\/categories\/foursquare\/.*_88\.png$/.test(place.category.photo.prefix))
+      var cat = place.category
+      t.assert(cat)
+      t.assert(cat.id)
+      t.assert(cat.name)
+      t.assert(cat.photo)
+      var iconFileName = path.join(util.statics.assetsDir, '/img/categories', cat.photo.prefix)
+      t.assert(fs.existsSync(iconFileName))
     })
     t.assert(foundBallroom === 1)
     test.done()
@@ -172,9 +166,12 @@ exports.getPlacesNearLocationFactual = function(test) {
       t.assert(place.provider)
       t.assert(place.provider.factual)
       t.assert(ballRoomFacId !== place.provider.factual) //excluded
-      t.assert(place.category)
-      t.assert(place.category.name)
-      t.assert(place.category.photo)
+      var cat = place.category
+      t.assert(cat)
+      t.assert(cat.name)
+      t.assert(cat.photo)
+      var iconFileName = path.join(util.statics.assetsDir, '/img/categories', cat.photo.prefix)
+      t.assert(fs.existsSync(iconFileName))
     })
     var roxys = places.filter(function(place) {
       return (place.provider.factual === roxyFacId) // Roxy's Diner
@@ -265,9 +262,12 @@ exports.getPlacesNearLocationGoogle = function(test) {
         t.assert(place.country)
         t.assert(place.postalCode)
       }
-      t.assert(place.category)
-      t.assert(place.category.name)
-      t.assert(place.category.photo)
+      var cat = place.category
+      t.assert(cat)
+      t.assert(cat.name)
+      t.assert(cat.photo)
+      var iconFileName = path.join(util.statics.assetsDir, '/img/categories', cat.photo.prefix)
+      t.assert(fs.existsSync(iconFileName))
     })
     t.assert(1 === foundRoxy)
     t.assert(googleProvided)

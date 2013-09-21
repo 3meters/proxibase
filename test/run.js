@@ -21,7 +21,8 @@ var dbProfile = require('./constants').dbProfile
 var testUtil = require('./util')
 var configFile = 'configtest.js'
 var basicDirs = ['unit', 'basic']
-var testDirs = ['unit', 'basic', 'oauth', 'perf', 'admin']
+var testDirs = ['basic']
+var allTestDirs = ['basic', 'oauth', 'admin', 'perf']
 var logFile = 'testServer.log'
 var logStream
 var cwd = process.cwd()
@@ -40,7 +41,7 @@ cli
   .option('-c, --config <file>', 'Config file [configtest.js]')
   .option('-s, --server <url>', 'Server url')
   .option('-t, --test <dir>', 'Only run the specified test directory')
-  .option('-b, --basic', 'Only run the basic tests')
+  .option('-a, --all', 'Run all tests, not just basic')
   .option('-n, --none', 'Do not run any tests -- just ensure the test db')
   .option('-e, --empty', 'run against an empty database')
   .option('-g, --generate', 'generate a fresh template test db from code')
@@ -50,7 +51,7 @@ cli
 
 
 // Process command-line interface flags
-if (cli.basic) testDirs = basicDirs
+if (cli.all) testDirs = allTestDirs
 if (cli.test) testDirs = [cli.test]
 if (cli.log) logFile = cli.log
 if (cli.disconnected) testUtil.disconnected = true
