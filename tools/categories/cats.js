@@ -39,7 +39,7 @@ function start() {
   try {fs.unlinkSync(catsFactFile)} catch(e) {}
 
   providers.forEach(function(provider) {
-    var mapFileName = 'cat_map_' + provider + '.json'
+    var mapFileName = 'catmap_' + provider + '.json'
     try {fs.unlinkSync(mapFileName)} catch (e) {}
     try {fs.unlinkSync(path.join(assetsDir, mapFileName))} catch (e) {}
   })
@@ -87,18 +87,7 @@ function getFoursquareCats() {
   call.foursquare({path: 'categories', logReq: true}, function(err, res) {
     if (err) throw err
 
-    var intCats = util.clone(res.body.response.categories)
-    wb.Sheets['candi'].data.forEach(function(row) {
-      var cat = {
-        id: row[0],
-        name: row[1],
-        parentId: row[2],
-        parentName: row[3],
-      }
-      cats[cat.id] = cat
-    })
-
-
+    writeCategoriesFile(util.clone(res.body.response.categories))
 
     cats = flatten(res.body.response.categories)
 
@@ -109,6 +98,25 @@ function getFoursquareCats() {
   })
 }
 
+
+// Graft in our own categories in the same format as foursquare
+// then write the file
+function writeCategoriesFile(foursquareCats) {
+
+  var map = {}
+  wb.Sheets['candi'].data.forEach(function(row) {
+    var cat = {
+      id: row[0],
+      name: row[1],
+      categories: [],
+    }
+    var parent = row[2]
+    if (!parent) map[cat.id] = cat
+    else map[parent].categories.push(cat)
+  })
+  for (key in map) { foursquareCats.push(map[key]) }
+  writeJsonFileSync(catsJsonFile, foursquareCats)
+}
 
 // Recursively un-nest 4square's nested hirearchy of categories into
 // a single-level map with each category including its parent.
@@ -170,9 +178,7 @@ function scarfFoursquareIcons(icons, cats) {
 }
 
 
-// Transform the human written candi categorys in the mapper spreadsheet
-// into an array of nested categories using the same shape as foursquare
-// Only supports one level of category nesting, and parents must come first
+// Add our custom cats to the flattend cats
 function graftCandiCats(cats) {
   log('Grafting in custom candi categories')
   var map = {}
@@ -186,7 +192,7 @@ function graftCandiCats(cats) {
     cats[cat.id] = cat
   })
 
-  writeJsonFileSync(catsJsonFile, cats)
+  writeJsonFileSync(catMapJsonFile, cats)
   getFactualCats()
 }
 
@@ -223,7 +229,7 @@ function mapCats() {
   providers.forEach(function(provider) {
     util.log('Mapping ' + provider + ' categories to aircandi categories')
     var map = {}
-    var mapFileName = 'cat_map_' + provider + '.json'
+    var mapFileName = 'catmap_' + provider + '.json'
     var sheet = wb.Sheets['map_' + provider + '_candi']
     sheet.data.forEach(function(row) {
       map[row[0]] = row[2] // map each id
