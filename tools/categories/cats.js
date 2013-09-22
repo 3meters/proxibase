@@ -87,7 +87,11 @@ function getFoursquareCats() {
   call.foursquare({path: 'categories', logReq: true}, function(err, res) {
     if (err) throw err
 
-    writeCategoriesFile(util.clone(res.body.response.categories))
+    // Transform category objects so they are pointing to local icons
+    // and using a photo object instead of an icon object.
+    var transformedCats = transform(util.clone(res.body.response.categories))
+
+    writeCategoriesFile(transformedCats)
 
     cats = flatten(res.body.response.categories)
 
@@ -96,6 +100,29 @@ function getFoursquareCats() {
       scarfFoursquareIcons(icons, cats)
     })
   })
+}
+
+function transform(categories) {
+  _transform(categories)
+
+  function _transform(categories) {
+    categories.forEach(function(category) {
+      if (category.categories && category.categories.length) {
+        _transform(category.categories) // recurse
+      }
+
+      category.photo = {
+        source: 'assets.categories',
+        prefix: category.id + '_',
+        suffix: '.png',
+      }
+
+      delete category.icon
+      delete category.pluralName
+      delete category.shortName
+    })
+  }
+  return categories
 }
 
 
@@ -108,6 +135,11 @@ function writeCategoriesFile(foursquareCats) {
     var cat = {
       id: row[0],
       name: row[1],
+      photo: { 
+        source: 'assets.categories',
+        prefix: row[0] + '_',
+        suffix: '.png',
+      },
       categories: [],
     }
     var parent = row[2]
