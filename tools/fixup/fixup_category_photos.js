@@ -33,9 +33,10 @@ function getEntities() {
     log('find returned ' + entities.length + ' entities')      
     for (var i = entities.length; i--;) {
       //log(entities[i].category.photo.prefix)
-      var prefixNew = entities[i].category.photo.prefix.replace('/img/categories/', '')
+      var prefixNew = entities[i].category.photo.prefix.replace('88.png', '')
       log(prefixNew)
       entities[i].category.photo.prefix = prefixNew
+      entities[i].category.photo.suffix = '.png'
       db.collection('places').update({ _id:entities[i]._id }, entities[i], {safe:true}, function(err) {
          if (err) return(err)
       })
