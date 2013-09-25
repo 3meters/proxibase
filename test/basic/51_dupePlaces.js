@@ -26,6 +26,12 @@ var powerPlayId = '4bc0ffe974a9a5934423d1f6'
 var luckyStrike = {}
 var powerPlay = {}
 
+var luckyStrikeIdFactual = '46ba739c-21f7-4d72-a544-5581c1d7a7a1'
+var luckyStrikeFactual = {}
+
+var luckyStrikeSplace = {}
+
+
 // Get user and admin sessions and store the credentials in module globals
 exports.getSessions = function(test) {
   testUtil.getUserSession(function(session) {
@@ -71,6 +77,34 @@ exports.getPlacesNearLocation = function(test) {
 }
 
 
+exports.getPlacesNearLocationFactual = function(test) {
+  if (disconnected) return skip(test)
+  t.post({
+    uri: '/places/near',
+    body: {
+      location: luckyStrikeLoc,
+      provider: 'factual',
+      radius: 500,
+      includeRaw: false,
+      limit: 50,
+    }
+  }, function(err, res, body) {
+    var foundLuckyStrike = 0
+    var foundPowerPlay = 0
+    var places = body.data
+    places.forEach(function(place) {
+      t.assert(place.provider)
+      if (luckyStrikeIdFactual === place.provider.factual) {
+        luckyStrikeFactual = place
+        foundLuckyStrike++
+      }
+    })
+    t.assert(1 === foundLuckyStrike)
+    test.done()
+  })
+}
+
+
 exports.insertPlaceEntity = function(test) {
   if (disconnected) return skip(test)
   var body = {
@@ -78,7 +112,52 @@ exports.insertPlaceEntity = function(test) {
     insertApplinks: true,
   }
   t.post({uri: '/do/insertEntity?' + userCred, body: body}, 201,
-    function(err, res) {
+    function(err, res, body) {
+      t.assert(body && body.data && body.data.length)
+      luckyStrikeSplace = body.data[0]
+      t.assert(luckyStrikeSplace.entities && luckyStrikeSplace.entities.length)
+      t.assert(luckyStrikeSplace.linksIn && luckyStrikeSplace.linksIn.length)
+      t.assert(luckyStrikeSplace.entities.length === luckyStrikeSplace.linksIn.length)
+      test.done()
+    }
+  )
+}
+
+exports.insertPlaceEntityAgain = function(test) {
+  if (disconnected) return skip(test)
+  var body = {
+    entity: luckyStrike,
+    insertApplinks: true,
+  }
+  t.post({uri: '/do/insertEntity?' + userCred, body: body}, 201,
+    function(err, res, body) {
+      t.assert(body && body.data && body.data.length)
+      var newPlace = body.data[0]
+      t.assert(luckyStrikeSplace._id === newPlace._id)  // proves merge on provider.provider worked
+      t.assert(luckyStrikeSplace.entities.length === newPlace.entities.length)  // proves applinks were not duped
+      newPlace.entities.forEach(function(applink) {
+        t.assert(applink.modifiedDate > luckyStrikeSplace.modifiedDate)  // proves applinks were updated
+      })
+      t.assert(luckyStrikeSplace.linksIn.length === body.data[0].linksIn.length)    // proves link records were not duped
+      test.done()
+    }
+  )
+}
+
+exports.insertDupePlaceEntityFromFactual = function(test) {
+  if (disconnected) return skip(test)
+  var body = {
+    entity: luckyStrikeFactual,
+    insertApplinks: true,
+  }
+  t.post({uri: '/do/insertEntity?' + userCred, body: body}, 201,
+    function(err, res, body) {
+      t.assert(body && body.data && body.data.length)
+      var splace = body.data[0]
+      t.assert(luckyStrikeSplace._id === splace._id)  // proves merge on phone number + !provider match worked
+      t.assert(splace.provider)
+      t.assert(luckyStrikeId === splace.provider.foursquare)
+      t.assert(luckyStrikeIdFactual === splace.provider.factual)  // proves merged provider.provider
       test.done()
     }
   )
