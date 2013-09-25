@@ -138,7 +138,7 @@ exports.insertPlaceEntityAgain = function(test) {
       newPlace.entities.forEach(function(applink) {
         t.assert(applink.modifiedDate > luckyStrikeSplace.modifiedDate)  // proves applinks were updated
       })
-      t.assert(luckyStrikeSplace.linksIn.length === body.data[0].linksIn.length)    // proves link records were not duped
+      t.assert(luckyStrikeSplace.linksIn.length === body.data[0].linksIn.length)  // proves link records were not duped
       test.done()
     }
   )
