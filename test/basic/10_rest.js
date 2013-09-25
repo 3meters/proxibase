@@ -660,6 +660,18 @@ exports.sortWorks = function(test) {
   })
 }
 
+exports.sortAltFormatWorks = function(test) {
+  t.get('/data/users?sort[0][0]=namelc&sort[0][1]=asc',
+  function(err, res, body) {
+    var namelc = 'a'
+    body.data.forEach(function(user, i) {
+      t.assert(user.namelc > namelc, i)
+      namelc = user.namelc
+    })
+    test.done()
+  })
+}
+
 exports.linkedWorks = function(test) {
   t.post({
     uri: '/find/users?' + userCred,
