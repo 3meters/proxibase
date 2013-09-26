@@ -131,8 +131,7 @@ var testPlaceCustom = {
   },
   address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065550004", 
   provider:{ 
-    aircandi: true,
-    // user: testUser._id
+    aircandi: 'aircandi',
   },
   category:{ 
     id:"4bf58dd8d48988d18c941735", 
@@ -223,15 +222,6 @@ var testApplink2 = {
   },
 }
 
-var testLink = {
-  _to : clIds.beacons + '.11:11:11:11:11:22',
-  _from : clIds.places + '.111111.11111.111.111111',
-  proximity: {
-    primary: true,
-    signal: -100
-  }
-}
-
 var testBeacon = {
   _id : clIds.beacons + '.11:11:11:11:11:11',
   schema : util.statics.schemaBeacon,
@@ -276,6 +266,15 @@ var testBeacon3 = {
     accuracy:30, 
     geometry:[testLongitude, testLatitude] 
   },
+}
+var testLink = {
+  // _to : clIds.beacons + '.11:11:11:11:11:22',
+  _to : testBeacon3._id,
+  _from : clIds.places + '.111111.11111.111.111111',
+  proximity: {
+    primary: true,
+    signal: -100
+  }
 }
 var testLocation = {
   lat : testLatitude,
@@ -654,8 +653,7 @@ exports.insertEntityDoNotTrack = function(test) {
           }, function(err, res, body) {
             t.assert(body.data[0])
             var link = body.data[0]
-            log('\n!!!!!Fix: skipping link ownership\n')
-            // t.assert(link._owner === adminId)
+            t.assert(link._owner === adminId)
             t.assert(link._creator === anonId)
             t.assert(link._modifier === anonId)
             t.post({   // cleanup
@@ -920,7 +918,10 @@ exports.userCannotDeleteBeaconEntitySheCreated = function (test) {
   t.del({
     uri: '/data/beacons/' + testBeacon._id + '?' + userCred
   }, 401, function(err, res, body) {
-    test.done()
+    t.get('/data/beacons/' + testBeacon._id, function(err, res, body) {
+      t.assert(testBeacon._id === body.data._id)
+      test.done()
+    })
   })
 }
 
@@ -1271,3 +1272,13 @@ exports.checkAdminUpdatedLockedRecord = function (test) {
     test.done()
   })
 }
+
+/*
+exports.adminCanDeleteBeaconEntityUserCreated = function (test) {
+  t.del({
+    uri: '/data/beacons/' + testBeacon._id + '?' + adminCred
+  }, function(err, res, body) {
+    test.done()
+  })
+}
+*/

@@ -1,1 +1,1 @@
-run.js
+module.exports = require('./test.js')

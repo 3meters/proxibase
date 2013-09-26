@@ -115,8 +115,15 @@ exports.insertPlaceEntity = function(test) {
     function(err, res, body) {
       t.assert(body && body.data && body.data.length)
       luckyStrikeSplace = body.data[0]
-      t.assert(luckyStrikeSplace.entities && luckyStrikeSplace.entities.length)
-      t.assert(luckyStrikeSplace.linksIn && luckyStrikeSplace.linksIn.length)
+      var applinks = luckyStrikeSplace.entities
+      var links = luckyStrikeSplace.linksIn
+      t.assert(applinks && applinks.length)
+      t.assert(links && links.length)
+      applinks.forEach(function(applink) {
+        t.assert(links.some(function(link) {
+          return (applink._id === link._from)
+        }), applink)
+      })
       t.assert(luckyStrikeSplace.entities.length === luckyStrikeSplace.linksIn.length)
       test.done()
     }
