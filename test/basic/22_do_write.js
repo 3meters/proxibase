@@ -10,6 +10,7 @@ var testUtil = require('../util')
 var t = testUtil.treq
 var constants = require('../constants')
 var dbProfile = constants.dbProfile.smokeTest
+var userId
 var userCred
 var user2Cred
 var adminCred
@@ -298,6 +299,7 @@ var testLocation3 = {
 // Get user and admin sessions and store the credentials in module globals
 exports.getSessions = function (test) {
   testUtil.getUserSession(testUser, function(session) {
+    userId = session._owner
     userCred = 'user=' + session._owner + '&session=' + session.key
     testUtil.getUserSession(testUser2, function(session) {
       user2Cred = 'user=' + session._owner + '&session=' + session.key
@@ -656,11 +658,21 @@ exports.insertEntityDoNotTrack = function(test) {
             t.assert(link._owner === adminId)
             t.assert(link._creator === anonId)
             t.assert(link._modifier === anonId)
-            t.post({   // cleanup
-              uri: '/data/users/' + testUser._id + '?' + userCred,
-              body: { data: { doNotTrack: false }}  // put things back where we found them
-            }, function(err, res) {
-              test.done()
+            t.post({ // confirm the anonlog is working
+              uri: '/find/anonlog?' + adminCred,
+              body: {find: {
+                id: beacon._id,
+                _user: testUser._id,
+              }},
+            }, function(err, res, body) {
+              t.assert(1 === body.data.length)
+              t.assert('insert' === body.data[0].action)
+              t.post({   // put things back as we found them
+                uri: '/data/users/' + testUser._id + '?' + userCred,
+                body: { data: { doNotTrack: false }}
+              }, function(err, res) {
+                test.done()
+              })
             })
           })
         })
