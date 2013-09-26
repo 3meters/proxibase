@@ -477,6 +477,9 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
 }
 
 exports.insertDuplicatePlaceMergesIt = function(test) {
+
+  if (disconnected) return skip(test)
+
   placeId = ''
   t.post({
     uri: '/do/insertEntity?' + userCred,
