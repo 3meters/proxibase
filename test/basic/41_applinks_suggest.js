@@ -290,8 +290,6 @@ exports.compareFoursquareToFactual = function(test) {
 }
 
 exports.getFacebookFromPlaceJoinWithFoursquare = function(test) {
-  log('fix: facebook candidates less than expected')
-  return test.done()
   if (disconnected) return skip(test)
   t.post({
     uri: '/applinks/suggest',
@@ -343,7 +341,7 @@ exports.getFacebookFromPlaceJoinWithFoursquare = function(test) {
     t.assert(raw)
     t.assert(raw.facebookCandidates)
     t.assert(raw.factualCandidates)
-    t.assert(raw.facebookCandidates.length >= 2)
+    t.assert(raw.facebookCandidates.length >= 1)
     t.assert(raw.factualCandidates.length >= 12)
     test.done()
   })

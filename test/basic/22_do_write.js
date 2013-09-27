@@ -10,6 +10,7 @@ var testUtil = require('../util')
 var t = testUtil.treq
 var constants = require('../constants')
 var dbProfile = constants.dbProfile.smokeTest
+var userId
 var userCred
 var user2Cred
 var adminCred
@@ -131,8 +132,7 @@ var testPlaceCustom = {
   },
   address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065550004", 
   provider:{ 
-    aircandi: true,
-    // user: testUser._id
+    aircandi: 'aircandi',
   },
   category:{ 
     id:"4bf58dd8d48988d18c941735", 
@@ -223,15 +223,6 @@ var testApplink2 = {
   },
 }
 
-var testLink = {
-  _to : clIds.beacons + '.11:11:11:11:11:22',
-  _from : clIds.places + '.111111.11111.111.111111',
-  proximity: {
-    primary: true,
-    signal: -100
-  }
-}
-
 var testBeacon = {
   _id : clIds.beacons + '.11:11:11:11:11:11',
   schema : util.statics.schemaBeacon,
@@ -277,6 +268,15 @@ var testBeacon3 = {
     geometry:[testLongitude, testLatitude] 
   },
 }
+var testLink = {
+  // _to : clIds.beacons + '.11:11:11:11:11:22',
+  _to : testBeacon3._id,
+  _from : clIds.places + '.111111.11111.111.111111',
+  proximity: {
+    primary: true,
+    signal: -100
+  }
+}
 var testLocation = {
   lat : testLatitude,
   lng : testLongitude,
@@ -299,6 +299,7 @@ var testLocation3 = {
 // Get user and admin sessions and store the credentials in module globals
 exports.getSessions = function (test) {
   testUtil.getUserSession(testUser, function(session) {
+    userId = session._owner
     userCred = 'user=' + session._owner + '&session=' + session.key
     testUtil.getUserSession(testUser2, function(session) {
       user2Cred = 'user=' + session._owner + '&session=' + session.key
@@ -638,25 +639,41 @@ exports.insertEntityDoNotTrack = function(test) {
       t.assert(body.data && body.data[0])
       var savedEnt = body.data[0]
       var adminId = util.adminUser._id
+      var anonId = util.anonUser._id
       t.assert(savedEnt._owner === adminId)
-      t.assert(savedEnt._creator === adminId)
-      t.assert(savedEnt._modifier === adminId)
+      t.assert(savedEnt._creator === anonId)
+      t.assert(savedEnt._modifier === anonId)
       t.get('/data/beacons/' + beacon._id,
         function(err, res, body) {
           t.assert(body.data)
           var savedBeacon = body.data
           t.assert(savedBeacon._owner === adminId)
-          t.assert(savedBeacon._creator === adminId)
-          t.assert(savedBeacon._modifier === adminId)
+          t.assert(savedBeacon._creator === anonId)
+          t.assert(savedBeacon._modifier === anonId)
           t.get({
             uri: '/data/links?find={"_from":"' + savedEnt._id + '"}'
           }, function(err, res, body) {
             t.assert(body.data[0])
             var link = body.data[0]
             t.assert(link._owner === adminId)
-            t.assert(link._creator === adminId)
-            t.assert(link._modifier === adminId)
-            test.done()
+            t.assert(link._creator === anonId)
+            t.assert(link._modifier === anonId)
+            t.post({ // confirm the anonlog is working
+              uri: '/find/anonlog?' + adminCred,
+              body: {find: {
+                id: beacon._id,
+                _user: testUser._id,
+              }},
+            }, function(err, res, body) {
+              t.assert(1 === body.data.length)
+              t.assert('insert' === body.data[0].action)
+              t.post({   // put things back as we found them
+                uri: '/data/users/' + testUser._id + '?' + userCred,
+                body: { data: { doNotTrack: false }}
+              }, function(err, res) {
+                test.done()
+              })
+            })
           })
         })
       })
@@ -913,7 +930,10 @@ exports.userCannotDeleteBeaconEntitySheCreated = function (test) {
   t.del({
     uri: '/data/beacons/' + testBeacon._id + '?' + userCred
   }, 401, function(err, res, body) {
-    test.done()
+    t.get('/data/beacons/' + testBeacon._id, function(err, res, body) {
+      t.assert(testBeacon._id === body.data._id)
+      test.done()
+    })
   })
 }
 
@@ -1264,3 +1284,13 @@ exports.checkAdminUpdatedLockedRecord = function (test) {
     test.done()
   })
 }
+
+/*
+exports.adminCanDeleteBeaconEntityUserCreated = function (test) {
+  t.del({
+    uri: '/data/beacons/' + testBeacon._id + '?' + adminCred
+  }, function(err, res, body) {
+    test.done()
+  })
+}
+*/

@@ -371,7 +371,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
             name: 'A user-created Test Entity Inside the BallRoom',
             schema : util.statics.schemaPlace,
             // provider: { aircandi: user._id },  old
-            provider: { aircandi: true }, // new
+            provider: { aircandi: 'aircandi' }, // new
             location: ballRoomLoc,
             enabled : true,
             locked : false,
@@ -388,7 +388,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
             name: 'A user-created Entity At George\'s House',
             schema : util.statics.schemaPlace,
             // provider: {user: user._id}, old
-            provider: {aircandi: true},  // new
+            provider: {aircandi: 'aircandi'},  // new
             location: {lat: 47.664525, lng: -122.354787},
             enabled : true,
             locked : false,
@@ -477,6 +477,9 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
 }
 
 exports.insertDuplicatePlaceMergesIt = function(test) {
+
+  if (disconnected) return skip(test)
+
   placeId = ''
   t.post({
     uri: '/do/insertEntity?' + userCred,
