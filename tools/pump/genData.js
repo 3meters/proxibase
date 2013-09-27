@@ -302,10 +302,15 @@ function genEntityRecords(parentIds, parentCollectionName, count, entityType, li
 
 function saveAll(callback) {
   var tableNames = []
+  var linkTable
   for (name in table) {
-    tableNames.push(name)
+    name === 'links' ? linkTable = true : tableNames.push(name)
   }
-  async.forEachSeries(tableNames, save, callback)
+  async.forEachSeries(tableNames, save, function(err) {
+    if (err) return callback(err)
+    if (linkTable) return save('links', callback)
+    callback()
+  })
 }
 
 function list(tableName, fn) {
