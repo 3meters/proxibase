@@ -68,7 +68,7 @@ exports.findLinksFailProperlyOnBadInputs = function(test) {
   query = {uri: '/find/users/' + userId}
   query.body = {links: [{bogus: 'documents'}]}
   t.post(query, 400, function(err, res, body) {
-    t.assert(400.1 === body.error.code) // missing required param
+    t.assert(400.13 === body.error.code)
     query.body = {links: [{to: 'bogus'}]}
     t.post(query, 400, function(err, res, body) {
       t.assert(400.13 === body.error.code) // bad value

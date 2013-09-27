@@ -90,7 +90,8 @@ exports.appLinkPositionSortWorks = function(test) {
         {type: 'website', position: 1, appId: 'www.reddoorseattle.com'},
         {type: 'yelp', position: 0, appId: 'q20FkqFbmdOhfSEhaT5IHg'},
         {type: 'foursquare', appId: '42893400f964a5204c231fe3'},
-      ]
+      ],
+      timeout: 10
     }
   }, function(err, res, body) {
     t.assert(body.data)
