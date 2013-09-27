@@ -371,7 +371,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
             name: 'A user-created Test Entity Inside the BallRoom',
             schema : util.statics.schemaPlace,
             // provider: { aircandi: user._id },  old
-            provider: { aircandi: 'aircandi' }, // new
+            provider: { aircandi: true }, // new
             location: ballRoomLoc,
             enabled : true,
             locked : false,
@@ -380,6 +380,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
       }, 201, function(err, res, body) {
         var newEnt = body.data[0]
         t.assert(newEnt)
+        t.assert(newEnt.provider.aircandi === newEnt._id)
 
         // Add a user-created place about a mile away, at George's house
         t.post({
@@ -387,8 +388,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
           body: {entity: {
             name: 'A user-created Entity At George\'s House',
             schema : util.statics.schemaPlace,
-            // provider: {user: user._id}, old
-            provider: {aircandi: 'aircandi'},  // new
+            provider: {aircandi: true},  // new
             location: {lat: 47.664525, lng: -122.354787},
             enabled : true,
             locked : false,
@@ -416,7 +416,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
               if (place._id && place._id === newEnt._id) {
                 foundNewEnt++
                 t.assert(place.provider.aircandi)
-                t.assert(place.provider.aircandi === 'aircandi')
+                t.assert(place.provider.aircandi === place._id)
               }
               if (place._id && place._id === newEnt2._id) {
                 foundNewEnt2++
