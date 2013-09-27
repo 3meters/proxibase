@@ -71,12 +71,12 @@ exports.getEntitiesMaximum = function (test) {
       entityIds: [constants.placeId], 
       links: {
         active: [ 
-          { type:util.statics.typeProximity, load: true, links: true, count: true, direction: 'both' }, 
-          { type:util.statics.schemaApplink, load: true, links: true, count: true, direction: 'both' }, 
-          { type:util.statics.schemaComment, load: true, links: true, count: true, direction: 'both' }, 
-          { type:util.statics.schemaPost, load: true, links: true, count: true, direction: 'both' }, 
-          { type:util.statics.typeWatch, load: true, links: true, count: true, direction: 'both' }, 
-          { type:util.statics.typeLike, load: true, links: true, count: true, direction: 'both' }, 
+          { type:util.statics.typeProximity, schema:util.statics.schemaBeacon, load: true, links: true, count: true, direction: 'both' }, 
+          { type:util.statics.schemaApplink, schema:util.statics.schemaApplink, load: true, links: true, count: true, direction: 'both' }, 
+          { type:util.statics.schemaComment, schema:util.statics.schemaComment, load: true, links: true, count: true, direction: 'both' }, 
+          { type:util.statics.schemaPost, schema:util.statics.schemaPost, load: true, links: true, count: true, direction: 'both' }, 
+          { type:util.statics.typeWatch, schema:util.statics.schemaUser, load: true, links: true, count: true, direction: 'both' }, 
+          { type:util.statics.typeLike, schema:util.statics.schemaUser, load: true, links: true, count: true, direction: 'both' }, 
         ]},
     }
   }, function(err, res, body) {
@@ -103,7 +103,7 @@ exports.getEntitiesWithComments = function (test) {
       entityIds: [constants.placeId], 
       links: {
         active: [ 
-          { type:util.statics.schemaComment, load: true, links: false, count: false }, 
+          { type:util.statics.schemaComment, schema:util.statics.schemaComment, load: true, links: false, count: false }, 
         ]},
     }
   }, function(err, res, body) {
@@ -128,20 +128,19 @@ exports.getEntitiesWithCommentsAndLinkCounts = function (test) {
       entityIds: [constants.placeId], 
       links: {
         active: [ 
-          { type:util.statics.schemaComment, load: true, links: false, count: false }, 
-          { type:util.statics.typeProximity }, 
-          { type:util.statics.schemaApplink }, 
-          { type:util.statics.schemaComment }, 
-          { type:util.statics.schemaPost }, 
-          { type:util.statics.typeWatch }, 
-          { type:util.statics.typeLike }, 
+          { type:util.statics.typeProximity, schema:util.statics.schemaBeacon }, 
+          { type:util.statics.schemaApplink, schema:util.statics.schemaApplink }, 
+          { type:util.statics.schemaComment, schema:util.statics.schemaComment, load: true, links: false, count: false }, 
+          { type:util.statics.schemaPost, schema:util.statics.schemaPost }, 
+          { type:util.statics.typeWatch, schema:util.statics.schemaUser }, 
+          { type:util.statics.typeLike, schema:util.statics.schemaUser }, 
         ]},
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data[0])
     var record = body.data[0]
-    t.assert(record.linksInCounts && record.linksInCounts.length === 5)
+    t.assert(record.linksInCounts && record.linksInCounts.length === 4)
     t.assert(record.linksOutCounts && record.linksOutCounts.length === 1)
     t.assert(!record.linksIn && !record.linksOut)
     t.assert(record.entities && record.entities.length === dbProfile.cpe)
@@ -157,13 +156,12 @@ exports.getEntitiesAndLinkedEntitiesByUser = function (test) {
       links: {
         loadWhere: { _creator: constants.uid1 },
         active: [ 
-          { type:util.statics.schemaComment, load: true, links: false, count: false }, 
-          { type:util.statics.schemaPost, load: true, links: false, count: false }, 
-          { type:util.statics.typeProximity }, 
-          { type:util.statics.schemaApplink }, 
-          { type:util.statics.schemaComment }, 
-          { type:util.statics.typeWatch }, 
-          { type:util.statics.typeLike }, 
+          { type:util.statics.typeProximity, schema:util.statics.schemaBeacon }, 
+          { type:util.statics.schemaApplink, schema:util.statics.schemaApplink }, 
+          { type:util.statics.schemaComment, schema:util.statics.schemaComment, load: true, links: false, count: false }, 
+          { type:util.statics.schemaPost, schema:util.statics.schemaPost, load: true, links: false, count: false }, 
+          { type:util.statics.typeWatch, schema:util.statics.schemaUser }, 
+          { type:util.statics.typeLike, schema:util.statics.schemaUser }, 
         ]},
     }
   }, function(err, res, body) {
@@ -184,7 +182,7 @@ exports.getEntitiesForLocation = function (test) {
       entityIds: [constants.beaconId],
       links: {
         active: [ 
-          { type:util.statics.typeProximity, load: true }, 
+          { type:util.statics.typeProximity, schema:util.statics.schemaPlace, load: true }, 
         ]},
     }
   }, function(err, res, body) {
@@ -204,7 +202,7 @@ exports.getEntitiesForLocationLimited = function (test) {
       entityIds: [constants.beaconId],
       links: {
         active: [ 
-          { type:util.statics.typeProximity, load: true, limit: 3 }, 
+          { type:util.statics.typeProximity, schema:util.statics.schemaPlace, load: true, limit: 3 }, 
         ]},
     }
   }, function(err, res, body) {
