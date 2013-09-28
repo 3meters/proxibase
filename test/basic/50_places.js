@@ -105,6 +105,7 @@ exports.getPlacesNearLocationFoursquare = function(test) {
       radius: 500,
       includeRaw: false,
       limit: 10,
+      timeout: 10,
     }
   }, function(err, res, body) {
     var foundBallroom = 0
@@ -471,68 +472,6 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
             })
           })
         })
-      })
-    })
-  })
-}
-
-exports.insertDuplicatePlaceMergesIt = function(test) {
-
-  if (disconnected) return skip(test)
-
-  placeId = ''
-  t.post({
-    uri: '/do/insertEntity?' + userCred,
-    body: {
-      entity: {
-        name: 'Zoka1',
-        schema: util.statics.schemaPlace,
-        provider: {
-          foursquare: '41b3a100f964a520681e1fe3',
-        },
-        phone: '2065454277',
-      }
-    }
-  }, 201, function(err, res, body) {
-    t.assert(body.data && body.data.length)
-    placeId = body.data[0]._id
-    t.post({
-      uri: '/do/insertEntity?' + userCred,
-      body: {
-        entity: {
-          name: 'Zoka2',
-          schema: util.statics.schemaPlace,
-          provider: {
-            factual: 'fdc45418-be3b-4ab9-92d6-62ae6fb6ce48',
-          },
-          phone: '2065454277',
-        }
-      }
-    }, 201, function(err, res, body) {
-      t.assert(body.data && body.data.length)
-      var place = body.data[0]
-      t.assert(placeId === place._id) // proves merged on phone number
-      t.assert('Zoka1' === place.name)
-      t.assert(place.provider.foursquare)
-      t.post({
-        uri: '/do/insertEntity?' + userCred,
-        body: {
-          entity: {
-            name: 'Zoka3',
-            schema: util.statics.schemaPlace,
-            provider: {
-              factual: 'fdc45418-be3b-4ab9-92d6-62ae6fb6ce48',
-            },
-          }
-        }
-      }, 201, function(err, res, body) {
-        t.assert(body.data && body.data.length)
-        var place = body.data[0]
-        t.assert(placeId === place._id) // proves merged on provider Id
-        t.assert('Zoka1' === place.name)
-        t.assert(place.provider.foursquare)
-        t.assert(place.provider.factual)
-        test.done()
       })
     })
   })
