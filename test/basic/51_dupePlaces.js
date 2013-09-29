@@ -115,17 +115,30 @@ exports.insertPlaceEntity = function(test) {
     function(err, res, body) {
       t.assert(body && body.data && body.data.length)
       luckyStrikeSplace = body.data[0]
-      var applinks = luckyStrikeSplace.entities
       var links = luckyStrikeSplace.linksIn
-      t.assert(applinks && applinks.length)
-      t.assert(links && links.length)
-      applinks.forEach(function(applink) {
-        t.assert(links.some(function(link) {
-          return (applink._id === link._from)
-        }), applink)
+
+      t.post({
+        uri: '/do/getEntitiesForEntity',
+        body: {
+          entityId: luckyStrikeSplace._id,
+          cursor: { 
+            linkTypes: [util.statics.typeContent], 
+            schemas: [util.statics.schemaApplink], 
+            direction: 'in',
+          },
+        }
+      }, function(err, res, body) {
+        var applinks = body.data
+        t.assert(applinks && applinks.length)
+        t.assert(links && links.length)
+        applinks.forEach(function(applink) {
+          t.assert(links.some(function(link) {
+            return (applink._id === link._from)
+          }), applink)
+        })
+        t.assert(applinks.length === links.length)
+        test.done()
       })
-      t.assert(luckyStrikeSplace.entities.length === luckyStrikeSplace.linksIn.length)
-      test.done()
     }
   )
 }
@@ -141,11 +154,10 @@ exports.insertPlaceEntityAgain = function(test) {
       t.assert(body && body.data && body.data.length)
       var newPlace = body.data[0]
       t.assert(luckyStrikeSplace._id === newPlace._id)  // proves merge on provider.provider worked
-      t.assert(luckyStrikeSplace.entities.length === newPlace.entities.length)  // proves applinks were not duped
-      newPlace.entities.forEach(function(applink) {
-        t.assert(applink.modifiedDate > luckyStrikeSplace.modifiedDate)  // proves applinks were updated
+      newPlace.linksIn.forEach(function(link) {
+        t.assert(link.shortcut.modifiedDate > luckyStrikeSplace.modifiedDate)  // proves applinks were updated
       })
-      t.assert(luckyStrikeSplace.linksIn.length === body.data[0].linksIn.length)  // proves link records were not duped
+      t.assert(luckyStrikeSplace.linksIn.length === newPlace.linksIn.length)  // proves link records were not duped
       test.done()
     }
   )

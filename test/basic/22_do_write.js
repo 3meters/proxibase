@@ -345,7 +345,7 @@ exports.checkRegisterDevice = function(test) {
 
 exports.updateRegisteredDeviceBeacons = function (test) {
   t.post({
-    uri: '/do/getEntitiesByProximity',
+    uri: '/do/getEntitiesByProximity?' + userCred,
     body: {
       beaconIds: [constants.beaconId],
       registrationId: constants.registrationId
@@ -375,7 +375,7 @@ exports.checkDeviceBeacons = function(test) {
 
 exports.unregisterDeviceForNotifications = function (test) {
   t.post({
-    uri: '/do/unregisterDevice',
+    uri: '/do/unregisterDevice?' + userCred,
     body: {
       registrationId: constants.registrationId,
     }
@@ -955,7 +955,7 @@ exports.insertComment = function (test) {
       link: {
         _to: testPlace._id,
         strong: true,
-        type: util.statics.schemaComment
+        type: util.statics.typeContent,
       },
       skipNotifications: true
     }
@@ -987,7 +987,8 @@ exports.checkInsertCommentLink = function (test) {
       find:{ 
         _from:testComment._id,
         _to:testPlace._id,
-        type:util.statics.schemaComment,
+        type: util.statics.typeContent,
+        fromSchema: util.statics.schemaComment,
       }
     }
   }, function(err, res, body) {
@@ -1151,7 +1152,7 @@ exports.nonOwnerCannotCommentOnLockedRecord = function(test) {
       entity: testComment2, 
       link: {
         _to: testPlaceCustom._id,
-        type: util.statics.schemaComment,
+        type: util.statics.typeContent,
         strong: true,
       },
       skipNotifications: true
@@ -1169,7 +1170,7 @@ exports.ownerCanCommentOnLockedRecord = function(test) {
       entity: testComment2, 
       link: {
         _to: testPlaceCustom._id,
-        type: util.statics.schemaComment,
+        type: util.statics.typeContent,
         strong: true,
       },
       skipNotifications: true
@@ -1201,7 +1202,7 @@ exports.adminCanCommentOnLockedRecord = function(test) {
       entity: testComment3, 
       link: {
         _to: testPlaceCustom._id,
-        type: util.statics.schemaComment,
+        type: util.statics.typeContent,
         strong: true,
       },
       skipNotifications: true
