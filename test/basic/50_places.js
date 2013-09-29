@@ -193,26 +193,23 @@ exports.getPlacesNearLocationFactual = function(test) {
       t.assert(body.data.length)
       var savedRoxy = res.body.data[0]
       t.assert(savedRoxy.provider.factual === roxy.provider.factual)
-      var applinks = savedRoxy.entities // getEntities munges them all together
-      t.assert(applinks)
-      t.assert(applinks.length >= 2)
-      applinks.forEach(function(applink) {
-        t.assert(applink.type)
-        t.assert(applink.type !== 'factual')
-        t.assert(applink.appId || applink.appUrl)
-        t.assert(!applink.icon)
-        t.assert(applink.data)
-        t.assert(applink.data.origin)
+      t.assert(savedRoxy.linksIn && savedRoxy.linksIn.length >=2)
+      savedRoxy.linksIn.forEach(function(link) {
+        t.assert(link.shortcut)
+        t.assert(link.shortcut.appId || link.shortcut.appUrl)
+        t.assert(link.shortcut.app)
+        t.assert(link.shortcut.app !== 'factual')
+        t.assert(!link.icon)
       })
-      t.assert(applinks.some(function(applink) {
-        return (applink.type === 'foursquare'
-            && applink.photo
-            && applink.photo.prefix
-            && applink.photo.suffix
+      t.assert(savedRoxy.linksIn.some(function(link) {
+        return (link.shortcut.app === 'foursquare'
+            && link.shortcut.photo
+            && link.shortcut.photo.prefix
+            && link.shortcut.photo.suffix
           )
       }))
-      t.assert(applinks.some(function(applink) {
-        return (applink.type === 'facebook')
+      t.assert(savedRoxy.linksIn.some(function(link) {
+        return (link.shortcut.app === 'facebook')
       }))
       test.done()
     })
@@ -286,25 +283,25 @@ exports.insertPlaceEntitySuggestApplinksFromFactual = function(test) {
   body.entity.provider = {foursquare: ballRoomId}  // Seattle Ballroom
   t.post({uri: '/do/insertEntity?' + userCred, body: body}, 201,
     function(err, res) {
-      var applinks = res.body.data[0].entities
-      t.assert(applinks)
-      t.assert(applinks.length > 3)
-      t.assert(applinks.some(function(applink) {
-        return (applink.type === 'foursquare'
-            && applink.appId === ballRoomId
+      t.assert(res.body.data && res.body.data.length && res.body.data[0].linksIn)
+      var links = res.body.data[0].linksIn
+      t.assert(links.length > 3)
+      t.assert(links.some(function(link) {
+        return (link.shortcut.app === 'foursquare'
+            && link.shortcut.appId === ballRoomId
           )
       }))
-      t.assert(applinks.some(function(applink) {
-        return (applink.type === 'facebook')
+      t.assert(links.some(function(link) {
+        return (link.shortcut.app === 'facebook')
       }))
-      t.assert(applinks.some(function(applink) {
-        return (applink.type === 'website')
+      t.assert(links.some(function(link) {
+        return (link.shortcut.app === 'website')
       }))
-      t.assert(applinks.some(function(applink) {
-        return (applink.type === 'twitter')
+      t.assert(links.some(function(link) {
+        return (link.shortcut.app === 'twitter')
       }))
-      applinks.forEach(function(applink) {
-        t.assert(applink.type !== 'factual')
+      links.forEach(function(link) {
+        t.assert(link.shortcut.app !== 'factual')
       })
       test.done()
     }
@@ -360,7 +357,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
     }, 201, function(err, res, body) {
       t.assert(body.data && body.data[0])
       ksthai = body.data[0]  // TODO, test for changes!
-      var applinks = body.data[0].entities
+      var applinks = body.data[0].linksIn
       t.assert(applinks && applinks.length > 10)
 
       // Add a user-created place inside the ballroom

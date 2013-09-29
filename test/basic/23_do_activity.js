@@ -142,7 +142,7 @@ exports.insertCandigramBounce = function (test) {
       link: {
         _to: testPlace2._id,
         strong: false,
-        type: util.statics.schemaCandigram
+        type: util.statics.typeContent
       },
       skipNotifications: true
     }
@@ -206,7 +206,7 @@ exports.moveCandigram = function(test) {
         find:{ 
           _from:testCandigramBounce._id,
           _to:testPlace2._id,
-          type:util.statics.schemaCandigram,
+          type:util.statics.typeContent,
         }
       }
     }, function(err, res, body) {
@@ -221,7 +221,7 @@ exports.moveCandigram = function(test) {
           table:'links', 
           find:{ 
             _from: testCandigramBounce._id,
-            type: util.statics.schemaCandigram,
+            type: util.statics.typeContent,
             inactive: false,
           }
         }
@@ -284,7 +284,7 @@ exports.addEntitySet = function (test) {
         util.clone(testApplink),
         util.clone(testApplink),
         util.clone(testApplink)],
-      linkType: util.statics.typeApplink,
+      schema: util.statics.schemaApplink,
     }
   }, 200, function(err, res, body) {
     t.assert(body.info.indexOf('replaced') > 0)
@@ -295,7 +295,7 @@ exports.addEntitySet = function (test) {
       uri: '/do/find',
       body: {
         table:'links',
-        find: { _to: testPlace2._id, type: util.statics.typeApplink }
+        find: { _to: testPlace2._id, type: util.statics.typeContent, fromSchema: util.statics.schemaApplink }
       }
     }, function(err, res, body) {
       t.assert(body.count === 3)
@@ -337,7 +337,7 @@ exports.replaceEntitySet = function (test) {
         util.clone(testApplink2),
         util.clone(testApplink2),
         util.clone(testApplink2)],
-      linkType: util.statics.typeApplink,
+      schema: util.statics.schemaApplink,
     }
   }, 200, function(err, res, body) {
     t.assert(body.info.indexOf('replaced') > 0)
@@ -348,7 +348,7 @@ exports.replaceEntitySet = function (test) {
       uri: '/do/find',
       body: {
         table:'links',
-        find: { _to: testPlace2._id, type: util.statics.typeApplink }
+        find: { _to: testPlace2._id, type: util.statics.typeContent, fromSchema: util.statics.schemaApplink }
       }
     }, function(err, res, body) {
       t.assert(body.count === 3)
