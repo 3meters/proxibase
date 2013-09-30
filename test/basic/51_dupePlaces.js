@@ -121,9 +121,9 @@ exports.insertPlaceEntity = function(test) {
         uri: '/do/getEntitiesForEntity',
         body: {
           entityId: luckyStrikeSplace._id,
-          cursor: { 
-            linkTypes: [util.statics.typeContent], 
-            schemas: [util.statics.schemaApplink], 
+          cursor: {
+            linkTypes: [util.statics.typeContent],
+            schemas: [util.statics.schemaApplink],
             direction: 'in',
           },
         }
@@ -155,7 +155,7 @@ exports.insertPlaceEntityAgain = function(test) {
       var newPlace = body.data[0]
       t.assert(luckyStrikeSplace._id === newPlace._id)  // proves merge on provider.provider worked
       newPlace.linksIn.forEach(function(link) {
-        t.assert(link.shortcut.modifiedDate > luckyStrikeSplace.modifiedDate)  // proves applinks were updated
+        t.assert(link.shortcut.sortDate > luckyStrikeSplace.modifiedDate)  // proves applinks were updated
       })
       t.assert(luckyStrikeSplace.linksIn.length === newPlace.linksIn.length)  // proves link records were not duped
       test.done()
