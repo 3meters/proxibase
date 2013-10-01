@@ -428,8 +428,8 @@ exports.insertPlace = function (test) {
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
-    t.assert(body.data && body.data[0])
-    var savedEnt = body.data[0]
+    t.assert(body.data)
+    var savedEnt = body.data
     t.assert(savedEnt._owner === util.adminUser._id)
     t.assert(savedEnt._creator === testUser._id)
     t.assert(savedEnt._modifier === testUser._id)
@@ -517,8 +517,8 @@ exports.insertPlaceCustom = function (test) {
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
-    t.assert(body.data && body.data[0])
-    var savedEnt = body.data[0]
+    t.assert(body.data)
+    var savedEnt = body.data
     t.assert(savedEnt._owner === testUser._id)
     t.assert(savedEnt._creator === testUser._id)
     t.assert(savedEnt._modifier === testUser._id)
@@ -550,7 +550,7 @@ exports.insertPlaceBeaconAlreadyExists = function (test) {
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
-    t.assert(body.data && body.data[0]._id)
+    t.assert(body.data && body.data._id)
     test.done()
   })
 }
@@ -641,8 +641,8 @@ exports.insertEntityDoNotTrack = function(test) {
       }
     }, 201, function(err, res, body) {
       t.assert(body.count === 1)
-      t.assert(body.data && body.data[0])
-      var savedEnt = body.data[0]
+      t.assert(body.data)
+      var savedEnt = body.data
       var adminId = util.adminUser._id
       var anonId = util.anonUser._id
       t.assert(savedEnt._owner === adminId)
@@ -966,7 +966,7 @@ exports.insertComment = function (test) {
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
-    t.assert(body.data && body.data[0])
+    t.assert(body.data)
     test.done()
   })
 }
@@ -1182,7 +1182,7 @@ exports.ownerCanCommentOnLockedRecord = function(test) {
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
-    t.assert(body.data && body.data[0])
+    t.assert(body.data)
     test.done()
   })
 }
@@ -1214,7 +1214,7 @@ exports.adminCanCommentOnLockedRecord = function(test) {
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
-    t.assert(body.data && body.data[0])
+    t.assert(body.data)
     test.done()
   })
 }

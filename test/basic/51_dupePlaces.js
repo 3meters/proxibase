@@ -113,8 +113,8 @@ exports.insertPlaceEntity = function(test) {
   }
   t.post({uri: '/do/insertEntity?' + userCred, body: body}, 201,
     function(err, res, body) {
-      t.assert(body && body.data && body.data.length)
-      luckyStrikeSplace = body.data[0]
+      t.assert(body && body.data)
+      luckyStrikeSplace = body.data
       var links = luckyStrikeSplace.linksIn
 
       t.post({
@@ -151,8 +151,8 @@ exports.insertPlaceEntityAgain = function(test) {
   }
   t.post({uri: '/do/insertEntity?' + userCred, body: body}, 201,
     function(err, res, body) {
-      t.assert(body && body.data && body.data.length)
-      var newPlace = body.data[0]
+      t.assert(body && body.data)
+      var newPlace = body.data
       t.assert(luckyStrikeSplace._id === newPlace._id)  // proves merge on provider.provider worked
       newPlace.linksIn.forEach(function(link) {
         t.assert(link.shortcut.sortDate > luckyStrikeSplace.modifiedDate)  // proves applinks were updated
@@ -171,8 +171,8 @@ exports.insertDupePlaceEntityFromFactual = function(test) {
   }
   t.post({uri: '/do/insertEntity?' + userCred, body: body}, 201,
     function(err, res, body) {
-      t.assert(body && body.data && body.data.length)
-      var splace = body.data[0]
+      t.assert(body && body.data)
+      var splace = body.data
       t.assert(luckyStrikeSplace._id === splace._id)  // proves merge on phone number + !provider match worked
       t.assert(splace.provider)
       t.assert(luckyStrikeId === splace.provider.foursquare)

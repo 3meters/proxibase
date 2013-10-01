@@ -190,8 +190,8 @@ exports.getPlacesNearLocationFactual = function(test) {
         includeRaw: true,
       }
     }, 201, function(err, res, body) {
-      t.assert(body.data.length)
-      var savedRoxy = res.body.data[0]
+      t.assert(body.data)
+      var savedRoxy = res.body.data
       t.assert(savedRoxy.provider.factual === roxy.provider.factual)
       t.assert(savedRoxy.linksIn && savedRoxy.linksIn.length >=2)
       savedRoxy.linksIn.forEach(function(link) {
@@ -283,8 +283,8 @@ exports.insertPlaceEntitySuggestApplinksFromFactual = function(test) {
   body.entity.provider = {foursquare: ballRoomId}  // Seattle Ballroom
   t.post({uri: '/do/insertEntity?' + userCred, body: body}, 201,
     function(err, res) {
-      t.assert(res.body.data && res.body.data.length && res.body.data[0].linksIn)
-      var links = res.body.data[0].linksIn
+      t.assert(res.body.data && res.body.data.linksIn)
+      var links = res.body.data.linksIn
       t.assert(links.length > 3)
       t.assert(links.some(function(link) {
         return (link.shortcut.app === 'foursquare'
@@ -355,9 +355,9 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
         includeRaw: true
       }
     }, 201, function(err, res, body) {
-      t.assert(body.data && body.data[0])
-      ksthai = body.data[0]  // TODO, test for changes!
-      var applinks = body.data[0].linksIn
+      t.assert(body.data)
+      ksthai = body.data  // TODO, test for changes!
+      var applinks = body.data.linksIn
       t.assert(applinks && applinks.length > 10)
 
       // Add a user-created place inside the ballroom
@@ -375,7 +375,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
           }
         }
       }, 201, function(err, res, body) {
-        var newEnt = body.data[0]
+        var newEnt = body.data
         t.assert(newEnt)
         t.assert(newEnt.provider.aircandi === newEnt._id)
 
@@ -391,7 +391,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
             locked : false,
           }}
         }, 201, function(err, res, body) {
-          var newEnt2 = body.data[0]
+          var newEnt2 = body.data
           t.assert(newEnt2)
 
           // Run radar again
@@ -491,8 +491,8 @@ exports.insertDuplicatePlaceMergesIt = function(test) {
       }
     }
   }, 201, function(err, res, body) {
-    t.assert(body.data && body.data.length)
-    placeId = body.data[0]._id
+    t.assert(body.data)
+    placeId = body.data._id
     t.post({
       uri: '/do/insertEntity?' + userCred,
       body: {
@@ -506,8 +506,8 @@ exports.insertDuplicatePlaceMergesIt = function(test) {
         }
       }
     }, 201, function(err, res, body) {
-      t.assert(body.data && body.data.length)
-      var place = body.data[0]
+      t.assert(body.data)
+      var place = body.data
       t.assert(placeId === place._id) // proves merged on phone number
       t.assert('Zoka1' === place.name)
       t.assert(place.provider.foursquare)
@@ -523,8 +523,8 @@ exports.insertDuplicatePlaceMergesIt = function(test) {
           }
         }
       }, 201, function(err, res, body) {
-        t.assert(body.data && body.data.length)
-        var place = body.data[0]
+        t.assert(body.data)
+        var place = body.data
         t.assert(placeId === place._id) // proves merged on provider Id
         t.assert('Zoka1' === place.name)
         t.assert(place.provider.foursquare)
