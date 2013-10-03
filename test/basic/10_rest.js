@@ -709,17 +709,11 @@ exports.countByMultipleFieldsWorks = function(test) {
     uri: '/data/links?countBy=_owner,type'
   }, function(err, res, body) {
     // These are based on data in template test database
-    t.assert(body.count >= 40)
+    t.assert(body.count >= 33)
     body.data.forEach(function(elm) {
       switch (elm.type) {
-        case 'post':
-          t.assert(elm.countBy === 250)
-          break
-        case 'applink':
-          t.assert(elm.countBy === 250)
-          break
-        case 'comment':
-          t.assert(elm.countBy === 1500)
+        case 'content':
+          t.assert(elm.countBy === 2000 || elm.countBy === 500)
           break
         case 'proximity':
           t.assert(elm.countBy <= 500)

@@ -28,8 +28,8 @@ var testUser = {
   name : "John Q Test",
   email : "johnqtest@3meters.com",
   password : "12345678",
-  photo: { 
-    prefix:"resource:placeholder_user", 
+  photo: {
+    prefix:"resource:placeholder_user",
     source:"resource",
   },
   area : "Testville, WA",
@@ -47,20 +47,20 @@ var testPlace = {
   _id : clIds.places + ".111111.11111.111.111111",
   schema : util.statics.schemaPlace,
   name : "Testing place entity",
-  photo: { 
-    prefix:"1001_20111224_104245.jpg", 
+  photo: {
+    prefix:"1001_20111224_104245.jpg",
     source:"aircandi"
   },
   signalFence : -100,
-  location: { 
-    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] 
+  location: {
+    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
-  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065550001", 
-  provider:{ 
+  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065550001",
+  provider:{
     foursquare:"0001"
   },
-  category:{ 
-    id:"4bf58dd8d48988d18c941735", 
+  category:{
+    id:"4bf58dd8d48988d18c941735",
     name : "Baseball Stadium",
     photo:{
       prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
@@ -72,20 +72,20 @@ var testPlace2 = {
   _id : clIds.places + ".111111.11111.111.111112",
   schema : util.statics.schemaPlace,
   name : "Testing place entity",
-  photo: { 
-    prefix:"1001_20111224_104245.jpg", 
+  photo: {
+    prefix:"1001_20111224_104245.jpg",
     source:"aircandi"
   },
   signalFence : -100,
-  location: { 
-    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] 
+  location: {
+    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
-  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"206550002", 
-  provider:{ 
+  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"206550002",
+  provider:{
     foursquare:"0002"
   },
-  category:{ 
-    id:"4bf58dd8d48988d18c941735", 
+  category:{
+    id:"4bf58dd8d48988d18c941735",
     name : "Baseball Stadium",
     photo:{
       prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
@@ -97,20 +97,20 @@ var testPlace3 = {
   _id : clIds.places + ".111111.11111.111.111113",
   schema : util.statics.schemaPlace,
   name : "Testing place entity",
-  photo: { 
-    prefix:"1001_20111224_104245.jpg", 
+  photo: {
+    prefix:"1001_20111224_104245.jpg",
     source:"aircandi"
   },
   signalFence : -100,
-  location: { 
-    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] 
+  location: {
+    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
-  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065550003", 
-  provider:{ 
+  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065550003",
+  provider:{
     foursquare:"0004"
   },
-  category:{ 
-    id:"4bf58dd8d48988d18c941735", 
+  category:{
+    id:"4bf58dd8d48988d18c941735",
     name : "Baseball Stadium",
     photo:{
       prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
@@ -122,20 +122,20 @@ var testPlaceCustom = {
   _id : clIds.places + ".111111.11111.111.111114",
   schema : util.statics.schemaPlace,
   name : "Testing place entity custom",
-  photo: { 
-    prefix:"1001_20111224_104245.jpg", 
+  photo: {
+    prefix:"1001_20111224_104245.jpg",
     source:"aircandi"
   },
   signalFence : -100,
-  location: { 
-    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] 
+  location: {
+    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
-  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065550004", 
-  provider:{ 
+  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065550004",
+  provider:{
     aircandi: 'aircandi',
   },
-  category:{ 
-    id:"4bf58dd8d48988d18c941735", 
+  category:{
+    id:"4bf58dd8d48988d18c941735",
     name : "Baseball Stadium",
     photo:{
       prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
@@ -148,8 +148,8 @@ var testPost = {
   _id : clIds.posts + ".111111.11111.111.111111",
   schema : util.statics.schemaPost,
   name : "Testing post entity",
-  photo: { 
-    prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", 
+  photo: {
+    prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
     source:"aircandi",
   },
 }
@@ -157,12 +157,12 @@ var testCandigramBounce = {
   _id : clIds.candigrams + ".111111.11111.111.111111",
   schema : util.statics.schemaCandigram,
   type : "bounce",
-  location: { 
-    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] 
-  },  
+  location: {
+    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
+  },
   name : "Testing candigram entity",
-  photo: { 
-    prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", 
+  photo: {
+    prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
     source:"aircandi",
   },
 }
@@ -171,12 +171,12 @@ var testCandigramTour = {
   schema : util.statics.schemaCandigram,
   type : "tour",
   duration: 60000,
-  location: { 
-    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude] 
-  },  
+  location: {
+    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
+  },
   name : "Testing candigram entity",
-  photo: { 
-    prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg", 
+  photo: {
+    prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
     source:"aircandi",
   },
 }
@@ -201,24 +201,24 @@ var testComment3 = {
 var testApplink = {
   schema: util.statics.schemaApplink,
   name: "Applink",
-  photo: { 
-    prefix:"https://graph.facebook.com/143970268959049/picture?type=large", 
+  photo: {
+    prefix:"https://graph.facebook.com/143970268959049/picture?type=large",
     source:"facebook",
   },
   appId: "143970268959049",
-  data: { 
+  data: {
     origin : "facebook", validated : 1369167109174.0, likes : 100
   },
 }
 var testApplink2 = {
   schema: util.statics.schemaApplink,
   name: "Applink New",
-  photo: { 
-    prefix:"https://graph.facebook.com/143970268959049/picture?type=large", 
+  photo: {
+    prefix:"https://graph.facebook.com/143970268959049/picture?type=large",
     source:"facebook",
   },
   appId: "143970268959049",
-  data: { 
+  data: {
     origin : "facebook", validated : 1369167109174.0, likes : 100
   },
 }
@@ -229,13 +229,13 @@ var testBeacon = {
   name: 'Test Beacon Label',
   ssid: 'Test Beacon',
   bssid: '11:11:11:11:11:11',
-  signal: -80,  
-  location: { 
-    lat:testLatitude, 
-    lng:testLongitude, 
-    altitude:12, 
-    accuracy:30, 
-    geometry:[testLongitude, testLatitude] 
+  signal: -80,
+  location: {
+    lat:testLatitude,
+    lng:testLongitude,
+    altitude:12,
+    accuracy:30,
+    geometry:[testLongitude, testLatitude]
   },
 }
 var testBeacon2 = {
@@ -244,13 +244,13 @@ var testBeacon2 = {
   name: 'Test Beacon Label 2',
   ssid: 'Test Beacon 2',
   bssid: '22:22:22:22:22:22',
-  signal: -85,  
-  location: { 
-    lat:testLatitude, 
-    lng:testLongitude, 
-    altitude:12, 
-    accuracy:30, 
-    geometry:[testLongitude, testLatitude] 
+  signal: -85,
+  location: {
+    lat:testLatitude,
+    lng:testLongitude,
+    altitude:12,
+    accuracy:30,
+    geometry:[testLongitude, testLatitude]
   },
 }
 var testBeacon3 = {
@@ -259,13 +259,13 @@ var testBeacon3 = {
   name: 'Test Beacon Label 3',
   ssid: 'Test Beacon 3',
   bssid: '33:33:33:33:33:33',
-  signal: -95,  
-  location: { 
-    lat:testLatitude, 
-    lng:testLongitude, 
-    altitude:12, 
-    accuracy:30, 
-    geometry:[testLongitude, testLatitude] 
+  signal: -95,
+  location: {
+    lat:testLatitude,
+    lng:testLongitude,
+    altitude:12,
+    accuracy:30,
+    geometry:[testLongitude, testLatitude]
   },
 }
 var testLink = {
@@ -313,17 +313,19 @@ exports.getSessions = function (test) {
 
 exports.registerDeviceForNotifications = function (test) {
   t.post({
-    uri: '/data/devices?' + userCred,
+    uri: '/do/registerDevice?' + userCred,
     body: {
-      data: { 
+      register: true,
+      device: {
         _id: constants.deviceId,
         _user: testUser._id,
         registrationId: constants.registrationId,
         clientVersionCode: 10,
         clientVersionName: '0.8.12'
-      },
+      }
     }
-  }, 201, function(err, res, body) {
+  }, function(err, res, body) {
+    t.assert(body.info.indexOf('registered') > 0)
     test.done()
   })
 }
@@ -332,7 +334,7 @@ exports.checkRegisterDevice = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'devices', 
+      table:'devices',
       find:{ _id:constants.deviceId }
     }
   }, function(err, res, body) {
@@ -345,7 +347,7 @@ exports.checkRegisterDevice = function(test) {
 
 exports.updateRegisteredDeviceBeacons = function (test) {
   t.post({
-    uri: '/do/getEntitiesByProximity',
+    uri: '/do/getEntitiesByProximity?' + userCred,
     body: {
       beaconIds: [constants.beaconId],
       registrationId: constants.registrationId
@@ -361,7 +363,7 @@ exports.checkDeviceBeacons = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'devices', 
+      table:'devices',
       find:{ _id:constants.deviceId }
     }
   }, function(err, res, body) {
@@ -375,12 +377,15 @@ exports.checkDeviceBeacons = function(test) {
 
 exports.unregisterDeviceForNotifications = function (test) {
   t.post({
-    uri: '/do/unregisterDevice',
+    uri: '/do/registerDevice?' + userCred,
     body: {
-      registrationId: constants.registrationId,
+      register: false,
+      device: {
+        registrationId: constants.registrationId,
+      }
     }
   }, function(err, res, body) {
-    t.assert(body.info.indexOf('deleted') > 0)
+    t.assert(body.info.indexOf('unregistered') > 0)
     test.done()
   })
 }
@@ -389,7 +394,7 @@ exports.checkUnregisterDevice = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'devices', 
+      table:'devices',
       find:{ _id:constants.deviceId }
     }
   }, function(err, res, body) {
@@ -402,8 +407,8 @@ exports.cannotInsertEntityNotLoggedIn = function (test) {
   t.post({
     uri: '/do/insertEntity',
     body: {
-      entity:testPlace, 
-      beacons:[testBeacon], 
+      entity:testPlace,
+      beacons:[testBeacon],
       primaryBeaconId:testBeacon._id,
       skipNotifications:true
     }
@@ -416,15 +421,15 @@ exports.insertPlace = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCred,
     body: {
-      entity: testPlace, 
-      beacons: [testBeacon], 
+      entity: testPlace,
+      beacons: [testBeacon],
       primaryBeaconId: testBeacon._id,
       skipNotifications: true
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
-    t.assert(body.data && body.data[0])
-    var savedEnt = body.data[0]
+    t.assert(body.data)
+    var savedEnt = body.data
     t.assert(savedEnt._owner === util.adminUser._id)
     t.assert(savedEnt._creator === testUser._id)
     t.assert(savedEnt._modifier === testUser._id)
@@ -448,7 +453,7 @@ exports.checkInsertPlace = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'places', 
+      table:'places',
       find:{ _id:testPlace._id }
     }
   }, function(err, res, body) {
@@ -461,7 +466,7 @@ exports.checkInsertBeacon = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'beacons', 
+      table:'beacons',
       find:{ _id:testBeacon._id }
     }
   }, function(err, res, body) {
@@ -505,15 +510,15 @@ exports.insertPlaceCustom = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCred,
     body: {
-      entity: testPlaceCustom, 
-      beacons: [testBeacon], 
+      entity: testPlaceCustom,
+      beacons: [testBeacon],
       primaryBeaconId: testBeacon._id,
       skipNotifications: true
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
-    t.assert(body.data && body.data[0])
-    var savedEnt = body.data[0]
+    t.assert(body.data)
+    var savedEnt = body.data
     t.assert(savedEnt._owner === testUser._id)
     t.assert(savedEnt._creator === testUser._id)
     t.assert(savedEnt._modifier === testUser._id)
@@ -525,7 +530,7 @@ exports.checkInsertPlaceCustom = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'places', 
+      table:'places',
       find:{ _id:testPlaceCustom._id }
     }
   }, function(err, res, body) {
@@ -538,14 +543,14 @@ exports.insertPlaceBeaconAlreadyExists = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCred,
     body: {
-      entity:testPlace2, 
-      beacons:[testBeacon], 
+      entity:testPlace2,
+      beacons:[testBeacon],
       primaryBeaconId:testBeacon._id,
       skipNotifications:true
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
-    t.assert(body.data && body.data[0]._id)
+    t.assert(body.data && body.data._id)
     test.done()
   })
 }
@@ -613,7 +618,7 @@ exports.checkInsertEntityNoLinks = function(test) {
 exports.insertEntityDoNotTrack = function(test) {
   t.post({
     uri: '/data/users/' + testUser._id + '?' + userCred,
-    body: { 
+    body: {
       data: { doNotTrack: true }
     }
   }, function(err, res) {
@@ -636,8 +641,8 @@ exports.insertEntityDoNotTrack = function(test) {
       }
     }, 201, function(err, res, body) {
       t.assert(body.count === 1)
-      t.assert(body.data && body.data[0])
-      var savedEnt = body.data[0]
+      t.assert(body.data)
+      var savedEnt = body.data
       var adminId = util.adminUser._id
       var anonId = util.anonUser._id
       t.assert(savedEnt._owner === adminId)
@@ -684,7 +689,7 @@ exports.likeEntity = function(test) {
   t.post({
     uri: '/do/insertLink?' + userCred,
     body: {
-      toId: testPlace2._id, 
+      toId: testPlace2._id,
       fromId: testUser._id,
       type: util.statics.typeLike,
       actionType: 'like'
@@ -698,8 +703,8 @@ exports.likeEntity = function(test) {
 exports.checkLikeEntityLinkToEntity2 = function(test) {
   t.post({
     uri: '/do/find',
-    body: { 
-      table:'links', 
+    body: {
+      table:'links',
       find:{ _to:testPlace2._id, type: util.statics.typeLike }
     }
   }, function(err, res, body) {
@@ -725,7 +730,7 @@ exports.unlikeEntity = function(test) {
   t.post({
     uri: '/do/deleteLink?' + userCred,
     body: {
-      toId: testPlace2._id, 
+      toId: testPlace2._id,
       fromId: testUser._id,
       type: util.statics.typeLike,
       actionType: 'unlike'
@@ -740,10 +745,10 @@ exports.checkUnlikeEntity = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'links', 
-      find:{ 
-        _to:testPlace2._id, 
-        _from:testUser._id, 
+      table:'links',
+      find:{
+        _to:testPlace2._id,
+        _from:testUser._id,
         type:util.statics.typeLike
       }
     }
@@ -759,8 +764,8 @@ exports.trackEntityProximity = function(test) {
   t.post({
     uri: '/do/trackEntity?' + userCred,
     body: {
-      entityId:testPlace._id, 
-      beacons:[testBeacon, testBeacon2, testBeacon3], 
+      entityId:testPlace._id,
+      beacons:[testBeacon, testBeacon2, testBeacon3],
       primaryBeaconId:testBeacon2._id,
       actionType:'proximity',
     }
@@ -774,9 +779,9 @@ exports.checkTrackEntityProximityLinksFromEntity1 = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'links', 
+      table:'links',
       find:{
-        _from:testPlace._id, 
+        _from:testPlace._id,
         type:util.statics.typeProximity
       }
     }
@@ -792,8 +797,8 @@ exports.checkTrackEntityProximityLinkFromEntity1ToBeacon2 = function(test) {
     body: {
       table:'links',
       find:{
-        _to:testBeacon2._id, 
-        _from:testPlace._id, 
+        _to:testBeacon2._id,
+        _from:testPlace._id,
         type:util.statics.typeProximity
       }
     }
@@ -811,8 +816,8 @@ exports.checkTrackEntityLogAction = function(test) {
     uri: '/do/find',
     body: {
       table:'actions',
-      find:{ 
-        _target:trackingLink._id, 
+      find:{
+        _target:trackingLink._id,
         type:'link_proximity'
       }
     }
@@ -826,8 +831,8 @@ exports.untrackEntityProximity = function(test) {
   t.post({
     uri: '/do/untrackEntity?' + userCred,
     body: {
-      entityId:testPlace._id, 
-      beaconIds:[testBeacon._id, testBeacon2._id, testBeacon3._id], 
+      entityId:testPlace._id,
+      beaconIds:[testBeacon._id, testBeacon2._id, testBeacon3._id],
       primaryBeaconId:testBeacon2._id,
       actionType:'proximity_minus',
     }
@@ -841,9 +846,9 @@ exports.checkUntrackEntityProximityLinksFromEntity1 = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'links', 
+      table:'links',
       find:{
-        _from:testPlace._id, 
+        _from:testPlace._id,
         type:util.statics.typeProximity
       }
     }
@@ -857,7 +862,7 @@ exports.trackEntityNoBeacons = function(test) {
   t.post({
     uri: '/do/trackEntity?' + userCred,
     body: {
-      entityId:testPlace._id, 
+      entityId:testPlace._id,
       actionType:'proximity',
     }
   }, function(err, res, body) {
@@ -871,8 +876,8 @@ exports.checkTrackEntityNoBeaconsLogAction = function(test) {
     uri: '/do/find',
     body: {
       table:'actions',
-      find:{ 
-        _target:testPlace._id, 
+      find:{
+        _target:testPlace._id,
         type:'entity_proximity'
       }
     }
@@ -888,8 +893,8 @@ exports.updateBeaconLocationUsingNewLocation = function (test) {
   t.post({
     uri: '/do/updateBeaconLocation',
     body: {
-      beaconIds: [testBeacon._id], 
-      beaconSignals: [-79], 
+      beaconIds: [testBeacon._id],
+      beaconSignals: [-79],
       location: testLocation2
     }
   }, function(err, res, body) {
@@ -904,7 +909,7 @@ exports.checkBeaconLocationUpdate = function (test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'beacons', 
+      table:'beacons',
       find:{ _id:testBeacon._id }
     }
   }, function(err, res, body) {
@@ -955,13 +960,13 @@ exports.insertComment = function (test) {
       link: {
         _to: testPlace._id,
         strong: true,
-        type: util.statics.schemaComment
+        type: util.statics.typeContent,
       },
       skipNotifications: true
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
-    t.assert(body.data && body.data[0])
+    t.assert(body.data)
     test.done()
   })
 }
@@ -983,11 +988,12 @@ exports.checkInsertCommentLink = function (test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'links', 
-      find:{ 
+      table:'links',
+      find:{
         _from:testComment._id,
         _to:testPlace._id,
-        type:util.statics.schemaComment,
+        type: util.statics.typeContent,
+        fromSchema: util.statics.schemaComment,
       }
     }
   }, function(err, res, body) {
@@ -1046,7 +1052,7 @@ exports.userCantDeleteEntityTheyDontOwn = function (test) {
   t.post({
     uri: '/do/deleteEntity?' + userCred,
     body: {
-      entityId:testPlace._id, 
+      entityId:testPlace._id,
     }
   }, 401, function(err, res, body) {
     test.done()
@@ -1057,7 +1063,7 @@ exports.deleteEntity = function (test) {
   t.post({
     uri: '/do/deleteEntity?' + adminCred,
     body: {
-      entityId:testPlace._id, 
+      entityId:testPlace._id,
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
@@ -1085,9 +1091,9 @@ exports.checkDeleteLink = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'links', 
+      table:'links',
       find:{
-        _to:testBeacon._id, 
+        _to:testBeacon._id,
         _from:testPlace._id
       }
     }
@@ -1116,9 +1122,9 @@ exports.checkDeleteEntityLogActions = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'actions', 
+      table:'actions',
       find:{
-        _target:testPlace._id, 
+        _target:testPlace._id,
         type:'insert_entity'
       }
     }
@@ -1132,9 +1138,9 @@ exports.checkDeleteLinkLogActions = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'actions', 
+      table:'actions',
       find:{
-        _target:primaryLink._id, 
+        _target:primaryLink._id,
         type:'tune_link_primary'
       }
     }
@@ -1148,10 +1154,10 @@ exports.nonOwnerCannotCommentOnLockedRecord = function(test) {
   t.post({
     uri: '/do/insertEntity?' + user2Cred,
     body: {
-      entity: testComment2, 
+      entity: testComment2,
       link: {
         _to: testPlaceCustom._id,
-        type: util.statics.schemaComment,
+        type: util.statics.typeContent,
         strong: true,
       },
       skipNotifications: true
@@ -1166,17 +1172,17 @@ exports.ownerCanCommentOnLockedRecord = function(test) {
   t.post({
     uri: '/do/insertEntity?' + userCred,
     body: {
-      entity: testComment2, 
+      entity: testComment2,
       link: {
         _to: testPlaceCustom._id,
-        type: util.statics.schemaComment,
+        type: util.statics.typeContent,
         strong: true,
       },
       skipNotifications: true
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
-    t.assert(body.data && body.data[0])
+    t.assert(body.data)
     test.done()
   })
 }
@@ -1185,7 +1191,7 @@ exports.checkOwnerInsertedCommentOnLockedRecord = function (test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'comments', 
+      table:'comments',
       find:{ _id:testComment2._id }
     }
   }, function(err, res, body) {
@@ -1198,17 +1204,17 @@ exports.adminCanCommentOnLockedRecord = function(test) {
   t.post({
     uri: '/do/insertEntity?' + adminCred,
     body: {
-      entity: testComment3, 
+      entity: testComment3,
       link: {
         _to: testPlaceCustom._id,
-        type: util.statics.schemaComment,
+        type: util.statics.typeContent,
         strong: true,
       },
       skipNotifications: true
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
-    t.assert(body.data && body.data[0])
+    t.assert(body.data)
     test.done()
   })
 }
@@ -1217,7 +1223,7 @@ exports.checkAdminInsertedCommentOnLockedRecord = function (test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'comments', 
+      table:'comments',
       find:{ _id:testComment3._id }
     }
   }, function(err, res, body) {
