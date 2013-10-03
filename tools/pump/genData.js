@@ -98,14 +98,14 @@ function run(callback) {
   genEntityRecords(beaconIds, tableIds['beacons'], options.epb, util.statics.schemaPlace, util.statics.typeProximity)
 
   log('generating posts')
-  genEntityRecords(placeIds, tableIds['places'], options.spe, util.statics.schemaPost, util.statics.schemaPost)
+  genEntityRecords(placeIds, tableIds['places'], options.spe, util.statics.schemaPost, util.statics.typeContent)
 
   log('generating applinks')
-  genEntityRecords(placeIds, tableIds['places'], options.ape, util.statics.schemaApplink, util.statics.schemaApplink)
+  genEntityRecords(placeIds, tableIds['places'], options.ape, util.statics.schemaApplink, util.statics.typeContent)
   
   log('generating comments')
   var placeAndPostIds = placeIds.concat(postIds)
-  genEntityRecords(placeAndPostIds, tableIds['places'], options.cpe, util.statics.schemaComment, util.statics.schemaComment)
+  genEntityRecords(placeAndPostIds, tableIds['places'], options.cpe, util.statics.schemaComment, util.statics.typeContent)
 
   saveAll(function(err) {
     if (err) return callback(err)
@@ -169,9 +169,9 @@ function genDocuments() {
   table['documents'].push(constants.getDefaultRecord('documents'))
 }
 
-function genEntityRecords(parentIds, parentCollectionName, count, entityType, linkType) {
+function genEntityRecords(parentIds, parentCollectionName, count, entitySchema, linkType) {
 
-  var tableName = entityType + "s"
+  var tableName = entitySchema + "s"
   table[tableName] = table[tableName] || []
   table['links'] = table['links'] || []
 
@@ -181,7 +181,7 @@ function genEntityRecords(parentIds, parentCollectionName, count, entityType, li
       var newEnt = constants.getDefaultRecord(tableName)
 
       // Entity
-      if (entityType === util.statics.schemaBeacon) {
+      if (entitySchema === util.statics.schemaBeacon) {
         newEnt._id = testUtil.genBeaconId(i)
         newEnt.bssid = newEnt._id.substring(5)
         newEnt.ssid = newEnt.ssid + ' ' + (entityCount[tableName] + 1)
@@ -196,7 +196,7 @@ function genEntityRecords(parentIds, parentCollectionName, count, entityType, li
       table[tableName].push(newEnt)
       entityCount[tableName]++
 
-      if (entityType !== util.statics.schemaBeacon) {
+      if (entitySchema !== util.statics.schemaBeacon) {
 
         // Link
         var newLink = constants.getDefaultRecord('links')
@@ -210,13 +210,13 @@ function genEntityRecords(parentIds, parentCollectionName, count, entityType, li
         newLink.toSchema = util.statics.collectionSchemaMap[parentCollectionName]
         newLink._owner = newEnt._creator
 
-        if (entityType === util.statics.schemaComment 
-          || entityType === util.statics.schemaPost
-          || entityType === util.statics.schemaApplink) {
+        if (entitySchema === util.statics.schemaComment 
+          || entitySchema === util.statics.schemaPost
+          || entitySchema === util.statics.schemaApplink) {
           newLink.strong = true
         }
 
-        if (entityType === util.statics.schemaPlace) {
+        if (entitySchema === util.statics.schemaPlace) {
           newLink.proximity = { primary: true, signal: -80 }
           newLink._owner = util.adminUser._id
         }
@@ -238,7 +238,7 @@ function genEntityRecords(parentIds, parentCollectionName, count, entityType, li
         createLink.toSchema = util.statics.collectionSchemaMap[tableName]
         createLink._owner = newEnt._creator
 
-        if (entityType === util.statics.schemaPlace) {
+        if (entitySchema === util.statics.schemaPlace) {
           createLink._owner = util.adminUser._id
         }
 
@@ -246,7 +246,7 @@ function genEntityRecords(parentIds, parentCollectionName, count, entityType, li
         linkCount++
 
         // Like
-        if (entityType === util.statics.schemaPlace) {
+        if (entitySchema === util.statics.schemaPlace) {
           for (var u = 0; u < options.users; u++) {
             if (u >= options.likes) break;
             var likeLink = constants.getDefaultRecord('links')
@@ -268,7 +268,7 @@ function genEntityRecords(parentIds, parentCollectionName, count, entityType, li
         }
 
         // Watch
-        if (entityType === util.statics.schemaPlace) {
+        if (entitySchema === util.statics.schemaPlace) {
           for (var u = 0; u < options.users; u++) {
             if (u >= options.watch) break;
             var watchLink = constants.getDefaultRecord('links')
@@ -290,11 +290,11 @@ function genEntityRecords(parentIds, parentCollectionName, count, entityType, li
         }
       }
 
-      if (entityType === util.statics.schemaBeacon) beaconIds.push(newEnt._id)
-      if (entityType === util.statics.schemaPlace) placeIds.push(newEnt._id)
-      if (entityType === util.statics.schemaApplink) applinkIds.push(newEnt._id)
-      if (entityType === util.statics.schemaPost) postIds.push(newEnt._id)
-      if (entityType === util.statics.schemaComment) commentIds.push(newEnt._id)
+      if (entitySchema === util.statics.schemaBeacon) beaconIds.push(newEnt._id)
+      if (entitySchema === util.statics.schemaPlace) placeIds.push(newEnt._id)
+      if (entitySchema === util.statics.schemaApplink) applinkIds.push(newEnt._id)
+      if (entitySchema === util.statics.schemaPost) postIds.push(newEnt._id)
+      if (entitySchema === util.statics.schemaComment) commentIds.push(newEnt._id)
 
     }
   }

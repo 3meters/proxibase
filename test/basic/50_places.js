@@ -191,29 +191,26 @@ exports.getPlacesNearLocationFactual = function(test) {
         includeRaw: true,
       }
     }, 201, function(err, res, body) {
-      t.assert(body.data.length)
-      var savedRoxy = res.body.data[0]
+      t.assert(body.data)
+      var savedRoxy = res.body.data
       t.assert(savedRoxy.provider.factual === roxy.provider.factual)
-      var applinks = savedRoxy.entities // getEntities munges them all together
-      t.assert(applinks)
-      t.assert(applinks.length >= 2)
-      applinks.forEach(function(applink) {
-        t.assert(applink.type)
-        t.assert(applink.type !== 'factual')
-        t.assert(applink.appId || applink.appUrl)
-        t.assert(!applink.icon)
-        t.assert(applink.data)
-        t.assert(applink.data.origin)
+      t.assert(savedRoxy.linksIn && savedRoxy.linksIn.length >=2)
+      savedRoxy.linksIn.forEach(function(link) {
+        t.assert(link.shortcut)
+        t.assert(link.shortcut.appId || link.shortcut.appUrl)
+        t.assert(link.shortcut.app)
+        t.assert(link.shortcut.app !== 'factual')
+        t.assert(!link.icon)
       })
-      t.assert(applinks.some(function(applink) {
-        return (applink.type === 'foursquare'
-            && applink.photo
-            && applink.photo.prefix
-            && applink.photo.suffix
+      t.assert(savedRoxy.linksIn.some(function(link) {
+        return (link.shortcut.app === 'foursquare'
+            && link.shortcut.photo
+            && link.shortcut.photo.prefix
+            && link.shortcut.photo.suffix
           )
       }))
-      t.assert(applinks.some(function(applink) {
-        return (applink.type === 'facebook')
+      t.assert(savedRoxy.linksIn.some(function(link) {
+        return (link.shortcut.app === 'facebook')
       }))
       test.done()
     })
@@ -287,25 +284,25 @@ exports.insertPlaceEntitySuggestApplinksFromFactual = function(test) {
   body.entity.provider = {foursquare: ballRoomId}  // Seattle Ballroom
   t.post({uri: '/do/insertEntity?' + userCred, body: body}, 201,
     function(err, res) {
-      var applinks = res.body.data[0].entities
-      t.assert(applinks)
-      t.assert(applinks.length > 3)
-      t.assert(applinks.some(function(applink) {
-        return (applink.type === 'foursquare'
-            && applink.appId === ballRoomId
+      t.assert(res.body.data && res.body.data.linksIn)
+      var links = res.body.data.linksIn
+      t.assert(links.length > 3)
+      t.assert(links.some(function(link) {
+        return (link.shortcut.app === 'foursquare'
+            && link.shortcut.appId === ballRoomId
           )
       }))
-      t.assert(applinks.some(function(applink) {
-        return (applink.type === 'facebook')
+      t.assert(links.some(function(link) {
+        return (link.shortcut.app === 'facebook')
       }))
-      t.assert(applinks.some(function(applink) {
-        return (applink.type === 'website')
+      t.assert(links.some(function(link) {
+        return (link.shortcut.app === 'website')
       }))
-      t.assert(applinks.some(function(applink) {
-        return (applink.type === 'twitter')
+      t.assert(links.some(function(link) {
+        return (link.shortcut.app === 'twitter')
       }))
-      applinks.forEach(function(applink) {
-        t.assert(applink.type !== 'factual')
+      links.forEach(function(link) {
+        t.assert(link.shortcut.app !== 'factual')
       })
       test.done()
     }
@@ -359,9 +356,9 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
         includeRaw: true
       }
     }, 201, function(err, res, body) {
-      t.assert(body.data && body.data[0])
-      ksthai = body.data[0]  // TODO, test for changes!
-      var applinks = body.data[0].entities
+      t.assert(body.data)
+      ksthai = body.data  // TODO, test for changes!
+      var applinks = body.data.linksIn
       t.assert(applinks && applinks.length > 10)
 
       // Add a user-created place inside the ballroom
@@ -379,7 +376,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
           }
         }
       }, 201, function(err, res, body) {
-        var newEnt = body.data[0]
+        var newEnt = body.data
         t.assert(newEnt)
         t.assert(newEnt.provider.aircandi === newEnt._id)
 
@@ -395,7 +392,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
             locked : false,
           }}
         }, 201, function(err, res, body) {
-          var newEnt2 = body.data[0]
+          var newEnt2 = body.data
           t.assert(newEnt2)
 
           // Run radar again

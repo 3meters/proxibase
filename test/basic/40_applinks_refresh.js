@@ -5,7 +5,6 @@
 
 var util = require('proxutils')
 var log = util.log
-var typeApplink = util.statics.schemaApplink
 var serviceUri = util.config.service.uri
 var testUtil = require('../util')
 var t = testUtil.treq  // newfangled test helper
