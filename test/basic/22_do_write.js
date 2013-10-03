@@ -645,9 +645,9 @@ exports.insertEntityDoNotTrack = function(test) {
       var savedEnt = body.data
       var adminId = util.adminUser._id
       var anonId = util.anonUser._id
-      t.assert(savedEnt._owner === adminId)
-      t.assert(savedEnt._creator === anonId)
-      t.assert(savedEnt._modifier === anonId)
+      t.assert(adminId === savedEnt._owner)
+      t.assert(anonId === savedEnt._creator)
+      t.assert(anonId === savedEnt._modifier)
       t.get('/data/beacons/' + beacon._id,
         function(err, res, body) {
           t.assert(body.data)
