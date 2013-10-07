@@ -128,6 +128,7 @@ function genEntityRecords(parentIds, count, collection, linkType) {
       }
       newEnt.name = newEnt.name + ' ' + (entityCount[collection] + 1)
       newEnt._creator = newEnt._modifier = testUtil.genId('users', (entityCount[collection] % options.users))
+      newEnt._owner = newEnt._creator
 
       clMap[collection].push(newEnt)
       entityCount[collection]++
@@ -140,6 +141,7 @@ function genEntityRecords(parentIds, count, collection, linkType) {
         newLink.type = linkType
         newLink._from = newEnt._id
         newLink._to = parentIds[p]
+        newLink._owner = newEnt._owner
 
         switch (collection) {
           case 'comments':
@@ -162,12 +164,13 @@ function genEntityRecords(parentIds, count, collection, linkType) {
         createLink.type = 'create'
         createLink._from = newEnt._creator
         createLink._to = newEnt._id
+        createLink._owner = newEnt._creator
 
         clMap['links'].push(createLink)
         linkCount++
 
         // Like
-        if ('place' === collection) {
+        if ('places' === collection) {
           for (var u = 0; u < options.users; u++) {
             if (u >= options.likes) break;
             var likeLink = constants.getDefaultRecord('links')
@@ -176,6 +179,7 @@ function genEntityRecords(parentIds, count, collection, linkType) {
             likeLink.type = util.statics.typeLike
             likeLink._from = testUtil.genId('users', u)
             likeLink._to = newEnt._id
+            likeLink._owner = likeLink._from
 
             clMap['links'].push(likeLink)
             linkCount++
@@ -183,7 +187,7 @@ function genEntityRecords(parentIds, count, collection, linkType) {
         }
 
         // Watch
-        if ('place' === collection) {
+        if ('places' === collection) {
           for (var u = 0; u < options.users; u++) {
             if (u >= options.watch) break;
             var watchLink = constants.getDefaultRecord('links')
@@ -192,6 +196,7 @@ function genEntityRecords(parentIds, count, collection, linkType) {
             watchLink.type = util.statics.typeWatch
             watchLink._from = testUtil.genId('users', u)
             watchLink._to = newEnt._id
+            watchLink._owner = watchLink._from
 
             clMap['links'].push(watchLink)
             linkCount++
@@ -199,11 +204,13 @@ function genEntityRecords(parentIds, count, collection, linkType) {
         }
       }
 
-      if ('beacons' === collection) beaconIds.push(newEnt._id)
-      if ('places' === collection) placeIds.push(newEnt._id)
-      if ('applinks' === collection) applinkIds.push(newEnt._id)
-      if ('posts' === collection) postIds.push(newEnt._id)
-      if ('comments' === collection) commentIds.push(newEnt._id)
+      switch (collection) {
+        case 'beacons':  beaconIds.push(newEnt._id);   break
+        case 'places':   placeIds.push(newEnt._id);    break
+        case 'applinks': applinkIds.push(newEnt._id);  break
+        case 'posts':    postsIds.push(newEnt._id);    break
+        case 'comments': commentIds.push(newEnt._id);  break
+      }
 
     }
   }

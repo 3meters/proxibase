@@ -693,50 +693,6 @@ exports.formatDatesWorks = function(test) {
   })
 }
 
-exports.countByWorks = function(test) {
-  t.get({
-    uri: '/data/links?countBy=_owner'
-  }, function(err, res, body) {
-    // These are based on data in template test database
-    t.assert(body.count >= 10)
-    t.assert(body.data[0].countBy === 5009)
-    test.done()
-  })
-}
-
-exports.countByMultipleFieldsWorks = function(test) {
-  t.get({
-    uri: '/data/links?countBy=_owner,type'
-  }, function(err, res, body) {
-    // These are based on data in template test database
-    t.assert(body.count >= 33)
-    body.data.forEach(function(elm) {
-      switch (elm.type) {
-        case 'content':
-          t.assert(elm.countBy === 2000 || elm.countBy === 500)
-          break
-        case 'proximity':
-          t.assert(elm.countBy <= 500)
-          break
-        case 'like':
-          t.assert(elm.countBy === 1009 || elm.countBy === 509 || elm.countBy === 9)
-          break
-        case 'watch':
-          t.assert(elm.countBy === 1090)
-          break
-        case 'create':
-          t.assert(elm.countBy === 2000 || elm.countBy === 500)
-          break
-        default:
-          t.assert(false, 'Unexpected type ' + elm.type)
-      }
-    })
-    test.done()
-  })
-}
-
-
-
 // This has to be the last test because all subsequent logins will fail
 // since it deletes all the sessions
 exports.adminCanDeleteAllUsingWildcard = function(test) {
