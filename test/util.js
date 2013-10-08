@@ -9,7 +9,6 @@ var _ = util._
 var assert = require('assert')
 var request = require('request')
 var constants = require('./constants')
-var tableIds = util.statics.collectionIds
 
 assert(tipe.isTruthy, 'The proxibase utils are not loaded properly, bailing')
 util.setConfig('configtest.js')
@@ -249,7 +248,7 @@ function check(req, res, code) {
 exports.genBeaconId = function(recNum) {
   var id = pad(recNum + 1, 12)
   id = delineate(id, 2, ':')
-  var prefix = tableIds.beacons + '.'
+  var prefix = util.statics.schemas.beacon.id + '.'
   return  prefix + id
 }
 
@@ -266,13 +265,12 @@ var delineate = exports.delineate = function(s, freq, sep) {
 
 
 // Make a standard _id field for a table with recNum as the last id element
-var genId = exports.genId = function(collectionName, recNum) {
-  var collectionId = util.statics.collectionIds[collectionName]
-  assert(collectionId, 'Invalid collection name')
+var genId = exports.genId = function(schemaName, recNum) {
+  var schemaId = util.statics[schemaName].id
+  assert(schemaId, 'Invalid schema name')
   recNum = pad(recNum + 1, 6)
-  return collectionId + '.' + constants.timeStamp + '.' + recNum
+  return schemaId + '.' + constants.timeStamp + '.' + recNum
 }
-
 
 // create a digits-length string from number left-padded with zeros
 var pad = exports.pad = function(number, digits) {
