@@ -13,16 +13,15 @@ var
   cli = require('commander')  // command line interface
 
 cli
-  .option('-u, --users <num>', 'users to generate [3]')
-  .option('-b, --beacons <num>', 'beacons to generate [3]')
-  .option('-e, --epb <num>', 'place entities per beacon [5]')
-  .option('-a, --ape <num>', 'applink entities per place [5]')
-  .option('-s, --spe <num>', 'post entities per place [5]')
-  .option('-c, --cpe <num>', 'comment entities per post and place entity [5]')
+  .option('-u, --users <num>', 'users to generate')
+  .option('-b, --beacons <num>', 'beacons to generate')
+  .option('-e, --epb <num>', 'place entities per beacon')
+  .option('-a, --ape <num>', 'applink entities per place')
+  .option('-s, --spe <num>', 'post entities per place')
+  .option('-c, --cpe <num>', 'comment entities per post and place entity')
+  .option('-l, --likes <num>', 'likes per entity and user')
+  .option('-w, --watch <num>', 'watches per entiy and user')
   .option('-d, --database <database>', 'database name [proxTest]', String, 'proxTest')
-  .option('-v, --validate', 'validate database inserts against schema')
-  .option('-f, --files', 'create files rather than update the database')
-  .option('-o, --out <dir>', 'output directory for files [files]', String, 'files')
   .parse(process.argv)
 
 genData(cli)
