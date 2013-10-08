@@ -1,6 +1,10 @@
 /*
+<<<<<<< HEAD
  * Generate dummy data for a proxibase server
  *   Silently overwrites existing collections
+=======
+ * Generate dummy data for a proxibase tests
+>>>>>>> b8e03e86130b31c69026c9572e259af84aff83d8
  */
 
 var fs = require('fs')
@@ -15,8 +19,14 @@ var mongo = dblib.mongodb
 var db                                    // Mongodb connection object
 var constants = require('../../test/constants')
 var testUtil = require('../../test/util')
+<<<<<<< HEAD
 var collection = {}                       // Map of collections to be generated
 var startTime                             // Elapsed time counter
+=======
+var clMap = {}                            // Map of collections to be generated
+var startTime                             // Elapsed time counter
+var db                                    // Mongodb connection object
+>>>>>>> b8e03e86130b31c69026c9572e259af84aff83d8
 var options = {                           // Default options
   users: 3,                           // Count of users
   beacons: 3,                         // Count of beacons
@@ -43,12 +53,18 @@ module.exports = function(profile, callback) {
     options[key] = profile[key]
   }
 
+<<<<<<< HEAD
   // Configure
   var config = util.config                  // Use the default server database connection
   config.db.database = options.database     // Override database name
   var dbUri = 'mongodb://' + config.db.host + ':' + config.db.port +  '/' + config.db.database
 
   log('Saving to database ' + dbUri + ' with validation')
+=======
+  var config = util.config           // Use the default server database connection
+  config.db.database = options.database     // Override database name
+  var dbUri = 'mongodb://' + config.db.host + ':' + config.db.port +  '/' + config.db.database
+>>>>>>> b8e03e86130b31c69026c9572e259af84aff83d8
 
   mongo.connect(dbUri, function(err, database) {
     if (err) return callback(err)
@@ -71,6 +87,7 @@ function run(callback) {
   genUsers()
 
   log('generating beacons')
+<<<<<<< HEAD
   genEntityRecords([0], null, options.beacons, statics.schemaBeacon, null)
 
   log('generating places')
@@ -85,24 +102,45 @@ function run(callback) {
   log('generating comments')
   var placeAndPostIds = placeIds.concat(postIds)
   genEntityRecords(placeAndPostIds, _schemas.place.id, options.cpe, statics.schemaComment, statics.typeContent)
+=======
+  genEntityRecords([0], options.beacons, 'beacons', null)
+
+  log('generating places')
+  genEntityRecords(beaconIds, options.epb, 'places', util.statics.typeProximity)
+
+  log('generating posts')
+  genEntityRecords(placeIds, options.spe, 'posts', util.statics.typeContent)
+
+  log('generating applinks')
+  genEntityRecords(placeIds, options.ape, 'applinks', util.statics.typeContent)
+
+  log('generating comments')
+  var placeAndPostIds = placeIds.concat(postIds)
+  genEntityRecords(placeAndPostIds, options.cpe, 'comments', util.statics.typeContent)
+>>>>>>> b8e03e86130b31c69026c9572e259af84aff83d8
 
   saveAll(function(err) {
+    if (db) db.close()
     if (err) return callback(err)
     var elapsedTime = ((new Date().getTime()) - startTime) / 1000
-    if (db) db.close()
     log('genData finished in ' + elapsedTime + ' seconds')
     return callback()
   })
 }
 
 function genUsers() {
+<<<<<<< HEAD
   collection['users'] = []
+=======
+  clMap['users'] = []
+>>>>>>> b8e03e86130b31c69026c9572e259af84aff83d8
   for (var i = 0; i < options.users; i++) {
     var user = constants.getDefaultRecord('users')
     user._id = testUtil.genId('user', i)
     user.name = 'Test User ' + (i + 1)
     user.email = 'testuser' + (i + 1) + '@3meters.com'
     user.password = 'doobar' + i
+<<<<<<< HEAD
     collection.users.push(user)
   }
 
@@ -140,10 +178,27 @@ function genEntityRecords(parentIds, parentSchema, count, entitySchema, linkType
 
   collection[entitySchema] = collection[entitySchema] || []
   collection.links = collection.links || []
+=======
+    clMap.users.push(user)
+  }
+
+}
+
+function genDocuments() {
+  clMap['documents'] = []
+  clMap['documents'].push(constants.getDefaultRecord('documents'))
+}
+
+function genEntityRecords(parentIds, count, collection, linkType) {
+
+  clMap[collection] = clMap[collection] || []
+  clMap['links'] = clMap['links'] || []
+>>>>>>> b8e03e86130b31c69026c9572e259af84aff83d8
 
   for (var p = 0; p < parentIds.length; p++) {
     for (var i = 0; i < count; i++) {
 
+<<<<<<< HEAD
       var newEnt = constants.getDefaultRecord(entitySchema)
 
       // Entity
@@ -163,12 +218,34 @@ function genEntityRecords(parentIds, parentSchema, count, entitySchema, linkType
       entityCount[entitySchema]++
 
       if (entitySchema !== statics.schemaBeacon) {
+=======
+      var newEnt = constants.getDefaultRecord(collection)
+
+      // Entity
+      if ('beacons' === collection) {
+        newEnt._id = testUtil.genBeaconId(i)
+        newEnt.bssid = newEnt._id.substring(5)
+        newEnt.ssid = newEnt.ssid + ' ' + (entityCount[collection] + 1)
+      }
+      else {
+        newEnt._id = testUtil.genId(collection, entityCount[collection])
+      }
+      newEnt.name = newEnt.name + ' ' + (entityCount[collection] + 1)
+      newEnt._creator = newEnt._modifier = testUtil.genId('users', (entityCount[collection] % options.users))
+      newEnt._owner = newEnt._creator
+
+      clMap[collection].push(newEnt)
+      entityCount[collection]++
+
+      if ('beacons' !== collection) {
+>>>>>>> b8e03e86130b31c69026c9572e259af84aff83d8
 
         // Link
         var newLink = constants.getDefaultRecord('links')
         newLink._id = testUtil.genId('link', linkCount)
         newLink.type = linkType
         newLink._from = newEnt._id
+<<<<<<< HEAD
         newLink.fromCollectionId = _schemas[entitySchema]
         newLink.fromSchema = statics.collectionSchemaMap[entitySchema]
         newLink._to = parentIds[p]
@@ -177,17 +254,34 @@ function genEntityRecords(parentIds, parentSchema, count, entitySchema, linkType
         newLink._owner = newEnt._creator
 
         if (entitySchema === statics.schemaPlace) {
-          newLink.proximity = { primary: true, signal: -80 }
-          newLink._owner = util.adminUser._id
+=======
+        newLink._to = parentIds[p]
+        newLink._owner = newEnt._owner
+
+        switch (collection) {
+          case 'comments':
+          case 'posts':
+          case 'applinks':
+            newLink.strong = true
         }
 
+        if ('places' === collection) {
+>>>>>>> b8e03e86130b31c69026c9572e259af84aff83d8
+          newLink.proximity = { primary: true, signal: -80 }
+        }
+
+<<<<<<< HEAD
         collection['links'].push(newLink)
+=======
+        clMap['links'].push(newLink)
+>>>>>>> b8e03e86130b31c69026c9572e259af84aff83d8
         linkCount++
 
         // Create
         var createLink = constants.getDefaultRecord('links')
         createLink._id = testUtil.genId('link', linkCount)
 
+<<<<<<< HEAD
         createLink.type = statics.typeCreate
         createLink._from = newEnt._creator
         createLink.fromCollectionId = _schemas['users']
@@ -208,9 +302,24 @@ function genEntityRecords(parentIds, parentSchema, count, entitySchema, linkType
         // Like
         if (entitySchema === statics.schemaPlace) {
           for (var u = 0; u < options.users && u < options.likes; u++) {
+=======
+        createLink.type = 'create'
+        createLink._from = newEnt._creator
+        createLink._to = newEnt._id
+        createLink._owner = newEnt._creator
+
+        clMap['links'].push(createLink)
+        linkCount++
+
+        // Like
+        if ('places' === collection) {
+          for (var u = 0; u < options.users; u++) {
+            if (u >= options.likes) break;
+>>>>>>> b8e03e86130b31c69026c9572e259af84aff83d8
             var likeLink = constants.getDefaultRecord('links')
             likeLink._id = testUtil.genId('link', linkCount)
 
+<<<<<<< HEAD
             likeLink.type = statics.typeLike
             likeLink._from = testUtil.genId('user', u)
             likeLink.fromCollectionId = _schemas['users']
@@ -222,17 +331,30 @@ function genEntityRecords(parentIds, parentSchema, count, entitySchema, linkType
             likeLink._owner = testUtil.genId('user', u)
 
             collection['links'].push(likeLink)
+=======
+            likeLink.type = util.statics.typeLike
+            likeLink._from = testUtil.genId('users', u)
+            likeLink._to = newEnt._id
+            likeLink._owner = likeLink._from
+
+            clMap['links'].push(likeLink)
+>>>>>>> b8e03e86130b31c69026c9572e259af84aff83d8
             linkCount++
           }
         }
 
         // Watch
+<<<<<<< HEAD
         if (entitySchema === statics.schemaPlace) {
+=======
+        if ('places' === collection) {
+>>>>>>> b8e03e86130b31c69026c9572e259af84aff83d8
           for (var u = 0; u < options.users; u++) {
             if (u >= options.watch) break;
             var watchLink = constants.getDefaultRecord('links')
             watchLink._id = testUtil.genId('link', linkCount)
 
+<<<<<<< HEAD
             watchLink.type = statics.typeWatch
             watchLink._from = testUtil.genId('user', u)
             watchLink.fromCollectionId = _schemas['users']
@@ -244,34 +366,62 @@ function genEntityRecords(parentIds, parentSchema, count, entitySchema, linkType
             likeLink._owner = testUtil.genId('user', u)
 
             collection['links'].push(watchLink)
+=======
+            watchLink.type = util.statics.typeWatch
+            watchLink._from = testUtil.genId('users', u)
+            watchLink._to = newEnt._id
+            watchLink._owner = watchLink._from
+
+            clMap['links'].push(watchLink)
+>>>>>>> b8e03e86130b31c69026c9572e259af84aff83d8
             linkCount++
           }
         }
       }
 
+<<<<<<< HEAD
       if (entitySchema === statics.schemaBeacon) beaconIds.push(newEnt._id)
       if (entitySchema === statics.schemaPlace) placeIds.push(newEnt._id)
       if (entitySchema === statics.schemaApplink) applinkIds.push(newEnt._id)
       if (entitySchema === statics.schemaPost) postIds.push(newEnt._id)
       if (entitySchema === statics.schemaComment) commentIds.push(newEnt._id)
+=======
+      switch (collection) {
+        case 'beacons':  beaconIds.push(newEnt._id);   break
+        case 'places':   placeIds.push(newEnt._id);    break
+        case 'applinks': applinkIds.push(newEnt._id);  break
+        case 'posts':    postsIds.push(newEnt._id);    break
+        case 'comments': commentIds.push(newEnt._id);  break
+      }
+>>>>>>> b8e03e86130b31c69026c9572e259af84aff83d8
 
     }
   }
 }
 
 function saveAll(callback) {
+<<<<<<< HEAD
   var collectionNames = []
   var linkCollection
   for (name in collection) {
     name === 'links' ? linkCollection = true : collectionNames.push(name)
   }
   async.forEachSeries(collectionNames, save, function(err) {
+=======
+  var collections = []
+  var linkTable
+  for (name in clMap) {
+    name === 'links' ? linkTable = true : collections.push(name)
+  }
+  async.forEachSeries(collections, save, function(err) {
+>>>>>>> b8e03e86130b31c69026c9572e259af84aff83d8
     if (err) return callback(err)
     if (linkCollection) return save('links', callback)
     callback()
   })
 }
 
+<<<<<<< HEAD
 function list(collectionName, fn) {
   log('collectionName: ' + collectionName)
   log('fn: ' + fn)
@@ -284,6 +434,15 @@ function save(collectionName, callback) {
   async.forEachSeries(collection[collectionName], saveRow, function(err) {
     if (err) return callback(err)
     log(collection[collectionName].length + ' ' + collectionName)
+=======
+
+// save with schema validation
+function save(collection, callback) {
+
+  async.forEachSeries(clMap[collection], saveRow, function(err) {
+    if (err) return callback(err)
+    log(clMap[collection].length + ' ' + collection)
+>>>>>>> b8e03e86130b31c69026c9572e259af84aff83d8
     return callback()
   })
 
@@ -291,7 +450,11 @@ function save(collectionName, callback) {
     var user = util.adminUser
     if (row._creator) user = {_id: row._creator, role: 'user'}
     var options = {user: user}
+<<<<<<< HEAD
     collection.safeInsert(row, options, function(err) {
+=======
+    db.collection(collection).safeInsert(row, options, function(err) {
+>>>>>>> b8e03e86130b31c69026c9572e259af84aff83d8
       return callback(err)
     })
   }

@@ -28,12 +28,12 @@ var
   dbProfile = {
     smokeTest: {
       users: 10,
-      beacons: 100,
-      epb: 5,       // place entities per beacon
-      spe: 5,       // post entities per place entity
-      ape: 5,       // applinks per place
-      cpe: 5,       // comment entities per place and post entity
-      likes: 5,
+      beacons: 50,
+      epb: 2,       // place entities per beacon
+      spe: 2,       // post entities per place entity
+      ape: 2,       // applinks per place
+      cpe: 2,       // comment entities per place and post entity
+      likes: 2,
       watch: 2,
       database: 'smokeData'
     }
