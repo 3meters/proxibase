@@ -23,15 +23,15 @@ var
   latitude = 47,                                              // Nearby
   longitude = -122,
   password = 'password',
-  recordLimit = 1000,
-  defaultRecord = {},
+  limit = 1000,
+  defaultDoc = {},
   dbProfile = {
     smokeTest: {
       users: 10,
-      beacons: 50,
-      epb: 2,       // place entities per beacon
-      spe: 2,       // post entities per place entity
-      ape: 2,       // applinks per place
+      beacons: 10,
+      epb: 1,       // place entities per beacon
+      spe: 5,       // post entities per place entity
+      ape: 5,       // applinks per place
       cpe: 2,       // comment entities per place and post entity
       likes: 2,
       watch: 2,
@@ -39,18 +39,13 @@ var
     }
   }
 
-// Add system properties
-function addSystemFields(record) {
-  record.createdDate = timeStampMs
-  record.modifiedDate = timeStampMs
-}
 
 defaultDoc.user = defaultDoc.users1 = {
   _id: uid1,
   name: 'Test User',
   email: 'test@3meters.com',
-  photo: { 
-    prefix:"resource:placeholder_user", 
+  photo: {
+    prefix:"resource:placeholder_user",
     source:"resource",
   },
   area: 'Testville, WA',
@@ -144,10 +139,6 @@ defaultDoc.link = {
   _from : postId
 }
 
-for (tableName in defaultRecord) {
-  addSystemFields(defaultRecord[tableName])
-}
-
 // Remeber to _.clone() all exported objects!
 module.exports = {
   uid1: uid1,
@@ -167,7 +158,7 @@ module.exports = {
   longitude: longitude,
   timeStamp: timeStamp,
   timeStampMs: timeStampMs,
-  recordLimit: recordLimit,
+  limit: limit,
   dbProfile: util._.clone(dbProfile)
 }
 

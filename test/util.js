@@ -266,7 +266,7 @@ var delineate = exports.delineate = function(s, freq, sep) {
 
 // Make a standard _id field for a table with recNum as the last id element
 var genId = exports.genId = function(schemaName, recNum) {
-  var schemaId = util.statics[schemaName].id
+  var schemaId = util.statics.schemas[schemaName].id
   assert(schemaId, 'Invalid schema name')
   recNum = pad(recNum + 1, 6)
   return schemaId + '.' + constants.timeStamp + '.' + recNum
