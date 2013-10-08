@@ -39,12 +39,12 @@ exports.getUserSession = function(test) {
 }
 
 exports.genIdWorks = function(test) {
-  t.get('/data/places/genId',
+  t.get('/data/places?genId=1',
   function(err, res, body) {
     t.assert(body.data._id)
     var schemaId = body.data._id.split('.')[0]
     t.assert(schemaId)
-    t.assert(schemaId === util.statics.collectionIds.places)
+    t.assert(schemaId === util.statics.schemas.place.id)
     test.done()
   })
 }
@@ -399,9 +399,8 @@ exports.adminCannotUpdateNonExistantDoc = function(test) {
 }
 
 exports.canAddDocsWithPreexitingIds = function(test) {
-  var docClId = util.statics.collectionIds.documents
-  var newDocId1 = docClId + '.060101.55664.234.11111'
-  var newDocId2 = docClId + '.060101.55664.234.22222'
+  var newDocId1 = 'do.060101.55664.234.11111'
+  var newDocId2 = 'do.060101.55664.234.22222'
   t.post({
     uri: '/data/documents?' + userCred,
     body: {data: {_id: newDocId1, name: 'I have my own id'}}
@@ -485,18 +484,19 @@ exports.userCanDeleteMultipleDocs = function(test) {
   })
 }
 
-exports.defaultsWork = function(test) {
+exports.customGenIdsWork = function(test) {
+  var bssid = '01:10:11:22:44:66'
   t.post({
     uri: '/data/beacons?' + adminCred,
     body: {
-      data: { 
-        type: util.statics.schemaBeacon,
-        bssid: '01:10:11:22:44:66',
+      data: {
+        bssid: bssid,
         ssid: 'Rest test beacon',
       }
     }
   }, 201, function(err, res, body) {
-    t.assert(body.data.enabled === true)
+    t.assert('be.' + bssid === body.data._id)
+    t.assert(body.data.enabled === true)  // proves defaults work
     test.done()
   })
 }
@@ -623,17 +623,6 @@ exports.deleteBogusRecord = function(test) {
   })
 }
 
-exports.entityValidatorsWork = function(test) {
-  t.get('/data/places?limit=5',
-  function(err, res, body) {
-    t.assert(body.data && body.data.length)
-    body.data.forEach(function(place) {
-      t.assert(place.schema === 'place')
-    })
-    test.done()
-  })
-}
-
 exports.sortsDescendingByModifiedDateByDefault = function(test) {
   t.get('/data/documents',
   function(err, res, body) {
@@ -651,7 +640,7 @@ exports.sortsDescendingByModifiedDateByDefault = function(test) {
 exports.sortWorks = function(test) {
   t.get('/data/users?sort[_id]=-1',
   function(err, res, body) {
-    var lastId = util.statics.collectionIds.users + '.999999.99999.999.999999'
+    var lastId = 'us.999999.99999.999.999999'
     body.data.forEach(function(user, i) {
       t.assert(user._id < lastId, i)
       lastId = user._id
@@ -671,18 +660,6 @@ exports.sortAltFormatWorks = function(test) {
     test.done()
   })
 }
-
-exports.linkedWorks = function(test) {
-  t.post({
-    uri: '/find/users?' + userCred,
-    body: {
-      links: [{to: 'users'}],
-    }
-  }, function(err, res, body) {
-    test.done()
-  })
-}
-
 
 exports.formatDatesWorks = function(test) {
   t.get('/data/users?datesToUTC=1',
