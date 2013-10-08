@@ -201,7 +201,7 @@ exports.canValidateSession = function(test) {
 exports.canValidateSessionUsingParamsInBody = function(test) {
   t.post({
     uri: '/do/find',
-    body: {table: 'documents', user: session._owner, session: session.key}
+    body: {collection: 'documents', user: session._owner, session: session.key}
   }, function(err, res, body) {
     t.assert(body.user)
     t.assert(body.user._id === testUser._id)
@@ -213,11 +213,11 @@ exports.canValidateSessionUsingParamsInBody = function(test) {
 exports.sessionParamsInQueryStringOverrideOnesInBody = function(test) {
   t.post({
     uri: '/do/find?user=' + session._owner + '&session=' + session.key,
-    body: {table: 'users', user: util.adminUser._id, session: session.key}
+    body: {collection: 'users', user: util.adminUser._id, session: session.key}
   }, function(err, res, body) {
     t.post({
       uri: '/do/find?user=' + util.adminUser._id + '&session=' + session.key,
-      body: {table: 'users', user: session._owner, session: session.key}
+      body: {collection: 'users', user: session._owner, session: session.key}
     }, 401, function(err, res, body) {
       test.done()
     })

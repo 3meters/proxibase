@@ -29,7 +29,7 @@ exports.getDataPage = function(test) {
 // Check schema info page
 exports.getSchemaPage = function(test) {
   t.get('/schema', function(err, res, body) {
-    t.assert(body && body.schemas && body.schemas.users)
+    t.assert(body && body.schemas && body.schemas.user)
     test.done()
   })
 }
