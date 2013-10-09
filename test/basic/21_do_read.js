@@ -3,6 +3,7 @@
  */
 
 var util = require('proxutils')
+var statics = util.statics
 var log = util.log
 var testUtil = require('../util')
 var t = testUtil.treq
@@ -70,18 +71,19 @@ exports.getEntitiesMaximum = function (test) {
       entityIds: [constants.placeId], 
       links: {
         active: [ 
-          { type:util.statics.typeProximity, schema:util.statics.schemaBeacon, links: true, count: true, direction: 'both' }, 
-          { type:util.statics.typeContent, schema:util.statics.schemaApplink, links: true, count: true, direction: 'both' }, 
-          { type:util.statics.typeContent, schema:util.statics.schemaComment, links: true, count: true, direction: 'both' }, 
-          { type:util.statics.typeContent, schema:util.statics.schemaPost, links: true, count: true, direction: 'both' }, 
-          { type:util.statics.typeWatch, schema:util.statics.schemaUser, links: true, count: true, direction: 'both' }, 
-          { type:util.statics.typeLike, schema:util.statics.schemaUser, links: true, count: true, direction: 'both' }, 
+          { type:statics.typeProximity, schema:statics.schemaBeacon, links: true, count: true, direction: 'both' }, 
+          { type:statics.typeContent, schema:statics.schemaApplink, links: true, count: true, direction: 'both' }, 
+          { type:statics.typeContent, schema:statics.schemaComment, links: true, count: true, direction: 'both' }, 
+          { type:statics.typeContent, schema:statics.schemaPost, links: true, count: true, direction: 'both' }, 
+          { type:statics.typeWatch, schema:statics.schemaUser, links: true, count: true, direction: 'both' }, 
+          { type:statics.typeLike, schema:statics.schemaUser, links: true, count: true, direction: 'both' }, 
         ]},
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data[0])
     var record = body.data[0]
+    t.assert(record.linksIn && record.linksIn.length)
     log('links ln', record.linksIn.length)
     log('dbProfile', dbProfile)
     record.linksIn.forEach(function(link) {
@@ -106,12 +108,12 @@ exports.getEntitiesWithoutCommentInfo = function (test) {
       entityIds: [constants.placeId], 
       links: {
         active: [ 
-          { type:util.statics.typeProximity, schema:util.statics.schemaBeacon }, 
-          { type:util.statics.typeContent, schema:util.statics.schemaApplink }, 
-          { type:util.statics.typeContent, schema:util.statics.schemaComment, links: false, count: false }, 
-          { type:util.statics.typeContent, schema:util.statics.schemaPost }, 
-          { type:util.statics.typeWatch, schema:util.statics.schemaUser }, 
-          { type:util.statics.typeLike, schema:util.statics.schemaUser }, 
+          { type:statics.typeProximity, schema:statics.schemaBeacon }, 
+          { type:statics.typeContent, schema:statics.schemaApplink }, 
+          { type:statics.typeContent, schema:statics.schemaComment, links: false, count: false }, 
+          { type:statics.typeContent, schema:statics.schemaPost }, 
+          { type:statics.typeWatch, schema:statics.schemaUser }, 
+          { type:statics.typeLike, schema:statics.schemaUser }, 
         ]},
     }
   }, function(err, res, body) {
@@ -133,12 +135,12 @@ exports.getEntitiesAndLinkedEntitiesByUser = function (test) {
       links: {
         loadWhere: { _creator: constants.uid1 },
         active: [ 
-          { type:util.statics.typeProximity, schema:util.statics.schemaBeacon }, 
-          { type:util.statics.typeContent, schema:util.statics.schemaApplink }, 
-          { type:util.statics.typeContent, schema:util.statics.schemaComment, links: true, count: false }, 
-          { type:util.statics.typeContent, schema:util.statics.schemaPost, links: true, count: false }, 
-          { type:util.statics.typeWatch, schema:util.statics.schemaUser }, 
-          { type:util.statics.typeLike, schema:util.statics.schemaUser }, 
+          { type:statics.typeProximity, schema:statics.schemaBeacon }, 
+          { type:statics.typeContent, schema:statics.schemaApplink }, 
+          { type:statics.typeContent, schema:statics.schemaComment, links: true, count: false }, 
+          { type:statics.typeContent, schema:statics.schemaPost, links: true, count: false }, 
+          { type:statics.typeWatch, schema:statics.schemaUser }, 
+          { type:statics.typeLike, schema:statics.schemaUser }, 
         ]},
     }
   }, function(err, res, body) {
@@ -156,7 +158,7 @@ exports.getEntityLinksAndCountsForBeacon = function (test) {
       entityIds: [constants.beaconId],
       links: {
         active: [ 
-          { type:util.statics.typeProximity, schema:util.statics.schemaPlace, links: true, count: true }, 
+          { type:statics.typeProximity, schema:statics.schemaPlace, links: true, count: true }, 
         ]},
     }
   }, function(err, res, body) {
@@ -177,7 +179,7 @@ exports.getEntitiesForLocationLimited = function (test) {
       entityIds: [constants.beaconId],
       links: {
         active: [ 
-          { type:util.statics.typeProximity, schema:util.statics.schemaPlace, links: true, limit: 3 }, 
+          { type:statics.typeProximity, schema:statics.schemaPlace, links: true, limit: 3 }, 
         ]},
     }
   }, function(err, res, body) {
@@ -195,12 +197,12 @@ exports.getEntitiesCreatedByUser = function (test) {
     body: {
       entityId: constants.uid1,
       cursor: { 
-        linkTypes: [util.statics.typeCreate], 
+        linkTypes: [statics.typeCreate], 
         direction: 'out',
       },
     }
   }, function(err, res, body) {
-    t.assert(body.count === util.statics.optionsLimitDefault)
+    t.assert(body.count === statics.optionsLimitDefault)
     t.assert(body.more === true)
     test.done()
   })
@@ -212,15 +214,15 @@ exports.getEntitiesCreatedByUserPostsOnly = function (test) {
     body: {
       entityId: constants.uid1,
       cursor: { 
-        linkTypes: [util.statics.typeCreate], 
-        schemas: [util.statics.schemaPost], 
+        linkTypes: [statics.typeCreate], 
+        schemas: [statics.schemaPost], 
         direction: 'out',
       },
     }
   }, function(err, res, body) {
-    t.assert(body.count === util.statics.optionsLimitDefault)
+    t.assert(body.count === statics.optionsLimitDefault)
     t.assert(body.more === true)
-    t.assert(body.data && body.data[0] && body.data[0].schema === util.statics.schemaPost)
+    t.assert(body.data && body.data[0] && body.data[0].schema === statics.schemaPost)
     test.done()
   })
 }
@@ -231,14 +233,14 @@ exports.getEntitiesForPlacePostsOnly = function (test) {
     body: {
       entityId: constants.placeId, 
       cursor: { 
-        linkTypes: [util.statics.typeContent], 
-        schemas: [util.statics.schemaPost],
+        linkTypes: [statics.typeContent], 
+        schemas: [statics.schemaPost],
       },
     }
   }, function(err, res, body) {
     t.assert(body.count === dbProfile.spe)
     t.assert(body.more === false)
-    t.assert(body.data && body.data[0] && body.data[0].schema === util.statics.schemaPost)
+    t.assert(body.data && body.data[0] && body.data[0].schema === statics.schemaPost)
     test.done()
   })
 }
@@ -249,8 +251,8 @@ exports.getEntitiesForPlacePostsOnlyLimited = function (test) {
     body: {
       entityId: constants.placeId, 
       cursor: { 
-        linkTypes: [util.statics.typeContent], 
-        schemas: [util.statics.schemaPost],
+        linkTypes: [statics.typeContent], 
+        schemas: [statics.schemaPost],
         sort: { name: 1 },
         limit: 3,
       },
@@ -259,7 +261,7 @@ exports.getEntitiesForPlacePostsOnlyLimited = function (test) {
     t.assert(body.count === 3)
     t.assert(body.more === true)
     t.assert(body.data && body.data[0])
-    t.assert(body.data[0].schema === util.statics.schemaPost)
+    t.assert(body.data[0].schema === statics.schemaPost)
     t.assert(body.data[0].name.indexOf('Lisa 1') > 0)
     test.done()
   })
@@ -271,8 +273,8 @@ exports.getEntitiesForPlacePostsOnlyLimitedAndSkip = function (test) {
     body: {
       entityId: constants.placeId, 
       cursor: { 
-        linkTypes: [util.statics.typeContent], 
-        schemas: [util.statics.schemaPost],
+        linkTypes: [statics.typeContent], 
+        schemas: [statics.schemaPost],
         sort: { name: 1 },
         limit: 3,
         skip: 2
