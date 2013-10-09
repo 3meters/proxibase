@@ -99,8 +99,10 @@ function ensureEmptyDb(cb) {
     if (err) throw err
     db.dropDatabase(function(err) {
       if (err) throw err
-      db.close()
-      cb()
+      db.close(function(err) {
+        if (err) throw err
+        cb()
+      })
     })
   })
 }
@@ -136,9 +138,13 @@ function ensureDb(ops, cb) {
           if (err) throw err
           // prepare for reentry
           delete cli.generate
-          templateDb.close()
-          db.close()
-          ensureDb(ops, cb)
+          templateDb.close(function(err) {
+            if (err) throw err
+            db.close(function(err) {
+              if (err) throw err
+              ensureDb(ops, cb)
+            })
+          })
         })
       })
     }
@@ -164,14 +170,16 @@ function ensureDb(ops, cb) {
 
           if (!templateExists) {
             log('Creating new template database ' + templateName)
-            db.close()
-            ops.database = templateName
-            ops.validate = true         // Run schema validators on insert
-            genData(ops, function(err) {
+            db.close(function(err) {
               if (err) throw err
-              // Now try again with the template database in place
-              ops.database = dbName
-              return ensureDb(ops, cb)
+              ops.database = templateName
+              ops.validate = true         // Run schema validators on insert
+              genData(ops, function(err) {
+                if (err) throw err
+                // Now try again with the template database in place
+                ops.database = dbName
+                return ensureDb(ops, cb)
+              })
             })
           }
 
@@ -180,9 +188,11 @@ function ensureDb(ops, cb) {
             var timer = new util.Timer()
             adminDb.command({copydb:1, fromdb:templateName, todb:dbName}, function(err, result) {
               if (err) throw err
-              db.close()
-              log('Database copied in ' + timer.read() + ' seconds')
-              return cb()    // Finished
+              db.close(function(err) {
+                if (err) throw err
+                log('Database copied in ' + timer.read() + ' seconds')
+                return cb()    // Finished
+              })
            })
           }
         })
@@ -266,6 +276,6 @@ function finish(err) {
     setTimeout(function() {
       logStream.write('\n============\nTest server killed by test runner\n')
       testServer.kill()
-    }, 500) // wait for the log to catch up
+    }, 200) // wait for the log to catch up
   }
 }
