@@ -40,7 +40,7 @@ exports.echo = function(test) {
 exports.simpleFind = function(test) {
   t.post({
     uri: '/do/find?' + userCred,
-    body: {table: 'users'}
+    body: {collection: 'users'}
   }, function(err, res, body) {
     t.assert(body && body.data)
     t.assert(body.data instanceof Array && body.data.length)
@@ -50,10 +50,10 @@ exports.simpleFind = function(test) {
 
 
 exports.findWithLimitNotSignedIn = function(test) {
-  var limit = 10
+  var limit = 2
   t.post({
     uri: '/do/find',
-    body: {table:'places', limit: limit}
+    body: {collection:'places', limit: limit}
   }, function(err, res, body) {
     t.assert(body && body.data)
     t.assert(body.data instanceof Array)
@@ -68,7 +68,7 @@ exports.findWithLimitNotSignedIn = function(test) {
 exports.findById = function(test) {
   t.post({
     uri: '/do/find?' + userCred,
-    body: {table:'users', ids:[constants.uid1]}
+    body: {collection:'users', ids:[constants.uid1]}
   }, function(err, res, body) {
     t.assert(body.data.length === 1 && body.count === 1)
     t.assert(body.data[0]._id === constants.uid1)
@@ -81,7 +81,7 @@ exports.findById = function(test) {
 exports.findByNameCaseInsensitive = function(test) {
   t.post({
     uri: '/do/find?' + userCred,
-    body: {table:'users', name: testUser1.name.toUpperCase(), sort: {_id: -1}}
+    body: {collection:'users', name: testUser1.name.toUpperCase(), sort: {_id: -1}}
   }, function(err, res, body) {
     t.assert(body.data.length === 2 && body.count === 2) //Test users 1 and 10
     t.assert(body.data[1]._id === constants.uid1)
@@ -93,43 +93,11 @@ exports.findByNameCaseInsensitive = function(test) {
 exports.findPassThrough = function(test) {
   t.post({
     uri: '/do/find?' + userCred,
-    body: {table:'users', find:{email: testUser1.email}}
+    body: {collection:'users', find:{email: testUser1.email}}
   }, function(err, res, body) {
     t.assert(body.data.length === 1 && body.count === 1)
     t.assert(body.data[0].email === testUser1.email)
     test.done()
   })
 }
-
-
-exports.touchFailsForAnnonymous = function(test) {
-  t.post({
-    uri: '/do/touch',
-    body: {table: 'users'}
-  }, 401, function(err, res, body) {
-    test.done()
-  })
-}
-
-
-exports.touchFailsForUsers = function(test) {
-  t.post({
-    uri: '/do/touch?' + userCred,
-    body: {table: 'users'}
-  }, 401, function(err, res) {
-    test.done()
-  })
-}
-
-
-exports.touchWorksForAdmins = function(test) {
-  t.post({
-    uri: '/do/touch?' + adminCred,
-    body: {table: 'users'}
-  }, function(err, res, body) {
-    t.assert(body.count)
-    test.done()
-  })
-}
-
 
