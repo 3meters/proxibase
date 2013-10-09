@@ -44,7 +44,11 @@ var commentIds = []
 var entityCount = { applinks: 0, beacons: 0, comments: 0, places: 0, posts: 0 }
 
 module.exports = function(profile, callback) {
-  callback = callback || console.error
+
+  callback = callback || function(err, result) {
+    if (err) return console.error(err.stack||err)
+    if (result) console.log(result)
+  }
 
   startTime = new Date().getTime() // start program timer
 
@@ -123,18 +127,20 @@ function genUsers() {
 
       // like
       docs.links.push({
-        _id:   testUtil.genId('link', docs.links.length),
-        _from: docs.users[i]._id,
-        _to:   docs.users[j]._id,
-        type:  'like',
+        _id:      testUtil.genId('link', docs.links.length),
+        _from:    docs.users[i]._id,
+        _to:      docs.users[j]._id,
+        type:     'like',
+        _creator: docs.users[i]._id,
       })
 
       // watch
       docs.links.push({
-        _id:   testUtil.genId('link', docs.links.length),
-        _from: docs.users[i]._id,
-        _to:   docs.users[j]._id,
-        type:  'watch',
+        _id:      testUtil.genId('link', docs.links.length),
+        _from:    docs.users[i]._id,
+        _to:      docs.users[j]._id,
+        type:     'watch',
+        _creator: docs.users[i]._id,
       })
     }
   }
@@ -157,13 +163,12 @@ function genEntityRecords(parentIds, count, entitySchema, linkType) {
         newEnt._id = testUtil.genBeaconId(i)
         newEnt.bssid = newEnt._id.substring(5)
         newEnt.ssid = newEnt.ssid + ' ' + entDocs.length
-        newEnt._owner = util.adminUser._id
       }
       else {
         newEnt._id = testUtil.genId(entitySchema, entDocs.length)
       }
       newEnt.name = newEnt.name + ' ' + entDocs.length
-      newEnt._creator = newEnt._modifier = testUtil.genId('user', (entDocs.length % options.users))
+      newEnt._creator = testUtil.genId('user', (entDocs.length % options.users))
 
       entDocs.push(newEnt)
 
@@ -178,6 +183,7 @@ function genEntityRecords(parentIds, count, entitySchema, linkType) {
           _from:  newEnt._id,
           _to:    parentIds[p],
           type:   linkType,
+          _creator:  newEnt._creator,
         }
         if (entitySchema === 'place') {
           link.proximity = { primary: true, signal: -80 }
@@ -190,6 +196,7 @@ function genEntityRecords(parentIds, count, entitySchema, linkType) {
           _from:  newEnt._creator,
           _to:    newEnt._id,
           type:   'create',
+          _creator:  newEnt._creator,
         })
 
         if (entitySchema === 'place') {
@@ -197,20 +204,22 @@ function genEntityRecords(parentIds, count, entitySchema, linkType) {
           // Like
           for (var u = 0; u < options.users && u < options.likes; u++) {
             links.push({
-              _id:    testUtil.genId('link', links.length),
-              _from:  testUtil.genId('user', u),
-              _to:    newEnt._id,
-              type:   'like',
+              _id:      testUtil.genId('link', links.length),
+              _from:    testUtil.genId('user', u),
+              _to:      newEnt._id,
+              type:     'like',
+              _creator: testUtil.genId('user', u),
             })
           }
 
           // Watch
           for (var u = 0; u < options.users && u < options.watch; u++) {
             links.push({
-              _id:    testUtil.genId('link', links.length),
-              _from:  testUtil.genId('user', u),
-              _to:    newEnt._id,
-              type:   'watch',
+              _id:      testUtil.genId('link', links.length),
+              _from:    testUtil.genId('user', u),
+              _to:      newEnt._id,
+              type:     'watch',
+              _creator: testUtil.genId('user', u),
             })
           }
         }
@@ -241,12 +250,6 @@ function saveAll(callback) {
   })
 }
 
-function list(collectionName, fn) {
-  log('collectionName: ' + collectionName)
-  log('fn: ' + fn)
-  fn()
-}
-
 function save(collectionName, callback) {
   var collection = db.collection(collectionName)
 
@@ -257,10 +260,10 @@ function save(collectionName, callback) {
   })
 
   function saveRow(row, callback) {
-    var user = util.adminUser
-    if (row._creator) user = {_id: row._creator, role: 'user'}
-    var options = {user: user}
-    collection.safeInsert(row, options, function(err) {
+    var user = (row._creator)
+      ? {_id: row._creator, role: 'user'}
+      : util.adminUser
+    collection.safeInsert(row, {user: user}, function(err) {
       return callback(err)
     })
   }

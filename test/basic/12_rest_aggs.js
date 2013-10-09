@@ -6,6 +6,8 @@ var util = require('proxutils')
 var log = util.log
 var testUtil = require('../util')
 var t = testUtil.treq
+var constants = require('../constants')
+var dbProfile = constants.dbProfile.smokeTest
 var userSession
 var userCred
 var adminSession
