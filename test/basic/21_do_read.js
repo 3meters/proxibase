@@ -84,6 +84,11 @@ exports.getEntitiesMaximum = function (test) {
     t.assert(body.data && body.data[0])
     var record = body.data[0]
     t.assert(record.linksIn && record.linksIn.length)
+    log('links ln', record.linksIn.length)
+    log('dbProfile', dbProfile)
+    record.linksIn.forEach(function(link) {
+      log('type: ' + link.type)
+    })
     t.assert(record.linksIn && record.linksIn.length === dbProfile.spe + dbProfile.cpe + dbProfile.ape + dbProfile.likes + dbProfile.watch)
     t.assert(record.linksOut && record.linksOut.length === 1)
     t.assert(record.linksInCounts && record.linksInCounts.length === 5)
