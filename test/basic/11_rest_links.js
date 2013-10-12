@@ -74,7 +74,7 @@ exports.findLinksFailProperlyOnBadInputs = function(test) {
 }
 
 exports.findLinksWorks = function(test) {
-  query.body = {links: [{to: 'documents'}]}
+  query.body = {links: [{to: 'document'}]}
   t.post(query, function(err, res, body) {
     t.assert(body.data.to_documents)
     t.assert(2 === body.data.to_documents.length)
@@ -85,7 +85,7 @@ exports.findLinksWorks = function(test) {
 }
 
 exports.findLinksByLinkTypeWorks = function(test) {
-  query.body = {links: [{to: 'documents', linkType: 'watch'}]}
+  query.body = {links: [{to: 'document', linkType: 'watch'}]}
   t.post(query, function(err, res, body) {
     t.assert(body.data.to_documents_watch)
     t.assert(1 === body.data.to_documents_watch.length)
@@ -95,7 +95,7 @@ exports.findLinksByLinkTypeWorks = function(test) {
 }
 
 exports.findLinksFieldFilterWorks = function(test) {
-  query.body = {links: [{to: 'documents', fields: ['name']}]}
+  query.body = {links: [{to: 'document', fields: ['name']}]}
   t.post(query, function(err, res, body) {
     t.assert(body.data.to_documents)
     t.assert(2 === body.data.to_documents.length)
@@ -108,7 +108,7 @@ exports.findLinksFieldFilterWorks = function(test) {
 }
 
 exports.findFromLinksWorks = function(test) {
-  query.body = {links: [{from: 'documents'}]}
+  query.body = {links: [{from: 'document'}]}
   t.post(query, function(err, res, body) {
     t.assert(body.data.from_documents)
     t.assert(1 === body.data.from_documents.length)
@@ -119,7 +119,7 @@ exports.findFromLinksWorks = function(test) {
 }
 
 exports.findLinksNameAliasingWithAsWorks = function(test) {
-  query.body = {links: [{to: 'documents', as: 'myLinkedDocs'}]}
+  query.body = {links: [{to: 'document', as: 'myLinkedDocs'}]}
   t.post(query, function(err, res, body) {
     t.assert(!body.data.to_documents)
     t.assert(2 === body.data.myLinkedDocs.length)
@@ -128,7 +128,7 @@ exports.findLinksNameAliasingWithAsWorks = function(test) {
 }
 
 exports.findLinksLimitsWork = function(test) {
-  query.body = {links: [{to: 'documents', limit: 1}]}
+  query.body = {links: [{to: 'document', limit: 1}]}
   t.post(query, function(err, res, body) {
     t.assert(1 === body.data.to_documents.length)
     test.done()
@@ -136,7 +136,7 @@ exports.findLinksLimitsWork = function(test) {
 }
 
 exports.findLinksLimitTooBigFailsProperly = function(test) {
-  query.body = {links: [{to: 'documents', limit: 5000}]}
+  query.body = {links: [{to: 'document', limit: 5000}]}
   t.post(query, 400, function(err, res, body) {
     t.assert(400.13 === body.error.code)  // bad value
     test.done()

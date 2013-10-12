@@ -82,13 +82,20 @@ exports.cannotPostWithNonSchemaFields = function(test) {
 }
 
 exports.canAddDoc = function(test) {
+  function getTimeString(id) { return id.split('.').slice(1,1).join('.') }
   t.post({
     uri: '/data/documents?' + userCred,
     body: {data: testDoc1}
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
-    t.assert(body.data && body.data._id)
-    testDoc1._id = body.data._id
+    var doc = body.data
+    t.assert(doc && doc._id)
+    t.assert(doc.createdDate)
+    t.assert(doc.modifiedDate)
+    t.assert(doc.createdDate === doc.modifiedDate)
+    // proves timestamp of _id matches created date
+    t.assert(getTimeString(doc._id) === getTimeString(util.genId('do', doc._createdDate)))
+    testDoc1._id = doc._id
     test.done()
   })
 }
