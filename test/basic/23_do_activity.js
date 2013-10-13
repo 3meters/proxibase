@@ -68,7 +68,7 @@ var testCandigramBounce = {
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
-  name : "Testing candigram entity",
+  name : "Testing bouncing candigram entity",
   photo: {
     prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
     source:"aircandi",
@@ -78,11 +78,25 @@ var testCandigramTour = {
   _id : clIds.candigrams + ".111111.11111.111.222222",
   schema : util.statics.schemaCandigram,
   type : "tour",
-  duration: 60000,
+  duration: 3600000,  // one hour
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
-  name : "Testing candigram entity",
+  name : "Testing touring candigram entity",
+  photo: {
+    prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
+    source:"aircandi",
+  },
+}
+var testCandigramExpand = {
+  _id : clIds.candigrams + ".111111.11111.111.333333",
+  schema : util.statics.schemaCandigram,
+  type : "expand",
+  lifetime: 86400000, // one day
+  location: {
+    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
+  },
+  name : "Testing expanding candigram entity",
   photo: {
     prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
     source:"aircandi",
@@ -259,6 +273,146 @@ exports.moveCandigram = function(test) {
               body: {
                 table:'candigrams',
                 find:{ _id: testCandigramBounce._id }
+              }
+            }, function(err, res, body) {
+              t.assert(body.count === 1)
+              t.assert(body.data && body.data[0])
+              t.assert(body.data[0].activityDate == activityDate)
+              test.done()
+            })
+          })
+        })
+      })
+    })
+  })
+}
+
+exports.insertCandigramExpand = function (test) {
+  t.post({
+    uri: '/do/insertEntity?' + userCred,
+    body: {
+      entity: testCandigramExpand,
+      link: {
+        _to: testPlace2._id,
+        strong: false,
+        type: util.statics.typeContent
+      },
+      skipNotifications: true
+    }
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data)
+    var savedEnt = body.data
+    t.assert(savedEnt._owner === testUser._id)
+    t.assert(savedEnt._creator === testUser._id)
+    t.assert(savedEnt._modifier === testUser._id)
+    var activityDate = body.date
+
+    /* Check insert */
+    t.post({
+      uri: '/do/find',
+      body: {
+        table:'candigrams',
+        find:{ _id:testCandigramExpand._id }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+
+      /* Check activityDate for place */
+      t.post({
+        uri: '/do/find',
+        body: {
+          table:'places',
+          find:{ _id:testPlace2._id }
+        }
+      }, function(err, res, body) {
+        t.assert(body.count === 1)
+        t.assert(body.data && body.data[0])
+        t.assert(body.data[0].activityDate == activityDate)
+        test.done()
+      })
+    })
+  })
+}
+
+exports.expandCandigram = function(test) {
+  t.post({
+    uri: '/do/moveCandigrams?' + userCred,
+    body: {
+      entityIds:[testCandigramExpand._id],
+      method: 'proximity',
+      expand: true,
+      skipNotifications: true
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data[0])
+
+    var newPlace = body.data[0]
+    placeMovedToId = newPlace._id
+    var activityDate = body.date
+
+    /* Check first place link still active */
+    t.post({
+      uri: '/do/find',
+      body: {
+        table:'links',
+        find:{
+          _from:testCandigramExpand._id,
+          _to:testPlace2._id,
+          type:util.statics.typeContent,
+        }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+      t.assert(body.data && body.data[0])
+      t.assert(body.data[0].inactive === false)
+
+      /* Check both place links are active */
+      t.post({
+        uri: '/do/find',
+        body: {
+          table:'links',
+          find:{
+            _from: testCandigramExpand._id,
+            type: util.statics.typeContent,
+            inactive: false,
+          }
+        }
+      }, function(err, res, body) {
+        t.assert(body.count === 2)
+        t.assert(body.data && body.data[0])
+
+        /* Check activityDate for old place */
+        t.post({
+          uri: '/do/find',
+          body: {
+            table:'places',
+            find:{ _id:testPlace2._id }
+          }
+        }, function(err, res, body) {
+          t.assert(body.count === 1)
+          t.assert(body.data && body.data[0])
+          t.assert(body.data[0].activityDate == activityDate)
+
+          /* Check activityDate for new place */
+          t.post({
+            uri: '/do/find',
+            body: {
+              table:'places',
+              find:{ _id:newPlace._id }
+            }
+          }, function(err, res, body) {
+            t.assert(body.count === 1)
+            t.assert(body.data && body.data[0])
+            t.assert(body.data[0].activityDate == activityDate)
+
+            /* Check activityDate for candigram */
+            t.post({
+              uri: '/do/find',
+              body: {
+                table:'candigrams',
+                find:{ _id: testCandigramExpand._id }
               }
             }, function(err, res, body) {
               t.assert(body.count === 1)
