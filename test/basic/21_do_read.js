@@ -9,7 +9,6 @@ var testUtil = require('../util')
 var t = testUtil.treq
 var constants = require('../constants')
 var dbProfile = constants.dbProfile.smokeTest
-  log('dbProfile', dbProfile)
 var userCred
 var user2Cred
 var adminCred

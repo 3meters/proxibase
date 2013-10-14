@@ -5,9 +5,9 @@
 var util = require('proxutils')
 var log = util.log
 var adminId = util.adminUser._id
-var clIds = util.statics.collectionIds
 var testUtil = require('../util')
 var t = testUtil.treq
+var skip = testUtil.skip
 var constants = require('../constants')
 var dbProfile = constants.dbProfile.smokeTest
 var userCred
@@ -24,7 +24,7 @@ var radiusTiny = 0.000001
 var radiusBig = 10000
 var placeMovedToId
 var testUser = {
-  _id : clIds.users + ".111111.11111.111.111111",
+  _id : "us.111111.11111.111.111111",
   name : "John Q Test",
   email : "johnqtest@3meters.com",
   password : "12345678",
@@ -37,7 +37,7 @@ var testUser = {
   enabled: true,
 }
 var testPlace2 = {
-  _id : clIds.places + ".111111.11111.111.111112",
+  _id : "pl.111111.11111.111.111112",
   schema : util.statics.schemaPlace,
   name : "Testing place entity",
   photo: {
@@ -62,7 +62,7 @@ var testPlace2 = {
   },
 }
 var testCandigramBounce = {
-  _id : clIds.candigrams + ".111111.11111.111.111111",
+  _id : "ca.111111.11111.111.111111",
   schema : util.statics.schemaCandigram,
   type : "bounce",
   location: {
@@ -75,7 +75,7 @@ var testCandigramBounce = {
   },
 }
 var testCandigramTour = {
-  _id : clIds.candigrams + ".111111.11111.111.222222",
+  _id : "ca.111111.11111.111.222222",
   schema : util.statics.schemaCandigram,
   type : "tour",
   duration: 60000,
@@ -89,7 +89,7 @@ var testCandigramTour = {
   },
 }
 var testComment = {
-  _id : clIds.comments + ".111111.11111.111.111114",
+  _id : "co.111111.11111.111.111114",
   schema : util.statics.schemaComment,
   name : "Test comment",
   description : "Test comment, much ado about nothing.",
@@ -141,7 +141,6 @@ exports.insertCandigramBounce = function (test) {
       entity: testCandigramBounce,
       link: {
         _to: testPlace2._id,
-        strong: false,
         type: util.statics.typeContent
       },
       skipNotifications: true
@@ -159,7 +158,7 @@ exports.insertCandigramBounce = function (test) {
     t.post({
       uri: '/do/find',
       body: {
-        table:'candigrams',
+        collection:'candigrams',
         find:{ _id:testCandigramBounce._id }
       }
     }, function(err, res, body) {
@@ -169,7 +168,7 @@ exports.insertCandigramBounce = function (test) {
       t.post({
         uri: '/do/find',
         body: {
-          table:'places',
+          collection:'places',
           find:{ _id:testPlace2._id }
         }
       }, function(err, res, body) {
@@ -202,7 +201,7 @@ exports.moveCandigram = function(test) {
     t.post({
       uri: '/do/find',
       body: {
-        table:'links',
+        collection:'links',
         find:{
           _from:testCandigramBounce._id,
           _to:testPlace2._id,
@@ -218,7 +217,7 @@ exports.moveCandigram = function(test) {
       t.post({
         uri: '/do/find',
         body: {
-          table:'links',
+          collection:'links',
           find:{
             _from: testCandigramBounce._id,
             type: util.statics.typeContent,
@@ -233,7 +232,7 @@ exports.moveCandigram = function(test) {
         t.post({
           uri: '/do/find',
           body: {
-            table:'places',
+            collection:'places',
             find:{ _id:testPlace2._id }
           }
         }, function(err, res, body) {
@@ -245,7 +244,7 @@ exports.moveCandigram = function(test) {
           t.post({
             uri: '/do/find',
             body: {
-              table:'places',
+              collection:'places',
               find:{ _id:newPlace._id }
             }
           }, function(err, res, body) {
@@ -257,7 +256,7 @@ exports.moveCandigram = function(test) {
             t.post({
               uri: '/do/find',
               body: {
-                table:'candigrams',
+                collection:'candigrams',
                 find:{ _id: testCandigramBounce._id }
               }
             }, function(err, res, body) {
@@ -294,7 +293,7 @@ exports.addEntitySet = function (test) {
     t.post({
       uri: '/do/find',
       body: {
-        table:'links',
+        collection:'links',
         find: { _to: testPlace2._id, type: util.statics.typeContent, fromSchema: util.statics.schemaApplink }
       }
     }, function(err, res, body) {
@@ -304,7 +303,7 @@ exports.addEntitySet = function (test) {
       t.post({
         uri: '/do/find',
         body: {
-          table:'applinks',
+          collection:'applinks',
           find: { name:'Applink' }
         }
       }, function(err, res, body) {
@@ -314,7 +313,7 @@ exports.addEntitySet = function (test) {
         t.post({
           uri: '/do/find',
           body: {
-            table:'places',
+            collection:'places',
             find:{ _id: testPlace2._id }
           }
         }, function(err, res, body) {
@@ -347,7 +346,7 @@ exports.replaceEntitySet = function (test) {
     t.post({
       uri: '/do/find',
       body: {
-        table:'links',
+        collection:'links',
         find: { _to: testPlace2._id, type: util.statics.typeContent, fromSchema: util.statics.schemaApplink }
       }
     }, function(err, res, body) {
@@ -357,7 +356,7 @@ exports.replaceEntitySet = function (test) {
       t.post({
         uri: '/do/find',
         body: {
-          table:'applinks',
+          collection:'applinks',
           find: { name:'Applink New' }
         }
       }, function(err, res, body) {
@@ -367,7 +366,7 @@ exports.replaceEntitySet = function (test) {
         t.post({
           uri: '/do/find',
           body: {
-            table:'applinks',
+            collection:'applinks',
             find: { name:'Applink' }
           }
         }, function(err, res, body) {
@@ -377,7 +376,7 @@ exports.replaceEntitySet = function (test) {
           t.post({
             uri: '/do/find',
             body: {
-              table:'places',
+              collection:'places',
               find:{ _id: testPlace2._id }
             }
           }, function(err, res, body) {
@@ -401,7 +400,6 @@ exports.insertComment = function (test) {
       entity: testComment,
       link: {
         _to: testCandigramBounce._id,
-        strong: true,
         type: util.statics.schemaComment
       },
       skipNotifications: true
@@ -415,7 +413,7 @@ exports.insertComment = function (test) {
     t.post({
       uri: '/do/find',
       body: {
-        table:'comments',
+        collection:'comments',
         find: { _id: testComment._id }
       }
     }, function(err, res, body) {
@@ -427,7 +425,7 @@ exports.insertComment = function (test) {
       t.post({
         uri: '/do/find',
         body: {
-          table:'places',
+          collection:'places',
           find:{ _id:placeMovedToId }
         }
       }, function(err, res, body) {
@@ -439,7 +437,7 @@ exports.insertComment = function (test) {
         t.post({
           uri: '/do/find',
           body: {
-            table:'candigrams',
+            collection:'candigrams',
             find:{ _id: testCandigramBounce._id }
           }
         }, function(err, res, body) {
@@ -469,7 +467,7 @@ exports.updateEntity = function (test) {
     t.post({
       uri: '/do/find',
       body: {
-        table:'comments',
+        collection:'comments',
         find: { _id: testComment._id }
       }
     }, function(err, res, body) {
@@ -481,7 +479,7 @@ exports.updateEntity = function (test) {
       t.post({
         uri: '/do/find',
         body: {
-          table:'places',
+          collection:'places',
           find:{ _id:placeMovedToId }
         }
       }, function(err, res, body) {
@@ -493,7 +491,7 @@ exports.updateEntity = function (test) {
         t.post({
           uri: '/do/find',
           body: {
-            table:'candigrams',
+            collection:'candigrams',
             find:{ _id: testCandigramBounce._id }
           }
         }, function(err, res, body) {
@@ -522,7 +520,7 @@ exports.deleteEntity = function (test) {
     t.post({
       uri: '/do/find',
       body: {
-        table:'comments',
+        collection:'comments',
         find: { _id: testComment._id }
       }
     }, function(err, res, body) {
@@ -532,7 +530,7 @@ exports.deleteEntity = function (test) {
       t.post({
         uri: '/do/find',
         body: {
-          table:'places',
+          collection:'places',
           find:{ _id:placeMovedToId }
         }
       }, function(err, res, body) {
@@ -544,7 +542,7 @@ exports.deleteEntity = function (test) {
         t.post({
           uri: '/do/find',
           body: {
-            table:'candigrams',
+            collection:'candigrams',
             find:{ _id: testCandigramBounce._id }
           }
         }, function(err, res, body) {

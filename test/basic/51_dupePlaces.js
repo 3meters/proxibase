@@ -62,8 +62,8 @@ exports.dupePlacesMergeOnProviderId = function(test) {
       }
     }
   }, 201, function(err, res, body) {
-    t.assert(body.data && body.data.length)
-    placeId = body.data[0]._id
+    t.assert(body.data)
+    placeId = body.data._id
     t.post({
       uri: '/do/insertEntity?' + userCred,
       body: {
@@ -77,8 +77,8 @@ exports.dupePlacesMergeOnProviderId = function(test) {
         }
       }
     }, 201, function(err, res, body) {
-      t.assert(body.data && body.data.length)
-      var place = body.data[0]
+      t.assert(body.data)
+      var place = body.data
       t.assert(placeId === place._id) // proves merged on phone number
       t.assert('Zoka1' === place.name)
       t.assert(place.provider.foursquare)
@@ -94,8 +94,8 @@ exports.dupePlacesMergeOnProviderId = function(test) {
           }
         }
       }, 201, function(err, res, body) {
-        t.assert(body.data && body.data.length)
-        var place = body.data[0]
+        t.assert(body.data)
+        var place = body.data
         t.assert(placeId === place._id) // proves merged on provider Id
         t.assert('Zoka1' === place.name)
         t.assert(place.provider.foursquare)
