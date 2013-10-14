@@ -81,7 +81,7 @@ exports.adminCanDeleteTasks = function(test) {
   })
 }
 
-// start a task which inserts one new document per second.
+// Start a task which inserts one new document per second.
 // Wait a couple of seconds and then query the db for those
 // documents.
 exports.restInsertAsTaskWorks = function(test) {
@@ -102,7 +102,7 @@ exports.restInsertAsTaskWorks = function(test) {
         t.assert(body.data.length >= 2)
         test.done()
       })
-    }, 2500)
+    }, 1500)
   })
 }
 

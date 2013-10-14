@@ -138,8 +138,10 @@ function getAdminSession(user, fn) {
   getSession(user, true, fn)
 }
 
-function skip(test) {
-  log('skipped test:')
+function skip(test, msg) {
+  var out = 'Warning: the following test did not pass, it was skipped: '
+  out += msg ? msg : ''
+  log(out)
   test.done()
 }
 
