@@ -5,7 +5,6 @@
 var util = require('proxutils')
 var log = util.log
 var adminId = util.adminUser._id
-var clIds = util.statics.collectionIds
 var testUtil = require('../util')
 var t = testUtil.treq
 var constants = require('../constants')
@@ -24,7 +23,7 @@ var testLongitude2 = -122.1
 var radiusTiny = 0.000001
 var radiusBig = 10000
 var testUser = {
-  _id : clIds.users + ".111111.11111.111.111111",
+  _id :  "us.111111.11111.111.111111",
   name : "John Q Test",
   email : "johnqtest@3meters.com",
   password : "12345678",
@@ -37,14 +36,14 @@ var testUser = {
   enabled: true,
 }
 var testUser2 = {
-  _id : clIds.users + ".111111.11111.111.222222",
+  _id : "us.111111.11111.111.222222",
   name : "John Q Test2",
   email : "johnqtest2@3meters.com",
   password : "12345678",
   enabled: true,
 }
 var testPlace = {
-  _id : clIds.places + ".111111.11111.111.111111",
+  _id : "pl.111111.11111.111.111111",
   schema : util.statics.schemaPlace,
   name : "Testing place entity",
   photo: {
@@ -69,7 +68,7 @@ var testPlace = {
   }
 }
 var testPlace2 = {
-  _id : clIds.places + ".111111.11111.111.111112",
+  _id : "pl.111111.11111.111.111112",
   schema : util.statics.schemaPlace,
   name : "Testing place entity",
   photo: {
@@ -94,7 +93,7 @@ var testPlace2 = {
   },
 }
 var testPlace3 = {
-  _id : clIds.places + ".111111.11111.111.111113",
+  _id : "pl.111111.11111.111.111113",
   schema : util.statics.schemaPlace,
   name : "Testing place entity",
   photo: {
@@ -119,7 +118,7 @@ var testPlace3 = {
   },
 }
 var testPlaceCustom = {
-  _id : clIds.places + ".111111.11111.111.111114",
+  _id : "pl.111111.11111.111.111114",
   schema : util.statics.schemaPlace,
   name : "Testing place entity custom",
   photo: {
@@ -145,7 +144,7 @@ var testPlaceCustom = {
   locked: true,
 }
 var testPost = {
-  _id : clIds.posts + ".111111.11111.111.111111",
+  _id : "po.111111.11111.111.111111",
   schema : util.statics.schemaPost,
   name : "Testing post entity",
   photo: {
@@ -154,7 +153,7 @@ var testPost = {
   },
 }
 var testCandigramBounce = {
-  _id : clIds.candigrams + ".111111.11111.111.111111",
+  _id : "ca.111111.11111.111.111111",
   schema : util.statics.schemaCandigram,
   type : "bounce",
   location: {
@@ -167,7 +166,7 @@ var testCandigramBounce = {
   },
 }
 var testCandigramTour = {
-  _id : clIds.candigrams + ".111111.11111.111.222222",
+  _id : "ca.111111.11111.111.222222",
   schema : util.statics.schemaCandigram,
   type : "tour",
   duration: 60000,
@@ -181,19 +180,19 @@ var testCandigramTour = {
   },
 }
 var testComment = {
-  _id : clIds.comments + ".111111.11111.111.111111",
+  _id : "co.111111.11111.111.111111",
   schema : util.statics.schemaComment,
   name : "Test comment",
   description : "Test comment, much ado about nothing.",
 }
 var testComment2 = {
-  _id : clIds.comments + ".111111.11111.111.111112",
+  _id : "co.111111.11111.111.111112",
   schema : util.statics.schemaComment,
   name : "Test comment for locked entity",
   description : "Test comment, much ado about nothing.",
 }
 var testComment3 = {
-  _id : clIds.comments + ".111111.11111.111.111113",
+  _id : "co.111111.11111.111.111113",
   schema : util.statics.schemaComment,
   name : "Another test comment for locked entity",
   description : "Test comment, much ado about nothing.",
@@ -224,7 +223,7 @@ var testApplink2 = {
 }
 
 var testBeacon = {
-  _id : clIds.beacons + '.11:11:11:11:11:11',
+  _id : 'be.11:11:11:11:11:11',
   schema : util.statics.schemaBeacon,
   name: 'Test Beacon Label',
   ssid: 'Test Beacon',
@@ -239,7 +238,7 @@ var testBeacon = {
   },
 }
 var testBeacon2 = {
-  _id : clIds.beacons + '.22:22:22:22:22:22',
+  _id : 'be.22:22:22:22:22:22',
   schema : util.statics.schemaBeacon,
   name: 'Test Beacon Label 2',
   ssid: 'Test Beacon 2',
@@ -254,7 +253,7 @@ var testBeacon2 = {
   },
 }
 var testBeacon3 = {
-  _id : clIds.beacons + '.33:33:33:33:33:33',
+  _id : 'be.33:33:33:33:33:33',
   schema : util.statics.schemaBeacon,
   name: 'Test Beacon Label 3',
   ssid: 'Test Beacon 3',
@@ -271,7 +270,7 @@ var testBeacon3 = {
 var testLink = {
   // _to : clIds.beacons + '.11:11:11:11:11:22',
   _to : testBeacon3._id,
-  _from : clIds.places + '.111111.11111.111.111111',
+  _from : 'pl.111111.11111.111.111111',
   proximity: {
     primary: true,
     signal: -100
@@ -334,7 +333,7 @@ exports.checkRegisterDevice = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'devices',
+      collection:'devices',
       find:{ _id:constants.deviceId }
     }
   }, function(err, res, body) {
@@ -353,7 +352,7 @@ exports.updateRegisteredDeviceBeacons = function (test) {
       registrationId: constants.registrationId
     }
   }, function(err, res, body) {
-    t.assert(body.count === 5)
+    t.assert(body.count === dbProfile.epb)
     t.assert(body.data && body.data[0])
     test.done()
   })
@@ -363,7 +362,7 @@ exports.checkDeviceBeacons = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'devices',
+      collection:'devices',
       find:{ _id:constants.deviceId }
     }
   }, function(err, res, body) {
@@ -394,7 +393,7 @@ exports.checkUnregisterDevice = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'devices',
+      collection:'devices',
       find:{ _id:constants.deviceId }
     }
   }, function(err, res, body) {
@@ -438,7 +437,7 @@ exports.insertPlace = function (test) {
     t.post({
       uri: '/do/find',
       body: {
-        table:'links',
+        collection:'links',
         find:{ _to:testBeacon._id, _from:body.data._id, 'proximity.primary':true }
       }
     }, function(err, res, body) {
@@ -453,7 +452,7 @@ exports.checkInsertPlace = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'places',
+      collection:'places',
       find:{ _id:testPlace._id }
     }
   }, function(err, res, body) {
@@ -466,7 +465,7 @@ exports.checkInsertBeacon = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'beacons',
+      collection:'beacons',
       find:{ _id:testBeacon._id }
     }
   }, function(err, res, body) {
@@ -484,7 +483,7 @@ exports.checkInsertLinkToBeacon = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'links',
+      collection:'links',
       find:{ _to:testBeacon._id }
     }
   }, function(err, res, body) {
@@ -497,7 +496,7 @@ exports.checkInsertPlaceLogAction = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'actions',
+      collection:'actions',
       find:{ _target:testPlace._id, type:'insert_entity_place_linked'}
     }
   }, function(err, res, body) {
@@ -530,7 +529,7 @@ exports.checkInsertPlaceCustom = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'places',
+      collection:'places',
       find:{ _id:testPlaceCustom._id }
     }
   }, function(err, res, body) {
@@ -559,7 +558,7 @@ exports.checkInsertPlaceBeaconAlreadyExists = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'places',
+      collection:'places',
       find:{ _id:testPlace2._id }
     }
   }, function(err, res, body) {
@@ -572,7 +571,7 @@ exports.checkBeaconLinkCount = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'links',
+      collection:'links',
       find:{ _to:testBeacon._id }
     }
   }, function(err, res, body) {
@@ -598,7 +597,7 @@ exports.checkInsertEntityNoLinks = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'places',
+      collection:'places',
       find:{_id:testPlace3._id}
     }
   }, function(err, res, body) {
@@ -629,7 +628,7 @@ exports.insertEntityDoNotTrack = function(test) {
     delete ent._id
     ent.name = 'Testing Place Ent with doNotTrack'
     var beacon = util.clone(testBeacon)
-    beacon._id = util.statics.collectionIds.beacons + '.44:44:44:44:44:44'
+    beacon._id = 'be.44:44:44:44:44:44'
     beacon.bssid = '44:44:44:44:44:44',
     t.post({
       uri: '/do/insertEntity?' + userCred,
@@ -704,7 +703,7 @@ exports.checkLikeEntityLinkToEntity2 = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'links',
+      collection:'links',
       find:{ _to:testPlace2._id, type: util.statics.typeLike }
     }
   }, function(err, res, body) {
@@ -717,7 +716,7 @@ exports.checkLikeEntityLogAction = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'actions',
+      collection:'actions',
       find:{ _target:testPlace2._id, type:'like'}
     }
   }, function(err, res, body) {
@@ -745,7 +744,7 @@ exports.checkUnlikeEntity = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'links',
+      collection:'links',
       find:{
         _to:testPlace2._id,
         _from:testUser._id,
@@ -779,7 +778,7 @@ exports.checkTrackEntityProximityLinksFromEntity1 = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'links',
+      collection:'links',
       find:{
         _from:testPlace._id,
         type:util.statics.typeProximity
@@ -795,7 +794,7 @@ exports.checkTrackEntityProximityLinkFromEntity1ToBeacon2 = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'links',
+      collection:'links',
       find:{
         _to:testBeacon2._id,
         _from:testPlace._id,
@@ -815,7 +814,7 @@ exports.checkTrackEntityLogAction = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'actions',
+      collection:'actions',
       find:{
         _target:trackingLink._id,
         type:'link_proximity'
@@ -846,7 +845,7 @@ exports.checkUntrackEntityProximityLinksFromEntity1 = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'links',
+      collection:'links',
       find:{
         _from:testPlace._id,
         type:util.statics.typeProximity
@@ -875,7 +874,7 @@ exports.checkTrackEntityNoBeaconsLogAction = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'actions',
+      collection:'actions',
       find:{
         _target:testPlace._id,
         type:'entity_proximity'
@@ -909,7 +908,7 @@ exports.checkBeaconLocationUpdate = function (test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'beacons',
+      collection:'beacons',
       find:{ _id:testBeacon._id }
     }
   }, function(err, res, body) {
@@ -975,7 +974,7 @@ exports.checkInsertComment = function (test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'comments',
+      collection:'comments',
       find: { _id: testComment._id }
     }
   }, function(err, res, body) {
@@ -988,7 +987,7 @@ exports.checkInsertCommentLink = function (test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'links',
+      collection:'links',
       find:{
         _from:testComment._id,
         _to:testPlace._id,
@@ -1076,7 +1075,7 @@ exports.checkDeleteEntity = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'places',
+      collection:'places',
       find:{
         _id:testPlace._id
       }
@@ -1091,7 +1090,7 @@ exports.checkDeleteLink = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'links',
+      collection:'links',
       find:{
         _to:testBeacon._id,
         _from:testPlace._id
@@ -1107,7 +1106,7 @@ exports.checkDeleteStrongLinkedEntity = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'comments',
+      collection:'comments',
       find:{
         _id:testComment._id
       }
@@ -1122,7 +1121,7 @@ exports.checkDeleteEntityLogActions = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'actions',
+      collection:'actions',
       find:{
         _target:testPlace._id,
         type:'insert_entity'
@@ -1138,7 +1137,7 @@ exports.checkDeleteLinkLogActions = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'actions',
+      collection:'actions',
       find:{
         _target:primaryLink._id,
         type:'tune_link_primary'
@@ -1191,7 +1190,7 @@ exports.checkOwnerInsertedCommentOnLockedRecord = function (test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'comments',
+      collection:'comments',
       find:{ _id:testComment2._id }
     }
   }, function(err, res, body) {
@@ -1223,7 +1222,7 @@ exports.checkAdminInsertedCommentOnLockedRecord = function (test) {
   t.post({
     uri: '/do/find',
     body: {
-      table:'comments',
+      collection:'comments',
       find:{ _id:testComment3._id }
     }
   }, function(err, res, body) {
