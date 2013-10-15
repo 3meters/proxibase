@@ -92,12 +92,12 @@ exports.restInsertAsTaskWorks = function(test) {
       schedule: sched1,
       module:   'utils',
       method:   'db.documents.safeInsert',
-      args:     [{type: 'taskTest'}, {user: {_id: adminId, role: 'admin'}}]
+      args:     [{type: 'taskTest2'}, {user: {_id: adminId, role: 'admin'}}]
     }}
   }, 201, function(err, res, body) {
     taskId = body.data._id
     setTimeout(function(){
-      t.get('/data/documents?find[type]=taskTest',
+      t.get('/data/documents?find[type]=taskTest2',
       function(err, res, body) {
         t.assert(body.data.length >= 2)
         test.done()
@@ -112,12 +112,12 @@ exports.canStopInsertTask = function(test) {
   }, function (err, res, body) {
     t.get('/data/tasks?' + adminCred, function(err, res, body) {
       t.assert(body.data && 0 === body.data.length)  // all tasks records are gone
-      t.get('/data/documents?find[type]=taskTest',
+      t.get('/data/documents?find[type]=taskTest2',
       function(err, res, body) {
         t.assert(body.data)
         docCount = body.data.length  // count records inserted by recurring task
         setTimeout(function() {
-          t.get('/data/documents?find[type]=taskTest',
+          t.get('/data/documents?find[type]=taskTest2',
           function() {
             t.assert(body.data && docCount === body.data.length)  // make sure we have no new records
             test.done()
@@ -127,4 +127,31 @@ exports.canStopInsertTask = function(test) {
     })
   })
 }
+
+// Start a task which inserts one new document per second.
+// Wait a couple of seconds and then query the db for those
+// documents.
+exports.restInsertDisabledTestDoesNotStartIt = function(test) {
+  t.post({
+    uri: '/data/tasks?' + adminCred,
+    body: { data: {
+      name:     'task3',
+      schedule: sched1,
+      module:   'utils',
+      method:   'db.documents.safeInsert',
+      enabled:  false,
+      args:     [{type: 'taskTest3'}, {user: {_id: adminId, role: 'admin'}}]
+    }}
+  }, 201, function(err, res, body) {
+    taskId = body.data._id
+    setTimeout(function(){
+      t.get('/data/documents?find[type]=taskTest3',
+      function(err, res, body) {
+        t.assert(body.data.length === 0)
+        test.done()
+      })
+    }, 1500)
+  })
+}
+
 
