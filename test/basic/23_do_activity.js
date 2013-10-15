@@ -89,7 +89,7 @@ var testCandigramTour = {
   },
 }
 var testCandigramExpand = {
-  _id : clIds.candigrams + ".111111.11111.111.333333",
+  _id : "ca.111111.11111.111.333333",
   schema : util.statics.schemaCandigram,
   type : "expand",
   lifetime: 86400000, // one day
@@ -293,7 +293,6 @@ exports.insertCandigramExpand = function (test) {
       entity: testCandigramExpand,
       link: {
         _to: testPlace2._id,
-        strong: false,
         type: util.statics.typeContent
       },
       skipNotifications: true
@@ -311,7 +310,7 @@ exports.insertCandigramExpand = function (test) {
     t.post({
       uri: '/do/find',
       body: {
-        table:'candigrams',
+        collection:'candigrams',
         find:{ _id:testCandigramExpand._id }
       }
     }, function(err, res, body) {
@@ -321,7 +320,7 @@ exports.insertCandigramExpand = function (test) {
       t.post({
         uri: '/do/find',
         body: {
-          table:'places',
+          collection:'places',
           find:{ _id:testPlace2._id }
         }
       }, function(err, res, body) {
@@ -355,7 +354,7 @@ exports.expandCandigram = function(test) {
     t.post({
       uri: '/do/find',
       body: {
-        table:'links',
+        collection:'links',
         find:{
           _from:testCandigramExpand._id,
           _to:testPlace2._id,
@@ -371,7 +370,7 @@ exports.expandCandigram = function(test) {
       t.post({
         uri: '/do/find',
         body: {
-          table:'links',
+          collection:'links',
           find:{
             _from: testCandigramExpand._id,
             type: util.statics.typeContent,
@@ -386,7 +385,7 @@ exports.expandCandigram = function(test) {
         t.post({
           uri: '/do/find',
           body: {
-            table:'places',
+            collection:'places',
             find:{ _id:testPlace2._id }
           }
         }, function(err, res, body) {
@@ -398,7 +397,7 @@ exports.expandCandigram = function(test) {
           t.post({
             uri: '/do/find',
             body: {
-              table:'places',
+              collection:'places',
               find:{ _id:newPlace._id }
             }
           }, function(err, res, body) {
@@ -410,7 +409,7 @@ exports.expandCandigram = function(test) {
             t.post({
               uri: '/do/find',
               body: {
-                table:'candigrams',
+                collection:'candigrams',
                 find:{ _id: testCandigramExpand._id }
               }
             }, function(err, res, body) {
