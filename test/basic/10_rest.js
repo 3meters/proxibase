@@ -645,7 +645,7 @@ exports.sortsDescendingByModifiedDateByDefault = function(test) {
 }
 
 exports.sortWorks = function(test) {
-  t.get('/data/users?sort[_id]=-1',
+  t.get('/data/users?sort[0][_id]=-1',
   function(err, res, body) {
     var lastId = 'us.999999.99999.999.999999'
     body.data.forEach(function(user, i) {
