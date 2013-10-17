@@ -74,12 +74,11 @@ exports.findLinksFailProperlyOnBadInputs = function(test) {
 }
 
 exports.findLinksWorks = function(test) {
-  query.body = {links: [{to: 'document'}]}
+  query.body = {links: [{to: {documents: 1}}]}
   t.post(query, function(err, res, body) {
-    t.assert(body.data.to_documents)
-    t.assert(2 === body.data.to_documents.length)
-    t.assert('do.linkdoc2' === body.data.to_documents[0]._id)  // default sort by most recent
-    t.assert(body.data.to_documents[0].data)  // includes all fields
+    t.assert(body.data.to.documents)
+    t.assert(2 === body.data.to.documents.length)
+    t.assert(body.data.to.documents[0].data)  // includes all fields
     test.done()
   })
 }
