@@ -18,6 +18,7 @@ mongo.Db.prototype.mymeth = function() {
 var server = new mongo.Server(host, port, options)
 var db = new mongo.Db(dbname, server, {safe:true})
 
+/*
 db.open(function(err, db2) {
   db.foo = 'bar'
   db2.foo = 'baz'
@@ -25,7 +26,18 @@ db.open(function(err, db2) {
   db.mymeth()
   db2.mymeth()
 })
+*/ 
 
+function make() {
+  var o1 = {}
+  var o2 = new Object()
+  // return o1
+}
+
+var o = make()
+
+if (o instanceof make) log('yes')
+else log('no')
 
 /*
 mongo.myFunction = function() {
