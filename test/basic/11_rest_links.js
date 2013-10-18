@@ -87,25 +87,32 @@ exports.findLinksWorks = function(test) {
 }
 
 exports.findLinksBySchemaWithLinkFilterWorks = function(test) {
-  query.body = {links: [{to: 'document', linkFilter: {type: 'watch'}}]}
+  query.body = {links: [{to: {document: 1}, linkFilter: {type: 'watch'}}]}
   t.post(query, function(err, res, body) {
     t.assert(body.data.links)
     t.assert(1 === body.data.links.length)
     var links = body.data.links[0]
-    t.assert(1 === links.to.length)
+    t.assert(links.to)
+    t.assert(links.to.documents)
+    t.assert(1 === links.to.documents.length)
+    t.assert(links.to.documents[0].data)
     test.done()
   })
 }
 
 exports.findLinksFieldFilterWorks = function(test) {
-  query.body = {links: [{to: 'document', fields: ['name']}]}
+  query.body = {links: [{to: {document: 1}, fields: {name: 1}}]}
   t.post(query, function(err, res, body) {
-    t.assert(body.data.to_documents)
-    t.assert(2 === body.data.to_documents.length)
-    t.assert(body.data.to_documents[0].name)
-    t.assert(body.data.to_documents[1].name)
-    t.assert(!body.data.to_documents[0].data)
-    t.assert(!body.data.to_documents[1].data)
+    t.assert(body.data.links)
+    t.assert(body.data.links.length)
+    var links = body.data.links[0]
+    t.assert(links.to)
+    t.assert(links.to.documents)
+    t.assert(2 === links.to.documents.length)
+    t.assert(links.to.documents[0].name)
+    t.assert(links.to.documents[1].name)
+    t.assert(!links.to.documents[0].data)
+    t.assert(!links.to.documents[1].data)
     test.done()
   })
 }
