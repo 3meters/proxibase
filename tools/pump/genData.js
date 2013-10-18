@@ -10,8 +10,7 @@ var util = require('proxutils') // load proxibase extentions to node util
 var log = util.log
 var statics = util.statics
 var _schemas = statics.schemas
-var dblib = require('proxdb')       // Proxdb lib
-var mongo = dblib.mongodb
+var mongo = require('proxdb')       // Proxdb lib
 var db                                    // Mongodb connection object
 var constants = require('../../test/constants')
 var testUtil = require('../../test/util')
@@ -68,7 +67,7 @@ module.exports = function(profile, callback) {
     db = database
     db.dropDatabase(function(err) {
       if (err) throw err
-      dblib.init(config, function(err, proxdb) {
+      mongo.initDb(config, function(err, proxdb) {
         if (err) throw err
         db.close()
         db = proxdb
