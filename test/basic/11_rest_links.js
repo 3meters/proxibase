@@ -76,19 +76,23 @@ exports.findLinksFailProperlyOnBadInputs = function(test) {
 exports.findLinksWorks = function(test) {
   query.body = {links: [{to: {documents: 1}}]}
   t.post(query, function(err, res, body) {
-    t.assert(body.data.to.documents)
-    t.assert(2 === body.data.to.documents.length)
-    t.assert(body.data.to.documents[0].data)  // includes all fields
+    t.assert(body.data.links)
+    t.assert(1 === body.data.links.length)
+    var links = body.data.links[0]
+    t.assert(links.to)
+    t.assert(links.to.documents)
+    t.assert(2 === links.to.documents.length)
     test.done()
   })
 }
 
-exports.findLinksByLinkTypeWorks = function(test) {
-  query.body = {links: [{to: 'document', linkType: 'watch'}]}
+exports.findLinksBySchemaWithLinkFilterWorks = function(test) {
+  query.body = {links: [{to: 'document', linkFilter: {type: 'watch'}}]}
   t.post(query, function(err, res, body) {
-    t.assert(body.data.to_documents_watch)
-    t.assert(1 === body.data.to_documents_watch.length)
-    t.assert('watch' === body.data.to_documents_watch[0].linkType)
+    t.assert(body.data.links)
+    t.assert(1 === body.data.links.length)
+    var links = body.data.links[0]
+    t.assert(1 === links.to.length)
     test.done()
   })
 }
