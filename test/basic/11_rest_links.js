@@ -117,38 +117,58 @@ exports.findLinksFieldFilterWorks = function(test) {
   })
 }
 
-exports.findFromLinksWorks = function(test) {
-  query.body = {links: [{from: 'document'}]}
+exports.findLinksSortsDescendingByDefault = function(test) {
+  query.body = {links: [{to: {document: 1}}]}
   t.post(query, function(err, res, body) {
-    t.assert(body.data.from_documents)
-    t.assert(1 === body.data.from_documents.length)
-    t.assert('do.linkdoc3' === body.data.from_documents[0]._id)
-    t.assert('viewedBy' === body.data.from_documents[0].linkType)
+    var toDocs = body.data.links[0].to.documents
+    t.assert(toDocs[0]._id > toDocs[1]._id)
     test.done()
   })
 }
 
-exports.findLinksNameAliasingWithAsWorks = function(test) {
-  query.body = {links: [{to: 'document', as: 'myLinkedDocs'}]}
+exports.findLinksSortWorks = function(test) {
+  query.body = {links: [{to: {document: 1}, sort: [{_id: 1}]}]}
   t.post(query, function(err, res, body) {
-    t.assert(!body.data.to_documents)
-    t.assert(2 === body.data.myLinkedDocs.length)
+    var toDocs = body.data.links[0].to.documents
+    t.assert(toDocs[0]._id < toDocs[1]._id)
     test.done()
   })
 }
 
 exports.findLinksLimitsWork = function(test) {
-  query.body = {links: [{to: 'document', limit: 1}]}
+  query.body = {links: [{to: {document: 1}, limit: 1}]}
   t.post(query, function(err, res, body) {
-    t.assert(1 === body.data.to_documents.length)
+    var toDocs = body.data.links[0].to.documents
+    t.assert(1 === toDocs.length)
+    t.assert('do.linkdoc2' === toDocs[0]._id)
     test.done()
   })
 }
 
-exports.findLinksLimitTooBigFailsProperly = function(test) {
-  query.body = {links: [{to: 'document', limit: 5000}]}
-  t.post(query, 400, function(err, res, body) {
-    t.assert(400.13 === body.error.code)  // bad value
+exports.findLinksSkipWorks = function(test) {
+  query.body = {links: [{to: {document: 1}, limit: 1, skip: 1}]}
+  t.post(query, function(err, res, body) {
+    var toDocs = body.data.links[0].to.documents
+    t.assert(1 === toDocs.length)
+    t.assert('do.linkdoc1' === toDocs[0]._id)
     test.done()
   })
+}
+
+_exports.findLinksIncludeLinkFieldsWorks = function(test) {
+  query.body = {links: [{to: {document: 1}, linkFields: {type:1}}]}
+  t.post(query, function(err, res, body) {
+    var toDocs = body.data.links[0].to.documents
+    t.assert(toDocs[0].link)
+    t.assert(toDocs[0].link.type)
+    t.assert('watch' === toDocs[0].link.type)
+    t.assert('like' === toDocs[0].link.type)
+    t.assert(false)
+    test.done()
+  })
+}
+
+_exports.findLinksAcceptsSingletonQueries = function(test) {
+  query.body = {links: {to: {document: 1}, fields: {name: 1}}}
+
 }
