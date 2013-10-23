@@ -86,8 +86,8 @@ exports.findLinksWorks = function(test) {
   })
 }
 
-exports.findLinksBySchemaWithLinkFilterWorks = function(test) {
-  query.body = {links: [{to: {document: 1}, linkFilter: {type: 'watch'}}]}
+exports.findLinksFilterWorks = function(test) {
+  query.body = {links: [{to: {documents: 1}, filter: {type: 'watch'}}]}
   t.post(query, function(err, res, body) {
     t.assert(body.data.links)
     t.assert(1 === body.data.links.length)
@@ -95,13 +95,12 @@ exports.findLinksBySchemaWithLinkFilterWorks = function(test) {
     t.assert(links.to)
     t.assert(links.to.documents)
     t.assert(1 === links.to.documents.length)
-    t.assert(links.to.documents[0].data)
     test.done()
   })
 }
 
-exports.findLinksFieldFilterWorks = function(test) {
-  query.body = {links: [{to: {document: 1}, fields: {name: 1}}]}
+exports.findLinksWithDocFieldsWorks = function(test) {
+  query.body = {links: [{to: {documents: {name: 1}}}]}
   t.post(query, function(err, res, body) {
     t.assert(body.data.links)
     t.assert(body.data.links.length)
@@ -109,16 +108,18 @@ exports.findLinksFieldFilterWorks = function(test) {
     t.assert(links.to)
     t.assert(links.to.documents)
     t.assert(2 === links.to.documents.length)
-    t.assert(links.to.documents[0].name)
-    t.assert(links.to.documents[1].name)
-    t.assert(!links.to.documents[0].data)
-    t.assert(!links.to.documents[1].data)
+    t.assert(links.to.documents[0].document)
+    t.assert(links.to.documents[1].document)
+    t.assert(links.to.documents[0].document.name)
+    t.assert(links.to.documents[1].document.name)
+    t.assert(!links.to.documents[0].document.data)
+    t.assert(!links.to.documents[1].document.data)
     test.done()
   })
 }
 
 exports.findLinksSortsDescendingByDefault = function(test) {
-  query.body = {links: [{to: {document: 1}}]}
+  query.body = {links: [{to: {documents: 1}}]}
   t.post(query, function(err, res, body) {
     var toDocs = body.data.links[0].to.documents
     t.assert(toDocs[0]._id > toDocs[1]._id)
@@ -127,7 +128,7 @@ exports.findLinksSortsDescendingByDefault = function(test) {
 }
 
 exports.findLinksSortWorks = function(test) {
-  query.body = {links: [{to: {document: 1}, sort: [{_id: 1}]}]}
+  query.body = {links: [{to: {documents: 1}, sort: [{_id: 1}]}]}
   t.post(query, function(err, res, body) {
     var toDocs = body.data.links[0].to.documents
     t.assert(toDocs[0]._id < toDocs[1]._id)
@@ -136,39 +137,38 @@ exports.findLinksSortWorks = function(test) {
 }
 
 exports.findLinksLimitsWork = function(test) {
-  query.body = {links: [{to: {document: 1}, limit: 1}]}
+  query.body = {links: [{to: {documents: 1}, limit: 1}]}
   t.post(query, function(err, res, body) {
     var toDocs = body.data.links[0].to.documents
     t.assert(1 === toDocs.length)
-    t.assert('do.linkdoc2' === toDocs[0]._id)
+    t.assert('do.linkdoc2' === toDocs[0]._to)
     test.done()
   })
 }
 
 exports.findLinksSkipWorks = function(test) {
-  query.body = {links: [{to: {document: 1}, limit: 1, skip: 1}]}
+  query.body = {links: [{to: {documents: 1}, limit: 1, skip: 1}]}
   t.post(query, function(err, res, body) {
     var toDocs = body.data.links[0].to.documents
     t.assert(1 === toDocs.length)
-    t.assert('do.linkdoc1' === toDocs[0]._id)
+    t.assert('do.linkdoc1' === toDocs[0]._to)
     test.done()
   })
 }
 
-_exports.findLinksIncludeLinkFieldsWorks = function(test) {
-  query.body = {links: [{to: {document: 1}, linkFields: {type:1}}]}
+exports.findLinksAcceptsSingletonQueries = function(test) {
+  query.body = {links: {to: {documents: {}}}}
   t.post(query, function(err, res, body) {
-    var toDocs = body.data.links[0].to.documents
-    t.assert(toDocs[0].link)
-    t.assert(toDocs[0].link.type)
-    t.assert('watch' === toDocs[0].link.type)
-    t.assert('like' === toDocs[0].link.type)
-    t.assert(false)
-    test.done()
+    t.assert(body.data.links)
+    t.assert(body.data.links.to)              // not nested in an array
+    t.assert(body.data.links.to.documents)
+    var toDocs = body.data.links.to.documents
+    t.assert(2 === toDocs.length)
+    t.assert(toDocs[0]._id > toDocs[1]._id)
+    t.assert(toDocs[0].document)
+    t.assert(toDocs[1].document)
+    t.assert(toDocs[0]._id > toDocs[1]._id)
+    t.assert('LinkDoc2' === toDocs[0].document.name)
+    t.assert('LinkDoc1' === toDocs[1].document.name)
   })
-}
-
-_exports.findLinksAcceptsSingletonQueries = function(test) {
-  query.body = {links: {to: {document: 1}, fields: {name: 1}}}
-
 }
