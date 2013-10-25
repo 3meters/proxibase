@@ -320,6 +320,7 @@ exports.registerDeviceForNotifications = function (test) {
         _id: constants.deviceId,
         _user: testUser._id,
         registrationId: constants.registrationId,
+        installId: constants.installId,
         clientVersionCode: 10,
         clientVersionName: '0.8.12'
       }
@@ -382,6 +383,7 @@ exports.unregisterDeviceForNotifications = function (test) {
       register: false,
       device: {
         registrationId: constants.registrationId,
+        installId: constants.installId,
       }
     }
   }, function(err, res, body) {
