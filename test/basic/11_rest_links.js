@@ -170,5 +170,6 @@ exports.findLinksAcceptsSingletonQueries = function(test) {
     t.assert(toDocs[0]._id > toDocs[1]._id)
     t.assert('LinkDoc2' === toDocs[0].document.name)
     t.assert('LinkDoc1' === toDocs[1].document.name)
+    test.done()
   })
 }
