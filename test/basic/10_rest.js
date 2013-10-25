@@ -264,7 +264,7 @@ exports.findDocsByIdAndCheckSysFields = function(test) {
 
 exports.findDocsByGetAndFindAndJson = function(test) {
   t.get({
-    uri: '/data/documents?find={"_id":"' + testDoc1._id + '"}&' + userCred
+    uri: '/data/documents?filter={"_id":"' + testDoc1._id + '"}&' + userCred
   }, function(err, res, body) {
     t.assert(body.data.length === 1)
     test.done()
@@ -274,7 +274,7 @@ exports.findDocsByGetAndFindAndJson = function(test) {
 exports.findDocsByGetAndFindAndJsonFailsWithBadUserCred = function(test) {
   t.get({
     // bogus session key
-    uri: '/data/documents?find={"_id":"' + testDoc1._id + '"}&' + userCred.slice(0, -1)
+    uri: '/data/documents?filter={"_id":"' + testDoc1._id + '"}&' + userCred.slice(0, -1)
   }, 401, function(err, res, body) {
     test.done()
   })
@@ -282,7 +282,7 @@ exports.findDocsByGetAndFindAndJsonFailsWithBadUserCred = function(test) {
 
 exports.findDocsByGetAndFindWithBadJson = function(test) {
   t.get({
-    uri: '/data/documents?find={_id:"' + testDoc1._id + '"}&' + userCred
+    uri: '/data/documents?filter={"_id:"' + testDoc1._id + '"}&' + userCred
   }, 400, function(err, res, body) {
     test.done()
   })

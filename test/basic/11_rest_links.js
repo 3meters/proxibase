@@ -64,6 +64,34 @@ exports.addLinkedData = function(test) {
   })
 }
 
+exports.findLinksFromWorksWithGetSyntax = function(test) {
+  query = {uri: '/find/documents?links[from][users][]'}
+  t.get(query, function(err, res, body) {
+    t.assert(body.data.length >= 3)
+    body.data.forEach(function(doc) {
+      t.assert(doc.links)
+      t.assert(doc.links.from)              // not nested in an array
+      t.assert(doc.links.from.users)
+      var fromUsers = doc.links.from.users
+      switch (doc._id) {
+        case 'do.linkdoc1':
+          t.assert(1 === fromUsers.length)
+          t.assert('like' === fromUsers[0].type)
+          t.assert(fromUsers[0].document)
+          break
+        case 'do.linkdoc2':
+          t.assert(1 === fromUsers.length)
+          t.assert('watch' === fromUsers[0].type)
+          t.assert(fromUsers[0].document)
+          break
+        default:
+          t.assert(0 === fromUsers.length)
+          break
+      }
+    })
+    test.done()
+  })
+}
 exports.findLinksFailProperlyOnBadInputs = function(test) {
   query = {uri: '/find/users/' + userId}
   query.body = {links: [{bogus: 'documents'}]}
@@ -173,3 +201,4 @@ exports.findLinksAcceptsSingletonQueries = function(test) {
     test.done()
   })
 }
+
