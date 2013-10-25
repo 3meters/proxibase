@@ -20,6 +20,7 @@ var
   linkId = _schemas.link.id + '.'  + timeStamp + '.000001',
   deviceId = _schemas.device.id + '.'  + timeStamp + '.000001',
   registrationId = 'a1a1a1a1a1',
+  installId = '5905d547-8321-4612-abe1-f93949d02a6a',
   latitude = 47,                                              // Nearby
   longitude = -122,
   password = 'password',
@@ -56,8 +57,8 @@ defaultDoc.user2 = {
   _id: uid2,
   name: 'Test User Dev',
   email: 'testdev@3meters.com',
-  photo: { 
-    prefix:"resource:placeholder_user", 
+  photo: {
+    prefix:"resource:placeholder_user",
     source:"resource",
   },
   area: 'Testville, WA',
@@ -91,12 +92,12 @@ defaultDoc.place = {
   photo: { prefix:"https://s3.amazonaws.com/3meters_images/test_preview.jpg", source:"aircandi" },
   signalFence: -100,
   location: { lat:latitude, lng:longitude, altitude:0, accuracy:30, speed: 0, geometry:[longitude, latitude] },
-  address:"123 Central Park", city:"New York", region:"NY", country:"USA", // phone:"2065551212", 
-  // provider:{ 
-  //  foursquare:"4bcfbae19854d13a82b8f64d" 
+  address:"123 Central Park", city:"New York", region:"NY", country:"USA", // phone:"2065551212",
+  // provider:{
+  //  foursquare:"4bcfbae19854d13a82b8f64d"
   // },
-  category:{ 
-    id:"4bf58dd8d48988d18c941735", 
+  category:{
+    id:"4bf58dd8d48988d18c941735",
     name : "Baseball Stadium",
     photo:{
       prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
@@ -154,6 +155,7 @@ module.exports = {
   placeId: placeId,
   postId: postId,
   registrationId: registrationId,
+  installId: installId,
   latitude: latitude,
   longitude: longitude,
   timeStamp: timeStamp,
