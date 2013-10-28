@@ -67,7 +67,6 @@ exports.cannotCreateStatsAsUser = function(test) {
 }
 
 exports.statUserFilterWorks = function(test) {
-  return skip(test)
   t.get({
     uri: '/stats/linksFromUsers/' + testUserId + '?' + userCred
   }, function(err, res, body) {
@@ -81,7 +80,6 @@ exports.statUserFilterWorks = function(test) {
 }
 
 exports.adminCanRefreshStat = function(test) {
-  return skip(test)
   t.get({
     uri: '/stats/linksFromUsers?refresh=true&' + adminCred
   }, function(err, res, body){
@@ -93,7 +91,6 @@ exports.adminCanRefreshStat = function(test) {
 // Add a new link from the test user liking himself, then update
 // the statistics and ensure that his new link appears in the stats
 exports.staticsUpdateOnRefresh = function(test) {
-  return skip(test)
   t.post({
     uri: '/data/links?' + userCred,
     body: {
@@ -125,7 +122,6 @@ exports.staticsUpdateOnRefresh = function(test) {
 }
 
 exports.statsPassThroughFindCriteria = function(test) {
-  return skip(test)
   t.get({
     uri: '/stats/linksFromUsers?find[linkType]=watch'
   }, function(err, res, body) {
@@ -138,7 +134,6 @@ exports.statsPassThroughFindCriteria = function(test) {
 }
 
 exports.statsCanTurnLookupsOff = function(test) {
-  return skip(test)
   t.get({
     uri: '/stats/linksFromUsers?lookups=0'
   }, function(err, res, body) {
