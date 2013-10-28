@@ -196,11 +196,9 @@ exports.updateCanCreatedNestedObject = function(test) {
 }
 
 exports.cannotAddDocMissingRequiredField = function(test) {
-  log('Skipped test')
-  return test.done()
   t.post({
-    uri: '/data/places?' + userCred,
-    body: {data: {name: 'Test Entity Missing its type'}}
+    uri: '/data/actions?' + userCred,
+    body: {data: {_target: 'us.testuser', name: 'Test action missing required type field'}}
   }, 400, function(err, res, body) {
     t.assert(body.error.code === 400.1) // missingParam
     test.done()
