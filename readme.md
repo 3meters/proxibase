@@ -22,22 +22,30 @@ send an authticated request
 
 find documents
 
-    path: /do/find
-    method: POST
+    path: /find/<collection>/<_id>
+    method: GET|POST
     body: {
-      "collection|stat": string,          // base collection or statitistics collection
+      "collection": string,          // base collection or statitistics collection
       "name": string,                     // case-insensitive
       "fields": [string],
-      "find": {mongodb find expression},  // pass-through to mongodb, case-sensitive.
+      "filter": {mongodb query expression},  // pass-through to mongodb, case-sensitive.
                                           // Also accepts get params using
                                           // https://github.com/visionmedia/node-querystring
       "lookups": boolean,
       "limit": number,                    // default 100, max 1000
       "skip": number,
-      "sort": {field1:1, field2:-1},
+      "sort": [{field1:1}, {field2:-1}]
       "count": boolean,                   // returns no records, only count, limit and skip are ignored
       "countBy":  [string]                // returns count of collection grouped by field or fields
-    }
+	  "links": {from: {collection1: 1, collection2: 1},  // returns links from this document
+	              to: {collection3: 1, collection4: 1},  // returns links to this document
+		        sort: number,
+			    skip: number,
+			   limit: number,
+		      fields: {fieldexpr}
+		   docFields: {fieldexpr}  // fields from the linked document to include in a document property of the link
+		}  
+	}
 
 or
     GET /data/users?countBy=role&lookups=true  etc
