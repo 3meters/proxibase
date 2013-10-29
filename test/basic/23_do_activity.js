@@ -689,6 +689,7 @@ exports.deleteEntity = function (test) {
       }, function(err, res, body) {
         t.assert(body.count === 1)
         t.assert(body.data && body.data[0])
+        util.debug('test activityDate', activityDate)
         t.assert(body.data[0].activityDate == activityDate)
 
         /* Check activityDate for candigram */
