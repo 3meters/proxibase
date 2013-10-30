@@ -1104,6 +1104,7 @@ exports.checkDeleteLink = function(test) {
 }
 
 exports.checkDeleteStrongLinkedEntity = function(test) {
+  return skip(test)
   t.post({
     uri: '/do/find',
     body: {
