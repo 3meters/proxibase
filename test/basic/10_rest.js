@@ -196,11 +196,9 @@ exports.updateCanCreatedNestedObject = function(test) {
 }
 
 exports.cannotAddDocMissingRequiredField = function(test) {
-  log('Skipped test')
-  return test.done()
   t.post({
-    uri: '/data/places?' + userCred,
-    body: {data: {name: 'Test Entity Missing its type'}}
+    uri: '/data/actions?' + userCred,
+    body: {data: {_target: 'us.testuser', name: 'Test action missing required type field'}}
   }, 400, function(err, res, body) {
     t.assert(body.error.code === 400.1) // missingParam
     test.done()
@@ -264,7 +262,7 @@ exports.findDocsByIdAndCheckSysFields = function(test) {
 
 exports.findDocsByGetAndFindAndJson = function(test) {
   t.get({
-    uri: '/data/documents?find={"_id":"' + testDoc1._id + '"}&' + userCred
+    uri: '/data/documents?filter={"_id":"' + testDoc1._id + '"}&' + userCred
   }, function(err, res, body) {
     t.assert(body.data.length === 1)
     test.done()
@@ -274,7 +272,7 @@ exports.findDocsByGetAndFindAndJson = function(test) {
 exports.findDocsByGetAndFindAndJsonFailsWithBadUserCred = function(test) {
   t.get({
     // bogus session key
-    uri: '/data/documents?find={"_id":"' + testDoc1._id + '"}&' + userCred.slice(0, -1)
+    uri: '/data/documents?filter={"_id":"' + testDoc1._id + '"}&' + userCred.slice(0, -1)
   }, 401, function(err, res, body) {
     test.done()
   })
@@ -282,7 +280,7 @@ exports.findDocsByGetAndFindAndJsonFailsWithBadUserCred = function(test) {
 
 exports.findDocsByGetAndFindWithBadJson = function(test) {
   t.get({
-    uri: '/data/documents?find={_id:"' + testDoc1._id + '"}&' + userCred
+    uri: '/data/documents?filter={"_id:"' + testDoc1._id + '"}&' + userCred
   }, 400, function(err, res, body) {
     test.done()
   })
@@ -645,7 +643,7 @@ exports.sortsDescendingByModifiedDateByDefault = function(test) {
 }
 
 exports.sortWorks = function(test) {
-  t.get('/data/users?sort[_id]=-1',
+  t.get('/data/users?sort[0][_id]=-1',
   function(err, res, body) {
     var lastId = 'us.999999.99999.999.999999'
     body.data.forEach(function(user, i) {
