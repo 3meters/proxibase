@@ -61,7 +61,7 @@ exports.refreshWebsiteWaitForContent = function(test) {
       applinks: [{type: 'website', appUrl: 'www.yahoo.com'}],
       waitForContent: true,
       testThumbnails: true,
-      timeout: 10,
+      timeout: 15,
     }
   }, function(err, res, body) {
     t.assert(1 === body.data.length)

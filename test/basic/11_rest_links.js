@@ -64,6 +64,34 @@ exports.addLinkedData = function(test) {
   })
 }
 
+exports.findLinksFromWorksWithGetSyntax = function(test) {
+  query = {uri: '/find/documents?links[from][users][]'}
+  t.get(query, function(err, res, body) {
+    t.assert(body.data.length >= 3)
+    body.data.forEach(function(doc) {
+      t.assert(doc.links)
+      t.assert(doc.links.from)              // not nested in an array
+      t.assert(doc.links.from.users)
+      var fromUsers = doc.links.from.users
+      switch (doc._id) {
+        case 'do.linkdoc1':
+          t.assert(1 === fromUsers.length)
+          t.assert('like' === fromUsers[0].type)
+          t.assert(fromUsers[0].document)
+          break
+        case 'do.linkdoc2':
+          t.assert(1 === fromUsers.length)
+          t.assert('watch' === fromUsers[0].type)
+          t.assert(fromUsers[0].document)
+          break
+        default:
+          t.assert(0 === fromUsers.length)
+          break
+      }
+    })
+    test.done()
+  })
+}
 exports.findLinksFailProperlyOnBadInputs = function(test) {
   query = {uri: '/find/users/' + userId}
   query.body = {links: [{bogus: 'documents'}]}
@@ -74,71 +102,103 @@ exports.findLinksFailProperlyOnBadInputs = function(test) {
 }
 
 exports.findLinksWorks = function(test) {
-  query.body = {links: [{to: 'document'}]}
+  query.body = {links: [{to: {documents: 1}}]}
   t.post(query, function(err, res, body) {
-    t.assert(body.data.to_documents)
-    t.assert(2 === body.data.to_documents.length)
-    t.assert('do.linkdoc2' === body.data.to_documents[0]._id)  // default sort by most recent
-    t.assert(body.data.to_documents[0].data)  // includes all fields
+    t.assert(body.data.links)
+    t.assert(1 === body.data.links.length)
+    var links = body.data.links[0]
+    t.assert(links.to)
+    t.assert(links.to.documents)
+    t.assert(2 === links.to.documents.length)
     test.done()
   })
 }
 
-exports.findLinksByLinkTypeWorks = function(test) {
-  query.body = {links: [{to: 'document', linkType: 'watch'}]}
+exports.findLinksFilterWorks = function(test) {
+  query.body = {links: [{to: {documents: 1}, filter: {type: 'watch'}}]}
   t.post(query, function(err, res, body) {
-    t.assert(body.data.to_documents_watch)
-    t.assert(1 === body.data.to_documents_watch.length)
-    t.assert('watch' === body.data.to_documents_watch[0].linkType)
+    t.assert(body.data.links)
+    t.assert(1 === body.data.links.length)
+    var links = body.data.links[0]
+    t.assert(links.to)
+    t.assert(links.to.documents)
+    t.assert(1 === links.to.documents.length)
     test.done()
   })
 }
 
-exports.findLinksFieldFilterWorks = function(test) {
-  query.body = {links: [{to: 'document', fields: ['name']}]}
+exports.findLinksWithDocFieldsWorks = function(test) {
+  query.body = {links: [{to: {documents: {name: 1}}}]}
   t.post(query, function(err, res, body) {
-    t.assert(body.data.to_documents)
-    t.assert(2 === body.data.to_documents.length)
-    t.assert(body.data.to_documents[0].name)
-    t.assert(body.data.to_documents[1].name)
-    t.assert(!body.data.to_documents[0].data)
-    t.assert(!body.data.to_documents[1].data)
+    t.assert(body.data.links)
+    t.assert(body.data.links.length)
+    var links = body.data.links[0]
+    t.assert(links.to)
+    t.assert(links.to.documents)
+    t.assert(2 === links.to.documents.length)
+    t.assert(links.to.documents[0].document)
+    t.assert(links.to.documents[1].document)
+    t.assert(links.to.documents[0].document.name)
+    t.assert(links.to.documents[1].document.name)
+    t.assert(!links.to.documents[0].document.data)
+    t.assert(!links.to.documents[1].document.data)
     test.done()
   })
 }
 
-exports.findFromLinksWorks = function(test) {
-  query.body = {links: [{from: 'document'}]}
+exports.findLinksSortsDescendingByDefault = function(test) {
+  query.body = {links: [{to: {documents: 1}}]}
   t.post(query, function(err, res, body) {
-    t.assert(body.data.from_documents)
-    t.assert(1 === body.data.from_documents.length)
-    t.assert('do.linkdoc3' === body.data.from_documents[0]._id)
-    t.assert('viewedBy' === body.data.from_documents[0].linkType)
+    var toDocs = body.data.links[0].to.documents
+    t.assert(toDocs[0]._id > toDocs[1]._id)
     test.done()
   })
 }
 
-exports.findLinksNameAliasingWithAsWorks = function(test) {
-  query.body = {links: [{to: 'document', as: 'myLinkedDocs'}]}
+exports.findLinksSortWorks = function(test) {
+  query.body = {links: [{to: {documents: 1}, sort: [{_id: 1}]}]}
   t.post(query, function(err, res, body) {
-    t.assert(!body.data.to_documents)
-    t.assert(2 === body.data.myLinkedDocs.length)
+    var toDocs = body.data.links[0].to.documents
+    t.assert(toDocs[0]._id < toDocs[1]._id)
     test.done()
   })
 }
 
 exports.findLinksLimitsWork = function(test) {
-  query.body = {links: [{to: 'document', limit: 1}]}
+  query.body = {links: [{to: {documents: 1}, limit: 1}]}
   t.post(query, function(err, res, body) {
-    t.assert(1 === body.data.to_documents.length)
+    var toDocs = body.data.links[0].to.documents
+    t.assert(1 === toDocs.length)
+    t.assert('do.linkdoc2' === toDocs[0]._to)
     test.done()
   })
 }
 
-exports.findLinksLimitTooBigFailsProperly = function(test) {
-  query.body = {links: [{to: 'document', limit: 5000}]}
-  t.post(query, 400, function(err, res, body) {
-    t.assert(400.13 === body.error.code)  // bad value
+exports.findLinksSkipWorks = function(test) {
+  query.body = {links: [{to: {documents: 1}, limit: 1, skip: 1}]}
+  t.post(query, function(err, res, body) {
+    var toDocs = body.data.links[0].to.documents
+    t.assert(1 === toDocs.length)
+    t.assert('do.linkdoc1' === toDocs[0]._to)
     test.done()
   })
 }
+
+exports.findLinksAcceptsSingletonQueries = function(test) {
+  query.body = {links: {to: {documents: {}}}}
+  t.post(query, function(err, res, body) {
+    t.assert(body.data.links)
+    t.assert(body.data.links.to)              // not nested in an array
+    t.assert(body.data.links.to.documents)
+    var toDocs = body.data.links.to.documents
+    t.assert(2 === toDocs.length)
+    t.assert(toDocs[0]._id > toDocs[1]._id)
+    t.assert(toDocs[0].document)
+    t.assert(toDocs[1].document)
+    t.assert(toDocs[0]._id > toDocs[1]._id)
+    t.assert('LinkDoc2' === toDocs[0].document.name)
+    t.assert('LinkDoc1' === toDocs[1].document.name)
+    test.done()
+  })
+}
+
