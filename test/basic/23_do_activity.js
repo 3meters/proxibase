@@ -210,6 +210,7 @@ exports.moveCandigram = function(test) {
     var newPlace = body.data[0]
     placeMovedToId = newPlace._id
     var activityDate = body.date
+    util.debug('activityDate', activityDate)
 
     /* Check place link inactive */
     t.post({
