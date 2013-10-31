@@ -618,6 +618,7 @@ exports.checkInsertEntityNoLinks = function(test) {
 }
 
 exports.insertEntityDoNotTrack = function(test) {
+  return skip(test)
   t.post({
     uri: '/data/users/' + testUser._id + '?' + userCred,
     body: {
