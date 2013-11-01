@@ -311,16 +311,16 @@ exports.getSessions = function (test) {
   })
 }
 
-exports.registerDeviceForNotifications = function (test) {
+exports.registerInstallForNotifications = function (test) {
   t.post({
-    uri: '/do/registerDevice?' + userCred,
+    uri: '/do/registerInstall?' + userCred,
     body: {
       register: true,
-      device: {
-        _id: constants.deviceId,
+      install: {
+        _id: constants.installId,
         _user: testUser._id,
         registrationId: constants.registrationId,
-        installId: constants.installId,
+        installationId: constants.installationId,
         clientVersionCode: 10,
         clientVersionName: '0.8.12'
       }
@@ -331,27 +331,28 @@ exports.registerDeviceForNotifications = function (test) {
   })
 }
 
-exports.checkRegisterDevice = function(test) {
+exports.checkRegisterInstall = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      collection:'devices',
-      find:{ _id:constants.deviceId }
+      collection:'installs',
+      find:{ _id:constants.installId }
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data[0])
+    t.assert(body.data[0].installationId)
     t.assert(body.data[0].registrationId)
     test.done()
   })
 }
 
-exports.updateRegisteredDeviceBeacons = function (test) {
+exports.updateRegisteredInstallBeacons = function (test) {
   t.post({
     uri: '/do/getEntitiesByProximity?' + userCred,
     body: {
       beaconIds: [constants.beaconId],
-      registrationId: constants.registrationId
+      installationId: constants.installationId
     }
   }, function(err, res, body) {
     t.assert(body.count === dbProfile.epb)
@@ -360,12 +361,12 @@ exports.updateRegisteredDeviceBeacons = function (test) {
   })
 }
 
-exports.checkDeviceBeacons = function(test) {
+exports.checkInstallBeacons = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      collection:'devices',
-      find:{ _id:constants.deviceId }
+      collection:'installs',
+      find:{ _id:constants.installId }
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
@@ -376,14 +377,13 @@ exports.checkDeviceBeacons = function(test) {
   })
 }
 
-exports.unregisterDeviceForNotifications = function (test) {
+exports.unregisterInstallForNotifications = function (test) {
   t.post({
-    uri: '/do/registerDevice?' + userCred,
+    uri: '/do/registerInstall?' + userCred,
     body: {
       register: false,
-      device: {
-        registrationId: constants.registrationId,
-        installId: constants.installId,
+      install: {
+        installationId: constants.installationId,
       }
     }
   }, function(err, res, body) {
@@ -392,12 +392,12 @@ exports.unregisterDeviceForNotifications = function (test) {
   })
 }
 
-exports.checkUnregisterDevice = function(test) {
+exports.checkUnregisterInstall = function(test) {
   t.post({
     uri: '/do/find',
     body: {
-      collection:'devices',
-      find:{ _id:constants.deviceId }
+      collection:'installs',
+      find:{ _id:constants.installId }
     }
   }, function(err, res, body) {
     t.assert(body.count === 0)

@@ -205,7 +205,7 @@ exports.cannotAddDocMissingRequiredField = function(test) {
   })
 }
 
-// TODO:  reimplement targeting the devices collection
+// TODO:  reimplement targeting the installs collection
 _exports.canUpdateNestedArrays = function(test) {
   t.post({
     uri: '/data/entities?' + userCred,
@@ -484,7 +484,7 @@ exports.userCanDeleteMultipleDocs = function(test) {
   t.del({
     uri: '/data/documents/' + testDoc1._id + ',' + testDoc2._id + '?' + userCred
     }, function(err, res, body) {
-    t.assert(body.count === 2) 
+    t.assert(body.count === 2)
     test.done()
   })
 }
@@ -508,7 +508,7 @@ exports.customGenIdsWork = function(test) {
 
 exports.nullsAreNotPersistedOnInsert = function(test) {
   t.post({
-    uri: '/data/documents?' + userCred, 
+    uri: '/data/documents?' + userCred,
     body: {
       data: {
         name: null,
@@ -550,13 +550,13 @@ exports.usersCannotSkipSafeInsert = function(test) {
   t.post({
     uri: '/data/beacons?' + userCred,
     body: {
-      data: { 
+      data: {
         _id: 'bogusid1',
         type: util.statics.schemaBeacon,
         bssid: '01:10:11:22:44:88',
         bogusField: 'I am a bogus field'
       },
-      skipValidation: true 
+      skipValidation: true
     }
   }, 401, function(err, res, body) {
     test.done()
@@ -567,13 +567,13 @@ exports.adminsCanSkipSafeInsert = function(test) {
   t.post({
     uri: '/data/beacons?' + adminCred,
     body: {
-      data: { 
+      data: {
         _id: 'bogusid1',
         type: util.statics.schemaBeacon,
         bssid: '01:10:11:22:44:88',
         bogusField: 'I am a bogus field'
       },
-      skipValidation: true 
+      skipValidation: true
     }
   }, 201, function(err, res, body) {
     test.done()
