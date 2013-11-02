@@ -65,6 +65,9 @@ var testCandigramBounce = {
   _id : "ca.111111.11111.111.111111",
   schema : util.statics.schemaCandigram,
   type : "bounce",
+  range: 160934,      // in meters
+  hopsMax: 50,
+  stopped: false,
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
@@ -78,7 +81,10 @@ var testCandigramTour = {
   _id : "ca.111111.11111.111.222222",
   schema : util.statics.schemaCandigram,
   type : "tour",
-  duration: 3600000,  // one hour
+  duration: 3600000,  // one hour in millis
+  range: -1,          // worldwide
+  hopsMax: 100,
+  stopped: false,
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
@@ -200,7 +206,8 @@ exports.moveCandigram = function(test) {
     uri: '/do/moveCandigrams?' + userCred,
     body: {
       entityIds:[testCandigramBounce._id],
-      method: 'proximity',
+      method: 'range',
+      verbose: true,
       skipNotifications: true
     }
   }, function(err, res, body) {
@@ -338,7 +345,8 @@ exports.expandCandigram = function(test) {
     uri: '/do/moveCandigrams?' + userCred,
     body: {
       entityIds:[testCandigramExpand._id],
-      method: 'proximity',
+      method: 'range',
+      verbose: true,
       expand: true,
       skipNotifications: true
     }
