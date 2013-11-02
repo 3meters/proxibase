@@ -210,7 +210,6 @@ exports.moveCandigram = function(test) {
     var newPlace = body.data[0]
     placeMovedToId = newPlace._id
     var activityDate = body.date
-    util.debug('activityDate', activityDate)
 
     /* Check place link inactive */
     t.post({
@@ -327,7 +326,7 @@ exports.insertCandigramExpand = function (test) {
       }, function(err, res, body) {
         t.assert(body.count === 1)
         t.assert(body.data && body.data[0])
-        t.assert(body.data[0].activityDate == activityDate)
+        t.assert(body.data[0].activityDate >= activityDate)
         test.done()
       })
     })
@@ -340,6 +339,7 @@ exports.expandCandigram = function(test) {
     body: {
       entityIds:[testCandigramExpand._id],
       method: 'proximity',
+      verbose: true,
       expand: true,
       skipNotifications: true
     }
@@ -392,7 +392,7 @@ exports.expandCandigram = function(test) {
         }, function(err, res, body) {
           t.assert(body.count === 1)
           t.assert(body.data && body.data[0])
-          t.assert(body.data[0].activityDate == activityDate)
+          t.assert(body.data[0].activityDate >= activityDate)
 
           /* Check activityDate for new place */
           t.post({
@@ -404,7 +404,7 @@ exports.expandCandigram = function(test) {
           }, function(err, res, body) {
             t.assert(body.count === 1)
             t.assert(body.data && body.data[0])
-            t.assert(body.data[0].activityDate == activityDate)
+            t.assert(body.data[0].activityDate >= activityDate)
 
             /* Check activityDate for candigram */
             t.post({
@@ -416,7 +416,7 @@ exports.expandCandigram = function(test) {
             }, function(err, res, body) {
               t.assert(body.count === 1)
               t.assert(body.data && body.data[0])
-              t.assert(body.data[0].activityDate == activityDate)
+              t.assert(body.data[0].activityDate >= activityDate)
               test.done()
             })
           })
@@ -473,7 +473,7 @@ exports.addEntitySet = function (test) {
         }, function(err, res, body) {
           t.assert(body.count === 1)
           t.assert(body.data && body.data[0])
-          t.assert(body.data[0].activityDate == activityDate)
+          t.assert(body.data[0].activityDate >= activityDate)
           test.done()
         })
       })
@@ -536,7 +536,7 @@ exports.replaceEntitySet = function (test) {
           }, function(err, res, body) {
             t.assert(body.count === 1)
             t.assert(body.data && body.data[0])
-            t.assert(body.data[0].activityDate == activityDate)
+            t.assert(body.data[0].activityDate >= activityDate)
             test.done()
           })
         })
@@ -585,7 +585,7 @@ exports.insertComment = function (test) {
       }, function(err, res, body) {
         t.assert(body.count === 1)
         t.assert(body.data && body.data[0])
-        t.assert(body.data[0].activityDate == activityDate)
+        t.assert(body.data[0].activityDate >= activityDate)
 
         /* Check activityDate for candigram */
         t.post({
@@ -597,7 +597,7 @@ exports.insertComment = function (test) {
         }, function(err, res, body) {
           t.assert(body.count === 1)
           t.assert(body.data && body.data[0])
-          t.assert(body.data[0].activityDate == activityDate)
+          t.assert(body.data[0].activityDate >= activityDate)
           test.done()
         })
       })
@@ -639,7 +639,7 @@ exports.updateEntity = function (test) {
       }, function(err, res, body) {
         t.assert(body.count === 1)
         t.assert(body.data && body.data[0])
-        t.assert(body.data[0].activityDate == activityDate)
+        t.assert(body.data[0].activityDate >= activityDate)
 
         /* Check activityDate for candigram */
         t.post({
@@ -651,7 +651,7 @@ exports.updateEntity = function (test) {
         }, function(err, res, body) {
           t.assert(body.count === 1)
           t.assert(body.data && body.data[0])
-          t.assert(body.data[0].activityDate == activityDate)
+          t.assert(body.data[0].activityDate >= activityDate)
           test.done()
         })
       })
@@ -691,7 +691,7 @@ exports.deleteEntity = function (test) {
         t.assert(body.count === 1)
         t.assert(body.data && body.data[0])
         util.debug('test activityDate', activityDate)
-        t.assert(body.data[0].activityDate == activityDate)
+        t.assert(body.data[0].activityDate >= activityDate)
 
         /* Check activityDate for candigram */
         t.post({
@@ -703,7 +703,7 @@ exports.deleteEntity = function (test) {
         }, function(err, res, body) {
           t.assert(body.count === 1)
           t.assert(body.data && body.data[0])
-          t.assert(body.data[0].activityDate == activityDate)
+          t.assert(body.data[0].activityDate >= activityDate)
           test.done()
         })
       })
