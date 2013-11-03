@@ -48,9 +48,9 @@ var testPlace4 = {
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
-  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"206550002",
+  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"555550002",
   provider:{
-    foursquare:"0002"
+    foursquare:"0010"
   },
   category:{
     id:"4bf58dd8d48988d18c941735",
