@@ -402,7 +402,7 @@ exports.expandCandigram = function(test) {
         t.assert(body.count === 2)
         t.assert(body.data && body.data[0])
 
-        /* Check activityDate for old place */
+        /* Check that activityDate for old place was *not* updated */
         t.post({
           uri: '/do/find',
           body: {
@@ -412,7 +412,7 @@ exports.expandCandigram = function(test) {
         }, function(err, res, body) {
           t.assert(body.count === 1)
           t.assert(body.data && body.data[0])
-          t.assert(body.data[0].activityDate >= activityDate)
+          t.assert(body.data[0].activityDate < activityDate)
 
           /* Check activityDate for new place */
           t.post({
@@ -574,7 +574,7 @@ exports.insertComment = function (test) {
       entity: testComment,
       link: {
         _to: testCandigramBounce._id,
-        type: util.statics.schemaComment
+        type: util.statics.typeContent,
       },
       skipNotifications: true
     }
@@ -582,6 +582,8 @@ exports.insertComment = function (test) {
     t.assert(body.count === 1)
     t.assert(body.data)
     var activityDate = body.date
+    util.debug('body.date', body.date)
+    util.debug('comment', testComment)
 
     /* Check insert */
     t.post({
@@ -593,7 +595,7 @@ exports.insertComment = function (test) {
     }, function(err, res, body) {
       t.assert(body.count === 1)
       t.assert(body.data && body.data[0])
-      t.assert(body.data[0].activityDate != activityDate)
+      t.assert(!body.data[0].activityDate)
 
       /* Check activityDate for place */
       t.post({

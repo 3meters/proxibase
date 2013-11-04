@@ -272,6 +272,7 @@ var testLink = {
   // _to : clIds.beacons + '.11:11:11:11:11:22',
   _to : testBeacon3._id,
   _from : 'pl.111111.11111.111.111111',
+  type: 'proximity',
   proximity: {
     primary: true,
     signal: -100

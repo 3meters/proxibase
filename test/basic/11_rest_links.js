@@ -54,7 +54,7 @@ exports.addLinkedData = function(test) {
           }, 201, function(err, res, body) {
             t.post({
               uri: '/data/links?' + userCred,
-              body: {data: {_to: userId, _from: 'do.linkdoc3', type: 'viewedBy'}}
+              body: {data: {_to: userId, _from: 'do.linkdoc3', type: 'content'}}
             }, 201, function(err, res, body) {
               test.done()
             })
