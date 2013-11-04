@@ -36,10 +36,10 @@ var testUser = {
   developer : false,
   enabled: true,
 }
-var testPlace2 = {
-  _id : "pl.111111.11111.111.111112",
+var testPlace4 = {
+  _id : "pl.111111.11111.111.111115",
   schema : util.statics.schemaPlace,
-  name : "Testing place entity",
+  name : "Testing place entity for candigrams",
   photo: {
     prefix:"1001_20111224_104245.jpg",
     source:"aircandi"
@@ -48,9 +48,9 @@ var testPlace2 = {
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
-  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"206550002",
+  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"555550002",
   provider:{
-    foursquare:"0002"
+    foursquare:"0010"
   },
   category:{
     id:"4bf58dd8d48988d18c941735",
@@ -65,6 +65,9 @@ var testCandigramBounce = {
   _id : "ca.111111.11111.111.111111",
   schema : util.statics.schemaCandigram,
   type : "bounce",
+  range: -1,      // in meters
+  hopsMax: 50,
+  stopped: false,
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
@@ -78,7 +81,10 @@ var testCandigramTour = {
   _id : "ca.111111.11111.111.222222",
   schema : util.statics.schemaCandigram,
   type : "tour",
-  duration: 3600000,  // one hour
+  duration: 3600000,  // one hour in millis
+  range: -1,          // worldwide
+  hopsMax: 100,
+  stopped: false,
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
@@ -93,6 +99,8 @@ var testCandigramExpand = {
   schema : util.statics.schemaCandigram,
   type : "expand",
   lifetime: 86400000, // one day
+  range: -1,      // in meters
+  stopped: false,
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
@@ -147,6 +155,20 @@ exports.getSessions = function (test) {
 
 /* Candigrams */
 
+exports.insertPlaceForCandigram = function (test) {
+  t.post({
+    uri: '/do/insertEntity?' + userCred,
+    body: {
+      entity:testPlace4,
+      skipNotifications:true
+    }
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data._id)
+    test.done()
+  })
+}
+
 exports.insertCandigramBounce = function (test) {
   testCandigramBounce.hopLastDate = util.now()
   t.post({
@@ -154,7 +176,7 @@ exports.insertCandigramBounce = function (test) {
     body: {
       entity: testCandigramBounce,
       link: {
-        _to: testPlace2._id,
+        _to: testPlace4._id,
         type: util.statics.typeContent
       },
       skipNotifications: true
@@ -183,7 +205,7 @@ exports.insertCandigramBounce = function (test) {
         uri: '/do/find',
         body: {
           collection:'places',
-          find:{ _id:testPlace2._id }
+          find:{ _id:testPlace4._id }
         }
       }, function(err, res, body) {
         t.assert(body.count === 1)
@@ -200,7 +222,7 @@ exports.moveCandigram = function(test) {
     uri: '/do/moveCandigrams?' + userCred,
     body: {
       entityIds:[testCandigramBounce._id],
-      method: 'proximity',
+      verbose: true,
       skipNotifications: true
     }
   }, function(err, res, body) {
@@ -218,7 +240,7 @@ exports.moveCandigram = function(test) {
         collection:'links',
         find:{
           _from:testCandigramBounce._id,
-          _to:testPlace2._id,
+          _to:testPlace4._id,
           type:util.statics.typeContent,
         }
       }
@@ -247,7 +269,7 @@ exports.moveCandigram = function(test) {
           uri: '/do/find',
           body: {
             collection:'places',
-            find:{ _id:testPlace2._id }
+            find:{ _id:testPlace4._id }
           }
         }, function(err, res, body) {
           t.assert(body.count === 1)
@@ -292,7 +314,7 @@ exports.insertCandigramExpand = function (test) {
     body: {
       entity: testCandigramExpand,
       link: {
-        _to: testPlace2._id,
+        _to: testPlace4._id,
         type: util.statics.typeContent
       },
       skipNotifications: true
@@ -321,7 +343,7 @@ exports.insertCandigramExpand = function (test) {
         uri: '/do/find',
         body: {
           collection:'places',
-          find:{ _id:testPlace2._id }
+          find:{ _id:testPlace4._id }
         }
       }, function(err, res, body) {
         t.assert(body.count === 1)
@@ -338,7 +360,6 @@ exports.expandCandigram = function(test) {
     uri: '/do/moveCandigrams?' + userCred,
     body: {
       entityIds:[testCandigramExpand._id],
-      method: 'proximity',
       verbose: true,
       expand: true,
       skipNotifications: true
@@ -348,7 +369,6 @@ exports.expandCandigram = function(test) {
     t.assert(body.data && body.data[0])
 
     var newPlace = body.data[0]
-    placeMovedToId = newPlace._id
     var activityDate = body.date
 
     /* Check first place link still active */
@@ -358,7 +378,7 @@ exports.expandCandigram = function(test) {
         collection:'links',
         find:{
           _from:testCandigramExpand._id,
-          _to:testPlace2._id,
+          _to:testPlace4._id,
           type:util.statics.typeContent,
         }
       }
@@ -387,7 +407,7 @@ exports.expandCandigram = function(test) {
           uri: '/do/find',
           body: {
             collection:'places',
-            find:{ _id:testPlace2._id }
+            find:{ _id:testPlace4._id }
           }
         }, function(err, res, body) {
           t.assert(body.count === 1)
@@ -432,7 +452,7 @@ exports.addEntitySet = function (test) {
   t.post({
     uri: '/do/replaceEntitiesForEntity?' + userCred,
     body: {
-      entityId: testPlace2._id,
+      entityId: testPlace4._id,
       entities: [
         util.clone(testApplink),
         util.clone(testApplink),
@@ -448,7 +468,7 @@ exports.addEntitySet = function (test) {
       uri: '/do/find',
       body: {
         collection:'links',
-        find: { _to: testPlace2._id, type: util.statics.typeContent, fromSchema: util.statics.schemaApplink }
+        find: { _to: testPlace4._id, type: util.statics.typeContent, fromSchema: util.statics.schemaApplink }
       }
     }, function(err, res, body) {
       t.assert(body.count === 3)
@@ -468,7 +488,7 @@ exports.addEntitySet = function (test) {
           uri: '/do/find',
           body: {
             collection:'places',
-            find:{ _id: testPlace2._id }
+            find:{ _id: testPlace4._id }
           }
         }, function(err, res, body) {
           t.assert(body.count === 1)
@@ -485,7 +505,7 @@ exports.replaceEntitySet = function (test) {
   t.post({
     uri: '/do/replaceEntitiesForEntity?' + userCred,
     body: {
-      entityId: testPlace2._id,
+      entityId: testPlace4._id,
       entities: [
         util.clone(testApplink2),
         util.clone(testApplink2),
@@ -501,7 +521,7 @@ exports.replaceEntitySet = function (test) {
       uri: '/do/find',
       body: {
         collection:'links',
-        find: { _to: testPlace2._id, type: util.statics.typeContent, fromSchema: util.statics.schemaApplink }
+        find: { _to: testPlace4._id, type: util.statics.typeContent, fromSchema: util.statics.schemaApplink }
       }
     }, function(err, res, body) {
       t.assert(body.count === 3)
@@ -531,7 +551,7 @@ exports.replaceEntitySet = function (test) {
             uri: '/do/find',
             body: {
               collection:'places',
-              find:{ _id: testPlace2._id }
+              find:{ _id: testPlace4._id }
             }
           }, function(err, res, body) {
             t.assert(body.count === 1)
