@@ -76,7 +76,7 @@ exports.dupePlacesMergeOnProviderId = function(test) {
           phone: '2065454277',
         }
       }
-    }, 201, function(err, res, body) {
+    }, 403, function(err, res, body) {
       t.assert(body.data)
       var place = body.data
       t.assert(placeId === place._id) // proves merged on phone number
@@ -93,7 +93,7 @@ exports.dupePlacesMergeOnProviderId = function(test) {
             },
           }
         }
-      }, 201, function(err, res, body) {
+      }, 403, function(err, res, body) {
         t.assert(body.data)
         var place = body.data
         t.assert(placeId === place._id) // proves merged on provider Id
@@ -211,7 +211,7 @@ exports.insertPlaceEntityAgain = function(test) {
     entity: luckyStrike,
     insertApplinks: true,
   }
-  t.post({uri: '/do/insertEntity?' + userCred, body: body}, 201,
+  t.post({uri: '/do/insertEntity?' + userCred, body: body}, 403,
     function(err, res, body) {
       t.assert(body && body.data)
       var newPlace = body.data
@@ -231,7 +231,7 @@ exports.insertDupePlaceEntityFromFactual = function(test) {
     entity: luckyStrikeFactual,
     insertApplinks: true,
   }
-  t.post({uri: '/do/insertEntity?' + userCred, body: body}, 201,
+  t.post({uri: '/do/insertEntity?' + userCred, body: body}, 403,
     function(err, res, body) {
       t.assert(body && body.data)
       var splace = body.data

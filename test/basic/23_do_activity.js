@@ -223,7 +223,8 @@ exports.moveCandigram = function(test) {
     body: {
       entityIds:[testCandigramBounce._id],
       verbose: true,
-      skipNotifications: true
+      skipNotifications: true,
+      activityDateWindow: 0,
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
@@ -308,6 +309,83 @@ exports.moveCandigram = function(test) {
   })
 }
 
+exports.moveCandigramAgainWithActivityDateWindow = function(test) {
+  t.post({
+    uri: '/do/moveCandigrams?' + userCred,
+    body: {
+      entityIds:[testCandigramBounce._id],
+      verbose: true,
+      skipNotifications: true,
+      activityDateWindow: 2000,
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data[0])
+
+    var newPlace = body.data[0]
+    placeMovedToId = newPlace._id
+    var activityDate = body.date
+
+    /* Check new place link active */
+    t.post({
+      uri: '/do/find',
+      body: {
+        collection:'links',
+        find:{
+          _from: testCandigramBounce._id,
+          type: util.statics.typeContent,
+          inactive: false,
+        }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+      t.assert(body.data && body.data[0])
+
+      /* Check activityDate for old place */
+      t.post({
+        uri: '/do/find',
+        body: {
+          collection:'places',
+          find:{ _id:testPlace4._id }
+        }
+      }, function(err, res, body) {
+        t.assert(body.count === 1)
+        t.assert(body.data && body.data[0])
+        // was already inactive on previous test, should not be reactivated
+        t.assert(body.data[0].activityDate <= activityDate)
+
+        /* Check activityDate for new place */
+        t.post({
+          uri: '/do/find',
+          body: {
+            collection:'places',
+            find:{ _id:newPlace._id }
+          }
+        }, function(err, res, body) {
+          t.assert(body.count === 1)
+          t.assert(body.data && body.data[0])
+          t.assert(body.data[0].activityDate <= activityDate)  // should not be reactivated, within default window
+
+          /* Check activityDate for candigram */
+          t.post({
+            uri: '/do/find',
+            body: {
+              collection:'candigrams',
+              find:{ _id: testCandigramBounce._id }
+            }
+          }, function(err, res, body) {
+            t.assert(body.count === 1)
+            t.assert(body.data && body.data[0])
+            t.assert(body.data[0].activityDate >= activityDate) // should update regardless of window
+            test.done()
+          })
+        })
+      })
+    })
+  })
+}
+
+
 exports.insertCandigramExpand = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCred,
@@ -317,7 +395,8 @@ exports.insertCandigramExpand = function (test) {
         _to: testPlace4._id,
         type: util.statics.typeContent
       },
-      skipNotifications: true
+      activityDateWindow: 0,
+      skipNotifications: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
@@ -362,7 +441,8 @@ exports.expandCandigram = function(test) {
       entityIds:[testCandigramExpand._id],
       verbose: true,
       expand: true,
-      skipNotifications: true
+      skipNotifications: true,
+      activityDateWindow: 0,
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
@@ -412,7 +492,7 @@ exports.expandCandigram = function(test) {
         }, function(err, res, body) {
           t.assert(body.count === 1)
           t.assert(body.data && body.data[0])
-          t.assert(body.data[0].activityDate < activityDate)
+          t.assert(body.data[0].activityDate <= activityDate)
 
           /* Check activityDate for new place */
           t.post({
@@ -458,6 +538,7 @@ exports.addEntitySet = function (test) {
         util.clone(testApplink),
         util.clone(testApplink)],
       schema: util.statics.schemaApplink,
+      activityDateWindow: 0,
     }
   }, 200, function(err, res, body) {
     t.assert(body.info.indexOf('replaced') > 0)
@@ -511,6 +592,8 @@ exports.replaceEntitySet = function (test) {
         util.clone(testApplink2),
         util.clone(testApplink2)],
       schema: util.statics.schemaApplink,
+      activityDateWindow: 0,
+      verbose: true,
     }
   }, 200, function(err, res, body) {
     t.assert(body.info.indexOf('replaced') > 0)
@@ -576,14 +659,13 @@ exports.insertComment = function (test) {
         _to: testCandigramBounce._id,
         type: util.statics.typeContent,
       },
-      skipNotifications: true
+      skipNotifications: true,
+      activityDateWindow: 0,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
     var activityDate = body.date
-    util.debug('body.date', body.date)
-    util.debug('comment', testComment)
 
     /* Check insert */
     t.post({
@@ -691,7 +773,6 @@ exports.deleteEntity = function (test) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data._id)
     var activityDate = body.date
-
     /* Check delete */
     t.post({
       uri: '/do/find',
@@ -712,7 +793,6 @@ exports.deleteEntity = function (test) {
       }, function(err, res, body) {
         t.assert(body.count === 1)
         t.assert(body.data && body.data[0])
-        util.debug('test activityDate', activityDate)
         t.assert(body.data[0].activityDate >= activityDate)
 
         /* Check activityDate for candigram */

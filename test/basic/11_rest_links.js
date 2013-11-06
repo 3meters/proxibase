@@ -206,7 +206,7 @@ exports.findLinksFromWorksWithGetSyntax = function(test) {
   })
 }
 
-exports.specifyDocfieldsAtQueryOverrideAtCollection = function(test) {
+exports.specifyLinkDocfieldsAtLinkQueryOverrideSpecAtCollection = function(test) {
   return skip(test)
   // NYI
 }
