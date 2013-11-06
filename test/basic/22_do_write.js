@@ -272,6 +272,7 @@ var testLink = {
   // _to : clIds.beacons + '.11:11:11:11:11:22',
   _to : testBeacon3._id,
   _from : 'pl.111111.11111.111.111111',
+  type: 'proximity',
   proximity: {
     primary: true,
     signal: -100
@@ -617,75 +618,6 @@ exports.checkInsertEntityNoLinks = function(test) {
   })
 }
 
-exports.insertEntityDoNotTrack = function(test) {
-  t.post({
-    uri: '/data/users/' + testUser._id + '?' + userCred,
-    body: {
-      data: { doNotTrack: true }
-    }
-  }, function(err, res) {
-    t.assert(res.body.data.doNotTrack)
-    var ent = util.clone(testPlace3) // place entity
-    delete ent.phone
-    delete ent.provider
-    delete ent._id
-    ent.name = 'Testing Place Ent with doNotTrack'
-    var beacon = util.clone(testBeacon)
-    beacon._id = 'be.44:44:44:44:44:44'
-    beacon.bssid = '44:44:44:44:44:44',
-    t.post({
-      uri: '/do/insertEntity?' + userCred,
-      body: {
-        entity: ent,
-        beacons: [beacon],
-        primaryBeaconId: beacon._id,
-        skipNotifications: true
-      }
-    }, 201, function(err, res, body) {
-      t.assert(body.count === 1)
-      t.assert(body.data)
-      var savedEnt = body.data
-      var adminId = util.adminUser._id
-      var anonId = util.anonUser._id
-      t.assert(adminId === savedEnt._owner)
-      t.assert(anonId === savedEnt._creator)
-      t.assert(anonId === savedEnt._modifier)
-      t.get('/data/beacons/' + beacon._id,
-        function(err, res, body) {
-          t.assert(body.data)
-          var savedBeacon = body.data
-          t.assert(savedBeacon._owner === adminId)
-          t.assert(savedBeacon._creator === anonId)
-          t.assert(savedBeacon._modifier === anonId)
-          t.get({
-            uri: '/data/links?find={"_from":"' + savedEnt._id + '"}'
-          }, function(err, res, body) {
-            t.assert(body.data[0])
-            var link = body.data[0]
-            t.assert(link._owner === adminId)
-            t.assert(link._creator === anonId)
-            t.assert(link._modifier === anonId)
-            t.post({ // confirm the anonlog is working
-              uri: '/find/anonlog?' + adminCred,
-              body: {find: {
-                id: beacon._id,
-                _user: testUser._id,
-              }},
-            }, function(err, res, body) {
-              t.assert(1 === body.data.length)
-              t.assert('insert' === body.data[0].action)
-              t.post({   // put things back as we found them
-                uri: '/data/users/' + testUser._id + '?' + userCred,
-                body: { data: { doNotTrack: false }}
-              }, function(err, res) {
-                test.done()
-              })
-            })
-          })
-        })
-      })
-    })
-}
 
 exports.likeEntity = function(test) {
   t.post({

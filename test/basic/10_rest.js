@@ -445,7 +445,7 @@ exports.userCanLinkDocs = function(test) {
   t.post({
     uri: '/data/links?' + userCred,
     body: {data: {_from: testDoc1._id,
-     _to: testDoc2._id}}
+     _to: testDoc2._id, type: 'content'}}
   }, 201, function(err, res, body) {
     linkId = body.data._id
     test.done()

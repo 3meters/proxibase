@@ -6,6 +6,7 @@ var util = require('proxutils')
 var log = util.log
 var type = util.type
 var testUtil = require('../util')
+var skip = testUtil.skip
 var t = testUtil.treq
 var userSession
 var userCred
@@ -53,7 +54,7 @@ exports.addLinkedData = function(test) {
           }, 201, function(err, res, body) {
             t.post({
               uri: '/data/links?' + userCred,
-              body: {data: {_to: userId, _from: 'do.linkdoc3', type: 'viewedBy'}}
+              body: {data: {_to: userId, _from: 'do.linkdoc3', type: 'content'}}
             }, 201, function(err, res, body) {
               test.done()
             })
@@ -64,34 +65,7 @@ exports.addLinkedData = function(test) {
   })
 }
 
-exports.findLinksFromWorksWithGetSyntax = function(test) {
-  query = {uri: '/find/documents?links[from][users][]'}
-  t.get(query, function(err, res, body) {
-    t.assert(body.data.length >= 3)
-    body.data.forEach(function(doc) {
-      t.assert(doc.links)
-      t.assert(doc.links.from)              // not nested in an array
-      t.assert(doc.links.from.users)
-      var fromUsers = doc.links.from.users
-      switch (doc._id) {
-        case 'do.linkdoc1':
-          t.assert(1 === fromUsers.length)
-          t.assert('like' === fromUsers[0].type)
-          t.assert(fromUsers[0].document)
-          break
-        case 'do.linkdoc2':
-          t.assert(1 === fromUsers.length)
-          t.assert('watch' === fromUsers[0].type)
-          t.assert(fromUsers[0].document)
-          break
-        default:
-          t.assert(0 === fromUsers.length)
-          break
-      }
-    })
-    test.done()
-  })
-}
+
 exports.findLinksFailProperlyOnBadInputs = function(test) {
   query = {uri: '/find/users/' + userId}
   query.body = {links: [{bogus: 'documents'}]}
@@ -202,3 +176,37 @@ exports.findLinksAcceptsSingletonQueries = function(test) {
   })
 }
 
+
+exports.findLinksFromWorksWithGetSyntax = function(test) {
+  query = {uri: '/find/documents?links[from][users][]'}
+  t.get(query, function(err, res, body) {
+    t.assert(body.data.length >= 3)
+    body.data.forEach(function(doc) {
+      t.assert(doc.links)
+      t.assert(doc.links.from)              // not nested in an array
+      t.assert(doc.links.from.users)
+      var fromUsers = doc.links.from.users
+      switch (doc._id) {
+        case 'do.linkdoc1':
+          t.assert(1 === fromUsers.length)
+          t.assert('like' === fromUsers[0].type)
+          t.assert(fromUsers[0].document)
+          break
+        case 'do.linkdoc2':
+          t.assert(1 === fromUsers.length)
+          t.assert('watch' === fromUsers[0].type)
+          t.assert(fromUsers[0].document)
+          break
+        default:
+          t.assert(0 === fromUsers.length)
+          break
+      }
+    })
+    test.done()
+  })
+}
+
+exports.specifyLinkDocfieldsAtLinkQueryOverrideSpecAtCollection = function(test) {
+  return skip(test)
+  // NYI
+}
