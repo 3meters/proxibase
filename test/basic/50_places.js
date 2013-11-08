@@ -324,6 +324,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
     body: {
       location:  ballRoomLoc,
       provider: 'foursquare',
+      limit: 50,
     }
   }, function(err, res, body) {
     var places = body.data
@@ -401,6 +402,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
             body: {
               location: ballRoomLoc,
               provider: 'foursquare',
+              limit: 50,
             }
           }, function(err, res, body) {
             // Make sure the real entitiy is in the found places
