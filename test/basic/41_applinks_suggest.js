@@ -232,6 +232,9 @@ exports.suggestFactualApplinksFromFoursquareId = function(test) {
       return (applink.type === 'facebook')
     }))
     t.assert(applinks.some(function(applink) {
+      return (applink.type === 'yelp')
+    }))
+    t.assert(applinks.some(function(applink) {
       return (applink.type === 'website')
     }))
     applinks.forEach(function(applink) {

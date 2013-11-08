@@ -122,6 +122,7 @@ exports.appLinkPositionSortWorks = function(test) {
     t.assert(body.data)
     t.assert(4 === body.data.length)
     t.assert('yelp' === body.data[0].type)
+    t.assert(body.data[0].data.validated)
     t.assert(body.data[0].position === 0)
     t.assert('website' === body.data[1].type)
     t.assert(body.data[1].data)
