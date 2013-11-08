@@ -191,8 +191,6 @@ exports.suggestApplinksFactual = function(test) {
   function(err, res) {
     var applinks = res.body.data
     t.assert(applinks.length > 4)
-    // t.assert(applinks[0].type === 'factual')
-    // t.assert(applinks[0].system)
     t.assert(res.body.raw)
     t.assert(res.body.raw.initialApplinks)
     t.assert(res.body.raw.factualCandidates.length > 12)
@@ -227,6 +225,7 @@ exports.suggestFactualApplinksFromFoursquareId = function(test) {
     t.assert(applinks.some(function(applink) {
       return (applink.type === 'foursquare'
           && applink.appId === '4abebc45f964a520a18f20e3'
+          && applink.name === 'The Ballroom'
         )
     }))
     t.assert(applinks.some(function(applink) {
