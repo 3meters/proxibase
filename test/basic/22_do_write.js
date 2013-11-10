@@ -510,7 +510,7 @@ exports.checkInsertPlaceLogAction = function(test) {
     uri: '/do/find',
     body: {
       collection:'actions',
-      find:{ _target:testPlace._id, type:'insert_entity_place_linked'}
+      find:{ _entity:testPlace._id, event:'insert_entity_place_linked'}
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
@@ -635,7 +635,7 @@ exports.likeEntity = function(test) {
       toId: testPlace2._id,
       fromId: testUser._id,
       type: util.statics.typeLike,
-      actionType: 'like'
+      actionEvent: 'like'
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
@@ -661,7 +661,7 @@ exports.checkLikeEntityLogAction = function(test) {
     uri: '/do/find',
     body: {
       collection:'actions',
-      find:{ _target:testPlace2._id, type:'like'}
+      find:{ _entity:testPlace2._id, event:'like'}
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
@@ -676,7 +676,7 @@ exports.unlikeEntity = function(test) {
       toId: testPlace2._id,
       fromId: testUser._id,
       type: util.statics.typeLike,
-      actionType: 'unlike'
+      actionEvent: 'unlike'
     }
   }, function(err, res, body) {
     t.assert(body.info.indexOf('successful') > 0)
@@ -710,7 +710,7 @@ exports.trackEntityProximity = function(test) {
       entityId:testPlace._id,
       beacons:[testBeacon, testBeacon2, testBeacon3],
       primaryBeaconId:testBeacon2._id,
-      actionType:'proximity',
+      actionEvent:'proximity',
     }
   }, function(err, res, body) {
     t.assert(body.info.toLowerCase().indexOf('tracked') > 0)
@@ -760,8 +760,8 @@ exports.checkTrackEntityLogAction = function(test) {
     body: {
       collection:'actions',
       find:{
-        _target:trackingLink._id,
-        type:'link_proximity'
+        _entity:trackingLink._id,
+        event:'link_proximity'
       }
     }
   }, function(err, res, body) {
@@ -777,7 +777,7 @@ exports.untrackEntityProximity = function(test) {
       entityId:testPlace._id,
       beaconIds:[testBeacon._id, testBeacon2._id, testBeacon3._id],
       primaryBeaconId:testBeacon2._id,
-      actionType:'proximity_minus',
+      actionEvent:'proximity_minus',
     }
   }, function(err, res, body) {
     t.assert(body.info.indexOf('untracked') > 0)
@@ -806,7 +806,7 @@ exports.trackEntityNoBeacons = function(test) {
     uri: '/do/trackEntity?' + userCred,
     body: {
       entityId:testPlace._id,
-      actionType:'proximity',
+      actionEvent:'proximity',
     }
   }, function(err, res, body) {
     t.assert(body.info.toLowerCase().indexOf('tracked') > 0)
@@ -820,8 +820,8 @@ exports.checkTrackEntityNoBeaconsLogAction = function(test) {
     body: {
       collection:'actions',
       find:{
-        _target:testPlace._id,
-        type:'entity_proximity'
+        _entity:testPlace._id,
+        event:'entity_proximity'
       }
     }
   }, function(err, res, body) {
@@ -1065,8 +1065,8 @@ exports.checkDeleteEntityLogActions = function(test) {
     body: {
       collection:'actions',
       find:{
-        _target:testPlace._id,
-        type:'insert_entity'
+        _entity:testPlace._id,
+        event:'insert_entity'
       }
     }
   }, function(err, res, body) {
@@ -1081,8 +1081,8 @@ exports.checkDeleteLinkLogActions = function(test) {
     body: {
       collection:'actions',
       find:{
-        _target:primaryLink._id,
-        type:'tune_link_primary'
+        _entity:primaryLink._id,
+        event:'tune_link_primary'
       }
     }
   }, function(err, res, body) {
