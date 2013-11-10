@@ -312,11 +312,10 @@ exports.getSessions = function (test) {
   })
 }
 
-exports.registerInstallForNotifications = function (test) {
+exports.registerInstall = function (test) {
   t.post({
     uri: '/do/registerInstall?' + userCred,
     body: {
-      register: true,
       install: {
         _id: constants.installId,
         _user: testUser._id,
@@ -344,6 +343,44 @@ exports.checkRegisterInstall = function(test) {
     t.assert(body.data && body.data[0])
     t.assert(body.data[0].installationId)
     t.assert(body.data[0].registrationId)
+    t.assert(body.data[0].users && body.data[0].users.length === 1)
+    t.assert(body.data[0].signinDate)
+    test.done()
+  })
+}
+
+exports.registerInstallSecondUser = function (test) {
+  t.post({
+    uri: '/do/registerInstall?' + userCred,
+    body: {
+      install: {
+        _id: constants.installId,
+        _user: testUser2._id,
+        registrationId: constants.registrationId,
+        installationId: constants.installationId,
+        clientVersionCode: 10,
+        clientVersionName: '0.8.12'
+      }
+    }
+  }, function(err, res, body) {
+    t.assert(body.info.indexOf('registration updated') > 0)
+    test.done()
+  })
+}
+
+exports.checkRegisterInstallSecondUser = function(test) {
+  t.post({
+    uri: '/do/find',
+    body: {
+      collection:'installs',
+      find:{ _id:constants.installId }
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data[0])
+    t.assert(body.data[0].installationId)
+    t.assert(body.data[0].registrationId)
+    t.assert(body.data[0].users.length === 2)
     test.done()
   })
 }
@@ -374,34 +411,6 @@ exports.checkInstallBeacons = function(test) {
     t.assert(body.data && body.data[0])
     t.assert(body.data[0].beacons.length === 1)
     t.assert(body.data[0].beaconsDate)
-    test.done()
-  })
-}
-
-exports.unregisterInstallForNotifications = function (test) {
-  t.post({
-    uri: '/do/registerInstall?' + userCred,
-    body: {
-      register: false,
-      install: {
-        installationId: constants.installationId,
-      }
-    }
-  }, function(err, res, body) {
-    t.assert(body.info.indexOf('unregistered') > 0)
-    test.done()
-  })
-}
-
-exports.checkUnregisterInstall = function(test) {
-  t.post({
-    uri: '/do/find',
-    body: {
-      collection:'installs',
-      find:{ _id:constants.installId }
-    }
-  }, function(err, res, body) {
-    t.assert(body.count === 0)
     test.done()
   })
 }
