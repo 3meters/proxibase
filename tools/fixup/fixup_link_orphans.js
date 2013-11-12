@@ -17,18 +17,18 @@ connect()
 
 function connect() {
   config.db.database = 'prox'
-  dblib.init(config, function(err, connection) {
+  dblib.initDb(config, function(err, connection) {
     if (err) {
       err.message += ' on mongodb connection'
       throw err // force crash
     }
     if (!connection) throw new Error('Failed to connect to new db')
     db = connection
-    getLinks()
+    execute()
   })
 }
 
-function getLinks() {
+function execute() {
 
   db.collection('links').find().toArray(function(err, links) {
     log('find returned ' + links.length + ' links')
@@ -63,7 +63,7 @@ function getLinks() {
                 log('link deleted: ' + link._id)
                 next()
               })
-            } 
+            }
             else {
               next()
             }
