@@ -299,5 +299,6 @@ exports.appLinkPositionSortWorks = function(test) {
 
 exports.appLinkPopularitySortWorks = function(test) {
   // NYI
+  // kosamai has two valid yelp entries
   skip(test)
 }
