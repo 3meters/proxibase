@@ -160,11 +160,12 @@ exports.insertPlaceForCandigram = function (test) {
     uri: '/do/insertEntity?' + userCred,
     body: {
       entity:testPlace4,
-      skipNotifications:true
+      returnNotifications: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data._id)
+    t.assert(body.notifications.length > 0)
     test.done()
   })
 }
@@ -179,11 +180,12 @@ exports.insertCandigramBounce = function (test) {
         _to: testPlace4._id,
         type: util.statics.typeContent
       },
-      skipNotifications: true
+      returnNotifications: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
+    t.assert(body.notifications.length > 0)
     var savedEnt = body.data
     t.assert(savedEnt._owner === testUser._id)
     t.assert(savedEnt._creator === testUser._id)
@@ -223,12 +225,13 @@ exports.moveCandigram = function(test) {
     body: {
       entityIds:[testCandigramBounce._id],
       verbose: true,
-      skipNotifications: true,
       activityDateWindow: 0,
+      returnNotifications: true,
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data[0])
+    t.assert(body.notifications.length > 0)
 
     var newPlace = body.data[0]
     placeMovedToId = newPlace._id
@@ -315,12 +318,13 @@ exports.moveCandigramAgainWithActivityDateWindow = function(test) {
     body: {
       entityIds:[testCandigramBounce._id],
       verbose: true,
-      skipNotifications: true,
       activityDateWindow: 2000,
+      returnNotifications: true,
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data[0])
+    t.assert(body.notifications.length > 0)
 
     var newPlace = body.data[0]
     placeMovedToId = newPlace._id
@@ -395,12 +399,13 @@ exports.insertCandigramExpand = function (test) {
         _to: testPlace4._id,
         type: util.statics.typeContent
       },
+      returnNotifications: true,
       activityDateWindow: 0,
-      skipNotifications: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
+    t.assert(body.notifications.length > 0)
     var savedEnt = body.data
     t.assert(savedEnt._owner === testUser._id)
     t.assert(savedEnt._creator === testUser._id)
@@ -441,12 +446,13 @@ exports.expandCandigram = function(test) {
       entityIds:[testCandigramExpand._id],
       verbose: true,
       expand: true,
-      skipNotifications: true,
+      returnNotifications: true,
       activityDateWindow: 0,
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data[0])
+    t.assert(body.notifications.length > 0)
 
     var newPlace = body.data[0]
     var activityDate = body.date
@@ -659,12 +665,13 @@ exports.insertComment = function (test) {
         _to: testCandigramBounce._id,
         type: util.statics.typeContent,
       },
-      skipNotifications: true,
+      returnNotifications: true,
       activityDateWindow: 0,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
+    t.assert(body.notifications.length > 0)
     var activityDate = body.date
 
     /* Check insert */
