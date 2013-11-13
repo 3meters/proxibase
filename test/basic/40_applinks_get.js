@@ -124,17 +124,55 @@ exports.appLinkPositionSortWorks = function(test) {
     }
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)
+    var wb, fb, fs, yl
     body.data.forEach(function(applink) {
       switch (applink.type) {
-        case 'facebook':
         case 'website':
-        case 'yelp':
+          ws = true
+          t.assert(!fb)
+          t.assert(!fs)
+          t.assert(!yl)
+          assertValidated(applink)
+          break
+
+        case 'facebook':
+          fb = true
+          t.assert(1 === applink.position)   // proves position passthrough
+          t.assert(ws)
+          t.assert(!fs)
+          t.assert(!yl)
+          assertValidated(applink)
+          break
+
         case 'foursquare':
-          t.assert(applink.data)
-          t.assert(applink.data.validated)
-          t.assert(applink.data.validated >= startTime)
+          fs = true
+          t.assert(ws)
+          t.assert(fb)
+          t.assert(!yl)
+          assertValidated(applink)
+          break
+
+        case 'yelp':
+          yl = true
+          t.assert(ws)
+          t.assert(fb)
+          t.assert(fs)
+          assertValidated(applink)
+          break
       }
     })
-    return skip(test)  // Sort test is NYI
+
+    function assertValidated(applink) {
+      t.assert(applink.data)
+      t.assert(applink.data.validated)
+      t.assert(applink.data.validated >= startTime)
+    }
+
+    test.done()
   })
+}
+
+exports.appLinkPopularitySortWorks = function(test) {
+  // NYI
+  skip(test)
 }
