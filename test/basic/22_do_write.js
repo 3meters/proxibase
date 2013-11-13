@@ -327,25 +327,23 @@ exports.registerInstall = function (test) {
     }
   }, function(err, res, body) {
     t.assert(body.info.indexOf('registered') > 0)
-    test.done()
-  })
-}
 
-exports.checkRegisterInstall = function(test) {
-  t.post({
-    uri: '/do/find',
-    body: {
-      collection:'installs',
-      find:{ _id:constants.installId }
-    }
-  }, function(err, res, body) {
-    t.assert(body.count === 1)
-    t.assert(body.data && body.data[0])
-    t.assert(body.data[0].installationId)
-    t.assert(body.data[0].registrationId)
-    t.assert(body.data[0].users && body.data[0].users.length === 1)
-    t.assert(body.data[0].signinDate)
-    test.done()
+    /* Check register install */
+    t.post({
+      uri: '/do/find',
+      body: {
+        collection:'installs',
+        find:{ _id:constants.installId }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+      t.assert(body.data && body.data[0])
+      t.assert(body.data[0].installationId)
+      t.assert(body.data[0].registrationId)
+      t.assert(body.data[0].users && body.data[0].users.length === 1)
+      t.assert(body.data[0].signinDate)
+      test.done()
+    })
   })
 }
 
@@ -364,24 +362,22 @@ exports.registerInstallSecondUser = function (test) {
     }
   }, function(err, res, body) {
     t.assert(body.info.indexOf('registration updated') > 0)
-    test.done()
-  })
-}
 
-exports.checkRegisterInstallSecondUser = function(test) {
-  t.post({
-    uri: '/do/find',
-    body: {
-      collection:'installs',
-      find:{ _id:constants.installId }
-    }
-  }, function(err, res, body) {
-    t.assert(body.count === 1)
-    t.assert(body.data && body.data[0])
-    t.assert(body.data[0].installationId)
-    t.assert(body.data[0].registrationId)
-    t.assert(body.data[0].users.length === 2)
-    test.done()
+    /* Check registger install second user */
+    t.post({
+      uri: '/do/find',
+      body: {
+        collection:'installs',
+        find:{ _id:constants.installId }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+      t.assert(body.data && body.data[0])
+      t.assert(body.data[0].installationId)
+      t.assert(body.data[0].registrationId)
+      t.assert(body.data[0].users.length === 2)
+      test.done()
+    })
   })
 }
 
@@ -395,23 +391,21 @@ exports.updateRegisteredInstallBeacons = function (test) {
   }, function(err, res, body) {
     t.assert(body.count === dbProfile.epb)
     t.assert(body.data && body.data[0])
-    test.done()
-  })
-}
 
-exports.checkInstallBeacons = function(test) {
-  t.post({
-    uri: '/do/find',
-    body: {
-      collection:'installs',
-      find:{ _id:constants.installId }
-    }
-  }, function(err, res, body) {
-    t.assert(body.count === 1)
-    t.assert(body.data && body.data[0])
-    t.assert(body.data[0].beacons.length === 1)
-    t.assert(body.data[0].beaconsDate)
-    test.done()
+    /* Check install beacons */
+    t.post({
+      uri: '/do/find',
+      body: {
+        collection:'installs',
+        find:{ _id:constants.installId }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+      t.assert(body.data && body.data[0])
+      t.assert(body.data[0].beacons.length === 1)
+      t.assert(body.data[0].beaconsDate)
+      test.done()
+    })
   })
 }
 
@@ -440,7 +434,8 @@ exports.insertPlace = function (test) {
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
-    t.assert(body.notifications.length > 0)
+    t.assert(body.notifications.length == 0) // No notification because place is synthetic
+
     var savedEnt = body.data
     t.assert(savedEnt._owner === util.adminUser._id)
     t.assert(savedEnt._creator === testUser._id)
@@ -534,6 +529,10 @@ exports.insertPlaceCustom = function (test) {
     t.assert(body.count === 1)
     t.assert(body.data)
     t.assert(body.notifications.length > 0)
+    t.assert(body.notifications[0].action.user && body.notifications[0].action.entity)
+    t.assert(!body.notifications[0].action.toEntity)
+    t.assert(!body.notifications[0].action.fromEntity)
+
     var savedEnt = body.data
     t.assert(savedEnt._owner === testUser._id)
     t.assert(savedEnt._creator === testUser._id)
@@ -580,34 +579,30 @@ exports.insertPlaceBeaconAlreadyExists = function (test) {
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data._id)
-    t.assert(body.notifications.length > 0)
-    test.done()
-  })
-}
+    t.assert(body.notifications.length == 0)
 
-exports.checkInsertPlaceBeaconAlreadyExists = function(test) {
-  t.post({
-    uri: '/do/find',
-    body: {
-      collection:'places',
-      find:{ _id:testPlace2._id }
-    }
-  }, function(err, res, body) {
-    t.assert(body.count === 1)
-    test.done()
-  })
-}
+    /* Check insert place where beacon already exists */
+    t.post({
+      uri: '/do/find',
+      body: {
+        collection:'places',
+        find:{ _id:testPlace2._id }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
 
-exports.checkBeaconLinkCount = function(test) {
-  t.post({
-    uri: '/do/find',
-    body: {
-      collection:'links',
-      find:{ _to:testBeacon._id }
-    }
-  }, function(err, res, body) {
-    t.assert(body.count === 3)
-    test.done()
+      /* Check beacon link count */
+      t.post({
+        uri: '/do/find',
+        body: {
+          collection:'links',
+          find:{ _to:testBeacon._id }
+        }
+      }, function(err, res, body) {
+        t.assert(body.count === 3)
+        test.done()
+      })
+    })
   })
 }
 
@@ -620,32 +615,29 @@ exports.insertPlaceEntityWithNoLinks = function (test) {
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
-    t.assert(body.notifications.length > 0)
-    test.done()
+    t.assert(body.notifications.length == 0)
+
+    /* Check insert entity no links */
+    t.post({
+      uri: '/do/find',
+      body: {
+        collection:'places',
+        find:{_id:testPlace3._id}
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+      t.assert(body.data && body.data[0])
+      var ent = body.data[0]
+      t.assert(ent.location.lat && ent.location.lng)
+      t.assert(ent.location.geometry)
+      t.assert(ent._owner === adminId) // admins own places
+      t.assert(ent._creator === testUser._id)
+      t.assert(ent._modifier === testUser._id)
+      t.assert(ent.createdDate === ent.modifiedDate)
+      test.done()
+    })
   })
 }
-
-exports.checkInsertEntityNoLinks = function(test) {
-  t.post({
-    uri: '/do/find',
-    body: {
-      collection:'places',
-      find:{_id:testPlace3._id}
-    }
-  }, function(err, res, body) {
-    t.assert(body.count === 1)
-    t.assert(body.data && body.data[0])
-    var ent = body.data[0]
-    t.assert(ent.location.lat && ent.location.lng)
-    t.assert(ent.location.geometry)
-    t.assert(ent._owner === adminId) // admins own places
-    t.assert(ent._creator === testUser._id)
-    t.assert(ent._modifier === testUser._id)
-    t.assert(ent.createdDate === ent.modifiedDate)
-    test.done()
-  })
-}
-
 
 exports.likeEntity = function(test) {
   t.post({
@@ -658,33 +650,29 @@ exports.likeEntity = function(test) {
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
-    test.done()
-  })
-}
 
-exports.checkLikeEntityLinkToEntity2 = function(test) {
-  t.post({
-    uri: '/do/find',
-    body: {
-      collection:'links',
-      find:{ _to:testPlace2._id, type: util.statics.typeLike }
-    }
-  }, function(err, res, body) {
-    t.assert(body.count === 1)
-    test.done()
-  })
-}
+    /* Check like entity link to entity 2 */
+    t.post({
+      uri: '/do/find',
+      body: {
+        collection:'links',
+        find:{ _to:testPlace2._id, type: util.statics.typeLike }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
 
-exports.checkLikeEntityLogAction = function(test) {
-  t.post({
-    uri: '/do/find',
-    body: {
-      collection:'actions',
-      find:{ _entity:testPlace2._id, event:'like'}
-    }
-  }, function(err, res, body) {
-    t.assert(body.count === 1)
-    test.done()
+      /* Check link entity log action */
+      t.post({
+        uri: '/do/find',
+        body: {
+          collection:'actions',
+          find:{ _entity:testPlace2._id, event:'like'}
+        }
+      }, function(err, res, body) {
+        t.assert(body.count === 1)
+        test.done()
+      })
+    })
   })
 }
 
@@ -699,24 +687,22 @@ exports.unlikeEntity = function(test) {
     }
   }, function(err, res, body) {
     t.assert(body.info.indexOf('successful') > 0)
-    test.done()
-  })
-}
 
-exports.checkUnlikeEntity = function(test) {
-  t.post({
-    uri: '/do/find',
-    body: {
-      collection:'links',
-      find:{
-        _to:testPlace2._id,
-        _from:testUser._id,
-        type:util.statics.typeLike
+    /* Check unlike entity */
+    t.post({
+      uri: '/do/find',
+      body: {
+        collection:'links',
+        find:{
+          _to:testPlace2._id,
+          _from:testUser._id,
+          type:util.statics.typeLike
+        }
       }
-    }
-  }, function(err, res, body) {
-    t.assert(body.count === 0)
-    test.done()
+    }, function(err, res, body) {
+      t.assert(body.count === 0)
+      test.done()
+    })
   })
 }
 
@@ -733,59 +719,53 @@ exports.trackEntityProximity = function(test) {
     }
   }, function(err, res, body) {
     t.assert(body.info.toLowerCase().indexOf('tracked') > 0)
-    test.done()
-  })
-}
 
-exports.checkTrackEntityProximityLinksFromEntity1 = function(test) {
-  t.post({
-    uri: '/do/find',
-    body: {
-      collection:'links',
-      find:{
-        _from:testPlace._id,
-        type:util.statics.typeProximity
+    /* Check track entity proximity links from entity 1 */
+    t.post({
+      uri: '/do/find',
+      body: {
+        collection:'links',
+        find:{
+          _from:testPlace._id,
+          type:util.statics.typeProximity
+        }
       }
-    }
-  }, function(err, res, body) {
-    t.assert(body.count === 3)
-    test.done()
-  })
-}
+    }, function(err, res, body) {
+      t.assert(body.count === 3)
 
-exports.checkTrackEntityProximityLinkFromEntity1ToBeacon2 = function(test) {
-  t.post({
-    uri: '/do/find',
-    body: {
-      collection:'links',
-      find:{
-        _to:testBeacon2._id,
-        _from:testPlace._id,
-        type:util.statics.typeProximity
-      }
-    }
-  }, function(err, res, body) {
-    trackingLink = body.data[0]
-    t.assert(body.count === 1)
-    t.assert(body.data[0].proximity.primary === true)
-    t.assert(body.data[0].proximity.signal === testBeacon2.signal)
-    test.done()
-  })
-}
+      /* Check track entity proximity link from entity 1 to beacon 2 */
+      t.post({
+        uri: '/do/find',
+        body: {
+          collection:'links',
+          find:{
+            _to:testBeacon2._id,
+            _from:testPlace._id,
+            type:util.statics.typeProximity
+          }
+        }
+      }, function(err, res, body) {
+        trackingLink = body.data[0]
+        t.assert(body.count === 1)
+        t.assert(body.data[0].proximity.primary === true)
+        t.assert(body.data[0].proximity.signal === testBeacon2.signal)
 
-exports.checkTrackEntityLogAction = function(test) {
-  t.post({
-    uri: '/do/find',
-    body: {
-      collection:'actions',
-      find:{
-        _entity:trackingLink._id,
-        event:'link_proximity'
-      }
-    }
-  }, function(err, res, body) {
-    t.assert(body.count === 1)
-    test.done()
+        /* Check track entity log action */
+        t.post({
+          uri: '/do/find',
+          body: {
+            collection:'actions',
+            find:{
+              _entity:trackingLink._id,
+              event:'link_proximity'
+            }
+          }
+        }, function(err, res, body) {
+          t.assert(body.count === 1)
+          test.done()
+        })
+      })
+    })
   })
 }
 
@@ -800,23 +780,21 @@ exports.untrackEntityProximity = function(test) {
     }
   }, function(err, res, body) {
     t.assert(body.info.indexOf('untracked') > 0)
-    test.done()
-  })
-}
 
-exports.checkUntrackEntityProximityLinksFromEntity1 = function(test) {
-  t.post({
-    uri: '/do/find',
-    body: {
-      collection:'links',
-      find:{
-        _from:testPlace._id,
-        type:util.statics.typeProximity
+    /* Check untrack entity proximity links from entity 1 */
+    t.post({
+      uri: '/do/find',
+      body: {
+        collection:'links',
+        find:{
+          _from:testPlace._id,
+          type:util.statics.typeProximity
+        }
       }
-    }
-  }, function(err, res, body) {
-    t.assert(body.count === 0)
-    test.done()
+    }, function(err, res, body) {
+      t.assert(body.count === 0)
+      test.done()
+    })
   })
 }
 
@@ -829,23 +807,21 @@ exports.trackEntityNoBeacons = function(test) {
     }
   }, function(err, res, body) {
     t.assert(body.info.toLowerCase().indexOf('tracked') > 0)
-    test.done()
-  })
-}
 
-exports.checkTrackEntityNoBeaconsLogAction = function(test) {
-  t.post({
-    uri: '/do/find',
-    body: {
-      collection:'actions',
-      find:{
-        _entity:testPlace._id,
-        event:'entity_proximity'
+    /* Check track entity no beacons log action */
+    t.post({
+      uri: '/do/find',
+      body: {
+        collection:'actions',
+        find:{
+          _entity:testPlace._id,
+          event:'entity_proximity'
+        }
       }
-    }
-  }, function(err, res, body) {
-    t.assert(body.count === 1)
-    test.done()
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+      test.done()
+    })
   })
 }
 
@@ -862,24 +838,22 @@ exports.updateBeaconLocationUsingNewLocation = function (test) {
   }, function(err, res, body) {
     setTimeout(function() {
       // beacon observation update is fire-and-forget, give time to finish
-      test.done()
-    }, 200)
-  })
-}
 
-exports.checkBeaconLocationUpdate = function (test) {
-  t.post({
-    uri: '/do/find',
-    body: {
-      collection:'beacons',
-      find:{ _id:testBeacon._id }
-    }
-  }, function(err, res, body) {
-    t.assert(body.count === 1)
-    t.assert(body.data[0].location.lat === 47.1)
-    t.assert(body.data[0].location.lng === -122.1)
-    t.assert(body.data[0].signal === -79)
-    test.done()
+      /* Check beacon location update */
+      t.post({
+        uri: '/do/find',
+        body: {
+          collection:'beacons',
+          find:{ _id:testBeacon._id }
+        }
+      }, function(err, res, body) {
+        t.assert(body.count === 1)
+        t.assert(body.data[0].location.lat === 47.1)
+        t.assert(body.data[0].location.lng === -122.1)
+        t.assert(body.data[0].signal === -79)
+        test.done()
+      })
+    }, 200)
   })
 }
 
@@ -929,6 +903,9 @@ exports.insertPost = function (test) {
     t.assert(body.count === 1)
     t.assert(body.data)
     t.assert(body.notifications.length > 0)
+    t.assert(body.notifications[0].action.user && body.notifications[0].action.entity)
+    t.assert(body.notifications[0].action.toEntity)
+    t.assert(!body.notifications[0].action.fromEntity)
 
     /* Check inserted post */
     t.post({
@@ -992,6 +969,9 @@ exports.insertComment = function (test) {
     t.assert(body.count === 1)
     t.assert(body.data)
     t.assert(body.notifications.length > 0)
+    t.assert(body.notifications[0].action.user && body.notifications[0].action.entity)
+    t.assert(body.notifications[0].action.toEntity)
+    t.assert(!body.notifications[0].action.fromEntity)
 
     /* Check insert */
     t.post({
@@ -1294,20 +1274,21 @@ exports.ownerCanCommentOnLockedRecord = function(test) {
     t.assert(body.count === 1)
     t.assert(body.data)
     t.assert(body.notifications.length > 0)
-    test.done()
-  })
-}
+    t.assert(body.notifications[0].action.user && body.notifications[0].action.entity)
+    t.assert(body.notifications[0].action.toEntity)
+    t.assert(!body.notifications[0].action.fromEntity)
 
-exports.checkOwnerInsertedCommentOnLockedRecord = function (test) {
-  t.post({
-    uri: '/do/find',
-    body: {
-      collection:'comments',
-      find:{ _id:testComment2._id }
-    }
-  }, function(err, res, body) {
-    t.assert(body.count === 1)
-    test.done()
+    /* Check owner inserted comment on locked record */
+    t.post({
+      uri: '/do/find',
+      body: {
+        collection:'comments',
+        find:{ _id:testComment2._id }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+      test.done()
+    })
   })
 }
 
@@ -1325,20 +1306,22 @@ exports.adminCanCommentOnLockedRecord = function(test) {
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
-    test.done()
-  })
-}
+    t.assert(body.notifications.length > 0)
+    t.assert(body.notifications[0].action.user && body.notifications[0].action.entity)
+    t.assert(body.notifications[0].action.toEntity)
+    t.assert(!body.notifications[0].action.fromEntity)
 
-exports.checkAdminInsertedCommentOnLockedRecord = function (test) {
-  t.post({
-    uri: '/do/find',
-    body: {
-      collection:'comments',
-      find:{ _id:testComment3._id }
-    }
-  }, function(err, res, body) {
-    t.assert(body.count === 1)
-    test.done()
+    /* Check admin inserted comment on locked record */
+    t.post({
+      uri: '/do/find',
+      body: {
+        collection:'comments',
+        find:{ _id:testComment3._id }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+      test.done()
+    })
   })
 }
 
@@ -1365,16 +1348,14 @@ exports.ownerCanUpdateLockedRecord = function(test) {
   }, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data._id)
-    test.done()
-  })
-}
 
-exports.checkOwnerUpdatedLockedRecord = function (test) {
-  t.get({
-    uri: '/data/places/' + testPlaceCustom._id
-  }, function(err, res, body) {
-    t.assert(body.data && body.data && body.data.name === 'Testing owner update of locked entity')
-    test.done()
+    /* Check owner updated locked record */
+    t.get({
+      uri: '/data/places/' + testPlaceCustom._id
+    }, function(err, res, body) {
+      t.assert(body.data && body.data && body.data.name === 'Testing owner update of locked entity')
+      test.done()
+    })
   })
 }
 
@@ -1388,18 +1369,17 @@ exports.adminCanUpdateLockedRecord = function(test) {
   }, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data._id)
-    test.done()
+
+    /* Check admin updated locked record */
+    t.get({
+      uri: '/data/places/' + testPlaceCustom._id
+    }, function(err, res, body) {
+      t.assert(body.data && body.data && body.data.name === 'Testing admin update of locked entity')
+      test.done()
+    })
   })
 }
 
-exports.checkAdminUpdatedLockedRecord = function (test) {
-  t.get({
-    uri: '/data/places/' + testPlaceCustom._id
-  }, function(err, res, body) {
-    t.assert(body.data && body.data && body.data.name === 'Testing admin update of locked entity')
-    test.done()
-  })
-}
 
 /*
 exports.adminCanDeleteBeaconEntityUserCreated = function (test) {
