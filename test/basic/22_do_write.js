@@ -429,12 +429,12 @@ exports.insertPlace = function (test) {
       entity: testPlace,
       beacons: [testBeacon],
       primaryBeaconId: testBeacon._id,
-      returnNotifications: true,
+      returnMessages: true,
     },
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
-    t.assert(body.notifications.length == 0) // No notification because place is synthetic
+    t.assert(body.messages.length == 0) // No notification because place is synthetic
 
     var savedEnt = body.data
     t.assert(savedEnt._owner === util.adminUser._id)
@@ -523,15 +523,15 @@ exports.insertPlaceCustom = function (test) {
       entity: testPlaceCustom,
       beacons: [testBeacon],
       primaryBeaconId: testBeacon._id,
-      returnNotifications: true,
+      returnMessages: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
-    t.assert(body.notifications.length > 0)
-    t.assert(body.notifications[0].action.user && body.notifications[0].action.entity)
-    t.assert(!body.notifications[0].action.toEntity)
-    t.assert(!body.notifications[0].action.fromEntity)
+    t.assert(body.messages.length > 0)
+    t.assert(body.messages[0].action.user && body.messages[0].action.entity)
+    t.assert(!body.messages[0].action.toEntity)
+    t.assert(!body.messages[0].action.fromEntity)
 
     var savedEnt = body.data
     t.assert(savedEnt._owner === testUser._id)
@@ -574,12 +574,12 @@ exports.insertPlaceBeaconAlreadyExists = function (test) {
       entity:testPlace2,
       beacons:[testBeacon],
       primaryBeaconId:testBeacon._id,
-      returnNotifications: true,
+      returnMessages: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data._id)
-    t.assert(body.notifications.length == 0)
+    t.assert(body.messages.length == 0)
 
     /* Check insert place where beacon already exists */
     t.post({
@@ -611,11 +611,11 @@ exports.insertPlaceEntityWithNoLinks = function (test) {
     uri: '/do/insertEntity?' + userCred,
     body: {
       entity:testPlace3,
-      returnNotifications: true,
+      returnMessages: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
-    t.assert(body.notifications.length == 0)
+    t.assert(body.messages.length == 0)
 
     /* Check insert entity no links */
     t.post({
@@ -897,15 +897,15 @@ exports.insertPost = function (test) {
         _to: testPlace._id,
         type: util.statics.typeContent,
       },
-      returnNotifications: true,
+      returnMessages: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
-    t.assert(body.notifications.length > 0)
-    t.assert(body.notifications[0].action.user && body.notifications[0].action.entity)
-    t.assert(body.notifications[0].action.toEntity)
-    t.assert(!body.notifications[0].action.fromEntity)
+    t.assert(body.messages.length > 0)
+    t.assert(body.messages[0].action.user && body.messages[0].action.entity)
+    t.assert(body.messages[0].action.toEntity)
+    t.assert(!body.messages[0].action.fromEntity)
 
     /* Check inserted post */
     t.post({
@@ -963,15 +963,15 @@ exports.insertComment = function (test) {
         _to: testPost._id,
         type: util.statics.typeContent,
       },
-      returnNotifications: true,
+      returnMessages: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
-    t.assert(body.notifications.length > 0)
-    t.assert(body.notifications[0].action.user && body.notifications[0].action.entity)
-    t.assert(body.notifications[0].action.toEntity)
-    t.assert(!body.notifications[0].action.fromEntity)
+    t.assert(body.messages.length > 0)
+    t.assert(body.messages[0].action.user && body.messages[0].action.entity)
+    t.assert(body.messages[0].action.toEntity)
+    t.assert(!body.messages[0].action.fromEntity)
 
     /* Check insert */
     t.post({
@@ -1268,15 +1268,15 @@ exports.ownerCanCommentOnLockedRecord = function(test) {
         _to: testPlaceCustom._id,
         type: util.statics.typeContent
       },
-      returnNotifications: true,
+      returnMessages: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
-    t.assert(body.notifications.length > 0)
-    t.assert(body.notifications[0].action.user && body.notifications[0].action.entity)
-    t.assert(body.notifications[0].action.toEntity)
-    t.assert(!body.notifications[0].action.fromEntity)
+    t.assert(body.messages.length > 0)
+    t.assert(body.messages[0].action.user && body.messages[0].action.entity)
+    t.assert(body.messages[0].action.toEntity)
+    t.assert(!body.messages[0].action.fromEntity)
 
     /* Check owner inserted comment on locked record */
     t.post({
@@ -1301,15 +1301,15 @@ exports.adminCanCommentOnLockedRecord = function(test) {
         _to: testPlaceCustom._id,
         type: util.statics.typeContent
       },
-      returnNotifications: true,
+      returnMessages: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
-    t.assert(body.notifications.length > 0)
-    t.assert(body.notifications[0].action.user && body.notifications[0].action.entity)
-    t.assert(body.notifications[0].action.toEntity)
-    t.assert(!body.notifications[0].action.fromEntity)
+    t.assert(body.messages.length > 0)
+    t.assert(body.messages[0].action.user && body.messages[0].action.entity)
+    t.assert(body.messages[0].action.toEntity)
+    t.assert(!body.messages[0].action.fromEntity)
 
     /* Check admin inserted comment on locked record */
     t.post({
