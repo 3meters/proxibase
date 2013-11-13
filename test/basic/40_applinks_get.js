@@ -2,7 +2,6 @@
  *  Proxibase applink get test
  */
 
-
 var util = require('proxutils')
 var log = util.log
 var serviceUri = util.config.service.uri
@@ -15,15 +14,29 @@ var adminCred
 var _exports = {} // for commenting out tests
 
 
-// This test won't work when connecting through a tmobile hotspot and
-// possibly other walled gardens, so removing for now
-_exports.getApplinksFailsProperlyOnBogusWebsite = function(test) {
+
+exports.ensureFailsProperlyOnEmpty = function(test) {
+  t.post({
+    uri: '/applinks/get',
+    body: {applinks: []}
+  }, 400, function(err, res, body) {
+    t.assert(body.error)
+    t.assert(400.13 === body.error.code)
+    test.done()
+  })
+}
+
+
+// The Ballroom Seattle's facebook page is invisible to non-logged-in facebook
+// users because it serves alcohol. The service should return this applink
+// unvalidated and hope for the best on the client where the user can authenticate
+// with facebook directly
+exports.nonPublicFacebookPlaceFailsValidation = function(test) {
   if (disconnected) return skip(test)
-  return test.done()
   t.post({
     uri: '/applinks/get',
     body: {
-      applinks: [{type: 'website', appUrl: 'www.iamabogusurlhaha.com'}]
+      applinks: [{type: 'facebook', appId: '235200356726'}],
     }
   }, function(err, res, body) {
     t.assert(0 === body.data.length)
@@ -31,82 +44,193 @@ _exports.getApplinksFailsProperlyOnBogusWebsite = function(test) {
   })
 }
 
-exports.getApplinksWorksOnWebsite = function(test) {
+exports.checkBogusApplinks = function(test) {
   if (disconnected) return skip(test)
   t.post({
     uri: '/applinks/get',
     body: {
-      applinks: [{type: 'website', appUrl: 'www.google.com'}]
+      applinks: [{type: 'foursquare', appUrl: 'http://www.google.com'}],
     }
-  }, function(err, res, body) {
-    t.assert(1 === body.data.length)
-    var result = body.data[0]
-    t.assert(result.appUrl === 'http://www.google.com')
-    t.assert(result.appId === 'http://www.google.com')
-    t.assert(result.photo)
-    t.assert(result.photo.prefix === 'www.google.com.png')
-    t.assert(result.data)
-    t.assert(result.data.validated)
+  },
+  function(err, res, body) {
+    t.assert(body.data.length === 0)
     test.done()
   })
 }
 
-exports.getWebsiteWaitForContent = function(test) {
-  // TODO:  once we have a public photo service, delete this
-  // thumbnail from s3 and check to see that it is recreated properly.
+exports.getApplinksFactual = function(test) {
   if (disconnected) return skip(test)
   t.post({
     uri: '/applinks/get',
     body: {
-      applinks: [{type: 'website', appUrl: 'www.yahoo.com'}],
-      waitForContent: true,
-      testThumbnails: true,
-      timeout: 15,
+      applinks: [{type: 'factual', appId: '46aef19f-2990-43d5-a9e3-11b78060150c'}],
+      includeRaw: true, 
+      timeout: 20
     }
-  }, function(err, res, body) {
-    t.assert(1 === body.data.length)
-    var result = body.data[0]
-    t.assert(result.appUrl === 'http://www.yahoo.com')
-    t.assert(result.appId === 'http://www.yahoo.com')
-    t.assert(result.photo)
-    t.assert(result.photo.prefix === 'www.yahoo.com.png')
-    t.assert(result.data)
-    t.assert(result.data.validated)
+  },
+  function(err, res) {
+    var applinks = res.body.data
+    t.assert(applinks.length > 4)
+    t.assert(res.body.raw)
+    t.assert(res.body.raw.initialApplinks)
+    t.assert(res.body.raw.factualCandidates.length > 12)
+    t.assert(applinks.some(function(applink) {
+      return (applink.type === 'foursquare'
+          && applink.photo
+          && applink.photo.prefix
+          && applink.data.origin === 'factual'
+          && applink.data.validated
+          && applink.data.popularity
+      )
+    }))
     test.done()
   })
 }
 
-
-exports.getFoursquare = function(test) {
+// Combine with next?
+exports.getFactualApplinksFromFoursquareId = function(test) {
   if (disconnected) return skip(test)
-  var started = util.now()
+  t.post({
+    uri: '/applinks/get',
+    body: {
+      applinks: [{type: 'foursquare', appId: '4abebc45f964a520a18f20e3'}],
+      includeRaw: true,
+      timeout: 20
+    } // Seattle Ballroom in Fremont
+  },
+  function(err, res, body) {
+    var applinks = body.data
+    t.assert(applinks.length > 3)
+    t.assert(applinks.some(function(applink) {
+      return (applink.type === 'foursquare'
+          && applink.appId === '4abebc45f964a520a18f20e3'
+          && applink.name === 'The Ballroom'
+        )
+    }))
+    t.assert(!applinks.some(function(applink) { // facebook should not exist because it
+      return (applink.type === 'facebook')      // cannot be validated because it serves
+    }))                                         // alcohal and is hidden from the public API
+    t.assert(applinks.some(function(applink) {
+      return (applink.type === 'yelp')
+    }))
+    t.assert(applinks.some(function(applink) {
+      return (applink.type === 'website')
+    }))
+    applinks.forEach(function(applink) {
+      t.assert(applink.type !== 'factual')
+    })
+    test.done()
+  })
+}
+
+// Combine with previous?
+exports.compareFoursquareToFactual = function(test) {
+  if (disconnected) return skip(test)
+  t.post({
+    uri: '/applinks/get',
+    body: {
+      applinks: [{type: 'foursquare', appId: '4abebc45f964a520a18f20e3'}],
+      includeRaw: true,
+      timeout: 20
+    }
+  },
+  function(err, res) {
+    var applinks4s = res.body.data
+    t.assert(applinks4s.some(function(applink) {
+      return (applink.type === 'foursquare'
+        && applink.appId === '4abebc45f964a520a18f20e3'
+        && applink.data.validated
+        && applink.photo
+        && applink.photo.prefix
+        && applink.photo.suffix
+        && !applink.icon
+      )
+    }))
+    applinks4s.forEach(function(applink) {
+      t.assert(applink.type !== 'factual')
+    })
+    t.assert(applinks4s.length > 3)
+    t.post({
+      uri: '/applinks/get',
+      // Seattle Ballroom
+      body: {
+        applinks: [{type: 'factual', appId: '46aef19f-2990-43d5-a9e3-11b78060150c'}],
+        includeRaw: true,
+        timeout: 20
+      }
+    }, function(err, res) {
+      var applinksFact = res.body.data
+      t.assert(applinksFact.length > 3)
+      t.assert(applinksFact.length === applinks4s.length, {applinks4s: applinks4s})
+      test.done()
+    })
+  })
+}
+
+exports.getFacebookFromPlaceJoinWithFoursquare = function(test) {
+  if (disconnected) return skip(test)
   t.post({
     uri: '/applinks/get',
     body: {
       applinks: [{
         type: 'foursquare',
-        appId: '4abebc45f964a520a18f20e3', // Seattle ballroom
+        appId: '42893400f964a5204c231fe3',
+        name: 'The Red Door',
         photo: {
           prefix: 'http://www.myimage.com/foo.jpeg',
           source: 'aircandi'
         },
-      }]
-    }
-  }, function(err, res, body) {
-    t.assert(body.data.length)
-    body.data.forEach(function(applink) {
-      if ('foursquare' === applink.type) {
-        // we overwrite user photos with provider photos on get
-        t.assert(applink.photo)
-        t.assert('http://www.myimage.com/foo.jpeg' !== applink.photo.prefix)
-        t.assert('foursquare' === applink.photo.source)
-        t.assert(applink.data)
-        t.assert(started <= applink.data.validated)
-      }
-    })
+      }],
+      includeRaw: true,
+      timeout: 20,
+    },
+  },
+  function(err, res, body) {
+    var applinks = body.data
+    t.assert(applinks && applinks.length)
+    t.assert(applinks.some(function(applink) {
+      return (applink.type === 'foursquare'
+        && applink.appId === '42893400f964a5204c231fe3'
+        && applink.data
+        && applink.data.validated
+        && applink.data.popularity > 5
+        && applink.photo
+        && applink.photo.prefix !== 'http://www.myimage.com/foo.jpeg' // overwrote photo
+        && applink.photo.source === 'foursquare')
+    }))
+    t.assert(applinks.some(function(applink) {
+      return (applink.type === 'facebook'
+        && applink.appId === '155509047801321'
+        && applink.name
+        && applink.data
+        && applink.data.validated
+        && applink.data.popularity > 5
+        && applink.photo
+        && applink.photo.prefix
+        && applink.photo.source === 'facebook')
+    }))
+    t.assert(applinks.some(function(applink) {
+      return (applink.type === 'yelp'
+        && applink.appId === 'q20FkqFbmdOhfSEhaT5IHg'
+        && applink.name
+        && applink.data
+        && applink.data.validated
+        && applink.data.popularity > 5)
+    }))
+    t.assert(applinks.every(function(applink) {
+      return (applink.appId !== '427679707274727'  // This facebook entry fails the popularity contest
+        && !applink.icon)  // depricated
+    }))
+    var raw = res.body.raw
+    t.assert(raw)
+    t.assert(raw.facebookCandidates)
+    t.assert(raw.factualCandidates)
+    t.assert(raw.facebookCandidates.length >= 1)
+    t.assert(raw.factualCandidates.length >= 12)
     test.done()
   })
 }
+
 
 exports.appLinkPositionSortWorks = function(test) {
   if (disconnected) return skip(test)
@@ -115,7 +239,7 @@ exports.appLinkPositionSortWorks = function(test) {
     uri: '/applinks/get',
     body: {
       applinks: [
-        {type: 'facebook', position: 1, appId: '155509047801321'},
+        {type: 'facebook', position: 10, _id: 'foo', appId: '155509047801321'},
         {type: 'website', appId: 'www.reddoorseattle.com'},
         {type: 'yelp', appId: 'q20FkqFbmdOhfSEhaT5IHg'},
         {type: 'foursquare', appId: '42893400f964a5204c231fe3'},
@@ -137,7 +261,8 @@ exports.appLinkPositionSortWorks = function(test) {
 
         case 'facebook':
           fb = true
-          t.assert(1 === applink.position)   // proves position passthrough
+          t.assert(10 === applink.position)  // proves position is passed through and ignored
+          t.assert('foo' === applink._id)    // proves _id passthrough
           t.assert(ws)
           t.assert(!fs)
           t.assert(!yl)
