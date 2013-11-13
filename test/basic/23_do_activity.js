@@ -50,7 +50,7 @@ var testPlace4 = {
   },
   address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"555550002",
   provider:{
-    foursquare:"0010"
+    aircandi: "aircandi"
   },
   category:{
     id:"4bf58dd8d48988d18c941735",
@@ -159,13 +159,16 @@ exports.insertPlaceForCandigram = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCred,
     body: {
-      entity:testPlace4,
-      returnNotifications: true,
+      entity:testPlace4,    // custom place
+      returnMessages: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data._id)
-    t.assert(body.notifications.length > 0)
+    t.assert(body.messages.length > 0)
+    t.assert(body.messages[0].action.user && body.messages[0].action.entity)
+    t.assert(!body.messages[0].action.toEntity)
+    t.assert(!body.messages[0].action.fromEntity)
     test.done()
   })
 }
@@ -180,12 +183,15 @@ exports.insertCandigramBounce = function (test) {
         _to: testPlace4._id,
         type: util.statics.typeContent
       },
-      returnNotifications: true,
+      returnMessages: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
-    t.assert(body.notifications.length > 0)
+    t.assert(body.messages.length > 0)
+    t.assert(body.messages[0].action.user && body.messages[0].action.entity)
+    t.assert(body.messages[0].action.toEntity)
+    t.assert(!body.messages[0].action.fromEntity)
     var savedEnt = body.data
     t.assert(savedEnt._owner === testUser._id)
     t.assert(savedEnt._creator === testUser._id)
@@ -226,12 +232,15 @@ exports.moveCandigram = function(test) {
       entityIds:[testCandigramBounce._id],
       verbose: true,
       activityDateWindow: 0,
-      returnNotifications: true,
+      returnMessages: true,
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data[0])
-    t.assert(body.notifications.length > 0)
+    t.assert(body.messages.length > 0)
+    t.assert(body.messages[0].action.user && body.messages[0].action.entity)
+    t.assert(body.messages[0].action.toEntity)
+    t.assert(body.messages[0].action.fromEntity)
 
     var newPlace = body.data[0]
     placeMovedToId = newPlace._id
@@ -319,12 +328,15 @@ exports.moveCandigramAgainWithActivityDateWindow = function(test) {
       entityIds:[testCandigramBounce._id],
       verbose: true,
       activityDateWindow: 2000,
-      returnNotifications: true,
+      returnMessages: true,
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data[0])
-    t.assert(body.notifications.length > 0)
+    t.assert(body.messages.length > 0)
+    t.assert(body.messages[0].action.user && body.messages[0].action.entity)
+    t.assert(body.messages[0].action.toEntity)
+    t.assert(body.messages[0].action.fromEntity)
 
     var newPlace = body.data[0]
     placeMovedToId = newPlace._id
@@ -399,13 +411,16 @@ exports.insertCandigramExpand = function (test) {
         _to: testPlace4._id,
         type: util.statics.typeContent
       },
-      returnNotifications: true,
+      returnMessages: true,
       activityDateWindow: 0,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
-    t.assert(body.notifications.length > 0)
+    t.assert(body.messages.length > 0)
+    t.assert(body.messages[0].action.user && body.messages[0].action.entity)
+    t.assert(body.messages[0].action.toEntity)
+    t.assert(!body.messages[0].action.fromEntity)
     var savedEnt = body.data
     t.assert(savedEnt._owner === testUser._id)
     t.assert(savedEnt._creator === testUser._id)
@@ -446,13 +461,16 @@ exports.expandCandigram = function(test) {
       entityIds:[testCandigramExpand._id],
       verbose: true,
       expand: true,
-      returnNotifications: true,
+      returnMessages: true,
       activityDateWindow: 0,
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data[0])
-    t.assert(body.notifications.length > 0)
+    t.assert(body.messages.length > 0)
+    t.assert(body.messages[0].action.user && body.messages[0].action.entity)
+    t.assert(body.messages[0].action.toEntity)
+    t.assert(!body.messages[0].action.fromEntity)
 
     var newPlace = body.data[0]
     var activityDate = body.date
@@ -665,13 +683,16 @@ exports.insertComment = function (test) {
         _to: testCandigramBounce._id,
         type: util.statics.typeContent,
       },
-      returnNotifications: true,
+      returnMessages: true,
       activityDateWindow: 0,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
-    t.assert(body.notifications.length > 0)
+    t.assert(body.messages.length > 0)
+    t.assert(body.messages[0].action.user && body.messages[0].action.entity)
+    t.assert(body.messages[0].action.toEntity)
+    t.assert(!body.messages[0].action.fromEntity)
     var activityDate = body.date
 
     /* Check insert */
