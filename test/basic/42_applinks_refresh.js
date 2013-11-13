@@ -3,6 +3,7 @@
  */
 
 var util = require('proxutils')
+var async = require('async')
 var log = util.log
 var serviceUri = util.config.service.uri
 var testUtil = require('../util')
@@ -69,7 +70,29 @@ exports.kaosamai = function(test) {
       t.assert(appMap.foursquare === 1)
       t.assert(appMap.twitter === 1)
       t.assert(appMap.facebook === 1) // One is not found, but we can't tell those from a alcohal serving business
-      test.done()
+
+      // Clean up
+      async.eachSeries(applinks, removeApplink, function(err) {
+        t.assert(!err)
+        t.delete({uri: '/data/places/' + place._id + '?' + adminCred}, function(err, res, body) {
+          t.assert(1 === body.count)
+          test.done()
+        })
+      })
+
+      function removeApplink(applink, next) {
+        t.get('/data/links?filter[_from]=' + applink._id + '&filter[_to]=' + place._id,
+        function(err, res, body) {
+          t.assert(1 === body.data.length)
+          t.delete({uri: '/data/links/' + body.data[0]._id + '?' + adminCred}, function(err, res, body) {
+            t.assert(1 === body.count)
+            t.delete({uri: '/data/applinks/' + applink._id + '?' + adminCred}, function(err, res, body) {
+              t.assert(1 === body.count)
+              next()
+            })
+          })
+        })
+      }
     })
   })
 }
