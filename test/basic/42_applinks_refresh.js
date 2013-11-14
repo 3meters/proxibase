@@ -32,6 +32,7 @@ exports.refreshKaosamai = function(test) {
 
   if (disconnected) return skip(test)
   var ksthaiId = '4a3d9c80f964a52088a21fe3'
+
   t.post({
     uri: '/data/places?' + userCred,
     body: {
@@ -61,9 +62,18 @@ exports.refreshKaosamai = function(test) {
       var raw = body.raw
       t.assert(raw)
       var appMap = {}
+      var lastValidated = 0
       applinks.forEach(function(applink) {
         appMap[applink.type] = appMap[applink.type] || 0
         appMap[applink.type]++
+        // Track the most recent validation date for validated applinks.
+        // When refresh is called again, all validated applinks should
+        // have validated value greater than this number.
+        if (applink.data && applink.data.validated) {
+          if (applink.data.validated > lastValidated) {
+            lastValidated = applink.data.validated
+          }
+        }
       })
       t.assert(util.tipe.isUndefined(appMap.factual))
       t.assert(appMap.website === 1)
@@ -95,7 +105,18 @@ exports.refreshKaosamai = function(test) {
         }, 201, function(err, res, body) {
           var bogusLinkId = body.data._id
           t.assert(bogusLinkId)
-          cleanup(place, applinks)
+          t.post({
+            uri: '/applinks/refresh?' + userCred,
+            body: {
+              placeId: place._id,
+              includeRaw: true,
+              timeout: 20,
+            }
+          }, function(err, res, body) {
+            var applinks = body.data
+            t.assert(applinks && applinks.length)
+            cleanup(place, applinks)
+          })
         })
       })
     })
