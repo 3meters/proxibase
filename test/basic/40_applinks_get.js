@@ -286,6 +286,7 @@ exports.appLinkPositionSortWorks = function(test) {
           break
       }
     })
+    t.assert(yl)
 
     function assertValidated(applink) {
       t.assert(applink.data)
@@ -297,8 +298,20 @@ exports.appLinkPositionSortWorks = function(test) {
   })
 }
 
+// kosamai has two valid yelp entries
 exports.appLinkPopularitySortWorks = function(test) {
-  // NYI
-  // kosamai has two valid yelp entries
-  skip(test)
+  if (disconnected) return skip(test)
+  t.post({
+    uri: '/applinks/get',
+    body: {
+      applinks: [
+        {type: 'yelp', appId: 'fH7CPQ8194yGgSKK0fL-sg'},   // 45 reviews
+        {type: 'yelp', appId: 'QYv7LvaoyuaEJRDRpPtFDQ'},   // 132 reviews
+      ],
+    }
+  }, function(err, res, body) {
+    t.assert(body.data.length === 2)
+    t.assert(body.data[0].appId === 'QYv7LvaoyuaEJRDRpPtFDQ')
+    test.done()
+  })
 }

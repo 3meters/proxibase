@@ -114,7 +114,41 @@ exports.refreshKaosamai = function(test) {
             }
           }, function(err, res, body) {
             var applinks = body.data
+            var ws, fb, fs, yl
             t.assert(applinks && applinks.length)
+            applinks.forEach(function(applink) {
+              switch (applink.type) {
+                case 'website':
+                  ws = true
+                  t.assert(!fb)
+                  t.assert(!fs)
+                  t.assert(!yl)
+                  break
+
+                case 'facebook':
+                  fb = true
+                  t.assert(ws)
+                  t.assert(!fs)
+                  t.assert(!yl)
+                  break
+
+                case 'foursquare':
+                  fs = true
+                  t.assert(ws)
+                  t.assert(fb)
+                  t.assert(!yl)
+                  break
+
+                case 'yelp':
+                  yl = true
+                  t.assert(ws)
+                  t.assert(fb)
+                  t.assert(fs)
+                  break
+              }
+            })
+            t.assert(yl)
+
             cleanup(place, applinks)
           })
         })
