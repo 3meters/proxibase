@@ -10,11 +10,10 @@ var t = testUtil.treq
 var skip = testUtil.skip
 var constants = require('../constants')
 var dbProfile = constants.dbProfile.smokeTest
-var userId
-var userCred
-var user2Cred
+var userCredTom
+var userCredBob
+var userCredAlice
 var adminCred
-var primaryLink
 var trackingLink
 var _exports = {} // for commenting out tests
 var testLatitude = 46.1
@@ -23,27 +22,36 @@ var testLatitude2 = 47.1
 var testLongitude2 = -122.1
 var radiusTiny = 0.000001
 var radiusBig = 10000
-var testUser = {
-  _id :  "us.111111.11111.111.111111",
-  name : "John Q Test",
-  email : "johnqtest@3meters.com",
+var installationId1 = '5905d547-8321-4612-abe1-00001'
+var installationId2 = '5905d547-8321-4612-abe1-00002'
+var installationId3 = '5905d547-8321-4612-abe1-00003'
+var testUserTom = {
+  _id :  "us.111111.11111.000.111111",
+  name : "Tom",
+  email : "tomtest@3meters.com",
   password : "12345678",
   photo: {
     prefix:"resource:placeholder_user",
     source:"resource",
   },
   area : "Testville, WA",
-  developer : false,
   enabled: true,
 }
-var testUser2 = {
-  _id : "us.111111.11111.111.222222",
-  name : "John Q Test2",
-  email : "johnqtest2@3meters.com",
+var testUserBob = {
+  _id : "us.111111.11111.000.222222",
+  name : "Bob",
+  email : "bobtest@3meters.com",
   password : "12345678",
   enabled: true,
 }
-var testPlace = {
+var testUserAlice = {
+  _id : "us.111111.11111.000.333333",
+  name : "Alice",
+  email : "alicetest@3meters.com",
+  password : "12345678",
+  enabled: true,
+}
+var testPlaceOne = {
   _id : "pl.111111.11111.111.111111",
   schema : util.statics.schemaPlace,
   name : "Testing place entity",
@@ -68,7 +76,7 @@ var testPlace = {
     },
   }
 }
-var testPlace2 = {
+var testPlaceTwo = {
   _id : "pl.111111.11111.111.111112",
   schema : util.statics.schemaPlace,
   name : "Testing place entity",
@@ -93,33 +101,8 @@ var testPlace2 = {
     },
   },
 }
-var testPlace3 = {
-  _id : "pl.111111.11111.111.111113",
-  schema : util.statics.schemaPlace,
-  name : "Testing place entity",
-  photo: {
-    prefix:"1001_20111224_104245.jpg",
-    source:"aircandi"
-  },
-  signalFence : -100,
-  location: {
-    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
-  },
-  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065550003",
-  provider:{
-    foursquare:"0004"
-  },
-  category:{
-    id:"4bf58dd8d48988d18c941735",
-    name : "Baseball Stadium",
-    photo:{
-      prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
-      source : "assets.categories",
-    },
-  },
-}
-var testPlaceCustom = {
-  _id : "pl.111111.11111.111.111114",
+var testPlaceCustomOne = {
+  _id : "pl.111111.11111.111.211111",
   schema : util.statics.schemaPlace,
   name : "Testing place entity custom",
   photo: {
@@ -131,6 +114,56 @@ var testPlaceCustom = {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
   address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065550004",
+  provider:{
+    aircandi: 'aircandi',
+  },
+  category:{
+    id:"4bf58dd8d48988d18c941735",
+    name : "Baseball Stadium",
+    photo:{
+      prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
+      source : "assets.categories",
+    },
+  },
+}
+var testPlaceCustomTwo = {
+  _id : "pl.111111.11111.111.211112",
+  schema : util.statics.schemaPlace,
+  name : "Testing place entity custom two",
+  photo: {
+    prefix:"1001_20111224_104245.jpg",
+    source:"aircandi"
+  },
+  signalFence : -100,
+  location: {
+    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
+  },
+  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065550003",
+  provider:{
+    aircandi: 'aircandi',
+  },
+  category:{
+    id:"4bf58dd8d48988d18c941735",
+    name : "Baseball Stadium",
+    photo:{
+      prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
+      source : "assets.categories",
+    },
+  },
+}
+var testPlaceCustomLocked = {
+  _id : "pl.111111.11111.111.211113",
+  schema : util.statics.schemaPlace,
+  name : "Testing place entity custom locked",
+  photo: {
+    prefix:"1001_20111224_104245.jpg",
+    source:"aircandi"
+  },
+  signalFence : -100,
+  location: {
+    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
+  },
+  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065550003",
   provider:{
     aircandi: 'aircandi',
   },
@@ -299,28 +332,36 @@ var testLocation3 = {
 
 // Get user and admin sessions and store the credentials in module globals
 exports.getSessions = function (test) {
-  testUtil.getUserSession(testUser, function(session) {
-    userId = session._owner
-    userCred = 'user=' + session._owner + '&session=' + session.key
-    testUtil.getUserSession(testUser2, function(session) {
-      user2Cred = 'user=' + session._owner + '&session=' + session.key
-      testUtil.getAdminSession(function(session) {
-        adminCred = 'user=' + session._owner + '&session=' + session.key
-        test.done()
+  testUtil.getUserSession(testUserTom, function(session) {
+    userCredTom = 'user=' + session._owner + '&session=' + session.key
+    testUtil.getUserSession(testUserBob, function(session) {
+      userCredBob = 'user=' + session._owner + '&session=' + session.key
+      testUtil.getUserSession(testUserAlice, function(session) {
+        userCredAlice = 'user=' + session._owner + '&session=' + session.key
+        testUtil.getAdminSession(function(session) {
+          adminCred = 'user=' + session._owner + '&session=' + session.key
+          test.done()
+        })
       })
     })
   })
 }
 
-exports.registerInstall = function (test) {
+/*
+ * ----------------------------------------------------------------------------
+ * Register installs
+ * ----------------------------------------------------------------------------
+ */
+
+exports.registerInstallOne = function (test) {
   t.post({
-    uri: '/do/registerInstall?' + userCred,
+    uri: '/do/registerInstall?' + userCredBob,
     body: {
       install: {
-        _id: constants.installId,
-        _user: testUser._id,
-        registrationId: constants.registrationId,
-        installationId: constants.installationId,
+        _id: 'in.010101.00000.555.000001',
+        _user: testUserBob._id,
+        registrationId: 'registration_id_testing_user_bob',
+        installationId: installationId1,
         clientVersionCode: 10,
         clientVersionName: '0.8.12'
       }
@@ -333,13 +374,14 @@ exports.registerInstall = function (test) {
       uri: '/do/find',
       body: {
         collection:'installs',
-        find:{ _id:constants.installId }
+        find:{ installationId: installationId1 }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
       t.assert(body.data && body.data[0])
       t.assert(body.data[0].installationId)
       t.assert(body.data[0].registrationId)
+      t.assert(body.data[0].registrationId === 'registration_id_testing_user_bob')
       t.assert(body.data[0].users && body.data[0].users.length === 1)
       t.assert(body.data[0].signinDate)
       test.done()
@@ -347,15 +389,14 @@ exports.registerInstall = function (test) {
   })
 }
 
-exports.registerInstallSecondUser = function (test) {
+exports.registerSecondUserOnInstallOne = function (test) {
   t.post({
-    uri: '/do/registerInstall?' + userCred,
+    uri: '/do/registerInstall?' + userCredTom,
     body: {
       install: {
-        _id: constants.installId,
-        _user: testUser2._id,
-        registrationId: constants.registrationId,
-        installationId: constants.installationId,
+        _user: testUserTom._id,
+        registrationId: 'registration_id_testing_user_tom',
+        installationId: installationId1,
         clientVersionCode: 10,
         clientVersionName: '0.8.12'
       }
@@ -368,36 +409,108 @@ exports.registerInstallSecondUser = function (test) {
       uri: '/do/find',
       body: {
         collection:'installs',
-        find:{ _id:constants.installId }
+        find:{ installationId: installationId1 }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
       t.assert(body.data && body.data[0])
       t.assert(body.data[0].installationId)
       t.assert(body.data[0].registrationId)
+      t.assert(body.data[0].registrationId === 'registration_id_testing_user_tom')
       t.assert(body.data[0].users.length === 2)
       test.done()
     })
   })
 }
 
-exports.updateRegisteredInstallBeacons = function (test) {
+exports.registerInstallTwo = function (test) {
   t.post({
-    uri: '/do/getEntitiesByProximity?' + userCred,
+    uri: '/do/registerInstall?' + userCredBob,
     body: {
-      beaconIds: [constants.beaconId],
-      installationId: constants.installationId
+      install: {
+        _id: 'in.010101.00000.555.000002',
+        _user: testUserBob._id,
+        registrationId: 'registration_id_testing_user_bob',
+        installationId: installationId2,
+        clientVersionCode: 10,
+        clientVersionName: '0.8.12'
+      }
     }
   }, function(err, res, body) {
-    t.assert(body.count === dbProfile.epb)
-    t.assert(body.data && body.data[0])
+    t.assert(body.info.indexOf('registered') > 0)
+
+    /* Check register install second user */
+    t.post({
+      uri: '/do/find',
+      body: {
+        collection: 'installs',
+        find:{ installationId: installationId2 }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+      t.assert(body.data && body.data[0])
+      t.assert(body.data[0].installationId)
+      t.assert(body.data[0].registrationId)
+      t.assert(body.data[0].registrationId === 'registration_id_testing_user_bob')
+      t.assert(body.data[0].users && body.data[0].users.length === 1)
+      t.assert(body.data[0].signinDate)
+      test.done()
+    })
+  })
+}
+
+exports.registerInstallThree = function (test) {
+  t.post({
+    uri: '/do/registerInstall?' + userCredAlice,
+    body: {
+      install: {
+        _id: 'in.010101.00000.555.000003',
+        _user: testUserAlice._id,
+        registrationId: 'registration_id_testing_user_alice',
+        installationId: installationId3,
+        clientVersionCode: 10,
+        clientVersionName: '0.8.12'
+      }
+    }
+  }, function(err, res, body) {
+    t.assert(body.info.indexOf('registered') > 0)
+
+    /* Check register install second user */
+    t.post({
+      uri: '/do/find',
+      body: {
+        collection: 'installs',
+        find:{ installationId: installationId3 }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+      t.assert(body.data && body.data[0])
+      t.assert(body.data[0].installationId)
+      t.assert(body.data[0].registrationId)
+      t.assert(body.data[0].registrationId === 'registration_id_testing_user_alice')
+      t.assert(body.data[0].users && body.data[0].users.length === 1)
+      t.assert(body.data[0].signinDate)
+      test.done()
+    })
+  })
+}
+
+exports.updateBeaconsInstallOne = function (test) {
+  t.post({
+    uri: '/do/getEntitiesByProximity?' + userCredTom,
+    body: {
+      beaconIds: [testBeacon._id],
+      installationId: installationId1
+    }
+  }, function(err, res, body) {
+    t.assert(body.data && body.data.length == 0)
 
     /* Check install beacons */
     t.post({
       uri: '/do/find',
       body: {
         collection:'installs',
-        find:{ _id:constants.installId }
+        find:{ installationId: installationId1 }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -409,11 +522,71 @@ exports.updateRegisteredInstallBeacons = function (test) {
   })
 }
 
+exports.updateBeaconsInstallTwo = function (test) {
+  t.post({
+    uri: '/do/getEntitiesByProximity?' + userCredBob,
+    body: {
+      beaconIds: [testBeacon._id],
+      installationId: installationId2
+    }
+  }, function(err, res, body) {
+    t.assert(body.data && body.data.length == 0)
+
+    /* Check install beacons */
+    t.post({
+      uri: '/do/find',
+      body: {
+        collection:'installs',
+        find:{ installationId: installationId2 }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+      t.assert(body.data && body.data[0])
+      t.assert(body.data[0].beacons.length === 1)
+      t.assert(body.data[0].beaconsDate)
+      test.done()
+    })
+  })
+}
+
+exports.updateBeaconsInstallThree = function (test) {
+  t.post({
+    uri: '/do/getEntitiesByProximity?' + userCredAlice,
+    body: {
+      beaconIds: [testBeacon2._id],
+      installationId: installationId3
+    }
+  }, function(err, res, body) {
+    t.assert(body.data && body.data.length == 0)
+
+    /* Check install beacons */
+    t.post({
+      uri: '/do/find',
+      body: {
+        collection:'installs',
+        find:{ installationId: installationId3 }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+      t.assert(body.data && body.data[0])
+      t.assert(body.data[0].beacons.length === 1)
+      t.assert(body.data[0].beaconsDate)
+      test.done()
+    })
+  })
+}
+
+/*
+ * ----------------------------------------------------------------------------
+ * Insert places
+ * ----------------------------------------------------------------------------
+ */
+
 exports.cannotInsertEntityNotLoggedIn = function (test) {
   t.post({
     uri: '/do/insertEntity',
     body: {
-      entity:testPlace,
+      entity:testPlaceOne,
       beacons:[testBeacon],
       primaryBeaconId:testBeacon._id,
     }
@@ -422,31 +595,29 @@ exports.cannotInsertEntityNotLoggedIn = function (test) {
   })
 }
 
-exports.insertPlace = function (test) {
+exports.insertPlaceOne = function (test) {
   t.post({
-    uri: '/do/insertEntity?' + userCred,
+    uri: '/do/insertEntity?' + userCredTom,
     body: {
-      entity: testPlace,
-      beacons: [testBeacon],
-      primaryBeaconId: testBeacon._id,
+      entity: testPlaceOne,
       returnMessages: true,
     },
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
-    t.assert(body.messages.length == 0) // No notification because place is synthetic
+    t.assert(body.messages.length == 0) // Messaging isn't called because place is synthetic
 
     var savedEnt = body.data
     t.assert(savedEnt._owner === util.adminUser._id)
-    t.assert(savedEnt._creator === testUser._id)
-    t.assert(savedEnt._modifier === testUser._id)
+    t.assert(savedEnt._creator === testUserTom._id)
+    t.assert(savedEnt._modifier === testUserTom._id)
 
     /* Check insert place */
     t.post({
       uri: '/do/find',
       body: {
         collection:'places',
-        find:{ _id:testPlace._id }
+        find:{ _id:testPlaceOne._id }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -460,50 +631,115 @@ exports.insertPlace = function (test) {
         body: {
           collection:'links',
           find:{
-            _from: testUser._id,
-            _to: testPlace._id,
+            _from: testUserTom._id,
+            _to: testPlaceOne._id,
             type: 'create',
           }
         }
       }, function(err, res, body) {
         t.assert(body.count === 0)
 
-        /* Check inserted beacon */
+        /* Check inserted action */
         t.post({
           uri: '/do/find',
           body: {
-            collection:'beacons',
-            find:{ _id:testBeacon._id }
+            collection:'actions',
+            find:{ _entity:testPlaceOne._id, event:'insert_entity_place_linked'}
           }
         }, function(err, res, body) {
           t.assert(body.count === 1)
-          // Beacons should be owned by admin
-          t.assert(body.data[0]._owner === util.adminUser._id)
-          // Creator and modifier should be user who first added them
-          t.assert(body.data[0]._creator === testUser._id)
-          t.assert(body.data[0]._modifier === testUser._id)
+          test.done()
+        })
+      })
+    })
+  })
+}
 
-          /* Check inserted beacon link, store the link */
+exports.insertPlaceCustomOne = function (test) {
+  t.post({
+    uri: '/do/insertEntity?' + userCredTom,
+    body: {
+      entity: testPlaceCustomOne,
+      beacons: [testBeacon],
+      primaryBeaconId: testBeacon._id,
+      returnMessages: true,
+    }
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data)
+    /*
+     * Bob should get a nearby message since bob is registered
+     * with beacons that intersect the ones for custom place 1. Tom should
+     * not get a message because he is the source.
+     */
+    t.assert(body.messages.length == 1) // Messaging is called
+    t.assert(body.messages[0].action.user && body.messages[0].action.entity)
+    t.assert(!body.messages[0].action.toEntity)
+    t.assert(!body.messages[0].action.fromEntity)
+    t.assert(body.messages[0].trigger == 'nearby')
+
+    var savedEnt = body.data
+    t.assert(savedEnt._owner === testUserTom._id)
+    t.assert(savedEnt._creator === testUserTom._id)
+    t.assert(savedEnt._modifier === testUserTom._id)
+
+    /* Check insert place custom */
+    t.post({
+      uri: '/do/find',
+      body: {
+        collection:'places',
+        find:{ _id:testPlaceCustomOne._id }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+
+      /* Check inserted beacon */
+      t.post({
+        uri: '/do/find',
+        body: {
+          collection:'beacons',
+          find:{ _id:testBeacon._id }
+        }
+      }, function(err, res, body) {
+        t.assert(body.count === 1)
+        t.assert(body.data[0]._owner === util.adminUser._id)  // Beacons should be owned by admin
+        t.assert(body.data[0]._creator === testUserTom._id)      // Creator and modifier should be user who first added them
+        t.assert(body.data[0]._modifier === testUserTom._id)
+
+        /* Check inserted beacon link, store the link */
+        t.post({
+          uri: '/do/find',
+          body: {
+            collection:'links',
+            find:{
+              _to:testBeacon._id,
+              _from:testPlaceCustomOne._id,
+              'proximity.primary':true
+            }
+          }
+        }, function(err, res, body) {
+          t.assert(body.count === 1)
+
+          /* Check insert 'create' link */
           t.post({
             uri: '/do/find',
             body: {
               collection:'links',
               find:{
-                _to:testBeacon._id,
-                _from:testPlace._id,
-                'proximity.primary':true
+                _from: testUserTom._id,
+                _to: testPlaceCustomOne._id,
+                type: 'create',
               }
             }
           }, function(err, res, body) {
             t.assert(body.count === 1)
-            primaryLink = body.data[0]
 
             /* Check inserted action */
             t.post({
               uri: '/do/find',
               body: {
                 collection:'actions',
-                find:{ _entity:testPlace._id, event:'insert_entity_place_linked'}
+                find:{ _entity:testPlaceCustomOne._id, event:'insert_entity_place_custom'}
               }
             }, function(err, res, body) {
               t.assert(body.count === 1)
@@ -516,11 +752,51 @@ exports.insertPlace = function (test) {
   })
 }
 
-exports.insertPlaceCustom = function (test) {
+exports.insertPlaceCustomLockedWithNoLinks = function (test) {
   t.post({
-    uri: '/do/insertEntity?' + userCred,
+    uri: '/do/insertEntity?' + userCredTom,
     body: {
-      entity: testPlaceCustom,
+      entity: testPlaceCustomLocked,
+      returnMessages: true,
+    }
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
+    /*
+     * Message is generated because this is a custom place but should not be any valid triggers.
+     */
+    t.assert(body.messages.length == 1)
+    t.assert(body.messages[0].action.user && body.messages[0].action.entity)
+    t.assert(!body.messages[0].action.toEntity)
+    t.assert(!body.messages[0].action.fromEntity)
+    t.assert(body.messages[0].info.indexOf('no triggers') >= 0)
+
+    /* Check insert entity no links */
+    t.post({
+      uri: '/do/find',
+      body: {
+        collection:'places',
+        find:{_id:testPlaceCustomLocked._id}
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+      t.assert(body.data && body.data[0])
+      var ent = body.data[0]
+      t.assert(ent.location.lat && ent.location.lng)
+      t.assert(ent.location.geometry)
+      t.assert(ent._owner === testUserTom._id)
+      t.assert(ent._creator === testUserTom._id)
+      t.assert(ent._modifier === testUserTom._id)
+      t.assert(ent.createdDate === ent.modifiedDate)
+      test.done()
+    })
+  })
+}
+
+exports.insertPlaceCustom2 = function (test) {
+  t.post({
+    uri: '/do/insertEntity?' + userCredBob,
+    body: {
+      entity: testPlaceCustomTwo,
       beacons: [testBeacon],
       primaryBeaconId: testBeacon._id,
       returnMessages: true,
@@ -528,65 +804,28 @@ exports.insertPlaceCustom = function (test) {
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
-    t.assert(body.messages.length > 0)
+    /*
+     * Tom should get a nearby message since tom is registered
+     * with beacons that intersect the ones for custom place 2. Bob should
+     * not get a message because he is the source.
+     */
+    t.assert(body.messages.length == 1) // Messaging is called
     t.assert(body.messages[0].action.user && body.messages[0].action.entity)
     t.assert(!body.messages[0].action.toEntity)
     t.assert(!body.messages[0].action.fromEntity)
+    t.assert(body.messages[0].trigger == 'nearby')
 
     var savedEnt = body.data
-    t.assert(savedEnt._owner === testUser._id)
-    t.assert(savedEnt._creator === testUser._id)
-    t.assert(savedEnt._modifier === testUser._id)
+    t.assert(savedEnt._owner === testUserBob._id)
+    t.assert(savedEnt._creator === testUserBob._id)
+    t.assert(savedEnt._modifier === testUserBob._id)
 
     /* Check insert place custom */
     t.post({
       uri: '/do/find',
       body: {
         collection:'places',
-        find:{ _id:testPlaceCustom._id }
-      }
-    }, function(err, res, body) {
-      t.assert(body.count === 1)
-
-      /* Check insert 'create' link */
-      t.post({
-        uri: '/do/find',
-        body: {
-          collection:'links',
-          find:{
-            _from: testUser._id,
-            _to: testPlaceCustom._id,
-            type: 'create',
-          }
-        }
-      }, function(err, res, body) {
-        t.assert(body.count === 1)
-        test.done()
-      })
-    })
-  })
-}
-
-exports.insertPlaceBeaconAlreadyExists = function (test) {
-  t.post({
-    uri: '/do/insertEntity?' + userCred,
-    body: {
-      entity:testPlace2,
-      beacons:[testBeacon],
-      primaryBeaconId:testBeacon._id,
-      returnMessages: true,
-    }
-  }, 201, function(err, res, body) {
-    t.assert(body.count === 1)
-    t.assert(body.data && body.data._id)
-    t.assert(body.messages.length == 0)
-
-    /* Check insert place where beacon already exists */
-    t.post({
-      uri: '/do/find',
-      body: {
-        collection:'places',
-        find:{ _id:testPlace2._id }
+        find:{ _id:testPlaceCustomTwo._id }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -599,52 +838,25 @@ exports.insertPlaceBeaconAlreadyExists = function (test) {
           find:{ _to:testBeacon._id }
         }
       }, function(err, res, body) {
-        t.assert(body.count === 3)
+        t.assert(body.count === 2)
         test.done()
       })
     })
   })
 }
 
-exports.insertPlaceEntityWithNoLinks = function (test) {
-  t.post({
-    uri: '/do/insertEntity?' + userCred,
-    body: {
-      entity:testPlace3,
-      returnMessages: true,
-    }
-  }, 201, function(err, res, body) {
-    t.assert(body.count === 1)
-    t.assert(body.messages.length == 0)
-
-    /* Check insert entity no links */
-    t.post({
-      uri: '/do/find',
-      body: {
-        collection:'places',
-        find:{_id:testPlace3._id}
-      }
-    }, function(err, res, body) {
-      t.assert(body.count === 1)
-      t.assert(body.data && body.data[0])
-      var ent = body.data[0]
-      t.assert(ent.location.lat && ent.location.lng)
-      t.assert(ent.location.geometry)
-      t.assert(ent._owner === adminId) // admins own places
-      t.assert(ent._creator === testUser._id)
-      t.assert(ent._modifier === testUser._id)
-      t.assert(ent.createdDate === ent.modifiedDate)
-      test.done()
-    })
-  })
-}
+/*
+ * ----------------------------------------------------------------------------
+ * Like and unlike, watch
+ * ----------------------------------------------------------------------------
+ */
 
 exports.likeEntity = function(test) {
   t.post({
-    uri: '/do/insertLink?' + userCred,
+    uri: '/do/insertLink?' + userCredBob,
     body: {
-      toId: testPlace2._id,
-      fromId: testUser._id,
+      toId: testPlaceCustomOne._id,
+      fromId: testUserBob._id,
       type: util.statics.typeLike,
       actionEvent: 'like'
     }
@@ -656,7 +868,11 @@ exports.likeEntity = function(test) {
       uri: '/do/find',
       body: {
         collection:'links',
-        find:{ _to:testPlace2._id, type: util.statics.typeLike }
+        find:{
+          _to:testPlaceCustomOne._id,
+          _from:testUserBob._id,
+          type: util.statics.typeLike
+        }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -666,7 +882,7 @@ exports.likeEntity = function(test) {
         uri: '/do/find',
         body: {
           collection:'actions',
-          find:{ _entity:testPlace2._id, event:'like'}
+          find:{ _entity:testPlaceCustomOne._id, event:'like'}
         }
       }, function(err, res, body) {
         t.assert(body.count === 1)
@@ -678,10 +894,10 @@ exports.likeEntity = function(test) {
 
 exports.unlikeEntity = function(test) {
   t.post({
-    uri: '/do/deleteLink?' + userCred,
+    uri: '/do/deleteLink?' + userCredBob,
     body: {
-      toId: testPlace2._id,
-      fromId: testUser._id,
+      toId: testPlaceCustomOne._id,
+      fromId: testUserBob._id,
       type: util.statics.typeLike,
       actionEvent: 'unlike'
     }
@@ -694,8 +910,8 @@ exports.unlikeEntity = function(test) {
       body: {
         collection:'links',
         find:{
-          _to:testPlace2._id,
-          _from:testUser._id,
+          _to:testPlaceCustomOne._id,
+          _from:testUserBob._id,
           type:util.statics.typeLike
         }
       }
@@ -706,13 +922,107 @@ exports.unlikeEntity = function(test) {
   })
 }
 
-/* Track and untrack */
+exports.watchPlace = function(test) {
+  t.post({
+    uri: '/do/insertLink?' + userCredAlice,
+    body: {
+      toId: testPlaceCustomOne._id,
+      fromId: testUserAlice._id,
+      type: util.statics.typeWatch,
+      actionEvent: 'watch'
+    }
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
+
+    /* Check watch entity link to entity 2 */
+    t.post({
+      uri: '/do/find',
+      body: {
+        collection:'links',
+        find:{
+          _to: testPlaceCustomOne._id,
+          _from: testUserAlice._id,
+          type: util.statics.typeWatch
+        }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+
+      /* Check link entity log action */
+      t.post({
+        uri: '/do/find',
+        body: {
+          collection:'actions',
+          find:{
+            _entity:testPlaceCustomOne._id,
+            event:'watch',
+            _user: testUserAlice._id,
+          }
+        }
+      }, function(err, res, body) {
+        t.assert(body.count === 1)
+        test.done()
+      })
+    })
+  })
+}
+
+exports.watchUser = function(test) {
+  t.post({
+    uri: '/do/insertLink?' + userCredAlice,
+    body: {
+      toId: testUserTom._id,
+      fromId: testUserAlice._id,
+      type: util.statics.typeWatch,
+      actionEvent: 'watch'
+    }
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
+
+    /* Check watch entity link to entity 2 */
+    t.post({
+      uri: '/do/find',
+      body: {
+        collection:'links',
+        find:{
+          _to: testUserTom._id,
+          _from: testUserAlice._id,
+          type: util.statics.typeWatch
+        }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+
+      /* Check link entity log action */
+      t.post({
+        uri: '/do/find',
+        body: {
+          collection:'actions',
+          find:{
+            _entity:testUserTom._id,
+            event:'watch',
+            _user: testUserAlice._id,
+          }
+        }
+      }, function(err, res, body) {
+        t.assert(body.count === 1)
+        test.done()
+      })
+    })
+  })
+}
+
+/*
+ * ----------------------------------------------------------------------------
+ * Track and untrack
+ * ----------------------------------------------------------------------------
+ */
 
 exports.trackEntityProximity = function(test) {
   t.post({
-    uri: '/do/trackEntity?' + userCred,
+    uri: '/do/trackEntity?' + userCredTom,
     body: {
-      entityId:testPlace._id,
+      entityId:testPlaceOne._id,
       beacons:[testBeacon, testBeacon2, testBeacon3],
       primaryBeaconId:testBeacon2._id,
       actionEvent:'proximity',
@@ -726,7 +1036,7 @@ exports.trackEntityProximity = function(test) {
       body: {
         collection:'links',
         find:{
-          _from:testPlace._id,
+          _from:testPlaceOne._id,
           type:util.statics.typeProximity
         }
       }
@@ -740,7 +1050,7 @@ exports.trackEntityProximity = function(test) {
           collection:'links',
           find:{
             _to:testBeacon2._id,
-            _from:testPlace._id,
+            _from:testPlaceOne._id,
             type:util.statics.typeProximity
           }
         }
@@ -771,9 +1081,9 @@ exports.trackEntityProximity = function(test) {
 
 exports.untrackEntityProximity = function(test) {
   t.post({
-    uri: '/do/untrackEntity?' + userCred,
+    uri: '/do/untrackEntity?' + userCredTom,
     body: {
-      entityId:testPlace._id,
+      entityId:testPlaceOne._id,
       beaconIds:[testBeacon._id, testBeacon2._id, testBeacon3._id],
       primaryBeaconId:testBeacon2._id,
       actionEvent:'proximity_minus',
@@ -787,7 +1097,7 @@ exports.untrackEntityProximity = function(test) {
       body: {
         collection:'links',
         find:{
-          _from:testPlace._id,
+          _from:testPlaceOne._id,
           type:util.statics.typeProximity
         }
       }
@@ -800,9 +1110,9 @@ exports.untrackEntityProximity = function(test) {
 
 exports.trackEntityNoBeacons = function(test) {
   t.post({
-    uri: '/do/trackEntity?' + userCred,
+    uri: '/do/trackEntity?' + userCredTom,
     body: {
-      entityId:testPlace._id,
+      entityId:testPlaceOne._id,
       actionEvent:'proximity',
     }
   }, function(err, res, body) {
@@ -814,7 +1124,7 @@ exports.trackEntityNoBeacons = function(test) {
       body: {
         collection:'actions',
         find:{
-          _entity:testPlace._id,
+          _entity:testPlaceOne._id,
           event:'entity_proximity'
         }
       }
@@ -825,7 +1135,11 @@ exports.trackEntityNoBeacons = function(test) {
   })
 }
 
-/* Location update */
+/*
+ * ----------------------------------------------------------------------------
+ * Update beacon location
+ * ----------------------------------------------------------------------------
+ */
 
 exports.updateBeaconLocationUsingNewLocation = function (test) {
   t.post({
@@ -857,7 +1171,11 @@ exports.updateBeaconLocationUsingNewLocation = function (test) {
   })
 }
 
-/* Permissions */
+/*
+ * ----------------------------------------------------------------------------
+ * Permissions
+ * ----------------------------------------------------------------------------
+ */
 
 exports.cannotDeleteEntityWhenNotSignedIn = function (test) {
   t.del({
@@ -869,7 +1187,7 @@ exports.cannotDeleteEntityWhenNotSignedIn = function (test) {
 
 exports.userCannotDeleteBeaconEntitySheCreated = function (test) {
   t.del({
-    uri: '/data/beacons/' + testBeacon._id + '?' + userCred
+    uri: '/data/beacons/' + testBeacon._id + '?' + userCredTom
   }, 401, function(err, res, body) {
     t.get('/data/beacons/' + testBeacon._id, function(err, res, body) {
       t.assert(testBeacon._id === body.data._id)
@@ -886,15 +1204,19 @@ exports.adminCanDeleteBeaconEntityUserCreated = function (test) {
   })
 }
 
-/* Insert, update, and delete entities */
+/*
+ * ----------------------------------------------------------------------------
+ * Insert, update, delete posts and comments
+ * ----------------------------------------------------------------------------
+ */
 
 exports.insertPost = function (test) {
   t.post({
-    uri: '/do/insertEntity?' + userCred,
+    uri: '/do/insertEntity?' + userCredBob,
     body: {
       entity: testPost,
       link: {
-        _to: testPlace._id,
+        _to: testPlaceCustomOne._id,
         type: util.statics.typeContent,
       },
       returnMessages: true,
@@ -902,10 +1224,16 @@ exports.insertPost = function (test) {
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
-    t.assert(body.messages.length > 0)
-    t.assert(body.messages[0].action.user && body.messages[0].action.entity)
-    t.assert(body.messages[0].action.toEntity)
-    t.assert(!body.messages[0].action.fromEntity)
+    /*
+     * Tom should get a message because he owns the custom place
+     * Alice should get a watch_to because she is watching the place
+     */
+    t.assert(body.messages.length == 2)
+    body.messages.forEach(function(message) {
+      t.assert(message.action.user && message.action.entity)
+      t.assert(message.action.toEntity && message.action.toEntity.id == testPlaceCustomOne._id)
+      t.assert(message.trigger == 'own_to' || message.trigger == 'watch_to')
+    })
 
     /* Check inserted post */
     t.post({
@@ -925,7 +1253,7 @@ exports.insertPost = function (test) {
           collection:'links',
           find:{
             _from: testPost._id,
-            _to: testPlace._id,
+            _to: testPlaceCustomOne._id,
             type: 'content',
           }
         }
@@ -939,7 +1267,7 @@ exports.insertPost = function (test) {
           body: {
             collection:'links',
             find:{
-              _from: testUser._id,
+              _from: testUserBob._id,
               _to: testPost._id,
               type: 'create',
             }
@@ -956,7 +1284,7 @@ exports.insertPost = function (test) {
 
 exports.insertComment = function (test) {
   t.post({
-    uri: '/do/insertEntity?' + userCred,
+    uri: '/do/insertEntity?' + userCredTom,
     body: {
       entity: testComment,
       link: {
@@ -968,10 +1296,16 @@ exports.insertComment = function (test) {
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
-    t.assert(body.messages.length > 0)
-    t.assert(body.messages[0].action.user && body.messages[0].action.entity)
-    t.assert(body.messages[0].action.toEntity)
-    t.assert(!body.messages[0].action.fromEntity)
+    /*
+     * Bob should get a message because he owns the post.
+     * Alice should get a watch_user because she is watching Tom
+     */
+    t.assert(body.messages.length == 2)
+    body.messages.forEach(function(message) {
+      t.assert(message.action.user && message.action.entity)
+      t.assert(message.action.toEntity && message.action.toEntity.id == testPost._id)
+      t.assert(message.trigger == 'own_to' || message.trigger == 'watch_user')
+    })
 
     /* Check insert */
     t.post({
@@ -1005,7 +1339,7 @@ exports.insertComment = function (test) {
           body: {
             collection:'links',
             find:{
-              _from: testUser._id,
+              _from: testUserTom._id,
               _to: testComment._id,
               type: 'create',
             }
@@ -1020,30 +1354,9 @@ exports.insertComment = function (test) {
   })
 }
 
-exports.updateEntity = function (test) {
-  testPlace.name = 'Testing super candi'
-  t.post({
-    uri: '/do/updateEntity?' + userCred,
-    body: {
-      entity:testPlace
-    }
-  }, function(err, res, body) {
-    t.assert(body.count === 1)
-    t.assert(body.data && body.data._id)
-
-    /* Check update entity */
-    t.get({
-      uri: '/data/places/' + testPlace._id
-    }, function(err, res, body) {
-      t.assert(body.data && body.data && body.data.name === 'Testing super candi')
-      test.done()
-    })
-  })
-}
-
 exports.insertLink = function (test) {
   t.post({
-    uri: '/data/links?' + userCred,
+    uri: '/data/links?' + userCredTom,
     body: {data:testLink}
   }, 201, function(err, res, body) {
     t.assert(body.count === 1 && body.data)
@@ -1056,17 +1369,6 @@ exports.insertLink = function (test) {
       t.assert(body.data && body.data && body.data._id === testLink._id)
       test.done()
     })
-  })
-}
-
-exports.userCantDeleteEntityTheyDontOwn = function (test) {
-  t.post({
-    uri: '/do/deleteEntity?' + userCred,
-    body: {
-      entityId:testPlace._id,
-    }
-  }, 401, function(err, res, body) {
-    test.done()
   })
 }
 
@@ -1179,12 +1481,49 @@ exports.deletePost = function (test) {
   })
 }
 
+/*
+ * ----------------------------------------------------------------------------
+ * Update and delete places
+ * ----------------------------------------------------------------------------
+ */
+
+exports.updateEntity = function (test) {
+  testPlaceOne.name = 'Testing super candi'
+  t.post({
+    uri: '/do/updateEntity?' + userCredTom,
+    body: {
+      entity:testPlaceOne
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data._id)
+
+    /* Check update entity */
+    t.get({
+      uri: '/data/places/' + testPlaceOne._id
+    }, function(err, res, body) {
+      t.assert(body.data && body.data && body.data.name === 'Testing super candi')
+      test.done()
+    })
+  })
+}
+
+exports.userCantDeleteEntityTheyDontOwn = function (test) {
+  t.post({
+    uri: '/do/deleteEntity?' + userCredTom,
+    body: {
+      entityId:testPlaceOne._id,
+    }
+  }, 401, function(err, res, body) {
+    test.done()
+  })
+}
 
 exports.deletePlace = function (test) {
   t.post({
     uri: '/do/deleteEntity?' + adminCred,
     body: {
-      entityId:testPlace._id,
+      entityId:testPlaceOne._id,
       verbose: true,
     }
   }, function(err, res, body) {
@@ -1197,7 +1536,7 @@ exports.deletePlace = function (test) {
       body: {
         collection:'places',
         find:{
-          _id:testPlace._id
+          _id:testPlaceOne._id
         }
       }
     }, function(err, res, body) {
@@ -1210,8 +1549,8 @@ exports.deletePlace = function (test) {
           collection:'links',
           find:{
             $or: [
-              { _to: testPlace._id },
-              { _from: testPlace._id },
+              { _to: testPlaceOne._id },
+              { _from: testPlaceOne._id },
             ]
           }
         }
@@ -1227,9 +1566,9 @@ exports.deletePlace = function (test) {
               $and: [
                 { event: { $ne: 'delete_entity_place' }},
                 { $or: [
-                  { _entity: testPlace._id },
-                  { _toEntity: testPlace._id },
-                  { _fromEntity: testPlace._id },
+                  { _entity: testPlaceOne._id },
+                  { _toEntity: testPlaceOne._id },
+                  { _fromEntity: testPlaceOne._id },
                 ]},
               ]
             }
@@ -1245,11 +1584,11 @@ exports.deletePlace = function (test) {
 
 exports.nonOwnerCannotCommentOnLockedRecord = function(test) {
   t.post({
-    uri: '/do/insertEntity?' + user2Cred,
+    uri: '/do/insertEntity?' + userCredBob,
     body: {
       entity: testComment2,
       link: {
-        _to: testPlaceCustom._id,
+        _to: testPlaceCustomLocked._id,
         type: util.statics.typeContent
       },
     }
@@ -1261,11 +1600,11 @@ exports.nonOwnerCannotCommentOnLockedRecord = function(test) {
 
 exports.ownerCanCommentOnLockedRecord = function(test) {
   t.post({
-    uri: '/do/insertEntity?' + userCred,
+    uri: '/do/insertEntity?' + userCredTom,
     body: {
       entity: testComment2,
       link: {
-        _to: testPlaceCustom._id,
+        _to: testPlaceCustomLocked._id,
         type: util.statics.typeContent
       },
       returnMessages: true,
@@ -1273,10 +1612,15 @@ exports.ownerCanCommentOnLockedRecord = function(test) {
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
-    t.assert(body.messages.length > 0)
+    /*
+     * Alice should get a watch_user because she is watching Tom
+     */
+    t.assert(body.messages.length == 1)
     t.assert(body.messages[0].action.user && body.messages[0].action.entity)
     t.assert(body.messages[0].action.toEntity)
     t.assert(!body.messages[0].action.fromEntity)
+    t.assert(body.messages[0].trigger == 'watch_user')
+    t.assert(body.messages[0].registrationIds[0].indexOf('alice') > 0)
 
     /* Check owner inserted comment on locked record */
     t.post({
@@ -1298,7 +1642,7 @@ exports.adminCanCommentOnLockedRecord = function(test) {
     body: {
       entity: testComment3,
       link: {
-        _to: testPlaceCustom._id,
+        _to: testPlaceCustomLocked._id,
         type: util.statics.typeContent
       },
       returnMessages: true,
@@ -1306,10 +1650,15 @@ exports.adminCanCommentOnLockedRecord = function(test) {
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
-    t.assert(body.messages.length > 0)
-    t.assert(body.messages[0].action.user && body.messages[0].action.entity)
+    /*
+     * Message gets processed and we get the 'own_to' trigger because
+     * the comment is from the admin (not tom who owns the place).
+     */
+    t.assert(body.messages.length == 1)
+    t.assert(body.messages[0].action.entity && body.messages[0].action.user)
     t.assert(body.messages[0].action.toEntity)
     t.assert(!body.messages[0].action.fromEntity)
+    t.assert(body.messages[0].trigger == 'own_to')
 
     /* Check admin inserted comment on locked record */
     t.post({
@@ -1326,11 +1675,11 @@ exports.adminCanCommentOnLockedRecord = function(test) {
 }
 
 exports.nonOwnerCannotUpdateLockedRecord = function(test) {
-  testPlaceCustom.name = 'Testing non owner update of locked entity'
+  testPlaceCustomLocked.name = 'Testing non owner update of locked entity'
   t.post({
-    uri: '/do/updateEntity?' + user2Cred,
+    uri: '/do/updateEntity?' + userCredBob,
     body: {
-      entity:testPlaceCustom
+      entity:testPlaceCustomLocked
     }
   }, 401, function(err, res, body) {
     t.assert(body.error && body.error.code === 401.6)
@@ -1339,11 +1688,11 @@ exports.nonOwnerCannotUpdateLockedRecord = function(test) {
 }
 
 exports.ownerCanUpdateLockedRecord = function(test) {
-  testPlaceCustom.name = 'Testing owner update of locked entity'
+  testPlaceCustomLocked.name = 'Testing owner update of locked entity'
   t.post({
-    uri: '/do/updateEntity?' + userCred,
+    uri: '/do/updateEntity?' + userCredTom,
     body: {
-      entity:testPlaceCustom
+      entity:testPlaceCustomLocked
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
@@ -1351,20 +1700,20 @@ exports.ownerCanUpdateLockedRecord = function(test) {
 
     /* Check owner updated locked record */
     t.get({
-      uri: '/data/places/' + testPlaceCustom._id
+      uri: '/data/places/' + testPlaceCustomLocked._id
     }, function(err, res, body) {
-      t.assert(body.data && body.data && body.data.name === 'Testing owner update of locked entity')
+      t.assert(body.data && body.data && body.data.name.indexOf('update') >= 0)
       test.done()
     })
   })
 }
 
 exports.adminCanUpdateLockedRecord = function(test) {
-  testPlaceCustom.name = 'Testing admin update of locked entity'
+  testPlaceCustomLocked.name = 'Testing admin update of locked entity'
   t.post({
     uri: '/do/updateEntity?' + adminCred,
     body: {
-      entity:testPlaceCustom
+      entity:testPlaceCustomLocked
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
@@ -1372,14 +1721,13 @@ exports.adminCanUpdateLockedRecord = function(test) {
 
     /* Check admin updated locked record */
     t.get({
-      uri: '/data/places/' + testPlaceCustom._id
+      uri: '/data/places/' + testPlaceCustomLocked._id
     }, function(err, res, body) {
-      t.assert(body.data && body.data && body.data.name === 'Testing admin update of locked entity')
+      t.assert(body.data && body.data && body.data.name.indexOf('update') >= 0)
       test.done()
     })
   })
 }
-
 
 /*
 exports.adminCanDeleteBeaconEntityUserCreated = function (test) {

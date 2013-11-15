@@ -10,8 +10,9 @@ var t = testUtil.treq
 var skip = testUtil.skip
 var constants = require('../constants')
 var dbProfile = constants.dbProfile.smokeTest
-var userCred
-var user2Cred
+var userCredTom
+var userCredBob
+var userCredAlice
 var adminCred
 var primaryLink
 var trackingLink
@@ -22,24 +23,44 @@ var testLatitude2 = 47.1
 var testLongitude2 = -122.1
 var radiusTiny = 0.000001
 var radiusBig = 10000
+var installationId1 = '5905d547-8321-4612-abe1-00001'
+var installationId2 = '5905d547-8321-4612-abe1-00002'
+var installationId3 = '5905d547-8321-4612-abe1-00003'
 var placeMovedToId
-var testUser = {
-  _id : "us.111111.11111.111.111111",
-  name : "John Q Test",
-  email : "johnqtest@3meters.com",
+
+var testUserTom = {
+  _id :  "us.111111.11111.000.111111",
+  name : "Tom",
+  email : "tomtest@3meters.com",
   password : "12345678",
   photo: {
     prefix:"resource:placeholder_user",
     source:"resource",
   },
   area : "Testville, WA",
-  developer : false,
   enabled: true,
 }
-var testPlace4 = {
-  _id : "pl.111111.11111.111.111115",
+
+var testUserBob = {
+  _id : "us.111111.11111.000.222222",
+  name : "Bob",
+  email : "bobtest@3meters.com",
+  password : "12345678",
+  enabled: true,
+}
+
+var testUserAlice = {
+  _id : "us.111111.11111.000.333333",
+  name : "Alice",
+  email : "alicetest@3meters.com",
+  password : "12345678",
+  enabled: true,
+}
+
+var testPlaceCustomOne = {
+  _id : "pl.111111.11111.111.211114",
   schema : util.statics.schemaPlace,
-  name : "Testing place entity for candigrams",
+  name : "Testing place entity custom one for candigrams",
   photo: {
     prefix:"1001_20111224_104245.jpg",
     source:"aircandi"
@@ -48,9 +69,9 @@ var testPlace4 = {
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
-  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"555550002",
+  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"4259950004",
   provider:{
-    aircandi: "aircandi"
+    aircandi: 'aircandi',
   },
   category:{
     id:"4bf58dd8d48988d18c941735",
@@ -61,6 +82,33 @@ var testPlace4 = {
     },
   },
 }
+
+var testPlaceCustomTwo = {
+  _id : "pl.111111.11111.111.211115",
+  schema : util.statics.schemaPlace,
+  name : "Testing place entity custom two for candigrams",
+  photo: {
+    prefix:"1001_20111224_104245.jpg",
+    source:"aircandi"
+  },
+  signalFence : -100,
+  location: {
+    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
+  },
+  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"4259950004",
+  provider:{
+    aircandi: 'aircandi',
+  },
+  category:{
+    id:"4bf58dd8d48988d18c941735",
+    name : "Baseball Stadium",
+    photo:{
+      prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
+      source : "assets.categories",
+    },
+  },
+}
+
 var testCandigramBounce = {
   _id : "ca.111111.11111.111.111111",
   schema : util.statics.schemaCandigram,
@@ -77,6 +125,7 @@ var testCandigramBounce = {
     source:"aircandi",
   },
 }
+
 var testCandigramTour = {
   _id : "ca.111111.11111.111.222222",
   schema : util.statics.schemaCandigram,
@@ -94,6 +143,7 @@ var testCandigramTour = {
     source:"aircandi",
   },
 }
+
 var testCandigramExpand = {
   _id : "ca.111111.11111.111.333333",
   schema : util.statics.schemaCandigram,
@@ -110,12 +160,14 @@ var testCandigramExpand = {
     source:"aircandi",
   },
 }
+
 var testComment = {
   _id : "co.111111.11111.111.111114",
   schema : util.statics.schemaComment,
   name : "Test comment",
   description : "Test comment, much ado about nothing.",
 }
+
 var testApplink = {
   schema: util.statics.schemaApplink,
   name: "Applink",
@@ -128,6 +180,7 @@ var testApplink = {
     origin : "facebook", validated : 1369167109174.0, likes : 100
   },
 }
+
 var testApplink2 = {
   schema: util.statics.schemaApplink,
   name: "Applink New",
@@ -141,34 +194,308 @@ var testApplink2 = {
   },
 }
 
-// Get user and admin sessions and store the credentials in module globals
-exports.getSessions = function (test) {
-  testUtil.getUserSession(testUser, function(session) {
-    userCred = 'user=' + session._owner + '&session=' + session.key
+var testBeacon = {
+  _id : 'be.11:11:11:11:11:11',
+  schema : util.statics.schemaBeacon,
+  name: 'Test Beacon Label',
+  ssid: 'Test Beacon',
+  bssid: '11:11:11:11:11:11',
+  signal: -80,
+  location: {
+    lat:testLatitude,
+    lng:testLongitude,
+    altitude:12,
+    accuracy:30,
+    geometry:[testLongitude, testLatitude]
+  },
+}
+var testBeacon2 = {
+  _id : 'be.22:22:22:22:22:22',
+  schema : util.statics.schemaBeacon,
+  name: 'Test Beacon Label 2',
+  ssid: 'Test Beacon 2',
+  bssid: '22:22:22:22:22:22',
+  signal: -85,
+  location: {
+    lat:testLatitude,
+    lng:testLongitude,
+    altitude:12,
+    accuracy:30,
+    geometry:[testLongitude, testLatitude]
+  },
+}
 
-    testUtil.getAdminSession(function(session) {
-      adminCred = 'user=' + session._owner + '&session=' + session.key
+/* Get user and admin sessions and store the credentials in module globals */
+exports.getSessions = function (test) {
+  testUtil.getUserSession(testUserTom, function(session) {
+    userCredTom = 'user=' + session._owner + '&session=' + session.key
+    testUtil.getUserSession(testUserBob, function(session) {
+      userCredBob = 'user=' + session._owner + '&session=' + session.key
+      testUtil.getUserSession(testUserAlice, function(session) {
+        userCredAlice = 'user=' + session._owner + '&session=' + session.key
+        testUtil.getAdminSession(function(session) {
+          adminCred = 'user=' + session._owner + '&session=' + session.key
+          test.done()
+        })
+      })
+    })
+  })
+}
+
+/*
+ * ----------------------------------------------------------------------------
+ * Register installs
+ * ----------------------------------------------------------------------------
+ */
+
+exports.registerInstallOne = function (test) {
+  t.post({
+    uri: '/do/registerInstall?' + userCredTom,
+    body: {
+      install: {
+        _id: 'in.010101.00000.555.000001',
+        _user: testUserTom._id,
+        registrationId: 'registration_id_testing_user_tom',
+        installationId: installationId1,
+        clientVersionCode: 10,
+        clientVersionName: '0.8.12'
+      }
+    }
+  }, function(err, res, body) {
+    t.assert(body.info.indexOf('updated') > 0 || body.info.indexOf('registered') > 0)
+
+    /* Check registger install second user */
+    t.post({
+      uri: '/do/find',
+      body: {
+        collection:'installs',
+        find:{ installationId: installationId1 }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+      t.assert(body.data && body.data[0])
+      t.assert(body.data[0].installationId)
+      t.assert(body.data[0].registrationId)
+      t.assert(body.data[0].registrationId === 'registration_id_testing_user_tom')
+      t.assert(body.data[0].users.length === 2)
       test.done()
     })
   })
 }
 
-/* Candigrams */
-
-exports.insertPlaceForCandigram = function (test) {
+exports.registerInstallTwo = function (test) {
   t.post({
-    uri: '/do/insertEntity?' + userCred,
+    uri: '/do/registerInstall?' + userCredBob,
     body: {
-      entity:testPlace4,    // custom place
+      install: {
+        _id: 'in.010101.00000.555.000002',
+        _user: testUserBob._id,
+        registrationId: 'registration_id_testing_user_bob',
+        installationId: installationId2,
+        clientVersionCode: 10,
+        clientVersionName: '0.8.12'
+      }
+    }
+  }, function(err, res, body) {
+    t.assert(body.info.indexOf('updated') > 0 || body.info.indexOf('registered') > 0)
+
+    /* Check register install second user */
+    t.post({
+      uri: '/do/find',
+      body: {
+        collection: 'installs',
+        find:{ installationId: installationId2 }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+      t.assert(body.data && body.data[0])
+      t.assert(body.data[0].installationId)
+      t.assert(body.data[0].registrationId)
+      t.assert(body.data[0].registrationId === 'registration_id_testing_user_bob')
+      t.assert(body.data[0].users && body.data[0].users.length === 1)
+      t.assert(body.data[0].signinDate)
+      test.done()
+    })
+  })
+}
+
+exports.registerInstallThree = function (test) {
+  t.post({
+    uri: '/do/registerInstall?' + userCredAlice,
+    body: {
+      install: {
+        _id: 'in.010101.00000.555.000003',
+        _user: testUserAlice._id,
+        registrationId: 'registration_id_testing_user_alice',
+        installationId: installationId3,
+        clientVersionCode: 10,
+        clientVersionName: '0.8.12'
+      }
+    }
+  }, function(err, res, body) {
+    t.assert(body.info.indexOf('updated') > 0 || body.info.indexOf('registered') > 0)
+
+    /* Check register install third user */
+    t.post({
+      uri: '/do/find',
+      body: {
+        collection: 'installs',
+        find:{ installationId: installationId3 }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+      t.assert(body.data && body.data[0])
+      t.assert(body.data[0].installationId)
+      t.assert(body.data[0].registrationId)
+      t.assert(body.data[0].registrationId === 'registration_id_testing_user_alice')
+      t.assert(body.data[0].users && body.data[0].users.length === 1)
+      t.assert(body.data[0].signinDate)
+      test.done()
+    })
+  })
+}
+
+exports.updateBeaconsInstallOne = function (test) {
+  t.post({
+    uri: '/do/getEntitiesByProximity?' + userCredTom,
+    body: {
+      beaconIds: [testBeacon._id],
+      installationId: installationId1
+    }
+  }, function(err, res, body) {
+    t.assert(body.data && body.data.length >= 0)
+
+    /* Check install beacons */
+    t.post({
+      uri: '/do/find',
+      body: {
+        collection:'installs',
+        find:{ installationId: installationId1 }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+      t.assert(body.data && body.data[0])
+      t.assert(body.data[0].beacons.length === 1)
+      t.assert(body.data[0].beaconsDate)
+      test.done()
+    })
+  })
+}
+
+exports.updateBeaconsInstallTwo = function (test) {
+  t.post({
+    uri: '/do/getEntitiesByProximity?' + userCredBob,
+    body: {
+      beaconIds: [testBeacon._id],
+      installationId: installationId2
+    }
+  }, function(err, res, body) {
+    t.assert(body.data && body.data.length >= 0)
+
+    /* Check install beacons */
+    t.post({
+      uri: '/do/find',
+      body: {
+        collection:'installs',
+        find:{ installationId: installationId2 }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+      t.assert(body.data && body.data[0])
+      t.assert(body.data[0].beacons.length === 1)
+      t.assert(body.data[0].beaconsDate)
+      test.done()
+    })
+  })
+}
+
+exports.updateBeaconsInstallThree = function (test) {
+  t.post({
+    uri: '/do/getEntitiesByProximity?' + userCredAlice,
+    body: {
+      beaconIds: [testBeacon2._id],
+      installationId: installationId3
+    }
+  }, function(err, res, body) {
+    t.assert(body.data && body.data.length == 0)
+
+    /* Check install beacons */
+    t.post({
+      uri: '/do/find',
+      body: {
+        collection:'installs',
+        find:{ installationId: installationId3 }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+      t.assert(body.data && body.data[0])
+      t.assert(body.data[0].beacons.length === 1)
+      t.assert(body.data[0].beaconsDate)
+      test.done()
+    })
+  })
+}
+
+/*
+ * ----------------------------------------------------------------------------
+ * Candigrams
+ * ----------------------------------------------------------------------------
+ */
+
+exports.insertCustomPlaceOneForCandigram = function (test) {
+  t.post({
+    uri: '/do/insertEntity?' + userCredTom,
+    body: {
+      entity: testPlaceCustomOne,    // custom place
+      beacons: [testBeacon],
+      primaryBeaconId: testBeacon._id,
       returnMessages: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data._id)
-    t.assert(body.messages.length > 0)
+    /*
+     * Bob should get a nearby message since bob is registered
+     * with beacons that intersect the ones for custom place three. Tom should
+     * not get a message because he is the source.
+     *
+     * Alice gets a message because she is watching Tom.
+     */
+    t.assert(body.messages.length == 2)
+    body.messages.forEach(function(message) {
+      t.assert(message.action.user && message.action.entity)
+      t.assert(!message.action.toEntity)
+      t.assert(message.trigger == 'nearby' || message.trigger == 'watch_user')
+      t.assert(message.registrationIds[0].indexOf('bob') > 0 || message.registrationIds[0].indexOf('alice') > 0)
+    })
+    test.done()
+  })
+}
+
+exports.insertCustomPlaceTwoForCandigram = function (test) {
+  t.post({
+    uri: '/do/insertEntity?' + userCredBob,
+    body: {
+      entity: testPlaceCustomTwo,    // custom place
+      beacons: [testBeacon],
+      primaryBeaconId: testBeacon._id,
+      returnMessages: true,
+    }
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data._id)
+    /*
+     * Tom should get a nearby message since bob is registered
+     * with beacons that intersect the ones for custom place three. Tom should
+     * not get a message because he is the source.
+     */
+    t.assert(body.messages.length == 1)
     t.assert(body.messages[0].action.user && body.messages[0].action.entity)
     t.assert(!body.messages[0].action.toEntity)
     t.assert(!body.messages[0].action.fromEntity)
+    t.assert(body.messages[0].trigger == 'nearby')
+    t.assert(body.messages[0].registrationIds[0].indexOf('tom') > 0)
+
     test.done()
   })
 }
@@ -176,11 +503,11 @@ exports.insertPlaceForCandigram = function (test) {
 exports.insertCandigramBounce = function (test) {
   testCandigramBounce.hopLastDate = util.now()
   t.post({
-    uri: '/do/insertEntity?' + userCred,
+    uri: '/do/insertEntity?' + userCredBob,
     body: {
       entity: testCandigramBounce,
       link: {
-        _to: testPlace4._id,
+        _to: testPlaceCustomTwo._id,
         type: util.statics.typeContent
       },
       returnMessages: true,
@@ -188,14 +515,22 @@ exports.insertCandigramBounce = function (test) {
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
-    t.assert(body.messages.length > 0)
-    t.assert(body.messages[0].action.user && body.messages[0].action.entity)
-    t.assert(body.messages[0].action.toEntity)
-    t.assert(!body.messages[0].action.fromEntity)
+    /*
+     * Tom gets a message because he is near the place that the candigram
+     * is being added to.
+     */
+    t.assert(body.messages.length == 1)
+    body.messages.forEach(function(message) {
+      t.assert(message.action.user && message.action.entity)
+      t.assert(message.action.toEntity && message.action.toEntity.id == testPlaceCustomTwo._id)
+      t.assert(message.trigger == 'nearby')
+      t.assert(message.registrationIds[0].indexOf('tom') > 0)
+    })
+
     var savedEnt = body.data
-    t.assert(savedEnt._owner === testUser._id)
-    t.assert(savedEnt._creator === testUser._id)
-    t.assert(savedEnt._modifier === testUser._id)
+    t.assert(savedEnt._owner === testUserBob._id)
+    t.assert(savedEnt._creator === testUserBob._id)
+    t.assert(savedEnt._modifier === testUserBob._id)
     var activityDate = body.date
 
     /* Check insert */
@@ -213,7 +548,7 @@ exports.insertCandigramBounce = function (test) {
         uri: '/do/find',
         body: {
           collection:'places',
-          find:{ _id:testPlace4._id }
+          find:{ _id:testPlaceCustomTwo._id }
         }
       }, function(err, res, body) {
         t.assert(body.count === 1)
@@ -225,11 +560,12 @@ exports.insertCandigramBounce = function (test) {
   })
 }
 
-exports.moveCandigram = function(test) {
+exports.moveCandigramToPlaceOne = function(test) {
   t.post({
-    uri: '/do/moveCandigrams?' + userCred,
+    uri: '/do/moveCandigrams?' + userCredTom,
     body: {
       entityIds:[testCandigramBounce._id],
+      toId: testPlaceCustomOne._id,           // Moving to toms place
       verbose: true,
       activityDateWindow: 0,
       returnMessages: true,
@@ -237,10 +573,18 @@ exports.moveCandigram = function(test) {
   }, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data[0])
-    t.assert(body.messages.length > 0)
-    t.assert(body.messages[0].action.user && body.messages[0].action.entity)
-    t.assert(body.messages[0].action.toEntity)
-    t.assert(body.messages[0].action.fromEntity)
+    /*
+     * Bob should get a message because he owns the candigram.
+     * Alice should get a message because she is watching Tom.
+     */
+    t.assert(body.messages.length == 2)
+    body.messages.forEach(function(message) {
+      t.assert(message.action.user && message.action.entity)
+      t.assert(message.action.toEntity && message.action.toEntity.id == testPlaceCustomOne._id)
+      t.assert(message.action.fromEntity && message.action.fromEntity.id == testPlaceCustomTwo._id)
+      t.assert(message.trigger == 'own' || message.trigger == 'watch_user')
+      t.assert(message.registrationIds[0].indexOf('bob') > 0 || message.registrationIds[0].indexOf('alice') > 0)
+    })
 
     var newPlace = body.data[0]
     placeMovedToId = newPlace._id
@@ -253,7 +597,7 @@ exports.moveCandigram = function(test) {
         collection:'links',
         find:{
           _from:testCandigramBounce._id,
-          _to:testPlace4._id,
+          _to:testPlaceCustomTwo._id,
           type:util.statics.typeContent,
         }
       }
@@ -282,7 +626,7 @@ exports.moveCandigram = function(test) {
           uri: '/do/find',
           body: {
             collection:'places',
-            find:{ _id:testPlace4._id }
+            find:{ _id:testPlaceCustomTwo._id }
           }
         }, function(err, res, body) {
           t.assert(body.count === 1)
@@ -323,9 +667,10 @@ exports.moveCandigram = function(test) {
 
 exports.moveCandigramAgainWithActivityDateWindow = function(test) {
   t.post({
-    uri: '/do/moveCandigrams?' + userCred,
+    uri: '/do/moveCandigrams?' + userCredTom,
     body: {
       entityIds:[testCandigramBounce._id],
+      toId: testPlaceCustomTwo._id,           // Moving back to bobs place
       verbose: true,
       activityDateWindow: 2000,
       returnMessages: true,
@@ -333,10 +678,18 @@ exports.moveCandigramAgainWithActivityDateWindow = function(test) {
   }, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data[0])
-    t.assert(body.messages.length > 0)
-    t.assert(body.messages[0].action.user && body.messages[0].action.entity)
-    t.assert(body.messages[0].action.toEntity)
-    t.assert(body.messages[0].action.fromEntity)
+    /*
+     * Bob should get a message because he owns the candigram.
+     * Alice should get a message because she is watching Tom.
+     */
+    t.assert(body.messages.length == 2)
+    body.messages.forEach(function(message) {
+      t.assert(message.action.user && message.action.entity)
+      t.assert(message.action.toEntity && message.action.toEntity.id == testPlaceCustomTwo._id)
+      t.assert(message.action.fromEntity && message.action.fromEntity.id == testPlaceCustomOne._id)
+      t.assert(message.trigger == 'own' || message.trigger == 'watch_user')
+      t.assert(message.registrationIds[0].indexOf('bob') > 0 || message.registrationIds[0].indexOf('alice') > 0)
+    })
 
     var newPlace = body.data[0]
     placeMovedToId = newPlace._id
@@ -362,7 +715,7 @@ exports.moveCandigramAgainWithActivityDateWindow = function(test) {
         uri: '/do/find',
         body: {
           collection:'places',
-          find:{ _id:testPlace4._id }
+          find:{ _id:testPlaceCustomTwo._id }
         }
       }, function(err, res, body) {
         t.assert(body.count === 1)
@@ -404,11 +757,11 @@ exports.moveCandigramAgainWithActivityDateWindow = function(test) {
 
 exports.insertCandigramExpand = function (test) {
   t.post({
-    uri: '/do/insertEntity?' + userCred,
+    uri: '/do/insertEntity?' + userCredTom,
     body: {
       entity: testCandigramExpand,
       link: {
-        _to: testPlace4._id,
+        _to: testPlaceCustomTwo._id,          // Bobs place
         type: util.statics.typeContent
       },
       returnMessages: true,
@@ -417,14 +770,24 @@ exports.insertCandigramExpand = function (test) {
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
-    t.assert(body.messages.length > 0)
-    t.assert(body.messages[0].action.user && body.messages[0].action.entity)
-    t.assert(body.messages[0].action.toEntity)
-    t.assert(!body.messages[0].action.fromEntity)
+    /*
+     * Bob should get a message because he owns the place that the candigram
+     * is being added to.
+     *
+     * Alice should get a message because she is watching Tom.
+     */
+    t.assert(body.messages.length == 2)
+    body.messages.forEach(function(message) {
+      t.assert(message.action.user && message.action.entity)
+      t.assert(message.action.toEntity && message.action.toEntity.id == testPlaceCustomTwo._id)
+      t.assert(message.trigger == 'own_to' || message.trigger == 'watch_user')
+      t.assert(message.registrationIds[0].indexOf('bob') > 0 || message.registrationIds[0].indexOf('alice') > 0)
+    })
+
     var savedEnt = body.data
-    t.assert(savedEnt._owner === testUser._id)
-    t.assert(savedEnt._creator === testUser._id)
-    t.assert(savedEnt._modifier === testUser._id)
+    t.assert(savedEnt._owner === testUserTom._id)
+    t.assert(savedEnt._creator === testUserTom._id)
+    t.assert(savedEnt._modifier === testUserTom._id)
     var activityDate = body.date
 
     /* Check insert */
@@ -442,7 +805,7 @@ exports.insertCandigramExpand = function (test) {
         uri: '/do/find',
         body: {
           collection:'places',
-          find:{ _id:testPlace4._id }
+          find:{ _id:testPlaceCustomTwo._id }
         }
       }, function(err, res, body) {
         t.assert(body.count === 1)
@@ -454,11 +817,12 @@ exports.insertCandigramExpand = function (test) {
   })
 }
 
-exports.expandCandigram = function(test) {
+exports.expandCandigramToPlaceOne = function(test) {
   t.post({
-    uri: '/do/moveCandigrams?' + userCred,
+    uri: '/do/moveCandigrams?' + userCredBob,
     body: {
       entityIds:[testCandigramExpand._id],
+      toId: testPlaceCustomOne._id,           // Moving to toms place
       verbose: true,
       expand: true,
       returnMessages: true,
@@ -467,10 +831,16 @@ exports.expandCandigram = function(test) {
   }, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data[0])
-    t.assert(body.messages.length > 0)
-    t.assert(body.messages[0].action.user && body.messages[0].action.entity)
-    t.assert(body.messages[0].action.toEntity)
-    t.assert(!body.messages[0].action.fromEntity)
+    /*
+     * Tom should get a message because he owns the candigram.
+     */
+    t.assert(body.messages.length == 1)
+    body.messages.forEach(function(message) {
+      t.assert(message.action.user && message.action.entity)
+      t.assert(message.action.toEntity && message.action.toEntity.id == testPlaceCustomOne._id)
+      t.assert(message.trigger == 'own')
+      t.assert(message.registrationIds[0].indexOf('tom') > 0)
+    })
 
     var newPlace = body.data[0]
     var activityDate = body.date
@@ -482,7 +852,7 @@ exports.expandCandigram = function(test) {
         collection:'links',
         find:{
           _from:testCandigramExpand._id,
-          _to:testPlace4._id,
+          _to:testPlaceCustomTwo._id,
           type:util.statics.typeContent,
         }
       }
@@ -511,7 +881,7 @@ exports.expandCandigram = function(test) {
           uri: '/do/find',
           body: {
             collection:'places',
-            find:{ _id:testPlace4._id }
+            find:{ _id:testPlaceCustomTwo._id }
           }
         }, function(err, res, body) {
           t.assert(body.count === 1)
@@ -550,13 +920,17 @@ exports.expandCandigram = function(test) {
   })
 }
 
-/* Replace an entity set */
+/*
+ * ----------------------------------------------------------------------------
+ * Add and replace entity set
+ * ----------------------------------------------------------------------------
+ */
 
 exports.addEntitySet = function (test) {
   t.post({
-    uri: '/do/replaceEntitiesForEntity?' + userCred,
+    uri: '/do/replaceEntitiesForEntity?' + userCredTom,
     body: {
-      entityId: testPlace4._id,
+      entityId: testPlaceCustomTwo._id,
       entities: [
         util.clone(testApplink),
         util.clone(testApplink),
@@ -573,7 +947,7 @@ exports.addEntitySet = function (test) {
       uri: '/do/find',
       body: {
         collection:'links',
-        find: { _to: testPlace4._id, type: util.statics.typeContent, fromSchema: util.statics.schemaApplink }
+        find: { _to: testPlaceCustomTwo._id, type: util.statics.typeContent, fromSchema: util.statics.schemaApplink }
       }
     }, function(err, res, body) {
       t.assert(body.count === 3)
@@ -593,7 +967,7 @@ exports.addEntitySet = function (test) {
           uri: '/do/find',
           body: {
             collection:'places',
-            find:{ _id: testPlace4._id }
+            find:{ _id: testPlaceCustomTwo._id }
           }
         }, function(err, res, body) {
           t.assert(body.count === 1)
@@ -608,9 +982,9 @@ exports.addEntitySet = function (test) {
 
 exports.replaceEntitySet = function (test) {
   t.post({
-    uri: '/do/replaceEntitiesForEntity?' + userCred,
+    uri: '/do/replaceEntitiesForEntity?' + userCredTom,
     body: {
-      entityId: testPlace4._id,
+      entityId: testPlaceCustomTwo._id,
       entities: [
         util.clone(testApplink2),
         util.clone(testApplink2),
@@ -628,7 +1002,7 @@ exports.replaceEntitySet = function (test) {
       uri: '/do/find',
       body: {
         collection:'links',
-        find: { _to: testPlace4._id, type: util.statics.typeContent, fromSchema: util.statics.schemaApplink }
+        find: { _to: testPlaceCustomTwo._id, type: util.statics.typeContent, fromSchema: util.statics.schemaApplink }
       }
     }, function(err, res, body) {
       t.assert(body.count === 3)
@@ -658,7 +1032,7 @@ exports.replaceEntitySet = function (test) {
             uri: '/do/find',
             body: {
               collection:'places',
-              find:{ _id: testPlace4._id }
+              find:{ _id: testPlaceCustomTwo._id }
             }
           }, function(err, res, body) {
             t.assert(body.count === 1)
@@ -672,11 +1046,15 @@ exports.replaceEntitySet = function (test) {
   })
 }
 
-/* Insert, update, and delete entities */
+/*
+ * ----------------------------------------------------------------------------
+ * Check activityDate when insert, update, and delete entities
+ * ----------------------------------------------------------------------------
+ */
 
 exports.insertComment = function (test) {
   t.post({
-    uri: '/do/insertEntity?' + userCred,
+    uri: '/do/insertEntity?' + userCredTom,
     body: {
       entity: testComment,
       link: {
@@ -689,10 +1067,18 @@ exports.insertComment = function (test) {
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
-    t.assert(body.messages.length > 0)
-    t.assert(body.messages[0].action.user && body.messages[0].action.entity)
-    t.assert(body.messages[0].action.toEntity)
-    t.assert(!body.messages[0].action.fromEntity)
+    /*
+     * Bob should get a message because he owns the candigram
+     * Alice should get a message because she is watching Tom.
+     */
+    t.assert(body.messages.length == 2)
+    body.messages.forEach(function(message) {
+      t.assert(message.action.user && message.action.entity)
+      t.assert(message.action.toEntity && message.action.toEntity.id == testCandigramBounce._id)
+      t.assert(message.trigger == 'own_to' || message.trigger == 'watch_user')
+      t.assert(message.registrationIds[0].indexOf('bob') > 0 || message.registrationIds[0].indexOf('alice') > 0)
+    })
+
     var activityDate = body.date
 
     /* Check insert */
@@ -740,7 +1126,7 @@ exports.insertComment = function (test) {
 exports.updateEntity = function (test) {
   testComment.name = 'Testing comment update'
   t.post({
-    uri: '/do/updateEntity?' + userCred,
+    uri: '/do/updateEntity?' + userCredTom,
     body: {
       entity:testComment
     }
