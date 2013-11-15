@@ -292,7 +292,7 @@ exports.insertPlaceEntitySuggestApplinksFromFactual = function(test) {
             && link.shortcut.appId === ballRoomId
           )
       }))
-      t.assert(links.some(function(link) {
+      t.assert(!links.some(function(link) {   // Invisible due to alcohal
         return (link.shortcut.app === 'facebook')
       }))
       t.assert(links.some(function(link) {
@@ -324,6 +324,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
     body: {
       location:  ballRoomLoc,
       provider: 'foursquare',
+      limit: 50,
     }
   }, function(err, res, body) {
     var places = body.data
@@ -359,7 +360,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
       t.assert(body.data)
       ksthai = body.data  // TODO, test for changes!
       var applinks = body.data.linksIn
-      t.assert(applinks && applinks.length > 10)
+      t.assert(applinks && applinks.length > 8)
 
       // Add a user-created place inside the ballroom
       t.post({
@@ -401,6 +402,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
             body: {
               location: ballRoomLoc,
               provider: 'foursquare',
+              limit: 50,
             }
           }, function(err, res, body) {
             // Make sure the real entitiy is in the found places

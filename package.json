@@ -30,6 +30,7 @@
     "authom": "*",
     "cheerio": "*",
     "factual-api": "*",
+    "yelp": "*",
     "node-gcm": "0.9.4",
     "url2png": "*",
     "knox": "*",
