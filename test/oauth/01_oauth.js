@@ -32,6 +32,23 @@ var baseUri = testUtil.serverUrl
 var strictSSL = (util.config.service.mode === 'test') ? false : true
 var _exports = {}  // for commenting out tests
 
+var twitterUser = {
+  name: 'Oauth Twitter User',
+  email: 'testTwitterOauth@3meters.com',   //threemeterstest
+  oauthId: 'twitter:606624261',
+}
+
+var facebookUser = {
+  name: 'Oauth Facebook User',
+  email: 'testFacebookOauth@3meters.com',   // api@3meters.com, ada massena
+  oauthId: 'facebook:100005259666752',
+}
+
+var googleUser = {
+  name: 'Oauth Google User',
+  email: 'testGoogleOauth@3meters.com',   // admin@3meters.com
+  oauthId: 'google:102160097466686492618',
+}
 
 // Get admin session and set credentials
 exports.getSession = function(test) {
@@ -41,18 +58,30 @@ exports.getSession = function(test) {
   })
 }
 
-
-// Update the default user with the oauthId of our test user account on Twitter
-// This approximates a user updating their account and validating with a different
-// oauth provider
-
-exports.updateDefaultUserOauthId = function(test) {
+// Using admin cred create three user accounts that match the
+// oauth credentials of our test users on each of our providers.
+// There is no way yet do do this without admin
+// Need to add a user/create/<provider/ to do this from an
+// unsigned-in client on the phone
+exports.createOauthUsers = function(test) {
   t.post({
-    uri: '/data/users/' + constants.uid1 + '?' + adminCred,
-    body: {data: {oauthId: testOauthId.twitter}}
-  }, function(err, res) {
-    t.assert(res.body.data.oauthId === testOauthId.twitter)
-    test.done()
+    uri: '/data/users/?' + adminCred,
+    body: {data: twitterUser},
+  }, 201, function(err, res) {
+    t.assert(res.body.data.oauthId === twitterUser.oauthId)
+    t.post({
+      uri: '/data/users/?' + adminCred,
+      body: {data: facebookUser},
+    }, 201, function(err, res) {
+      t.assert(res.body.data.oauthId === facebookUser.oauthId)
+      t.post({
+        uri: '/data/users/?' + adminCred,
+        body: {data: googleUser},
+      }, 201, function(err, res) {
+        t.assert(res.body.data.oauthId === googleUser.oauthId)
+        test.done()
+      })
+    })
   })
 }
 

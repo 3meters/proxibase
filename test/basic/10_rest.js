@@ -620,10 +620,17 @@ exports.countByFailsOnBogusFields = function(test) {
 }
 
 exports.deleteBogusRecord = function(test) {
- t.delete({
-    uri: '/data/beacons/bogusid1?' + adminCred,
-  }, function(err, res, body) {
+  t.del({uri: '/data/beacons/bogusid1?' + adminCred}, function(err, res, body) {
     t.assert(body.count === 1)
+    t.get('/data/beacons/bogusid1', function(err, res, body) {
+      t.assert(null === body.data)
+      test.done()
+    })
+  })
+}
+
+exports.deleteNonExistantRecordReturnsNotFound = function(test) {
+  t.del({uri: '/data/beacons/idonotexist?' + adminCred}, 404, function(err, res, body) {
     test.done()
   })
 }
