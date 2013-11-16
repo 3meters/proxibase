@@ -1,5 +1,5 @@
 /**
- *  Proxibase applink refresh test
+ *  Proxibase applink save test
  */
 
 var util = require('proxutils')
@@ -49,9 +49,10 @@ exports.refreshKaosamai = function(test) {
     var place = body.data
     t.assert(place && place._id)
     t.post({
-      uri: '/applinks/refresh?' + userCred,
+      uri: '/applinks/get?' + userCred,
       body: {
         placeId: place._id,
+        save: true,
         includeRaw: true,
         timeout: 20,
       }
@@ -67,7 +68,7 @@ exports.refreshKaosamai = function(test) {
         appMap[applink.type] = appMap[applink.type] || 0
         appMap[applink.type]++
         // Track the most recent validation date for validated applinks.
-        // When refresh is called again, all validated applinks should
+        // When get save is called again, all validated applinks should
         // have validated value greater than this number.
         if (applink.data && applink.data.validated) {
           if (applink.data.validated > lastValidated) {
@@ -81,7 +82,7 @@ exports.refreshKaosamai = function(test) {
       t.assert(appMap.twitter === 1)
       t.assert(appMap.facebook === 1)
 
-      // add a bogus applink manually to ensure that a subsequent refresh will delete it
+      // add a bogus applink manually to ensure that a subsequent get / save will delete it
       t.post({
         uri: '/data/applinks?' + userCred,
         body: {
@@ -106,9 +107,10 @@ exports.refreshKaosamai = function(test) {
           var bogusLinkId = body.data._id
           t.assert(bogusLinkId)
           t.post({
-            uri: '/applinks/refresh?' + userCred,
+            uri: '/applinks/get?' + userCred,
             body: {
               placeId: place._id,
+              save: true,
               includeRaw: true,
               timeout: 20,
             }

@@ -15,13 +15,12 @@ var _exports = {} // for commenting out tests
 
 
 
-exports.ensureFailsProperlyOnEmpty = function(test) {
+exports.returnsEmptyOnEmpty = function(test) {
   t.post({
     uri: '/applinks/get',
     body: {applinks: []}
-  }, 400, function(err, res, body) {
-    t.assert(body.error)
-    t.assert(400.13 === body.error.code)
+  }, function(err, res, body) {
+    t.assert(0 === body.data.length)
     test.done()
   })
 }
