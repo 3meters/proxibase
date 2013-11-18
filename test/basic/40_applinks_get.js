@@ -43,6 +43,25 @@ exports.nonPublicFacebookPlaceFailsValidation = function(test) {
   })
 }
 
+// The Ballroom Seattle's facebook page is invisible to non-logged-in facebook
+// users because it serves alcohol. The service should return this applink
+// unvalidated and hope for the best on the client where the user can authenticate
+// with facebook directly
+exports.nonPublicFacebookPlaceReturnsUnvalidatedIfUserGenerated = function(test) {
+  if (disconnected) return skip(test)
+  t.post({
+    uri: '/applinks/get',
+    body: {
+      applinks: [{type: 'facebook', appId: '235200356726', origin: 'aircandi'}],
+    }
+  }, function(err, res, body) {
+    t.assert(1 === body.data.length)
+    t.assert(-1 === body.data[0].validatedDate)
+    test.done()
+  })
+}
+
+
 exports.checkBogusApplinks = function(test) {
   if (disconnected) return skip(test)
   t.post({
