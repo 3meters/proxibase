@@ -34,9 +34,8 @@ exports.checkTwitterUrls = function(test) {
     t.assert(applink.name === '@bob')
     t.assert(applink.type === 'twitter')
     t.assert(applink.appId === 'bob')
-    t.assert(applink.data)
-    t.assert(applink.data.origin === 'website')
-    t.assert(applink.data.originId === url)
+    t.assert(applink.origin === 'website')
+    t.assert(applink.originId === url)
     t.assert(res.body.raw)
     t.assert(res.body.raw.webSiteCandidates)
     t.assert(res.body.raw.webSiteCandidates.length === 6)
@@ -67,9 +66,8 @@ exports.checkFacebookUrls = function(test) {
       t.assert(applink.type === 'facebook')
       t.assert(applink.photo)
       t.assert(applink.photo.prefix)
-      t.assert(applink.data)
-      t.assert(applink.data.origin === 'website')
-      t.assert(applink.data.originId === url)
+      t.assert(applink.origin === 'website')
+      t.assert(applink.originId === url)
       map[applink.appId] = applink
     })
     t.assert(Object.keys(map).length === applinks.length)  // no dupes by id
@@ -145,8 +143,7 @@ exports.getGoogle = function(test) {
     t.assert(result.appId === 'http://www.google.com')
     t.assert(result.photo)
     t.assert(result.photo.prefix === 'www.google.com.png')
-    t.assert(result.data)
-    t.assert(result.data.validated)
+    t.assert(result.validatedDate)
     test.done()
   })
 }
@@ -189,8 +186,7 @@ exports.getWebsiteWaitForContent = function(test) {
     t.assert(result.appId === 'http://www.yahoo.com')
     t.assert(result.photo)
     t.assert(result.photo.prefix === 'www.yahoo.com.png')
-    t.assert(result.data)
-    t.assert(result.data.validated)
+    t.assert(result.validatedDate)
     test.done()
   })
 }
