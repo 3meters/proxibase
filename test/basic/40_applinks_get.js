@@ -77,9 +77,9 @@ exports.getApplinksFactual = function(test) {
       return (applink.type === 'foursquare'
           && applink.photo
           && applink.photo.prefix
-          && applink.data.origin === 'factual'
-          && applink.data.validated
-          && applink.data.popularity
+          && applink.origin === 'factual'
+          && applink.validatedDate
+          && applink.popularity
       )
     }))
     test.done()
@@ -138,7 +138,7 @@ exports.compareFoursquareToFactual = function(test) {
     t.assert(applinks4s.some(function(applink) {
       return (applink.type === 'foursquare'
         && applink.appId === '4abebc45f964a520a18f20e3'
-        && applink.data.validated
+        && applink.validatedDate
         && applink.photo
         && applink.photo.prefix
         && applink.photo.suffix
@@ -190,9 +190,8 @@ exports.getFacebookFromPlaceJoinWithFoursquare = function(test) {
     t.assert(applinks.some(function(applink) {
       return (applink.type === 'foursquare'
         && applink.appId === '42893400f964a5204c231fe3'
-        && applink.data
-        && applink.data.validated
-        && applink.data.popularity > 5
+        && applink.validatedDate
+        && applink.popularity > 5
         && applink.photo
         && applink.photo.prefix !== 'http://www.myimage.com/foo.jpeg' // overwrote photo
         && applink.photo.source === 'foursquare')
@@ -201,9 +200,8 @@ exports.getFacebookFromPlaceJoinWithFoursquare = function(test) {
       return (applink.type === 'facebook'
         && applink.appId === '155509047801321'
         && applink.name
-        && applink.data
-        && applink.data.validated
-        && applink.data.popularity > 5
+        && applink.validatedDate
+        && applink.popularity > 5
         && applink.photo
         && applink.photo.prefix
         && applink.photo.source === 'facebook')
@@ -212,9 +210,8 @@ exports.getFacebookFromPlaceJoinWithFoursquare = function(test) {
       return (applink.type === 'yelp'
         && applink.appId === 'q20FkqFbmdOhfSEhaT5IHg'
         && applink.name
-        && applink.data
-        && applink.data.validated
-        && applink.data.popularity > 5)
+        && applink.validatedDate
+        && applink.popularity > 5)
     }))
     t.assert(applinks.every(function(applink) {
       return (applink.appId !== '427679707274727'  // This facebook entry fails the popularity contest
@@ -255,7 +252,7 @@ exports.appLinkPositionSortWorks = function(test) {
           t.assert(!fb)
           t.assert(!fs)
           t.assert(!yl)
-          assertValidated(applink)
+          assertvalidatedDate(applink)
           break
 
         case 'facebook':
@@ -265,7 +262,7 @@ exports.appLinkPositionSortWorks = function(test) {
           t.assert(ws)
           t.assert(!fs)
           t.assert(!yl)
-          assertValidated(applink)
+          assertvalidatedDate(applink)
           break
 
         case 'foursquare':
@@ -273,7 +270,7 @@ exports.appLinkPositionSortWorks = function(test) {
           t.assert(ws)
           t.assert(fb)
           t.assert(!yl)
-          assertValidated(applink)
+          assertvalidatedDate(applink)
           break
 
         case 'yelp':
@@ -281,16 +278,15 @@ exports.appLinkPositionSortWorks = function(test) {
           t.assert(ws)
           t.assert(fb)
           t.assert(fs)
-          assertValidated(applink)
+          assertvalidatedDate(applink)
           break
       }
     })
     t.assert(yl)
 
     function assertValidated(applink) {
-      t.assert(applink.data)
-      t.assert(applink.data.validated)
-      t.assert(applink.data.validated >= startTime)
+      t.assert(applink.validatedDate)
+      t.assert(applink.validatedDate >= startTime)
     }
 
     test.done()
