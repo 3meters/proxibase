@@ -137,6 +137,9 @@ exports.getFactualApplinksFromFoursquareId = function(test) {
     applinks.forEach(function(applink) {
       t.assert(applink.type !== 'factual')
     })
+    t.assert(applinks.some(function(applink) {
+      return (applink.type === 'googleplus')
+    }))
     test.done()
   })
 }
