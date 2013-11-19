@@ -63,16 +63,16 @@ exports.refreshKaosamai = function(test) {
       var raw = body.raw
       t.assert(raw)
       var appMap = {}
-      var lastValidated = 0
+      var lastValidatedDate = 0
       applinks.forEach(function(applink) {
         appMap[applink.type] = appMap[applink.type] || 0
         appMap[applink.type]++
         // Track the most recent validation date for validated applinks.
         // When get save is called again, all validated applinks should
         // have validated value greater than this number.
-        if (applink.data && applink.data.validated) {
-          if (applink.data.validated > lastValidated) {
-            lastValidated = applink.data.validated
+        if (applink.validatedDate) {
+          if (applink.validatedDate > lastValidatedDate) {
+            lastValidatedDate = applink.validatedDate
           }
         }
       })

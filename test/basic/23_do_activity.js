@@ -176,9 +176,9 @@ var testApplink = {
     source:"facebook",
   },
   appId: "143970268959049",
-  data: {
-    origin : "facebook", validated : 1369167109174.0, likes : 100
-  },
+  origin: "facebook",
+  validatedDate: 1369167109174.0,
+  popularity: 100,
 }
 
 var testApplink2 = {
@@ -189,9 +189,9 @@ var testApplink2 = {
     source:"facebook",
   },
   appId: "143970268959049",
-  data: {
-    origin : "facebook", validated : 1369167109174.0, likes : 100
-  },
+  origin: "facebook",
+  validatedDate: 1369167109174.0,
+  popularity: 100
 }
 
 var testBeacon = {
