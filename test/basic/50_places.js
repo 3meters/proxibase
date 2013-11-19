@@ -71,7 +71,7 @@ exports.getCategories = function(test) {
   })
 }
 
-exports.getPlacesNearLocationFailsProperlyWithBadLimits = function(test) {
+exports.getPlacesNearLocationCapsBadLimits = function(test) {
   var post = {
     uri: '/places/near',
     body: {
@@ -81,15 +81,12 @@ exports.getPlacesNearLocationFailsProperlyWithBadLimits = function(test) {
       limit: 100,
     }
   }
-  t.post(post, 400, function(err, res, body) {
-    t.assert(body.error)
-    t.assert(400.13 === body.error.code)
-    // Google has a lower limit
+  t.post(post, function(err, res, body) {
+    t.assert(50 === body.data.length)
+    // Google has a higher limit
     post.body.provider = 'google'
-    post.body.limit = 30
-    t.post(post, 400, function(err, res, body) {
-      t.assert(body.error)
-      t.assert(400.13 === body.error.code)
+    t.post(post, function(err, res, body) {
+      t.assert(100 === body.data.length)
       test.done()
     })
   })
@@ -228,20 +225,20 @@ exports.getPlacesNearLocationGoogle = function(test) {
     body: {
       location: ballRoomLoc,
       provider: 'google',
-      radius: 100,
-      limit: 10,
+      radius: 200,
+      limit: 50,
       excludePlaceIds: [ballRoomGooId],
       includeRaw: false,
     }
   }, function(err, res, body) {
     var places = body.data
-    t.assert(places.length === 10)
+    t.assert(places.length === 50)  // default
     places.forEach(function(place) {
       t.assert(place)
       t.assert(place.provider)
       if (place.provider.google) {
         googleProvided++
-        t.assert(place.provider.googleReference, place)
+        t.assert(2 === place.provider.google.split('|').length)  //  id + '|' + refrence
       }
       if (place.provider.factual) {
         factualProvided++
@@ -252,7 +249,7 @@ exports.getPlacesNearLocationGoogle = function(test) {
       t.assert(ballRoomId !== place.provider.google) //excluded
       t.assert(place.location.lat)
       t.assert(place.location.lng)
-      if (roxyGooId === place.provider.google) {
+      if (roxyGooId === place.provider.google.split('|')[0]) {
         foundRoxy++
         t.assert(place.address)
         t.assert(place.city)
