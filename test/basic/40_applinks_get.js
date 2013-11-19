@@ -271,7 +271,7 @@ exports.appLinkPositionSortWorks = function(test) {
           t.assert(!fb)
           t.assert(!fs)
           t.assert(!yl)
-          assertvalidatedDate(applink)
+          t.assert(applink.validatedDate > startTime)
           break
 
         case 'facebook':
@@ -281,7 +281,7 @@ exports.appLinkPositionSortWorks = function(test) {
           t.assert(ws)
           t.assert(!fs)
           t.assert(!yl)
-          assertvalidatedDate(applink)
+          t.assert(applink.validatedDate > startTime)
           break
 
         case 'foursquare':
@@ -289,7 +289,7 @@ exports.appLinkPositionSortWorks = function(test) {
           t.assert(ws)
           t.assert(fb)
           t.assert(!yl)
-          assertvalidatedDate(applink)
+          t.assert(applink.validatedDate > startTime)
           break
 
         case 'yelp':
@@ -297,16 +297,11 @@ exports.appLinkPositionSortWorks = function(test) {
           t.assert(ws)
           t.assert(fb)
           t.assert(fs)
-          assertvalidatedDate(applink)
+          t.assert(applink.validatedDate > startTime)
           break
       }
     })
     t.assert(yl)
-
-    function assertValidated(applink) {
-      t.assert(applink.validatedDate)
-      t.assert(applink.validatedDate >= startTime)
-    }
 
     test.done()
   })
