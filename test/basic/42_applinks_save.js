@@ -162,8 +162,9 @@ exports.refreshKaosamai = function(test) {
     })
   })
 
+
   // return the db to a clean state.  twould be nice if the test harness did
-  // this automatically between test files.  
+  // this automatically between test files.
   function cleanup(place, applinks) {
 
     async.eachSeries(applinks, removeApplink, function(err) {
