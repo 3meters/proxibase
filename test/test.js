@@ -6,8 +6,8 @@
  */
 
 var util = require('proxutils') // load proxibase extensions
+var timer = util.timer()
 var log = util.log
-var timer = new util.Timer()
 var fs = require('fs')
 var assert = require('assert')
 var spawn = require('child_process').spawn
@@ -185,12 +185,12 @@ function ensureDb(ops, cb) {
 
           else {
             log('Copying database from ' + templateName)
-            var timer = new util.Timer()
+            var dbtimer = util.timer()
             adminDb.command({copydb:1, fromdb:templateName, todb:dbName}, function(err, result) {
               if (err) throw err
               db.close(function(err) {
                 if (err) throw err
-                log('Database copied in ' + timer.read() + ' seconds')
+                log('Database copied in ' + dbtimer.read() + ' seconds')
                 return cb()    // Finished
               })
            })

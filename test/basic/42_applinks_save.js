@@ -75,12 +75,16 @@ exports.refreshKaosamai = function(test) {
             lastValidatedDate = applink.validatedDate
           }
         }
+        if ('googleplus' === applink.type) {
+          t.assert(applink.appId)
+        }
       })
       t.assert(util.tipe.isUndefined(appMap.factual))
       t.assert(appMap.website === 1)
       t.assert(appMap.foursquare === 1)
       t.assert(appMap.twitter === 1)
       t.assert(appMap.facebook === 1)
+      t.assert(appMap.googleplus === 1)
 
       // add a bogus applink manually to ensure that a subsequent get / save will delete it
       t.post({
