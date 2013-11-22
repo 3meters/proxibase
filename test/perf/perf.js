@@ -18,8 +18,8 @@ var getRec = constants.getDefaultRecord
 var dbProfile = constants.dbProfile.smokeTest
 var results = []
 var util = require('proxutils')
-var Timer = util.Timer
-var testTimer = Timer()
+var timer = util.timer
+var testTimer = timer()
 var log = util.log
 var _exports = {} // for commenting out tests
 
@@ -66,7 +66,7 @@ exports.start = function(test) {
 
 
 exports.insert100Users = function(test) {
-  var timer = Timer()
+  var timer = timer()
   var user = getRec('users')
   var cRecs = 0
 
@@ -93,7 +93,7 @@ exports.insert100Users = function(test) {
 }
 
 exports.find100Users = function(test) {
-  var timer = Timer()
+  var timer = timer()
   var cRecs = 0
   timer.expected = 60
 
@@ -111,7 +111,7 @@ exports.find100Users = function(test) {
 }
 
 exports.findAndUpdate100Users = function(test) {
-  var timer = Timer()
+  var timer = timer()
   var cRecs = 0
   timer.expected = 120
 
@@ -140,7 +140,7 @@ exports.findAndUpdate100Users = function(test) {
 
 
 exports.get100Entities = function (test) {
-  var timer = Timer()
+  var timer = timer()
   var cRecs = 0
   timer.expected = 300
 
@@ -167,7 +167,7 @@ exports.get100Entities = function (test) {
 }
 
 exports.getEntitiesForLocation100Beacons = function (test) {
-  var timer = Timer()
+  var timer = timer()
   var cRecs = 0
   timer.expected = 300
 
@@ -193,7 +193,7 @@ exports.getEntitiesForLocation100Beacons = function (test) {
 }
 
 exports.getEntitiesForLocation10x10Beacons = function (test) {
-  var timer = Timer()
+  var timer = timer()
   var cRecs = 0
   var batchSize = 10
   timer.expected = 300
@@ -226,7 +226,7 @@ exports.getEntitiesForLocation10x10Beacons = function (test) {
 }
 
 _exports.getEntitiesByLocationOnly = function (test) {
-  var timer = Timer()
+  var timer = timer()
   var cRecs = 0
   timer.expected = 300
 
@@ -253,7 +253,7 @@ _exports.getEntitiesByLocationOnly = function (test) {
 }
 
 _exports.getEntitiesByLocationWithBeaconUpgrade = function (test) {
-  var timer = Timer()
+  var timer = timer()
   var cRecs = 0
   timer.expected = 300
 
@@ -281,7 +281,7 @@ _exports.getEntitiesByLocationWithBeaconUpgrade = function (test) {
 }
 
 _exports.getUsers = function (test) {
-  var timer = Timer()
+  var timer = timer()
   var cRecs = 0
   timer.expected = 300
 
@@ -306,7 +306,7 @@ _exports.getUsers = function (test) {
 
 
 exports.getEntitiesFor10Users = function(test) {
-  var timer = Timer()
+  var timer = timer()
   var recordLimit = 300
   var cRecs = 0
   timer.expected = 120
@@ -333,7 +333,7 @@ exports.getEntitiesFor10Users = function(test) {
 
 // Makes an external call -- not appropriate for perf test
 _exports.getPlacesNear100Locations = function (test) {
-  var timer = Timer()
+  var timer = timer()
   var cRecs = 0
   timer.expected = 300
 

@@ -107,8 +107,18 @@ exports.getPlacesNearLocationFoursquare = function(test) {
   }, function(err, res, body) {
     var foundBallroom = 0
     var places = body.data
-    // t.assert(places.length === 10)
+    t.assert(places.length === 10)
+    var lastDistance = 0
     places.forEach(function(place) {
+      // proves sorted by distance from current location
+      var distance = util.haversine(
+        ballRoomLoc.lat,
+        ballRoomLoc.lng,
+        place.location.lat,
+        place.location.lng
+      )
+      t.assert(distance > lastDistance)
+      lastDistance = distance
       t.assert(place.provider)
       if (place.provider.foursquare === ballRoomId) foundBallroom++
       var cat = place.category

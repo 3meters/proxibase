@@ -59,7 +59,7 @@ exports.dupePlacesMergeOnProviderId = function(test) {
           foursquare: '41b3a100f964a520681e1fe3',
         },
         phone: '2065454277',
-      }
+      },
     }
   }, 201, function(err, res, body) {
     t.assert(body.data)
@@ -74,7 +74,7 @@ exports.dupePlacesMergeOnProviderId = function(test) {
             factual: 'fdc45418-be3b-4ab9-92d6-62ae6fb6ce48',
           },
           phone: '2065454277',
-        }
+        },
       }
     }, 403, function(err, res, body) {
       t.assert(body.data)
@@ -91,7 +91,7 @@ exports.dupePlacesMergeOnProviderId = function(test) {
             provider: {
               factual: 'fdc45418-be3b-4ab9-92d6-62ae6fb6ce48',
             },
-          }
+          },
         }
       }, 403, function(err, res, body) {
         t.assert(body.data)
@@ -105,6 +105,7 @@ exports.dupePlacesMergeOnProviderId = function(test) {
     })
   })
 }
+
 
 exports.getPlacesNearLocation = function(test) {
   if (disconnected) return skip(test)
