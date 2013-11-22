@@ -107,12 +107,6 @@ exports.dupePlacesMergeOnProviderId = function(test) {
 }
 
 
-exports.googlePlacesWithDifferentReferencesMatchOnId = function(test) {
-  if (disconnected) return skip(test)
-  return skip(test)
-}
-
-
 exports.getPlacesNearLocation = function(test) {
   if (disconnected) return skip(test)
   t.post({
