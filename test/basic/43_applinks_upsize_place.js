@@ -26,6 +26,7 @@ exports.getSessions = function(test) {
   })
 }
 
+var outlander
 var ballRoomLoc = {
   lat: 47.6521,
   lng: -122.3530,
@@ -43,7 +44,6 @@ exports.insertPlaceSavingApplinks = function(test) {
     }
   }
   t.post(post, function(err, res, body) {
-    var outlander
     body.data.forEach(function(place) {
       if (/^Outlander/.test(place.name)) {
         outlander = place
@@ -65,7 +65,7 @@ exports.insertPlaceSavingApplinks = function(test) {
       var place = body.data
       t.assert(place && place._id)
       t.assert(place.provider.foursquare)
-      t.assert(place.provider.google)     // the rub
+      t.assert(place.provider.google)
       var applinkMap = {}
       place.linksIn.forEach(function(link) {
         if (!applinkMap[link.shortcut.app]) {
@@ -78,14 +78,39 @@ exports.insertPlaceSavingApplinks = function(test) {
       t.assert(1 === applinkMap.googleplus)
       t.assert(1 === applinkMap.foursquare)
       t.assert(1 === applinkMap.twitter)
-      cleanup(place, function() {
-        test.done()
-      })
+      outlander = place
+      test.done()
     })
   })
 }
 
-
+exports.googlePlaceDedupesWhenRefChanges = function(test) {
+  var dupe = {
+    name: outlander.name,
+    schema: 'place',
+    provider: util.clone(outlander.provider),
+    loc: outlander.loc,
+  }
+  var googleId = outlander.provider.google.split('|')
+  dupe.provider.google = googleId[0] + '|' + 'IamAFakeGoogleRefString'
+  t.post({
+    uri: '/do/insertEntity?' + userCred,
+    body: {
+      entity: dupe,
+      insertApplinks: true,
+      includeRaw: true,
+      log: true,
+    }
+  }, 403, function(err, res, body) {
+    var place = body.data
+    t.assert(place)
+    t.assert(place._id === outlander._id)
+    t.assert(outlander.provider.google === place.provider.google)  // the update was discarded
+    cleanup(place, function() {
+      test.done()
+    })
+  })
+}
 
 // return the db to a clean state.  twould be nice if the test harness did
 // this automatically between test files.
