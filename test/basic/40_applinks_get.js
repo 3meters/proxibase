@@ -83,7 +83,8 @@ exports.getApplinksFactual = function(test) {
     body: {
       applinks: [{type: 'factual', appId: '46aef19f-2990-43d5-a9e3-11b78060150c'}],
       includeRaw: true, 
-      timeout: 20
+      timeout: 20,
+      log: true,
     }
   },
   function(err, res) {
