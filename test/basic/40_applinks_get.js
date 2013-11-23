@@ -83,7 +83,7 @@ exports.getApplinksFactual = function(test) {
     body: {
       applinks: [{type: 'factual', appId: '46aef19f-2990-43d5-a9e3-11b78060150c'}],
       includeRaw: true, 
-      timeout: 20,
+      timeout: 20000,
       log: true,
     }
   },
@@ -114,7 +114,7 @@ exports.getFactualApplinksFromFoursquareId = function(test) {
     body: {
       applinks: [{type: 'foursquare', appId: '4abebc45f964a520a18f20e3'}],
       includeRaw: true,
-      timeout: 20
+      timeout: 20000
     } // Seattle Ballroom in Fremont
   },
   function(err, res, body) {
@@ -150,7 +150,7 @@ exports.compareFoursquareToFactual = function(test) {
     body: {
       applinks: [{type: 'foursquare', appId: '4abebc45f964a520a18f20e3'}],
       includeRaw: true,
-      timeout: 20
+      timeout: 20000
     }
   },
   function(err, res) {
@@ -175,7 +175,7 @@ exports.compareFoursquareToFactual = function(test) {
       body: {
         applinks: [{type: 'factual', appId: '46aef19f-2990-43d5-a9e3-11b78060150c'}],
         includeRaw: true,
-        timeout: 20
+        timeout: 20000
       }
     }, function(err, res) {
       var applinksFact = res.body.data
@@ -201,7 +201,7 @@ exports.getFacebookFromPlaceJoinWithFoursquare = function(test) {
         },
       }],
       includeRaw: true,
-      timeout: 20,
+      timeout: 20000,
     },
   },
   function(err, res, body) {
@@ -260,7 +260,7 @@ exports.appLinkPositionSortWorks = function(test) {
         {type: 'yelp', appId: 'q20FkqFbmdOhfSEhaT5IHg'},
         {type: 'foursquare', appId: '42893400f964a5204c231fe3'},
       ],
-      timeout: 10
+      timeout: 10000
     }
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)
@@ -322,6 +322,24 @@ exports.appLinkPopularitySortWorks = function(test) {
   }, function(err, res, body) {
     t.assert(body.data.length === 2)
     t.assert(body.data[0].appId === 'QYv7LvaoyuaEJRDRpPtFDQ')
+    test.done()
+  })
+}
+
+
+exports.checkTimeoutWorks = function(test) {
+  if (disconnected) return skip(test)
+  t.post({
+    uri: '/applinks/get',
+    body: {
+      applinks: [
+        {type: 'facebook', appId: 'georgesnelling'},
+        {type: 'website', appId: 'http://www.georgeandcherry.com'},
+      ],
+      timeout: 10,
+    }
+  }, function(err, res, body) {
+    t.assert(body.data.length === 0)
     test.done()
   })
 }

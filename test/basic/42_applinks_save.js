@@ -54,7 +54,7 @@ exports.refreshKaosamai = function(test) {
         placeId: place._id,
         save: true,
         includeRaw: true,
-        timeout: 20,
+        timeout: 20000,
       }
     }, function(err, res, body) {
 
@@ -116,7 +116,7 @@ exports.refreshKaosamai = function(test) {
               placeId: place._id,
               save: true,
               includeRaw: true,
-              timeout: 20,
+              timeout: 20000,
             }
           }, function(err, res, body) {
             var applinks = body.data

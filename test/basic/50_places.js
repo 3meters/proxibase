@@ -102,7 +102,7 @@ exports.getPlacesNearLocationFoursquare = function(test) {
       radius: 500,
       includeRaw: false,
       limit: 10,
-      timeout: 10,
+      timeout: 10000,
     }
   }, function(err, res, body) {
     var foundBallroom = 0
