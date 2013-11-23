@@ -56,7 +56,7 @@ exports.insertPlaceSavingApplinks = function(test) {
       body: {
         entity: outlander,
         insertApplinks: true,
-        applinksTimeout: 10,
+        applinksTimeout: 10000,
         includeRaw: true,
         log: true,
       }

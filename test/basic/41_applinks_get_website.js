@@ -53,7 +53,7 @@ exports.checkFacebookUrls = function(test) {
         {type: 'website', appId: url}
       ],
       includeRaw: true,
-      timeout: 20
+      timeout: 20000,
     },
   }, function(err, res) {
     var applinks = res.body.data
@@ -195,7 +195,7 @@ exports.getWebsiteWaitForContent = function(test) {
       applinks: [{type: 'website', appId: 'www.yahoo.com'}],
       waitForContent: true,
       testThumbnails: true,
-      timeout: 15,
+      timeout: 15000,
     }
   }, function(err, res, body) {
     t.assert(1 === body.data.length)
