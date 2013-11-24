@@ -32,7 +32,7 @@ var ballRoomLoc = {
   lng: -122.3530,
 }
 
-exports.insertPlaceSavingApplinks = function(test) {
+exports.insertPlaceFoursquareSaveApplinks = function(test) {
   if (disconnected) return skip(test)
   var post = {
     uri: '/places/near',
@@ -108,6 +108,61 @@ exports.googlePlaceDedupesWhenRefChanges = function(test) {
     t.assert(outlander.provider.google === place.provider.google)  // the update was discarded
     cleanup(place, function() {
       test.done()
+    })
+  })
+}
+
+exports.insertPlaceGoogleSaveApplinks = function(test) {
+  outlander = null
+  if (disconnected) return skip(test)
+  var post = {
+    uri: '/places/near',
+    body: {
+      location: ballRoomLoc,
+      provider: 'google',
+      includeRaw: false,
+      limit: 200,
+    }
+  }
+  t.post(post, function(err, res, body) {
+    body.data.forEach(function(place) {
+      if (/^Outlander/.test(place.name)) {
+        outlander = place
+        return
+      }
+    })
+    t.assert(outlander)
+    var post = {
+      uri: '/do/insertEntity?' + userCred,
+      body: {
+        entity: outlander,
+        insertApplinks: true,
+        applinksTimeout: 10000,
+        includeRaw: true,
+        log: true,
+      }
+    }
+    t.post(post, 201, function(err, res, body) {
+      var place = body.data
+      t.assert(place && place._id)
+      t.assert(place.provider.foursquare)
+      t.assert(place.provider.google)
+      var applinkMap = {}
+      place.linksIn.forEach(function(link) {
+        if (!applinkMap[link.shortcut.app]) {
+          applinkMap[link.shortcut.app] = 1
+        }
+        else applinkMap[link.shortcut.app]++
+      })
+      t.assert(1 === applinkMap.website)
+      t.assert(1 === applinkMap.facebook)
+      t.assert(1 === applinkMap.googleplus)
+      t.assert(1 === applinkMap.foursquare)
+      t.assert(1 === applinkMap.twitter)
+      outlander = place
+      cleanup(outlander, function(err) {
+        test.done()
+      })
     })
   })
 }
