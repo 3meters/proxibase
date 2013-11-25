@@ -39,7 +39,7 @@ var ballRoomLoc = {
 // Seattle Ballroom
 var ballRoomId = '4abebc45f964a520a18f20e3'
 var ballRoomFacId = '46aef19f-2990-43d5-a9e3-11b78060150c'
-var ballRoomGooId = 'f0147a535bedf4bb948f35379873cab0747ba9e2'
+var ballRoomGooId = 'f0147a535bedf4bb948f35379873cab0747ba9e2|aGoogleRef'
 
 // Cafe Ladro
 var ladroId = '45d62041f964a520d2421fe3'
@@ -83,7 +83,7 @@ exports.getPlacesNearLocationCapsBadLimits = function(test) {
   }
   t.post(post, function(err, res, body) {
     t.assert(50 === body.data.length)
-    // Google has a higher limit
+    // Google's max limit is 200
     post.body.provider = 'google'
     t.post(post, function(err, res, body) {
       t.assert(100 === body.data.length)
@@ -134,20 +134,37 @@ exports.getPlacesNearLocationFoursquare = function(test) {
   })
 }
 
-exports.getPlacesNearLocationExcludeWorks = function(test) {
+exports.placesNearExcludeWorksFoursquare = function(test) {
   if (disconnected) return skip(test)
   t.post({
     uri: '/places/near',
     body: {
       location: ballRoomLoc,
       provider: 'foursquare',
-      radius: 500,
       excludePlaceIds: [ballRoomId], // The Ballroom's 4sId
     }
   }, function(err, res) {
     var places = res.body.data
     places.forEach(function(place) {
-      t.assert(place.provider.foursquare.id !== ballRoomId)
+      t.assert(place.provider.foursquare !== ballRoomId)
+    })
+    test.done()
+  })
+}
+
+exports.placesNearExcludeWorksGoogle = function(test) {
+  if (disconnected) return skip(test)
+  t.post({
+    uri: '/places/near',
+    body: {
+      location: ballRoomLoc,
+      provider: 'google',
+      excludePlaceIds: [ballRoomGooId],
+    }
+  }, function(err, res) {
+    var places = res.body.data
+    places.forEach(function(place) {
+      t.assert(place.provider.google.split('|')[0] !== ballRoomGooId.split('|')[0], place)
     })
     test.done()
   })
@@ -243,6 +260,7 @@ exports.getPlacesNearLocationGoogle = function(test) {
   }, function(err, res, body) {
     var places = body.data
     t.assert(places.length === 50)  // default
+    var lastDistance = 0
     places.forEach(function(place) {
       t.assert(place)
       t.assert(place.provider)
@@ -253,6 +271,15 @@ exports.getPlacesNearLocationGoogle = function(test) {
       if (place.provider.factual) {
         factualProvided++
       }
+      // proves sorted by distance from current location
+      var distance = util.haversine(
+        ballRoomLoc.lat,
+        ballRoomLoc.lng,
+        place.location.lat,
+        place.location.lng
+      )
+      t.assert(distance >= lastDistance, place)
+      lastDistance = distance
       // Not all places returned need to have place.provider.google
       // They can be entities we already have in our system given by
       // foursquare, factual, or user
