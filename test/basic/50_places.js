@@ -243,6 +243,7 @@ exports.getPlacesNearLocationGoogle = function(test) {
   }, function(err, res, body) {
     var places = body.data
     t.assert(places.length === 50)  // default
+    var lastDistance = 0
     places.forEach(function(place) {
       t.assert(place)
       t.assert(place.provider)
@@ -253,6 +254,15 @@ exports.getPlacesNearLocationGoogle = function(test) {
       if (place.provider.factual) {
         factualProvided++
       }
+      // proves sorted by distance from current location
+      var distance = util.haversine(
+        ballRoomLoc.lat,
+        ballRoomLoc.lng,
+        place.location.lat,
+        place.location.lng
+      )
+      t.assert(distance > lastDistance)
+      lastDistance = distance
       // Not all places returned need to have place.provider.google
       // They can be entities we already have in our system given by
       // foursquare, factual, or user
