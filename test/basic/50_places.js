@@ -152,23 +152,6 @@ exports.placesNearExcludeWorksFoursquare = function(test) {
   })
 }
 
-exports.placesNearExcludeWorksGoogle = function(test) {
-  if (disconnected) return skip(test)
-  t.post({
-    uri: '/places/near',
-    body: {
-      location: ballRoomLoc,
-      provider: 'google',
-      excludePlaceIds: [ballRoomGooId],
-    }
-  }, function(err, res) {
-    var places = res.body.data
-    places.forEach(function(place) {
-      t.assert(place.provider.google.split('|')[0] !== ballRoomGooId.split('|')[0], place)
-    })
-    test.done()
-  })
-}
 
 exports.getPlacesNearLocationFactual = function(test) {
   if (disconnected) return skip(test)
