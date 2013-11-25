@@ -57,7 +57,6 @@ exports.insertPlaceFoursquareSaveApplinks = function(test) {
         entity: outlander,
         insertApplinks: true,
         applinksTimeout: 10000,
-        includeRaw: true,
         log: true,
       }
     }
@@ -100,7 +99,6 @@ exports.googlePlaceDedupesWhenRefChanges = function(test) {
       entity: dupe,
       insertApplinks: true,
       applinksTimeout: 10000,
-      includeRaw: true,
       log: true,
     }
   }, 403, function(err, res, body) {
@@ -153,6 +151,11 @@ exports.insertPlaceGoogleSaveApplinks = function(test) {
       // t.assert(place.provider.foursquare)
       // t.assert(place.provider.factual)
       t.assert(place.provider.google)
+      t.assert(place.photo)
+      t.assert('google' === place.photo.source)
+      t.assert(place.photo.prefix)
+      // TODO: call google and verify the URL
+      // remember, must append maxwidth=<1..1600> to the url to get a picture back
       var applinkMap = {}
       place.linksIn.forEach(function(link) {
         if (!applinkMap[link.shortcut.app]) {
