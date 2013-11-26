@@ -93,6 +93,10 @@ exports.getApplinksFactual = function(test) {
     t.assert(res.body.raw)
     t.assert(res.body.raw.initialApplinks)
     t.assert(res.body.raw.factualCandidates.length > 12)
+    applinks.forEach(function(applink) {
+      t.assert('applink' === applink.schema)
+      t.assert(applink.appId || applink.appUrl)
+    })
     t.assert(applinks.some(function(applink) {
       return (applink.type === 'foursquare'
           && applink.photo
@@ -159,6 +163,7 @@ exports.compareFoursquareToFactual = function(test) {
       return (applink.type === 'foursquare'
         && applink.appId === '4abebc45f964a520a18f20e3'
         && applink.validatedDate
+        && applink.schema === 'applink'
         && applink.photo
         && applink.photo.prefix
         && applink.photo.suffix
