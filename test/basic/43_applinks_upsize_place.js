@@ -139,7 +139,7 @@ exports.insertPlaceGoogleSaveApplinks = function(test) {
       body: {
         entity: outlander,
         insertApplinks: true,
-        applinksTimeout: 10000,
+        applinksTimeout: 15000,
         includeRaw: true,
         log: true,
       }
@@ -147,8 +147,8 @@ exports.insertPlaceGoogleSaveApplinks = function(test) {
     t.post(post, 201, function(err, res, body) {
       var place = body.data
       t.assert(place && place._id)
-      log('skipping foursquare and factual place providers')
-      // t.assert(place.provider.foursquare)
+      t.assert(place.provider.foursquare)
+      log('skiping testing place.provider.factual')
       // t.assert(place.provider.factual)
       t.assert(place.provider.google)
       t.assert(place.photo)
@@ -163,12 +163,13 @@ exports.insertPlaceGoogleSaveApplinks = function(test) {
         }
         else applinkMap[link.shortcut.app]++
       })
-      t.assert(1 === applinkMap.website)
-      t.assert(1 === applinkMap.facebook)
-      t.assert(1 === applinkMap.googleplus)
-      util.log('skipping foursquare and factual applink tests')
-      // t.assert(1 === applinkMap.foursquare)
-      // t.assert(1 === applinkMap.twitter)
+      t.assert(applinkMap.website === 1)
+      t.assert(applinkMap.facebook === 1)
+      t.assert(applinkMap.googleplus === 1)
+      t.assert(applinkMap.foursquare === 1)
+      t.assert(applinkMap.urbanspoon >= 1)  // proves that factual lookup works
+      t.assert(applinkMap.twitter >= 1)
+
       outlander = place
       cleanup(outlander, function(err) {
         test.done()

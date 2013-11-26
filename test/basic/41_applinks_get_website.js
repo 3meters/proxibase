@@ -57,18 +57,22 @@ exports.checkFacebookUrls = function(test) {
     },
   }, function(err, res) {
     var applinks = res.body.data
-    t.assert(applinks.length === 5)
+    t.assert(applinks.length >= 5)
     // make a map of the results array by id
     var map = {}
-    applinks = applinks.slice(1)
+    applinks = applinks.slice(1) // the original test web page
     applinks.forEach(function(applink, i) {
-      t.assert(applink.appId)
-      t.assert(applink.type === 'facebook')
-      t.assert(applink.photo)
-      t.assert(applink.photo.prefix)
-      t.assert(applink.origin === 'website')
-      t.assert(applink.originId === url)
       map[applink.appId] = applink
+      if ('website' === applink.type) {
+        t.assert(applink.appId)
+      }
+      if ('facebook' === applink.type) {
+        t.assert(applink.appId)
+        t.assert(applink.photo)
+        t.assert(applink.photo.prefix)
+        t.assert(applink.origin === 'website')
+        t.assert(applink.originId === url)
+      }
     })
     t.assert(Object.keys(map).length === applinks.length)  // no dupes by id
     t.assert(map['620955808'])
