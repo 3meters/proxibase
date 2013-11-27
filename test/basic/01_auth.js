@@ -289,15 +289,6 @@ exports.userCannotChangeRoles = function(test) {
   })
 }
 
-exports.adminCanChangeRoles = function(test) {
-  t.post({
-    uri: '/data/users/' + testUser._id + '?' + adminCred,
-    body: {data: {role: 'lobster'}}
-  }, function(err, res, body) {
-    test.done()
-  })
-}
-
 exports.userCanChangeOwnEmailViaRest = function(test) {
   t.post({
     uri: '/data/users/' + testUser._id + '?' + userCred,
