@@ -88,15 +88,6 @@ exports.adminCanAddUserViaRest = function(test) {
   })
 }
 
-exports.adminCannotChangeValidateDateViaRest = function(test) {
-  t.post({
-    uri: '/data/users/' + testUser._id + '?' + adminCred,
-    body: {data: {validationDate: util.getTimeUTC()}}
-  }, 403, function(err, res, body) {
-    t.assert(body.error.code === 403.22)
-    test.done()
-  })
-}
 
 exports.adminCannotAddUserWithDupeEmail = function(test) {
   t.post({
