@@ -72,6 +72,7 @@ exports.getCategories = function(test) {
 }
 
 exports.getPlacesNearLocationCapsBadLimits = function(test) {
+  if (disconnected) return skip(test)
   var post = {
     uri: '/places/near',
     body: {
