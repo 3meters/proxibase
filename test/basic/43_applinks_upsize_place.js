@@ -85,6 +85,7 @@ exports.insertPlaceFoursquareSaveApplinks = function(test) {
 }
 
 exports.googlePlaceDedupesWhenRefChanges = function(test) {
+  if (disconnected) return skip(test) // Has a dependency on previous test
   var dupe = {
     name: outlander.name,
     schema: 'place',
