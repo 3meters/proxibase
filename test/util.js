@@ -117,7 +117,7 @@ var testUser = {
 
 var adminUser = {
   type: 'user',
-  email: 'admin',  
+  email: 'admin',
   password: 'admin'
 }
 
@@ -158,7 +158,7 @@ function getSession(user, asAdmin, fn) {
     body: {user: user}
   })
 
-  request(req, function(err, res) {
+  request(req, function(err, res, body) {
     if (err) throw (err) 
     if (res.statusCode >= 400) {
       if (asAdmin) throw new Error('Cannot sign in with default admin credentials')

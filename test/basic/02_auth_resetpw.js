@@ -106,26 +106,32 @@ exports.usersWithResetRoleCannotExecuteRegularCalls = function(test) {
   })
 }
 
-_exports.userWithResetRoleCanExecuteResetPassword = function(test) {
+exports.userWithResetRoleCanExecuteResetPassword = function(test) {
   t.post({
     uri: '/user/resetpw?' + newUserCred,
     body: {
       password: 'newpass'
     }
-  }, 501, function(err, res, body) {
-    // implement
-    test.done()
+  }, function(err, res, body) {
+    t.assert(body.user)
+    t.assert('user' === body.user.role)
+    t.assert(body.session)
+    t.assert(body.session.expirationDate >= (util.now() + (24*60*60*1000)))
+    t.post({
+      uri: '/auth/signin',
+      body: { user: {
+        email: user.email,
+        password: 'newpass',
+      }}
+    }, function(err, res, body) {
+      test.done()
+    })
   })
 }
 
 exports.cleanup = function(test) {
-  t.post({
+  t.delete({
     uri: '/data/users/' + user._id + '?' + adminCred,
-    body: {
-      data: {
-        role: 'user'
-      }
-    }
   }, function(err, res, body) {
     test.done()
   })
