@@ -106,7 +106,7 @@ exports.usersWithResetRoleCannotExecuteRegularCalls = function(test) {
   })
 }
 
-exports.userWithResetRoleCanExecuteResetPassword = function(test) {
+_exports.userWithResetRoleCanExecuteResetPassword = function(test) {
   t.post({
     uri: '/user/resetpw?' + newUserCred,
     body: {
