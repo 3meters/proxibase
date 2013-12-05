@@ -18,6 +18,7 @@ var installationId = 'fakeInstallId'
 var registrationId = 'fakeRegId'
 var newUserCred
 
+
 exports.getUserSession = function(test) {
   testUtil.getUserSession(function(session) {
     userSession = session
@@ -34,6 +35,14 @@ exports.getUserSession = function(test) {
         test.done()
       })
     })
+  })
+}
+
+exports.oneUserSession = function(test) {
+  t.get('/data/sessions?filter[_owner]=' + user._id + '&' + adminCred,
+  function(err, res, body) {
+    t.assert(1 === body.count)
+    test.done()
   })
 }
 
@@ -83,6 +92,14 @@ exports.requestPasswordReset = function(test) {
   })
 }
 
+exports.requestPasswordResetDoesntLeakSessions = function(test) {
+  t.get('/data/sessions?filter[_owner]=' + user._id + '&' + adminCred,
+  function(err, res, body) {
+    t.assert(1 === body.count)
+    test.done()
+  })
+}
+
 exports.userRoleIsSetToReset = function(test) {
   t.get('/data/users/' + user._id + '?' + adminCred,
   function(err, res, body) {
@@ -128,6 +145,14 @@ exports.userWithResetRoleCanExecuteResetPassword = function(test) {
     }, function(err, res, body) {
       test.done()
     })
+  })
+}
+
+exports.resetPasswordDoesntLeakSessions = function(test) {
+  t.get('/data/sessions?filter[_owner]=' + user._id + '&' + adminCred,
+  function(err, res, body) {
+    t.assert(1 === body.count)
+    test.done()
   })
 }
 
