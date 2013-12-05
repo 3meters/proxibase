@@ -122,21 +122,21 @@ var adminUser = {
   password: 'admin',
 }
 
-function getUserSession(user, fn) {
-  if (!fn) {
-    fn = user
+function getUserSession(user, cb) {
+  if (!cb) {
+    cb = user
     user = testUser
   }
-  getSession(user, false, fn)
+  getSession(user, false, cb)
 }
 
 
-function getAdminSession(user, fn) {
-  if (!fn) {
-    fn = user
+function getAdminSession(user, cb) {
+  if (!cb) {
+    cb = user
     user = adminUser
   }
-  getSession(user, true, fn)
+  getSession(user, true, cb)
 }
 
 function skip(test, msg) {
@@ -151,7 +151,7 @@ function skip(test, msg) {
  * If the user does not exist in the system, create him first
  * Perhaps rename ensureUserAndGetSession?
  */
-function getSession(user, asAdmin, fn) {
+function getSession(user, asAdmin, cb) {
 
   var body = util.clone(user)
   body.installationId = '123456'
@@ -162,7 +162,7 @@ function getSession(user, asAdmin, fn) {
   })
 
   request(req, function(err, res, body) {
-    if (err) throw (err) 
+    if (err) throw (err)
     if (res.statusCode >= 400) {
       if (asAdmin) {
         util.logErr('res.body', body)
@@ -179,7 +179,7 @@ function getSession(user, asAdmin, fn) {
         check(req, res)
         assert(res.body.user)
         assert(res.body.session)
-        fn(res.body.session)
+        cb(res.body.session)
       })
     }
     else {
@@ -188,7 +188,7 @@ function getSession(user, asAdmin, fn) {
         catch (e) { throw e }
       }
       assert(res.body.session)
-      fn(res.body.session)
+      cb(res.body.session)
     }
   })
 }
