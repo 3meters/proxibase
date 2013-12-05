@@ -112,13 +112,14 @@ var testUser = {
   name: 'Test User',
   type: 'user',
   email: 'test@3meters.com',
-  password: 'foobar'
+  password: 'foobar',
 }
 
 var adminUser = {
+  name: 'Test Admin User',
   type: 'user',
   email: 'admin',
-  password: 'admin'
+  password: 'admin',
 }
 
 function getUserSession(user, fn) {
@@ -152,21 +153,26 @@ function skip(test, msg) {
  */
 function getSession(user, asAdmin, fn) {
 
+  var body = util.clone(user)
+  body.installationId = '123456'
   var req = makeReq({
     method: 'post',
     uri: '/auth/signin',
-    body: {user: user}
+    body: body,
   })
 
   request(req, function(err, res, body) {
     if (err) throw (err) 
     if (res.statusCode >= 400) {
-      if (asAdmin) throw new Error('Cannot sign in with default admin credentials')
+      if (asAdmin) {
+        util.logErr('res.body', body)
+        throw new Error('Cannot sign in with default admin credentials')
+      }
       // create user
       var req = makeReq({
         method: 'post',
         uri: '/user/create',
-        body: {data: user, secret: 'larissa'},
+        body: {data: user, secret: 'larissa', installationId: '123456'},
       })
       request(req, function(err, res) {
         if (err) throw err
