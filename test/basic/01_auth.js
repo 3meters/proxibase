@@ -38,7 +38,7 @@ exports.cannotAddUserWhenNotSignedIn = function(test) {
 exports.canSignInAsAdmin = function(test) {
   t.post({
     uri: '/auth/signin',
-    body: {user: {email: 'admin', password:'admin'}}
+    body: {email: 'admin', password: 'admin', installationId: '123456'}
   }, function(err, res, body) {
     t.assert(body.user)
     t.assert(body.session)
@@ -53,7 +53,7 @@ exports.adminCannotAddUserWithoutEmail = function(test) {
   t.post({
     uri: '/user/create?' + adminCred,
     body: {data: {name: 'bob', password: 'foobar'},
-        secret: 'larissa'}
+        secret: 'larissa', installationId: '123456'}
   }, 400, function(err, res, body) {
     t.assert(body.error.code === 400.1)
     test.done()
@@ -92,7 +92,7 @@ exports.adminCanAddUserViaRest = function(test) {
 exports.adminCannotAddUserWithDupeEmail = function(test) {
   t.post({
     uri: '/user/create?' + adminCred,
-    body: {data: testUser, secret: 'larissa'}
+    body: {data: testUser, secret: 'larissa', installationId: '123456'}
   }, 403, function(err, res, body) {
     t.assert(body.error.code === 403.1)
     test.done()
@@ -102,7 +102,7 @@ exports.adminCannotAddUserWithDupeEmail = function(test) {
 exports.userCannotSignInWithWrongFields = function(test) {
   t.post({
     uri: '/auth/signin',
-    body: {user: {name: 'Not a user', password: 'password'}}
+    body: {name: 'Not a user', password: 'password', installationId: '123456'}
   }, 400, function(err, res, body) {
     t.assert(body.error.code === 400.1)
     test.done()
@@ -112,7 +112,7 @@ exports.userCannotSignInWithWrongFields = function(test) {
 exports.userCannotSignInWithBadEmail = function(test) {
   t.post({
     uri: '/auth/signin',
-    body: {user: {email: 'billy@notHere', password: 'wrong'}}
+    body: {email: 'billy@notHere', password: 'wrong', installationId: '123456'}
   }, 401, function(err, res, body) {
     t.assert(body.error.code === 401.1)
     test.done()
@@ -122,7 +122,7 @@ exports.userCannotSignInWithBadEmail = function(test) {
 exports.userCannotSignInWithBadPassword = function(test) {
   t.post({
     uri: '/auth/signin',
-    body: {user: {email: testUser.email, password: 'wrong'}}
+    body: {email: testUser.email, password: 'wrong', installationId: '123456'}
   }, 401, function(err, res, body) {
     t.assert(body.error.code === 401.1)
     test.done()
@@ -132,7 +132,7 @@ exports.userCannotSignInWithBadPassword = function(test) {
 exports.userCanSignIn = function(test) {
   t.post({
     uri: '/auth/signin',
-    body: {user: {email: testUser.email, password: testUser.password}}
+    body: {email: testUser.email, password: testUser.password, installationId: '123456'}
   }, function(err, res, body) {
     t.assert(body.user)
     t.assert(body.user._id === testUser._id)
@@ -149,7 +149,7 @@ exports.userCanSignIn = function(test) {
 exports.userCanSignInWithDifferentCasedEmail = function(test) {
   t.post({
     uri: '/auth/signin',
-    body: {user: {email: testUser.email.toUpperCase(), password: testUser.password}}
+    body: {email: testUser.email.toUpperCase(), password: testUser.password, installationId: '123456'}
   }, function(err, res, body) {
     t.assert(body.user)
     t.assert(body.user._id === testUser._id)
@@ -228,7 +228,12 @@ exports.adminCannotChangePasswordDirectly = function(test) {
 exports.userCannotChangePasswordTooWeak = function(test) {
   t.post({
     uri: '/user/changepw?' + userCred,
-    body: {user: {_id: testUser._id, oldPassword: testUser.password, newPassword: 'password'}}
+    body: {
+      userId: testUser._id,
+      oldPassword: testUser.password,
+      newPassword: 'password',
+      installationId: '123456',
+    }
   }, 403, function(err, res, body) {
     t.assert(body.error.code === 403.21)
     test.done()
@@ -238,17 +243,24 @@ exports.userCannotChangePasswordTooWeak = function(test) {
 exports.userCanChangePassword = function(test) {
   t.post({
     uri: '/user/changepw?' + userCred,
-    body: {user: {_id: testUser._id, oldPassword: testUser.password, newPassword: 'newpassword'}}
+    body: {
+      userId: testUser._id,
+      oldPassword: testUser.password,
+      newPassword: 'newpassword',
+      installationId: '123456',
+    },
   }, function(err, res, body) {
+    t.assert(body.user)
+    t.assert(body.session)
     t.post({
       uri: '/auth/signin',
-      body: {user: {email: testUser.email, password: 'newpassword'}}
+      body: {email: testUser.email, password: 'newpassword', installationId: '123456'},
     }, function(err, res, body) {
       t.assert(body.user)
       t.assert(body.session)
       userOldCred = userCred
       userCred = 'user=' + body.session._owner + '&session=' + body.session.key
-      t.assert(userCred != userOldCred)
+      t.assert(userCred !== userOldCred)
       test.done()
     })
   })
@@ -290,19 +302,10 @@ exports.userCanChangeOwnEmailViaRest = function(test) {
   })
 }
 
-exports.changingEmailInvalidatesOldSession = function(test) {
-  t.get({
-    uri: '/data/documents?' + userCred,
-  }, 401, function(err, res, body) {
-    t.assert(body.error.code === 401.1)
-    test.done()
-  })
-}
-
 exports.userCanSignInWithNewEmail = function(test) {
   t.post({
     uri: '/auth/signin',
-    body: {user: {email: 'authtest3@3meters.com', password: 'newpassword'}}
+    body: {email: 'authtest3@3meters.com', password: 'newpassword', installationId: '123456'}
   }, function(err, res, body) {
     t.assert(body.session)
     userCred = 'user=' + body.session._owner + '&session=' + body.session.key
@@ -330,7 +333,8 @@ exports.annonymousUserCannotCreateUserViaApiWithoutSecret = function(test) {
         name: 'AuthTestUser2',
         email: 'authtest2@3meters.com',
         password: 'foobar'
-      }
+      },
+      installationId: '123456',
     },
   }, 400, function(err, res, body) {
     t.assert(body.error.code === 400.1)
@@ -348,7 +352,8 @@ exports.annonymousUserCannotCreateUserViaApiWithWrongSecret = function(test) {
         email: 'authtest2@3meters.com',
         password: 'foobar'
       },
-      secret: 'wrongsecret'
+      secret: 'wrongsecret',
+      installationId: '123456',
     }
   }, 401, function(err, res, body) {
     t.assert(body.error.code === 401.3)
@@ -367,6 +372,7 @@ exports.annonymousUserCannotCreateUserViaApiWithoutWhitelistedEmail = function(t
         password: 'foobar'
       },
       secret: 'larissa',
+      installationId: '123456',
     }
   }, 401, function(err, res, body) {
     t.assert(body.error.code === 401.4)
@@ -385,6 +391,7 @@ exports.annonymousUserCanCreateUserViaApi = function(test) {
         password: 'foobar'
       },
       secret: 'larissa',
+      installationId: '123456',
     }
   }, function(err, res, body) {
     t.assert(body.user)

@@ -110,7 +110,8 @@ exports.userWithResetRoleCanExecuteResetPassword = function(test) {
   t.post({
     uri: '/user/resetpw?' + newUserCred,
     body: {
-      password: 'newpass'
+      password: 'newpass',
+      installationId: installationId,
     }
   }, function(err, res, body) {
     t.assert(body.user)
@@ -119,10 +120,11 @@ exports.userWithResetRoleCanExecuteResetPassword = function(test) {
     t.assert(body.session.expirationDate >= (util.now() + (24*60*60*1000)))
     t.post({
       uri: '/auth/signin',
-      body: { user: {
+      body: {
         email: user.email,
         password: 'newpass',
-      }}
+        installationId: installationId,
+      }
     }, function(err, res, body) {
       test.done()
     })
