@@ -397,6 +397,7 @@ exports.annonymousUserCanCreateUserViaApi = function(test) {
     t.assert(body.user)
     t.assert(body.session)
     t.assert(body.session.key)
+    t.assert(body.user.validateEmailUrl)
     newUserId = body.user._id
     newUserEmailValidateUrl = body.user.validateEmailUrl
     newUserCred = 'user=' + body.user._id + '&session=' + body.session.key
