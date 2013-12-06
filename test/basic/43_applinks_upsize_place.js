@@ -57,6 +57,7 @@ exports.insertPlaceFoursquareSaveApplinks = function(test) {
         entity: outlander,
         insertApplinks: true,
         applinksTimeout: 10000,
+        includeRaw: true,
         log: true,
       }
     }
@@ -73,11 +74,10 @@ exports.insertPlaceFoursquareSaveApplinks = function(test) {
         else applinkMap[link.shortcut.app]++
       })
       t.assert(1 === applinkMap.website)
-      t.assert(1 === applinkMap.facebook)
+      t.assert(!applinkMap.facebook) // alcohal
       t.assert(1 === applinkMap.googleplus)
       t.assert(1 === applinkMap.foursquare)
-      log('Too many twitter links found, temporarily skipping test')
-      // t.assert(1 === applinkMap.twitter)
+      t.assert(1 === applinkMap.twitter)
       outlander = place
       test.done()
     })
@@ -114,7 +114,7 @@ exports.googlePlaceDedupesWhenRefChanges = function(test) {
 }
 
 exports.insertPlaceGoogleSaveApplinks = function(test) {
-  outlander = null
+  ltd = null
   if (disconnected) return skip(test)
   var post = {
     uri: '/places/near',
@@ -129,16 +129,16 @@ exports.insertPlaceGoogleSaveApplinks = function(test) {
   }
   t.post(post, function(err, res, body) {
     body.data.forEach(function(place) {
-      if (/^Outlander/.test(place.name)) {
-        outlander = place
+      if (/^LTD/.test(place.name)) {
+        ltd = place
         return
       }
     })
-    t.assert(outlander)
+    t.assert(ltd)
     var post = {
       uri: '/do/insertEntity?' + userCred,
       body: {
-        entity: outlander,
+        entity: ltd,
         insertApplinks: true,
         applinksTimeout: 15000,
         includeRaw: true,
@@ -168,11 +168,11 @@ exports.insertPlaceGoogleSaveApplinks = function(test) {
       t.assert(applinkMap.facebook === 1)
       t.assert(applinkMap.googleplus === 1)
       t.assert(applinkMap.foursquare === 1)
-      t.assert(applinkMap.urbanspoon >= 1)  // proves that factual lookup works
-      t.assert(applinkMap.twitter >= 1)
+      t.assert(applinkMap.yelp === 1)
+      t.assert(applinkMap.urbanspoon === 1)  // proves that factual lookup works
 
-      outlander = place
-      cleanup(outlander, function(err) {
+      ltd = place
+      cleanup(ltd, function(err) {
         test.done()
       })
     })

@@ -474,7 +474,7 @@ exports.canDeleteLink = function(test) {
 }
 
 exports.userCannotDeleteUsingWildcard = function(test) {
-  t.del({ uri: '/data/documents/*?' + userCred }, 404,
+  t.del({ uri: '/data/documents/*?' + userCred }, 403,
   function(err, res, body) {
     test.done()
   })
