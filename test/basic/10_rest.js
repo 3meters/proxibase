@@ -49,6 +49,24 @@ exports.genIdWorks = function(test) {
   })
 }
 
+exports.genIdBeacons = function(test) {
+  t.get('/data/beacons?genId=1&bssid=00:11:22:33:44',
+  function(err, res, body) {
+    t.assert(body.data._id)
+    t.assert(body.data._id === util.statics.schemas.beacon.id + '.00:11:22:33:44')
+    test.done()
+  })
+}
+
+exports.genIdInstalls = function(test) {
+  t.get('/data/installs?genId=1&installationId=12345',
+  function(err, res, body) {
+    t.assert(body.data._id)
+    t.assert(body.data._id === util.statics.schemas.install.id + '.12345')
+    test.done()
+  })
+}
+
 exports.cannotPostDocWithMissingDataTag = function(test) {
   t.post({
     uri: '/data/documents?' + userCred,
