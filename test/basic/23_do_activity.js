@@ -23,9 +23,9 @@ var testLatitude2 = 47.1
 var testLongitude2 = -122.1
 var radiusTiny = 0.000001
 var radiusBig = 10000
-var installationId1 = '5905d547-8321-4612-abe1-00001'
-var installationId2 = '5905d547-8321-4612-abe1-00002'
-var installationId3 = '5905d547-8321-4612-abe1-00003'
+var installId1 = '5905d547-8321-4612-abe1-00001'
+var installId2 = '5905d547-8321-4612-abe1-00002'
+var installId3 = '5905d547-8321-4612-abe1-00003'
 var placeMovedToId
 
 var testUserTom = {
@@ -256,7 +256,7 @@ exports.registerInstallOne = function (test) {
         _id: 'in.010101.00000.555.000001',
         _user: testUserTom._id,
         registrationId: 'registration_id_testing_user_tom',
-        installationId: installationId1,
+        installId: installId1,
         clientVersionCode: 10,
         clientVersionName: '0.8.12'
       }
@@ -269,12 +269,12 @@ exports.registerInstallOne = function (test) {
       uri: '/do/find',
       body: {
         collection:'installs',
-        find:{ installationId: installationId1 }
+        find:{ installId: installId1 }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
       t.assert(body.data && body.data[0])
-      t.assert(body.data[0].installationId)
+      t.assert(body.data[0].installId)
       t.assert(body.data[0].registrationId)
       t.assert(body.data[0].registrationId === 'registration_id_testing_user_tom')
       t.assert(body.data[0].users.length === 2)
@@ -291,7 +291,7 @@ exports.registerInstallTwo = function (test) {
         _id: 'in.010101.00000.555.000002',
         _user: testUserBob._id,
         registrationId: 'registration_id_testing_user_bob',
-        installationId: installationId2,
+        installId: installId2,
         clientVersionCode: 10,
         clientVersionName: '0.8.12'
       }
@@ -304,12 +304,12 @@ exports.registerInstallTwo = function (test) {
       uri: '/do/find',
       body: {
         collection: 'installs',
-        find:{ installationId: installationId2 }
+        find:{ installId: installId2 }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
       t.assert(body.data && body.data[0])
-      t.assert(body.data[0].installationId)
+      t.assert(body.data[0].installId)
       t.assert(body.data[0].registrationId)
       t.assert(body.data[0].registrationId === 'registration_id_testing_user_bob')
       t.assert(body.data[0].users && body.data[0].users.length === 1)
@@ -327,7 +327,7 @@ exports.registerInstallThree = function (test) {
         _id: 'in.010101.00000.555.000003',
         _user: testUserAlice._id,
         registrationId: 'registration_id_testing_user_alice',
-        installationId: installationId3,
+        installId: installId3,
         clientVersionCode: 10,
         clientVersionName: '0.8.12'
       }
@@ -340,12 +340,12 @@ exports.registerInstallThree = function (test) {
       uri: '/do/find',
       body: {
         collection: 'installs',
-        find:{ installationId: installationId3 }
+        find:{ installId: installId3 }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
       t.assert(body.data && body.data[0])
-      t.assert(body.data[0].installationId)
+      t.assert(body.data[0].installId)
       t.assert(body.data[0].registrationId)
       t.assert(body.data[0].registrationId === 'registration_id_testing_user_alice')
       t.assert(body.data[0].users && body.data[0].users.length === 1)
@@ -360,7 +360,7 @@ exports.updateBeaconsInstallOne = function (test) {
     uri: '/do/getEntitiesByProximity?' + userCredTom,
     body: {
       beaconIds: [testBeacon._id],
-      installationId: installationId1
+      installId: installId1
     }
   }, function(err, res, body) {
     t.assert(body.data && body.data.length >= 0)
@@ -370,7 +370,7 @@ exports.updateBeaconsInstallOne = function (test) {
       uri: '/do/find',
       body: {
         collection:'installs',
-        find:{ installationId: installationId1 }
+        find:{ installId: installId1 }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -387,7 +387,7 @@ exports.updateBeaconsInstallTwo = function (test) {
     uri: '/do/getEntitiesByProximity?' + userCredBob,
     body: {
       beaconIds: [testBeacon._id],
-      installationId: installationId2
+      installId: installId2
     }
   }, function(err, res, body) {
     t.assert(body.data && body.data.length >= 0)
@@ -397,7 +397,7 @@ exports.updateBeaconsInstallTwo = function (test) {
       uri: '/do/find',
       body: {
         collection:'installs',
-        find:{ installationId: installationId2 }
+        find:{ installId: installId2 }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -414,7 +414,7 @@ exports.updateBeaconsInstallThree = function (test) {
     uri: '/do/getEntitiesByProximity?' + userCredAlice,
     body: {
       beaconIds: [testBeacon2._id],
-      installationId: installationId3
+      installId: installId3
     }
   }, function(err, res, body) {
     t.assert(body.data && body.data.length == 0)
@@ -424,7 +424,7 @@ exports.updateBeaconsInstallThree = function (test) {
       uri: '/do/find',
       body: {
         collection:'installs',
-        find:{ installationId: installationId3 }
+        find:{ installId: installId3 }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
