@@ -14,7 +14,7 @@ var user
 var _exports = {}                    // for commenting out tests
 
 var validationDate
-var installationId = '567'
+var installId = '567'
 var registrationId = '890'
 var newUserCred
 
@@ -52,7 +52,7 @@ exports.canRegisterDevice = function(test) {
     uri: '/do/registerInstall?' + userCred,
     body: {
       install: {
-        installationId: installationId,
+        installId: installId,
         registrationId: registrationId,
         _user: userId
       }
@@ -69,7 +69,7 @@ exports.requestPasswordResetFailsWithWrongId = function(test) {
     uri: '/user/reqresetpw',
     body: {
       email: user.email,
-      installationId: 'wrongId',
+      installId: 'wrongId',
     }
   }, 401, function(err, res, body) {
     t.assert(401 === body.error.code)
@@ -82,7 +82,7 @@ exports.requestPasswordReset = function(test) {
     uri: '/user/reqresetpw',
     body: {
       email: user.email,
-      installationId: installationId,
+      installId: installId,
     }
   }, function(err, res, body) {
     t.assert(body.session)
@@ -93,7 +93,7 @@ exports.requestPasswordReset = function(test) {
 }
 
 exports.requestPasswordResetDoesntLeakSessions = function(test) {
-  t.get('/data/sessions?filter[_owner]=' + user._id + '&filter[_install]=in.' + installationId + '&' + adminCred,
+  t.get('/data/sessions?filter[_owner]=' + user._id + '&filter[_install]=in.' + installId + '&' + adminCred,
   function(err, res, body) {
     t.assert(1 === body.count)
     test.done()
@@ -128,7 +128,7 @@ exports.userWithResetRoleCanExecuteResetPassword = function(test) {
     uri: '/user/resetpw?' + newUserCred,
     body: {
       password: 'newpass',
-      installationId: installationId,
+      installId: installId,
     }
   }, function(err, res, body) {
     t.assert(body.user)
@@ -140,7 +140,7 @@ exports.userWithResetRoleCanExecuteResetPassword = function(test) {
       body: {
         email: user.email,
         password: 'newpass',
-        installationId: installationId,
+        installId: installId,
       }
     }, function(err, res, body) {
       test.done()
@@ -149,7 +149,7 @@ exports.userWithResetRoleCanExecuteResetPassword = function(test) {
 }
 
 exports.resetPasswordDoesntLeakSessions = function(test) {
-  t.get('/data/sessions?filter[_owner]=' + user._id + '&filter[_install]=in.' + installationId + '&' + adminCred,
+  t.get('/data/sessions?filter[_owner]=' + user._id + '&filter[_install]=in.' + installId + '&' + adminCred,
   function(err, res, body) {
     t.assert(1 === body.count)
     test.done()
