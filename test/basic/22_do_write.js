@@ -358,7 +358,6 @@ exports.registerInstallOne = function (test) {
     uri: '/do/registerInstall?' + userCredBob,
     body: {
       install: {
-        _id: 'in.010101.00000.555.000001',
         _user: testUserBob._id,
         registrationId: 'registration_id_testing_user_bob',
         installId: installId1,
@@ -428,7 +427,6 @@ exports.registerInstallTwo = function (test) {
     uri: '/do/registerInstall?' + userCredBob,
     body: {
       install: {
-        _id: 'in.010101.00000.555.000002',
         _user: testUserBob._id,
         registrationId: 'registration_id_testing_user_bob',
         installId: installId2,
@@ -464,7 +462,6 @@ exports.registerInstallThree = function (test) {
     uri: '/do/registerInstall?' + userCredAlice,
     body: {
       install: {
-        _id: 'in.010101.00000.555.000003',
         _user: testUserAlice._id,
         registrationId: 'registration_id_testing_user_alice',
         installId: installId3,
