@@ -362,25 +362,6 @@ exports.annonymousUserCannotCreateUserViaApiWithWrongSecret = function(test) {
 }
 
 
-exports.annonymousUserCannotCreateUserViaApiWithoutWhitelistedEmail = function(test) {
-  t.post({
-    uri: '/user/create',
-    body: {
-      data: {
-        name: 'AuthTestUserShouldFail',
-        email: 'authBest@3meters.com',
-        password: 'foobar'
-      },
-      secret: 'larissa',
-      installId: '123456',
-    }
-  }, 401, function(err, res, body) {
-    t.assert(body.error.code === 401.4)
-    test.done()
-  })
-}
-
-
 exports.annonymousUserCanCreateUserViaApi = function(test) {
   t.post({
     uri: '/user/create',
@@ -490,7 +471,7 @@ exports.userCanInviteNewUser = function(test) {
     uri: '/user/invite?' + userCred,
     body: {
       emails: ['test@3meters.com'],
-      name: 'Test User From t1_auth',
+      name: 'Test Invite User From t1_auth',
       message:  'This is soooo cool',
     }
   }, function(err, res, body) {
@@ -508,11 +489,33 @@ exports.userCanInviteNewUser = function(test) {
     }, function(err, res, body) {
       t.assert(body.data)
       t.assert(body.data.length)
-      test.done()
+      t.post({
+        uri: '/user/create',
+        body: {
+          data: {
+            name: 'TestInvitedUser',
+            email: 'test@3meters.com',
+            password: 'foobar'
+          },
+          secret: 'larissa',
+          installationId: '123456',
+        }
+      }, function(err, res, body) {
+        t.assert(body.user)
+        t.assert(body.session)
+        t.assert(body.session.key)
+        t.assert(body.user.validationDate)
+        t.assert(!body.user.validationNotifyDate)
+        t.del({
+          uri:  '/data/users/' + body.user._id + '?' + adminCred,
+        }, function(err, res, body) {
+          t.assert(1 === body.count)
+          test.done()
+        })
+      })
     })
   })
 }
-
 exports.userCanSignOut = function(test) {
   t.get('/auth/signout?' + userCred,
   function(err, res, body) {
