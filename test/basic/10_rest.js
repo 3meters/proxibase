@@ -59,7 +59,7 @@ exports.genIdBeacons = function(test) {
 }
 
 exports.genIdInstalls = function(test) {
-  t.get('/data/installs?genId=1&installationId=12345',
+  t.get('/data/installs?genId=1&installId=12345',
   function(err, res, body) {
     t.assert(body.data._id)
     t.assert(body.data._id === util.statics.schemas.install.id + '.12345')
