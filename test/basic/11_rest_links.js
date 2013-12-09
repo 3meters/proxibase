@@ -88,6 +88,24 @@ exports.findLinksWorks = function(test) {
   })
 }
 
+exports.findLinksFieldProjectionWorks = function(test) {
+  query.body = {links: [{to: {documents: 1}, fields: {type: 1}}]}
+  t.post(query, function(err, res, body) {
+    t.assert(body.data.links)
+    t.assert(1 === body.data.links.length)
+    var links = body.data.links[0]
+    t.assert(links.to)
+    t.assert(links.to.documents)
+    t.assert(2 === links.to.documents.length)
+    links.to.documents.forEach(function(doc) {
+      t.assert(doc._id)
+      t.assert(doc.type)
+      t.assert(!doc.modifiedDate)
+    })
+    test.done()
+  })
+}
+
 exports.findLinksFilterWorks = function(test) {
   query.body = {links: [{to: {documents: 1}, filter: {type: 'watch'}}]}
   t.post(query, function(err, res, body) {
