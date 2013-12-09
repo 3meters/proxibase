@@ -77,6 +77,7 @@ exports.refreshKaosamai = function(test) {
         }
         if ('googleplus' === applink.type) {
           t.assert(applink.appId)
+          t.assert(applink.name && 'googleplus' !== applink.name)
         }
       })
       t.assert(util.tipe.isUndefined(appMap.factual))

@@ -194,12 +194,21 @@ exports.insertPlaceEntity = function(test) {
         var applinks = body.data
         t.assert(applinks && applinks.length)
         t.assert(links && links.length)
+        var applinkMap = {}
         applinks.forEach(function(applink) {
+          if (!util.tipe.isNumber(applinkMap[applink.type])) {
+            applinkMap[applink.type] = 0
+          }
+          applinkMap[applink.type]++
           t.assert(links.some(function(link) {
             return (applink._id === link._from)
           }), applink)
         })
         t.assert(applinks.length === links.length)
+        t.assert(applinkMap.twitter === 1, applinkMap)
+        t.assert(applinkMap.website === 1, applinkMap)
+        t.assert(applinkMap.facebook >= 1, applinkMap)
+        t.assert(applinkMap.facebook < 5, applinkMap)
         test.done()
       })
     }
@@ -211,6 +220,7 @@ exports.insertPlaceEntityAgain = function(test) {
   var body = {
     entity: luckyStrike,
     insertApplinks: true,
+    includeRaw: false,
   }
   t.post({uri: '/do/insertEntity?' + userCred, body: body}, 403,
     function(err, res, body) {
@@ -220,7 +230,7 @@ exports.insertPlaceEntityAgain = function(test) {
       newPlace.linksIn.forEach(function(link) {
         t.assert(link.shortcut.sortDate > luckyStrikeSplace.modifiedDate)  // proves applinks were updated
       })
-      t.assert(luckyStrikeSplace.linksIn.length === newPlace.linksIn.length)  // proves link records were not duped
+      t.assert(luckyStrikeSplace.linksIn.length === newPlace.linksIn.length, luckyStrikeSplace.linksIn)  // proves link records were not duped
       test.done()
     }
   )

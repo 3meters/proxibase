@@ -182,8 +182,12 @@ exports.getMassenaModern = function(test) {
   function(err, res, body) {
     var applinks = body.data
     t.assert(applinks.length === 2)
+    t.assert(applinks[0].type === 'website')
+    t.assert(applinks[0].appId === applinks[0].appUrl)
+    t.assert(applinks[0].name === 'Project Massena Modern')
     t.assert(applinks[1].type === 'twitter')
     t.assert(applinks[1].appId === 'massenamodern')
+    t.assert(applinks[1].name === '@massenamodern')
     test.done()
   })
 }
