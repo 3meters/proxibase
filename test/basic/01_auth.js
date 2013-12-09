@@ -498,7 +498,7 @@ exports.userCanInviteNewUser = function(test) {
             password: 'foobar'
           },
           secret: 'larissa',
-          installationId: '123456',
+          installId: '123456',
         }
       }, function(err, res, body) {
         t.assert(body.user)
