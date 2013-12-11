@@ -79,6 +79,7 @@ exports.getPlacesNearLocationCapsBadLimits = function(test) {
       location: ballRoomLoc,
       provider: 'foursquare',
       includeRaw: false,
+      timeout: 10000,
       limit: 100,
     }
   }
