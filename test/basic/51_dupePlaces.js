@@ -205,7 +205,7 @@ exports.insertPlaceEntity = function(test) {
           }), applink)
         })
         t.assert(applinks.length === links.length)
-        t.assert(applinkMap.twitter === 1, applinkMap)
+        t.assert(!applinkMap.twitter || (applinkMap.twitter === 1), applinkMap)
         t.assert(applinkMap.website === 1, applinkMap)
         t.assert(applinkMap.facebook >= 1, applinkMap)
         t.assert(applinkMap.facebook < 5, applinkMap)
