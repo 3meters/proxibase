@@ -54,6 +54,7 @@ exports.refreshKaosamai = function(test) {
         placeId: place._id,
         save: true,
         includeRaw: true,
+        log: true,
         timeout: 20000,
       }
     }, function(err, res, body) {
