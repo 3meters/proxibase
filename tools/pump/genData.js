@@ -1,38 +1,53 @@
 /*
  * Generate dummy data for a proxibase server
- *   Save to JSON files or directly to mongodb
- *   Silently overwrites existing files or tables
+ *   Silently overwrites existing collections
  */
 
-var util = require('proxutils') // load proxibase extentions to node util
-var dblib = require('proxdb')       // Proxdb lib
-var mongo = dblib.mongodb
-var log = util.log
 var fs = require('fs')
 var path = require('path')
 var async = require('async')
+var util = require('proxutils') // load proxibase extentions to node util
+var log = util.log
+var statics = util.statics
+var _schemas = statics.schemas
+var mongo = require('proxdb')       // Proxdb lib
+var db                                    // Mongodb connection object
 var constants = require('../../test/constants')
 var testUtil = require('../../test/util')
-var tableIds = util.statics.collectionIds
-var table = {}                            // Map of tables to be generated
-var startTime                             // Elapsed time counter
-var db                                    // Mongodb connection object
-var save                                  // Save function
-var options = {                           // Default options
-  users: 3,                           // Count of users
-  beacons: 3,                         // Count of beacons
-  epb: 5,                             // Entites per beacon
-  spe: 5,                             // Subentities (aka children) per beacon
-  cpe: 5,                             // Comments per entity
-  database: 'proxTest',               // Database name
-  validate: false,                    // Validate database data against schema
-  files: false,                       // Output to JSON files rather than to datbase
-  out: 'files'                        // File output directory
+var docs = {                            // Map of collections to be generated
+  users: [],
+  beacons: [],
+  places: [],
+  posts: [],
+  applinks: [],
+  comments: [],
+  links: [],
 }
-
+var startTime                             // Elapsed time counter
+var options = {                           // Default options
+  users: 10,                           // Count of users
+  beacons: 10,                         // Count of beacons
+  epb: 1,                             // Places per beacon
+  spe: 5,                             // Posts (aka children) per place
+  ape: 5,                             // Applinks per place
+  cpe: 2,                             // Comments per post and place entity
+  likes: 2,
+  watch: 2,
+  database: 'proxTest',               // Database name
+}
+var beaconIds = []
+var placeIds = []
+var postIds = []
+var applinkIds = []
+var commentIds = []
+var entityCount = { applinks: 0, beacons: 0, comments: 0, places: 0, posts: 0 }
 
 module.exports = function(profile, callback) {
-  callback = callback || console.error
+
+  callback = callback || function(err, result) {
+    if (err) return console.error(err.stack||err)
+    if (result) console.log(result)
+  }
 
   startTime = new Date().getTime() // start program timer
 
@@ -40,221 +55,215 @@ module.exports = function(profile, callback) {
     options[key] = profile[key]
   }
 
-  if (options.files) {
-    // save to files
-    if (!path.existsSync(options.out)) fs.mkdirSync(options.out)
-    log('Saving to files...')
-    save = saveTo.file
-    run(callback)
-  }
+  // Configure
+  var config = util.config                  // Use the default server database connection
+  config.db.database = options.database     // Override database name
+  var dbUri = 'mongodb://' + config.db.host + ':' + config.db.port +  '/' + config.db.database
 
-  else {
-    // save to database
-    var config = util.config           // Use the default server database connection
-    config.db.database = options.database     // Override database name
-    var dbUri = 'mongodb://' + config.db.host + ':' + config.db.port +  '/' + config.db.database + '?safe=true'
+  log('Saving to database ' + dbUri + ' with validation')
 
-    if (options.validate) {
-      log('Saving to database ' + dbUri + ' with validation')
-      save = saveTo.dbValidate
-    }
-    else {
-      log('Saving to database ' + dbUri)
-      save = saveTo.db
-    }
-
-    mongo.connect(dbUri, function(err, database) {
-      if (err) return callback(err)
-      db = database
-      db.dropDatabase(function(err) {
+  mongo.connect(dbUri, function(err, database) {
+    if (err) return callback(err)
+    db = database
+    db.dropDatabase(function(err) {
+      if (err) throw err
+      mongo.initDb(config, function(err, proxdb) {
         if (err) throw err
-        dblib.init(config, function(err, proxdb) {
-          if (err) throw err
-          db.close()
-          db = proxdb
-          return run(callback)
-        })
+        db.close()
+        db = proxdb
+        return run(callback)
       })
     })
-  }
+  })
 }
 
-
 function run(callback) {
+
+  log('generating users')
   genUsers()
-  // genDocuments()  now added by server startup code
-  genBeacons()
-  genEntities()
-  genChildEntities()
+
+  log('generating beacons')
+  genEntityRecords([0], options.beacons, 'beacon', null)
+
+  log('generating places')
+  genEntityRecords(beaconIds, options.epb, 'place', 'proximity')
+
+  log('generating posts')
+  genEntityRecords(placeIds, options.spe, 'post', 'content')
+
+  log('generating applinks')
+  genEntityRecords(placeIds, options.ape, 'applink', 'content')
+
+  log('generating comments')
+  var placeAndPostIds = placeIds.concat(postIds)
+  genEntityRecords(placeAndPostIds, options.cpe, 'comment', 'content')
+
   saveAll(function(err) {
-    if (err) return callback(err)
-    // if (!options.files) db.close()
-    var elapsedTime = ((new Date().getTime()) - startTime) / 1000
     if (db) db.close()
+    if (err) return callback(err)
+    var elapsedTime = ((new Date().getTime()) - startTime) / 1000
     log('genData finished in ' + elapsedTime + ' seconds')
     return callback()
   })
 }
 
 function genUsers() {
-  table.users = []
+
   for (var i = 0; i < options.users; i++) {
-    var user = constants.getDefaultRecord('users')
-    user._id = testUtil.genId('users', i)
+    var user = constants.getDefaultDoc('user')
+    user._id = testUtil.genId('user', i)
     user.name = 'Test User ' + (i + 1)
     user.email = 'testuser' + (i + 1) + '@3meters.com'
     user.password = 'doobar' + i
-    table.users.push(user)
+    docs.users.push(user)
+  }
+
+  // Users like and watch each other
+  for (var i = 0; i < docs.users.length; i++) {
+    for (var j = 0; j < docs.users.length; j++) {
+
+      if (i == j) continue   // Don't like or watch yourself
+
+      // like
+      docs.links.push({
+        _id:      testUtil.genId('link', docs.links.length),
+        _from:    docs.users[i]._id,
+        _to:      docs.users[j]._id,
+        type:     'like',
+        _creator: docs.users[i]._id,
+      })
+
+      // watch
+      docs.links.push({
+        _id:      testUtil.genId('link', docs.links.length),
+        _from:    docs.users[i]._id,
+        _to:      docs.users[j]._id,
+        type:     'watch',
+        _creator: docs.users[i]._id,
+      })
+    }
   }
 }
 
 function genDocuments() {
-  table.documents = []
-  table.documents.push(constants.getDefaultRecord('documents'))
+  docs.documents.push(constants.getDefaultDoc('document'))
 }
 
-function genBeacons() {
-  table.beacons = []
-  for (var i = 0; i < options.beacons; i++) {
-    var beacon = constants.getDefaultRecord('beacons')
-    beacon._id = testUtil.genBeaconId(i)
-    beacon.ssid = beacon.ssid + ' ' + i
-    beacon.bssid = beacon._id.substring(5)
-    beacon._creator = beacon._modifier =
-      testUtil.genId('users', Math.floor((i * options.users) / options.beacons))
-    // Inch our way around the world
-    beacon.latitude = (beacon.latitude + (i / 1000)) % 180
-    beacon.longitude = (beacon.longitude + (i / 1000)) % 180
-    table.beacons.push(beacon)
-  }
-}
+function genEntityRecords(parentIds, count, entitySchema, linkType) {
 
-function genEntities() {
-  genEntityRecords(options.beacons * options.epb, true)
-}
+  for (var p = 0; p < parentIds.length; p++) {
+    for (var i = 0; i < count; i++) {
 
-function genChildEntities(callback) {
-  genEntityRecords(options.beacons * options.epb * options.spe, false)
-}
+      var newEnt = constants.getDefaultDoc(entitySchema)
+      var entDocs = docs[_schemas[entitySchema].collection]
 
-// Makes entity and link records for parent entities (isRoot = true)
-//   or child entities (isRoot = false)
-function genEntityRecords(count, isRoot) {
+      // Entity
+      if (entitySchema === statics.schemaBeacon) {
+        newEnt._id = testUtil.genBeaconId(i)
+        newEnt.bssid = newEnt._id.substring(5)
+        newEnt.ssid = newEnt.ssid + ' ' + entDocs.length
+      }
+      else {
+        newEnt._id = testUtil.genId(entitySchema, entDocs.length)
+      }
+      newEnt.name = newEnt.name + ' ' + entDocs.length
+      newEnt._creator = testUtil.genId('user', (entDocs.length % options.users))
 
-  table.entities = table.entities || []
-  table.links = table.links || []
+      entDocs.push(newEnt)
 
-  var countParents = options.beacons * options.epb // child Ids start after parent Ids
+      // Create links
+      if (entitySchema !== 'beacon') {
 
-  for (var i = 0; i < count; i++) {
-    var 
-      newEnt = constants.getDefaultRecord('entities'),
-      recNum = isRoot ? i : i + countParents,
-      beaconNum = Math.floor(i / (isRoot ? options.epb : options.beacons * options.epb))
-      ownerRecNum = Math.floor((i * options.users) / (options.beacons * options.epb))
+        var links = docs.links
 
+        // Link
+        var link = {
+          _id:    testUtil.genId('link', links.length),
+          _from:  newEnt._id,
+          _to:    parentIds[p],
+          type:   linkType,
+          _creator:  newEnt._creator,
+        }
+        if (entitySchema === 'place') {
+          link.proximity = { primary: true, signal: -80 }
+        }
+        links.push(link)
 
-    newEnt._id = testUtil.genId('entities', recNum)
-    newEnt.name = isRoot ? 
-      newEnt.name + ' ' + (recNum + 1) :
-      newEnt.name + ' Child ' + (recNum + 1)
-    table.entities.push(newEnt)
+        // Create
+        links.push({
+          _id:    testUtil.genId('link', links.length),
+          _from:  newEnt._creator,
+          _to:    newEnt._id,
+          type:   'create',
+          _creator:  newEnt._creator,
+        })
 
-    // Link
-    newLink = constants.getDefaultRecord('links')
-    newLink._id = testUtil.genId('links', recNum)
-    newLink._from = newEnt._id
-    newLink.fromCollectionId = tableIds['entities']
-    if (isRoot) {
-      // Set the owner fields
-      newEnt._creator = newEnt._modifier = testUtil.genId('users', ownerRecNum)
-      // Link to beacon
-      newLink._to = testUtil.genBeaconId(beaconNum)
-      newLink.toCollectionId = tableIds['beacons']
-      newLink.type = 'proximity'
-    }
-    else {
-      // Set the owner fields
-      newEnt._creator = newEnt._modifier =
-        testUtil.genId('users', Math.floor(ownerRecNum / options.spe))
-      // Link to parent entity
-      var parentRecNum = Math.floor(i / options.spe) // yeah, this is right
-      newLink._to = testUtil.genId('entities', parentRecNum)
-      newLink.toCollectionId = tableIds['entities']
-      newLink.type = 'content'
-    }
-    table.links.push(newLink)
+        if (entitySchema === 'place') {
 
-    // Comments
-    newEnt.comments = []
-    for (var j = 0; j < options.cpe; j++) {
-      newEnt.comments.push(constants.comment)
+          // Like
+          for (var u = 0; u < options.users && u < options.likes; u++) {
+            links.push({
+              _id:      testUtil.genId('link', links.length),
+              _from:    testUtil.genId('user', u),
+              _to:      newEnt._id,
+              type:     'like',
+              _creator: testUtil.genId('user', u),
+            })
+          }
+
+          // Watch
+          for (var u = 0; u < options.users && u < options.watch; u++) {
+            links.push({
+              _id:      testUtil.genId('link', links.length),
+              _from:    testUtil.genId('user', u),
+              _to:      newEnt._id,
+              type:     'watch',
+              _creator: testUtil.genId('user', u),
+            })
+          }
+        }
+      }
+
+      switch (entitySchema) {
+        case 'beacon':  beaconIds.push(newEnt._id);   break
+        case 'place':   placeIds.push(newEnt._id);    break
+        case 'applink': applinkIds.push(newEnt._id);  break
+        case 'post':    postIds.push(newEnt._id);    break
+        case 'comment': commentIds.push(newEnt._id);  break
+      }
+
     }
   }
 }
 
 function saveAll(callback) {
-  var tableNames = []
-  for (name in table) {
-    tableNames.push(name)
+  var collectionNames = []
+  var linkCollection
+  for (name in docs) {
+    name === 'links' ? linkCollection = true : collectionNames.push(name)
   }
-  async.forEachSeries(tableNames, save, callback)
+  async.forEachSeries(collectionNames, save, function(err) {
+    if (err) return callback(err)
+    if (linkCollection) return save('links', callback)
+    callback()
+  })
 }
 
-function list(tableName, fn) {
-  log('tableName: ' + tableName)
-  log('fn: ' + fn)
-  fn()
-}
+function save(collectionName, callback) {
+  var collection = db.collection(collectionName)
 
-var saveTo = {
+  async.forEachSeries(docs[collectionName], saveRow, function(err) {
+    if (err) return callback(err)
+    log(docs[collectionName].length + ' ' + collectionName)
+    return callback()
+  })
 
-  file:
-    // save to a JSON file ready to load via push
-    function (tableName, callback) {
-      var fileName = options.out + '/' + tableName + '.json'
-      fs.writeFileSync(fileName, JSON.stringify(table[tableName]))
-      log(table[tableName].length + ' ' + tableName)
-      return callback()
-    },
-
-  db:
-    // save without schema validation
-    function (tableName, callback) {
-      var collection = db.collection(tableName)
-
-      // save row-at-a-time because mongo chokes saving large arrays
-      async.forEachSeries(table[tableName], saveRow, function(err) {
-        if (err) return callback(err)
-        log(table[tableName].length + ' ' + tableName)
-        return callback()
-      })
-
-      function saveRow(row, callback) {
-        collection.insert(row, {safe: true}, function(err) {
-          return callback(err)
-        })
-      }
-    },
-
-  dbValidate:
-    // save with schema validation
-    function (tableName, callback) {
-      var collection = db.collection(tableName)
-
-      async.forEachSeries(table[tableName], saveRow, function(err) {
-        if (err) return callback(err)
-        log(table[tableName].length + ' ' + tableName)
-        return callback()
-      })
-
-      function saveRow(row, callback) {
-        var user = util.adminUser
-        if (row._creator) user = {_id: row._creator, role: 'user'}
-        var options = {user: user}
-        collection.safeInsert(row, options, function(err) {
-          return callback(err)
-        })
-      }
-    }
+  function saveRow(row, callback) {
+    var user = (row._creator)
+      ? {_id: row._creator, role: 'user'}
+      : util.adminUser
+    collection.safeInsert(row, {user: user}, function(err) {
+      return callback(err)
+    })
+  }
 }

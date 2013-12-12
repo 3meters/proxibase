@@ -4,13 +4,13 @@
 
 var util = require('proxutils')
 var log = util.log
-var type = util.type
+var tipe = util.tipe
 var _ = util._
 var assert = require('assert')
 var request = require('request')
 var constants = require('./constants')
 
-assert(util.truthy, 'The proxibase utils are not loaded properly, bailing')
+assert(tipe.isTruthy, 'The proxibase utils are not loaded properly, bailing')
 util.setConfig('configtest.js')
 
 // Base Uri all test requests call, can be overridden by callers
@@ -73,7 +73,7 @@ function TestRequest() {
 
   // Assert wrapper that calls dump automatically on failure
   function tok(expr, msg) {
-    assert(expr, dump(_req, _res, msg))
+    if (!expr) throw new Error(dump(_req, _res, msg))
   }
 
   // get request
@@ -110,34 +110,39 @@ function TestRequest() {
 
 var testUser = {
   name: 'Test User',
+  type: 'user',
   email: 'test@3meters.com',
-  password: 'foobar'
+  password: 'foobar',
 }
 
 var adminUser = {
+  name: 'Test Admin User',
+  type: 'user',
   email: 'admin',
-  password: 'admin'
+  password: 'admin',
 }
 
-function getUserSession(user, fn) {
-  if (!fn) {
-    fn = user
+function getUserSession(user, cb) {
+  if (!cb) {
+    cb = user
     user = testUser
   }
-  getSession(user, false, fn)
+  getSession(user, false, cb)
 }
 
 
-function getAdminSession(user, fn) {
-  if (!fn) {
-    fn = user
+function getAdminSession(user, cb) {
+  if (!cb) {
+    cb = user
     user = adminUser
   }
-  getSession(user, true, fn)
+  getSession(user, true, cb)
 }
 
-function skip(test) {
-  log('skipped test:')
+function skip(test, msg) {
+  var out = 'Warning: the following test did not pass, it was skipped: '
+  out += msg ? msg : ''
+  log(out)
   test.done()
 }
 
@@ -146,30 +151,35 @@ function skip(test) {
  * If the user does not exist in the system, create him first
  * Perhaps rename ensureUserAndGetSession?
  */
-function getSession(user, asAdmin, fn) {
+function getSession(user, asAdmin, cb) {
 
+  var body = util.clone(user)
+  body.installId = '123456'
   var req = makeReq({
     method: 'post',
     uri: '/auth/signin',
-    body: {user: user}
+    body: body,
   })
 
-  request(req, function(err, res) {
-    if (err) throw (err) 
+  request(req, function(err, res, body) {
+    if (err) throw (err)
     if (res.statusCode >= 400) {
-      if (asAdmin) throw new Error('Cannot sign in with default admin credentials')
+      if (asAdmin) {
+        util.logErr('res.body', body)
+        throw new Error('Cannot sign in with default admin credentials')
+      }
       // create user
       var req = makeReq({
         method: 'post',
         uri: '/user/create',
-        body: {data: user, secret: 'larissa'},
+        body: {data: user, secret: 'larissa', installId: '123456'},
       })
       request(req, function(err, res) {
         if (err) throw err
         check(req, res)
         assert(res.body.user)
         assert(res.body.session)
-        fn(res.body.session)
+        cb(res.body.session)
       })
     }
     else {
@@ -178,28 +188,34 @@ function getSession(user, asAdmin, fn) {
         catch (e) { throw e }
       }
       assert(res.body.session)
-      fn(res.body.session)
+      cb(res.body.session)
     }
   })
 }
 
 // Disgourge req and res contents of failed test
-var dump = exports.dump = function(req, res, msg) {
+function dump(req, res, msg) {
 
-  msg = msg || ''
-  var out = 'Test failed: ' + msg
+  var out = '\n\nTest failed: '
+
+  if (msg) {
+    out += (type.isObject(msg) || type.isArray(msg))
+      ? '\n' + util.inspect(msg, false, 12)
+      : String(msg)
+  }
+
   out += '\n\nDump:\n==========================='
 
   out += '\nreq.method: ' + req.method
   out += '\nreq.uri: ' + req.uri
 
   if (req.body) {
-    out += '\nreq.body:\n' + util.inspect(req.body, false, 10) + '\n'
+    out += '\nreq.body:\n' + util.inspect(req.body, false, 12) + '\n'
   }
 
   if (res.statusCode) out += '\n\nres.statusCode: ' + res.statusCode + '\n'
 
-  out += 'res.body:\n' + util.inspect(res.body, false, 10)
+  out += 'res.body:\n' + util.inspect(res.body, false, 12)
 
   // util.inspect converts all our newlines to the literal '\n'
   // this next line converts them back for proper display on the console
@@ -229,8 +245,10 @@ function check(req, res, code) {
       }
     }
   }
-  assert(code === res.statusCode,
-    dump(req, res, 'Bad statusCode: ' + res.statusCode + ' expected: ' + code))
+  if (code !== res.statusCode) {
+    throw new Error(dump(req, res,
+        'Bad statusCode: ' + res.statusCode + ' expected: ' + code))
+  }
 }
 
 
@@ -238,7 +256,7 @@ function check(req, res, code) {
 exports.genBeaconId = function(recNum) {
   var id = pad(recNum + 1, 12)
   id = delineate(id, 2, ':')
-  var prefix = tableIds.beacons + '.'
+  var prefix = util.statics.schemas.beacon.id + '.'
   return  prefix + id
 }
 
@@ -255,13 +273,12 @@ var delineate = exports.delineate = function(s, freq, sep) {
 
 
 // Make a standard _id field for a table with recNum as the last id element
-var genId = exports.genId = function(collectionName, recNum) {
-  var collectionId = util.statics.collectionIds[collectionName]
-  assert(collectionId, 'Invalid collection name')
+var genId = exports.genId = function(schemaName, recNum) {
+  var schemaId = util.statics.schemas[schemaName].id
+  assert(schemaId, 'Invalid schema name')
   recNum = pad(recNum + 1, 6)
-  return collectionId + '.' + constants.timeStamp + '.' + recNum
+  return schemaId + '.' + constants.timeStamp + '.' + recNum
 }
-
 
 // create a digits-length string from number left-padded with zeros
 var pad = exports.pad = function(number, digits) {
