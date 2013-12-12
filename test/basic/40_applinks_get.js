@@ -331,6 +331,19 @@ exports.appLinkPopularitySortWorks = function(test) {
   })
 }
 
+// https://github.com/3meters/proxibase/issues/119
+exports.eagleHarborWine = function(test) {
+  if (disconnected) return skip(test)
+  t.post({
+    uri: '/applinks/get',
+    body: {applinks: [{type: 'foursquare', appId: '4b33fb3ef964a520582325e3'}]}
+  }, function(err, res, body) {
+    t.assert(body.data.length)
+    t.assert(body.data.length < 10)
+    test.done()
+  })
+}
+
 
 exports.checkTimeoutWorks = function(test) {
   if (disconnected) return skip(test)
