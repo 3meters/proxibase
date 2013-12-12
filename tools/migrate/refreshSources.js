@@ -1,5 +1,5 @@
 /**
- * Add photo properties to facebook and twitter sources
+ * Call updateEntity refreshSources = true for all place entities
  */
 
 var util = require('proxutils')
@@ -12,6 +12,7 @@ var cli = require('commander')
 var async = require('async')
 var cred = ''
 var noLimit = true
+var count = 0
 var results = []
 var server = 'https://localhost:6643'
 
@@ -39,12 +40,11 @@ request.post({
   })
 
 function updateEnt(skip) {
-  log(skip)
   request.post({
     uri: server + '/do/find?' + cred,
     body: {
       collection: 'entities',
-      find: {type: 'com.aircandi.candi.place'},
+      find: {type: util.statics.schemaPlace},
       sort: {_id: 1},
       limit: 1,
       skip: skip,
@@ -72,17 +72,18 @@ function updateEnt(skip) {
     })
 
     function next() {
-      if (body.more && (nolimit || --cli.number)) {
+      log(skip)
+      if (body.more && (noLimit || count++ < cli.number)) {
         skip++
         setTimeout(function() {
           return updateEnt(skip)
         }, cli.delay * 1000)
       }
-      else finish(skip)
+      else finish()
     }
   })
 }
 
-function finish(skip) {
-  log('Updated ' + skip + ' entities')
+function finish() {
+  log('Updated ' + count + ' entities')
 }
