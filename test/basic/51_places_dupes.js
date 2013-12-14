@@ -45,15 +45,16 @@ exports.getSessions = function(test) {
 }
 
 exports.dupePlaceMaggiano = function(test) {
- t.post({
+  var locMag = {
+    lat : 47.617099145207682,
+    lng : -122.20097064971924,
+  }
+  t.post({
     uri: '/data/places?' + userCred,
     body: {
       data: {
         name: "Maggiano's Little Italy",
-        location: {
-          lat : 47.617099145207682,
-          lng : -122.20097064971924,
-        },
+        location: locMag,
         phone: '4255196476',
         provider: {foursquare: '43976c82f964a520a52b1fe3'},
       },
@@ -61,7 +62,23 @@ exports.dupePlaceMaggiano = function(test) {
   }, 201, function(err, res, body) {
     var place = body.data
     t.assert(place && place._id)
-    t.assert(false)
+    t.post({
+      uri: '/places/near',
+      body: {
+        location: locMag,
+        provider: 'google',
+        radius: 500,
+        includeRaw: false,
+        limit: 100,
+      }
+    }, function(err, res, body) {
+      var cMaggiano = 0
+      body.data.forEach(function(place){
+        if (0 === place.name.indexOf('Magg')) cMaggiano++
+      })
+      t.assert(1 === cMaggiano)
+      test.done()
+    })
   })
 }
 
