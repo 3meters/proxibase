@@ -191,30 +191,3 @@ exports.getMassenaModern = function(test) {
     test.done()
   })
 }
-
-
-exports.getWebsiteWaitForContent = function(test) {
-  // TODO:  once we have a public photo service, delete this
-  // thumbnail from s3 and check to see that it is recreated properly.
-  if (disconnected) return skip(test)
-  t.post({
-    uri: '/applinks/get',
-    body: {
-      applinks: [{type: 'website', appId: 'www.yahoo.com'}],
-      waitForContent: true,
-      testThumbnails: true,
-      timeout: 15000,
-    }
-  }, function(err, res, body) {
-    t.assert(1 === body.data.length)
-    var result = body.data[0]
-    t.assert(result.appUrl === 'http://www.yahoo.com')
-    t.assert(result.appId === 'http://www.yahoo.com')
-    t.assert(result.photo)
-    t.assert(result.photo.prefix === 'www.yahoo.com.png')
-    t.assert(result.validatedDate)
-    test.done()
-  })
-}
-
-
