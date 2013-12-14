@@ -200,21 +200,28 @@ exports.getWebsiteWaitForContent = function(test) {
   t.post({
     uri: '/applinks/get',
     body: {
-      applinks: [{type: 'website', appId: 'www.yahoo.com'}],
+      applinks: [
+        // From issue 112
+        {type: 'website', appId: 'http://www.wsdot.wa.gov/ferries/info_desk/terminals/index.cfm?terminal_id=7'},
+        {type: 'website', appId: 'http://www.ivars.com/index.php?page=locations_acres-of-clams'},
+      ],
       waitForContent: true,
       testThumbnails: true,
-      timeout: 15000,
+      timeout: 20000,
     }
   }, function(err, res, body) {
-    t.assert(1 === body.data.length)
-    var result = body.data[0]
-    t.assert(result.appUrl === 'http://www.yahoo.com')
-    t.assert(result.appId === 'http://www.yahoo.com')
-    t.assert(result.photo)
-    t.assert(result.photo.prefix === 'www.yahoo.com.png')
-    t.assert(result.validatedDate)
+    var thumbnails = []
+    body.data.forEach(function(link) {
+      if ('website' === link.type) {
+        t.assert(link.appId === link.appUrl)
+        t.assert(link.validatedDate)
+        t.assert(link.photo)
+        t.assert(/\.png$/.test(link.photo.prefix), link.photo.prefix)
+        thumbnails.push(link.photo.prefix)
+      }
+    })
+    t.assert(thumbnails.length >= 2)
+    // TODO: get files from s3
     test.done()
   })
 }
-
-
