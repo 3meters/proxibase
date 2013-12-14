@@ -44,6 +44,27 @@ exports.getSessions = function(test) {
   })
 }
 
+exports.dupePlaceMaggiano = function(test) {
+ t.post({
+    uri: '/data/places?' + userCred,
+    body: {
+      data: {
+        name: "Maggiano's Little Italy",
+        location: {
+          lat : 47.617099145207682,
+          lng : -122.20097064971924,
+        },
+        phone: '4255196476',
+        provider: {foursquare: '43976c82f964a520a52b1fe3'},
+      },
+    }
+  }, 201, function(err, res, body) {
+    var place = body.data
+    t.assert(place && place._id)
+    t.assert(false)
+  })
+}
+
 exports.dupePlacesMergeOnProviderId = function(test) {
 
   if (disconnected) return skip(test)
@@ -286,4 +307,5 @@ exports.getPlacesNearLocationWithUpsizedPlace = function(test) {
     test.done()
   })
 }
+
 
