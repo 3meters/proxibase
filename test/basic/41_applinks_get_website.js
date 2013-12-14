@@ -191,37 +191,3 @@ exports.getMassenaModern = function(test) {
     test.done()
   })
 }
-
-
-exports.getWebsiteWaitForContent = function(test) {
-  // TODO:  once we have a public photo service, delete this
-  // thumbnail from s3 and check to see that it is recreated properly.
-  if (disconnected) return skip(test)
-  t.post({
-    uri: '/applinks/get',
-    body: {
-      applinks: [
-        // From issue 112
-        {type: 'website', appId: 'http://www.wsdot.wa.gov/ferries/info_desk/terminals/index.cfm?terminal_id=7'},
-        {type: 'website', appId: 'http://www.ivars.com/index.php?page=locations_acres-of-clams'},
-      ],
-      waitForContent: true,
-      testThumbnails: true,
-      timeout: 20000,
-    }
-  }, function(err, res, body) {
-    var thumbnails = []
-    body.data.forEach(function(link) {
-      if ('website' === link.type) {
-        t.assert(link.appId === link.appUrl)
-        t.assert(link.validatedDate)
-        t.assert(link.photo)
-        t.assert(/\.png$/.test(link.photo.prefix), link.photo.prefix)
-        thumbnails.push(link.photo.prefix)
-      }
-    })
-    t.assert(thumbnails.length >= 2)
-    // TODO: get files from s3
-    test.done()
-  })
-}
