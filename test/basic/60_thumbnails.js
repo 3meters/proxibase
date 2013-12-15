@@ -31,7 +31,7 @@ exports.getWebsiteWaitForContent = function(test) {
       waitForContent: true,
       testThumbnails: true,
       log: true,
-      timeout: 15000,
+      timeout: 20000,
     }
   }, function(err, res, body) {
     var thumbnails = []
