@@ -167,66 +167,6 @@ exports.refreshKaosamai = function(test) {
   })
 }
 
-exports.blackBirdBakery = function(test) {
-
-  if (disconnected) return skip(test)
-  var blackBirdId = '4aabf863f964a5204a5b20e3'
-
-  t.post({
-    uri: '/data/places?' + userCred,
-    body: {
-      data: {
-        name: 'Blackbird Bakery',
-        location: {
-          lng: -122.51951,
-          lat: 47.624969,
-        },
-        provider: {foursquare: blackBirdId},
-      },
-    }
-  }, 201, function(err, res, body) {
-    var place = body.data
-    t.assert(place && place._id)
-     t.post({
-      uri: '/applinks/get?' + userCred,
-      body: {
-        placeId: place._id,
-        save: true,
-        includeRaw: true,
-        log: true,
-        timeout: 20000,
-      }
-    }, function(err, res, body) {
-
-      var applinks = body.data
-      t.assert(applinks && applinks.length)
-      var raw = body.raw
-      t.assert(raw)
-      var appMap = {}
-      applinks.forEach(function(applink) {
-        appMap[applink.type] = appMap[applink.type] || 0
-        appMap[applink.type]++
-      })
-      t.assert(util.tipe.isUndefined(appMap.factual))
-      t.assert(appMap.website === 1)
-      t.assert(appMap.foursquare === 1)
-      t.assert(!appMap.email)
-      // These 4 prove that factual has duped this business
-      // and we have thrown own the factual crosswalk results
-      t.assert(!appMap.twitter)
-      t.assert(!appMap.urbanspoon)
-      t.assert(!appMap.yelp)
-      t.assert(!appMap.citygrid)
-      t.assert(appMap.googleplus === 1)
-      log('There is a dupe facebook entry for blackbird that we cannot detect so far')
-      t.assert(appMap.facebook === 1 || appMap.facebook === 2)
-      cleanup(place, applinks, function(err) {
-        test.done()
-      })
-    })
-  })
-}
-
 
 // return the db to a clean state.  twould be nice if the test harness did
 // this automatically between test files.
