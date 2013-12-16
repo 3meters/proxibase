@@ -45,7 +45,10 @@ exports.getSessions = function(test) {
 }
 
 exports.dupePlaceMaggiano = function(test) {
-  var locMag = {
+
+  if (disconnected) return skip(test)
+
+    var locMag = {
     lat : 47.617099145207682,
     lng : -122.20097064971924,
   }
