@@ -14,6 +14,12 @@ var userCred
 var adminCred
 var _exports = {} // for commenting out tests
 
+var outlander
+var outlanderLoc = {
+  lat: 47.6523894,
+  lng: -122.3555151,
+}
+
 
 // Get user and admin sessions and store the credentials in module globals
 exports.getSessions = function(test) {
@@ -24,12 +30,6 @@ exports.getSessions = function(test) {
       test.done()
     })
   })
-}
-
-var outlander
-var outlanderLoc = {
-  lat: 47.6523894,
-  lng: -122.3555151,
 }
 
 exports.insertPlaceFoursquareSaveApplinks = function(test) {
@@ -115,8 +115,8 @@ exports.googlePlaceDedupesWhenRefChanges = function(test) {
 }
 
 exports.insertPlaceGoogleSaveApplinks = function(test) {
-  ltd = null
   if (disconnected) return skip(test)
+  var ltd = null
   var post = {
     uri: '/places/near',
     body: {
