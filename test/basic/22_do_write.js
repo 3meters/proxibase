@@ -1370,15 +1370,19 @@ exports.insertLink = function (test) {
 }
 
 exports.deletePost = function (test) {
+  /*
   t.post({
     uri: '/do/deleteEntity?' + adminCred,
     body: {
       entityId:testPost._id,
       verbose: true,
     }
+  */
+  t.del({
+    uri: '/data/posts/' + testPost._id + '?' + adminCred
   }, function(err, res, body) {
     t.assert(body.count === 1)
-    t.assert(body.data && body.data._id)
+    // t.assert(body.data && body.data._id)
 
     /* Check delete post */
     t.post({
@@ -1467,7 +1471,8 @@ exports.deletePost = function (test) {
                   }
                 }
               }, function(err, res, body) {
-                t.assert(body.count === 0)
+                t.assert(body.count === 1)
+                t.assert(0 === body.data[0].event.indexOf('delete_entity'))
                 test.done()
               })
             })
@@ -1506,26 +1511,34 @@ exports.updateEntity = function (test) {
 }
 
 exports.userCantDeleteEntityTheyDontOwn = function (test) {
+  /*
   t.post({
     uri: '/do/deleteEntity?' + userCredTom,
     body: {
       entityId:testPlaceOne._id,
     }
+    */
+  t.del({
+    uri: '/data/places/' + testPlaceOne._id + '?' + userCredTom
   }, 401, function(err, res, body) {
     test.done()
   })
 }
 
 exports.deletePlace = function (test) {
+  /*
   t.post({
     uri: '/do/deleteEntity?' + adminCred,
     body: {
       entityId:testPlaceOne._id,
       verbose: true,
     }
+  */
+  t.del({
+    uri: '/data/places/' + testPlaceOne._id + '?' + adminCred
   }, function(err, res, body) {
     t.assert(body.count === 1)
-    t.assert(body.data && body.data._id)
+    // t.assert(body.data && body.data._id)
 
     /* Check delete entity */
     t.post({
