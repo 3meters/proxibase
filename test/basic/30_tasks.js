@@ -21,11 +21,11 @@ var sched1 =  later.parse.cron('*/1 * * * * *', true) // every second
 var sched2 =  later.parse.cron('*/2 * * * * *', true) // every second second
 
 var task1 = {
-  "name": "task1",
-  "schedule": sched1,
-  "module":"utils",
-  "method":"log",
-  "args": ["What follows should be an object:", {"n1":2,"s1":"foo"}]
+  name: 'task1',
+  schedule: sched1,
+  module: 'utils',
+  method: 'log',
+  args: ['What follows should be an object:', {n1:2, s1:'foo'}]
 }
 
 // Get user and admin sessions and store the credentials in module globals
