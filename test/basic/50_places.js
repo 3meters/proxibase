@@ -35,6 +35,8 @@ var ballRoomLoc = {
   lng: -122.3530,
 }
 
+var savedRoxy  // shared between tests
+
 // Some persisted Ids.  No provider means 4square.  Factuals change periodically.
 // Seattle Ballroom
 var ballRoomId = '4abebc45f964a520a18f20e3'
@@ -201,7 +203,7 @@ exports.getPlacesNearLocationFactual = function(test) {
       }
     }, 201, function(err, res, body) {
       t.assert(body.data)
-      var savedRoxy = res.body.data
+      savedRoxy = res.body.data
       t.assert(savedRoxy.provider.factual === roxy.provider.factual)
       t.assert(savedRoxy.linksIn && savedRoxy.linksIn.length >=2)
       savedRoxy.linksIn.forEach(function(link) {
@@ -491,6 +493,29 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
           })
         })
       })
+    })
+  })
+}
+
+exports.refreshPlace = function(test) {
+  if (disconnected) return skip(test)
+
+  var placeId = savedRoxy._id
+  var placeModifiedDate
+  t.get('/data/places/' + placeId, function(err, res, body) {
+    t.assert(body.data && body.data._id)
+    placeModifiedDate = body.data.modifiedDate
+    t.get('/places/' + placeId + '/refresh', function(err, res, body) {
+      t.assert(body.data)
+      t.assert(body.data.links)
+      t.assert(body.data.links.from)
+      t.assert(body.data.links.from.applinks)
+      body.data.links.from.applinks.forEach(function(link) {
+        t.assert(link.modifiedDate > placeModifiedDate)
+        t.assert(link.document)
+        t.assert(link.document.modifiedDate > placeModifiedDate)
+      })
+      test.done()
     })
   })
 }
