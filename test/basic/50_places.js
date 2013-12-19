@@ -81,7 +81,7 @@ exports.getPlacesNearLocationCapsBadLimits = function(test) {
       location: ballRoomLoc,
       provider: 'foursquare',
       includeRaw: false,
-      timeout: 10000,
+      timeout: 15000,
       limit: 100,
     }
   }
@@ -106,7 +106,7 @@ exports.getPlacesNearLocationFoursquare = function(test) {
       radius: 500,
       includeRaw: false,
       limit: 10,
-      timeout: 10000,
+      timeout: 15000,
     }
   }, function(err, res, body) {
     var foundBallroom = 0
