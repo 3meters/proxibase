@@ -4,7 +4,7 @@ var later = require('later')
 var util = require('proxutils')
 
 var host = 'https://api.aircandi.com'
-var host = 'https://localhost:6643'
+// var host = 'https://localhost:6643'
 var adminpw = 'admin'
 var schedule =  later.parse.cron('* */15 * * * *', true) // every 15 minutes
 
@@ -27,7 +27,6 @@ util.request
   })
 
 function insertTask(session) {
-  util.log('schedule', schedule)
   var task = {
     name: 'refreshPlace',
     schedule: schedule,
