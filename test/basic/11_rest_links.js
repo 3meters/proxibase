@@ -67,7 +67,7 @@ exports.addLinkedData = function(test) {
 
 
 exports.findLinksFailProperlyOnBadInputs = function(test) {
-  query = {uri: '/find/users/' + userId}
+  query = {uri: '/find/places/' + userId}
   query.body = {links: [{bogus: 'documents'}]}
   t.post(query, 400, function(err, res, body) {
     t.assert(400.11 === body.error.code)
