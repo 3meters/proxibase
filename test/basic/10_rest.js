@@ -39,7 +39,7 @@ exports.getUserSession = function(test) {
 }
 
 exports.genIdWorks = function(test) {
-  t.get('/data/places?genId=1',
+  t.get('/data/places/genId',
   function(err, res, body) {
     t.assert(body.data._id)
     var schemaId = body.data._id.split('.')[0]
@@ -50,7 +50,7 @@ exports.genIdWorks = function(test) {
 }
 
 exports.genIdBeacons = function(test) {
-  t.get('/data/beacons?genId=1&bssid=00:11:22:33:44',
+  t.get('/data/beacons/genId?bssid=00:11:22:33:44',
   function(err, res, body) {
     t.assert(body.data._id)
     t.assert(body.data._id === util.statics.schemas.beacon.id + '.00:11:22:33:44')
@@ -59,7 +59,7 @@ exports.genIdBeacons = function(test) {
 }
 
 exports.genIdInstalls = function(test) {
-  t.get('/data/installs?genId=1&installId=12345',
+  t.get('/data/installs/genId?installId=12345',
   function(err, res, body) {
     t.assert(body.data._id)
     t.assert(body.data._id === util.statics.schemas.install.id + '.12345')
@@ -668,31 +668,31 @@ exports.sortsDescendingByModifiedDateByDefault = function(test) {
 }
 
 exports.sortWorks = function(test) {
-  t.get('/data/users?sort[0][_id]=-1',
+  t.get('/data/places?sort[0][_id]=-1',
   function(err, res, body) {
-    var lastId = 'us.999999.99999.999.999999'
-    body.data.forEach(function(user, i) {
-      t.assert(user._id < lastId, i)
-      lastId = user._id
+    var lastId = 'pl.999999.99999.999.999999'
+    body.data.forEach(function(place, i) {
+      t.assert(place._id < lastId, i)
+      lastId = place._id
     })
     test.done()
   })
 }
 
 exports.sortAltFormatWorks = function(test) {
-  t.get('/data/users?sort[0][0]=namelc&sort[0][1]=asc',
+  t.get('/data/places?sort[0][0]=namelc&sort[0][1]=asc',
   function(err, res, body) {
     var namelc = 'a'
-    body.data.forEach(function(user, i) {
-      t.assert(user.namelc > namelc, i)
-      namelc = user.namelc
+    body.data.forEach(function(place, i) {
+      t.assert(place.namelc > namelc, i)
+      namelc = place.namelc
     })
     test.done()
   })
 }
 
 exports.formatDatesWorks = function(test) {
-  t.get('/data/users?datesToUTC=1',
+  t.get('/data/places?datesToUTC=1',
   function(err, res, body) {
     t.assert(util.type.isString(body.data[1].createdDate))
     t.assert(util.type.isString(body.data[1].modifiedDate))
