@@ -11,7 +11,6 @@ var t = testUtil.treq
 var userSession
 var userCred
 var userId
-var query
 var adminSession
 var adminCred
 var _exports = {}  // For commenting out tests
@@ -67,8 +66,10 @@ exports.addLinkedData = function(test) {
 
 
 exports.findLinksFailProperlyOnBadInputs = function(test) {
-  query = {uri: '/find/places/' + userId}
-  query.body = {links: [{bogus: 'documents'}]}
+  var query = {
+    uri: '/find/users/' + userId + '?' + userCred,
+    body: {links: [{bogus: 'documents'}]},
+  }
   t.post(query, 400, function(err, res, body) {
     t.assert(400.11 === body.error.code)
     test.done()
@@ -76,7 +77,10 @@ exports.findLinksFailProperlyOnBadInputs = function(test) {
 }
 
 exports.findLinksWorks = function(test) {
-  query.body = {links: [{to: {documents: 1}}]}
+  var query = {
+    uri: '/find/users/' + userId + '?' + userCred,
+    body: {links: [{to: {documents: 1}}]},
+  }
   t.post(query, function(err, res, body) {
     t.assert(body.data.links)
     t.assert(1 === body.data.links.length)
@@ -89,7 +93,10 @@ exports.findLinksWorks = function(test) {
 }
 
 exports.findLinksFieldProjectionWorks = function(test) {
-  query.body = {links: [{to: {documents: 1}, fields: {type: 1}}]}
+  var query = {
+    uri: '/find/users/' + userId + '?' + userCred,
+    body: {links: [{to: {documents: 1}, fields: {type: 1}}]}
+  }
   t.post(query, function(err, res, body) {
     t.assert(body.data.links)
     t.assert(1 === body.data.links.length)
@@ -107,7 +114,10 @@ exports.findLinksFieldProjectionWorks = function(test) {
 }
 
 exports.findLinksFilterWorks = function(test) {
-  query.body = {links: [{to: {documents: 1}, filter: {type: 'watch'}}]}
+  var query = {
+    uri: '/find/users/' + userId + '?' + userCred,
+    body: {links: [{to: {documents: 1}, filter: {type: 'watch'}}]}
+  }
   t.post(query, function(err, res, body) {
     t.assert(body.data.links)
     t.assert(1 === body.data.links.length)
@@ -120,7 +130,10 @@ exports.findLinksFilterWorks = function(test) {
 }
 
 exports.findLinksWithDocFieldsWorks = function(test) {
-  query.body = {links: [{to: {documents: {name: 1}}}]}
+  var query = {
+    uri: '/find/users/' + userId + '?' + userCred,
+    body: {links: [{to: {documents: {name: 1}}}]}
+  }
   t.post(query, function(err, res, body) {
     t.assert(body.data.links)
     t.assert(body.data.links.length)
@@ -139,7 +152,10 @@ exports.findLinksWithDocFieldsWorks = function(test) {
 }
 
 exports.findLinksSortsDescendingByDefault = function(test) {
-  query.body = {links: [{to: {documents: 1}}]}
+  var query = {
+    uri: '/find/users/' + userId + '?' + userCred,
+    body: {links: [{to: {documents: 1}}]}
+  }
   t.post(query, function(err, res, body) {
     var toDocs = body.data.links[0].to.documents
     t.assert(toDocs[0]._id > toDocs[1]._id)
@@ -148,7 +164,10 @@ exports.findLinksSortsDescendingByDefault = function(test) {
 }
 
 exports.findLinksSortWorks = function(test) {
-  query.body = {links: [{to: {documents: 1}, sort: [{_id: 1}]}]}
+  var query = {
+    uri: '/find/users/' + userId + '?' + userCred,
+    body: {links: [{to: {documents: 1}, sort: [{_id: 1}]}]}
+  }
   t.post(query, function(err, res, body) {
     var toDocs = body.data.links[0].to.documents
     t.assert(toDocs[0]._id < toDocs[1]._id)
@@ -157,7 +176,10 @@ exports.findLinksSortWorks = function(test) {
 }
 
 exports.findLinksLimitsWork = function(test) {
-  query.body = {links: [{to: {documents: 1}, limit: 1}]}
+  var query = {
+    uri: '/find/users/' + userId + '?' + userCred,
+    body: {links: [{to: {documents: 1}, limit: 1}]}
+  }
   t.post(query, function(err, res, body) {
     var toDocs = body.data.links[0].to.documents
     t.assert(1 === toDocs.length)
@@ -167,7 +189,10 @@ exports.findLinksLimitsWork = function(test) {
 }
 
 exports.findLinksSkipWorks = function(test) {
-  query.body = {links: [{to: {documents: 1}, limit: 1, skip: 1}]}
+  var query = {
+    uri: '/find/users/' + userId + '?' + userCred,
+    body: {links: [{to: {documents: 1}, limit: 1, skip: 1}]}
+  }
   t.post(query, function(err, res, body) {
     var toDocs = body.data.links[0].to.documents
     t.assert(1 === toDocs.length)
@@ -177,7 +202,10 @@ exports.findLinksSkipWorks = function(test) {
 }
 
 exports.findLinksAcceptsSingletonQueries = function(test) {
-  query.body = {links: {to: {documents: {}}}}
+  var query = {
+    uri: '/find/users/' + userId + '?' + userCred,
+    body: {links: {to: {documents: {}}}}
+  }
   t.post(query, function(err, res, body) {
     t.assert(body.data.links)
     t.assert(body.data.links.to)              // not nested in an array
@@ -196,7 +224,9 @@ exports.findLinksAcceptsSingletonQueries = function(test) {
 
 
 exports.findLinksFromWorksWithGetSyntax = function(test) {
-  query = {uri: '/find/documents?links[from][users][]'}
+  var query = {
+    uri: '/find/documents?links[from][users][]' + userId + '?' + userCred,
+  }
   t.get(query, function(err, res, body) {
     t.assert(body.data.length >= 3)
     body.data.forEach(function(doc) {
