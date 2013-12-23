@@ -120,7 +120,7 @@ exports.canAddDoc = function(test) {
 
 exports.fieldsParamWorks = function(test) {
   t.get({
-    uri: '/data/documents/' + testDoc1._id + '?fields=name'
+    uri: '/data/documents/' + testDoc1._id + '?fields=name&' + userCred
   }, function(err, res, body) {
     t.assert(body.data)
     t.assert(body.data.name)
@@ -304,9 +304,9 @@ exports.findDocsByGetAndFindWithBadJson = function(test) {
   })
 }
 
-exports.findDocsByNameWhenNotSignedIn = function(test) {
+exports.findDocsByName = function(test) {
   t.get({
-    uri: '/data/documents?name=' + testDoc1.name.toUpperCase()
+    uri: '/data/documents?name=' + testDoc1.name.toUpperCase() + '&' + userCred
   }, function(err, res, body) {
     t.assert(body.count === 1)
     test.done()
@@ -315,7 +315,7 @@ exports.findDocsByNameWhenNotSignedIn = function(test) {
 
 exports.findDocsByNameStartsWithMatch = function(test) {
   t.get({
-    uri: '/data/documents?name=' + testDoc1.name.slice(0, testDoc1.name.length -2)
+    uri: '/data/documents?name=' + testDoc1.name.slice(0, testDoc1.name.length -2) + '&' + userCred
   }, function(err, res, body) {
     t.assert(body.count === 2)
     test.done()
@@ -324,7 +324,7 @@ exports.findDocsByNameStartsWithMatch = function(test) {
 
 exports.findWithLookups = function(test) {
   t.get({
-    uri: '/data/documents?name=' + testDoc1.name + '&lookups=1'
+    uri: '/data/documents?name=' + testDoc1.name + '&lookups=1&' + userCred
   }, function(err, res, body) {
     var doc = body.data[0]
     t.assert('Test User' === doc.owner)
@@ -348,7 +348,7 @@ exports.updateDoc = function(test) {
 
 exports.checkUpdatedDoc = function(test) {
   t.get({
-    uri: '/data/documents/' + testDoc1._id
+    uri: '/data/documents/' + testDoc1._id + '?' + userCred
   }, function(err, res, body) {
     t.assert(body.data && body.data)
     t.assert(body.data.name === 'Changed Name')
@@ -472,7 +472,7 @@ exports.userCanLinkDocs = function(test) {
 
 exports.checkLink = function(test) {
   t.get({
-    uri: '/data/links/' + linkId
+    uri: '/data/links/' + linkId  // not owner access, fully readable, ok?
   }, function(err, res, body) {
     t.assert(body.data._from = testDoc1._id)
     t.assert(body.data._to = testDoc2._id)
@@ -654,13 +654,13 @@ exports.deleteNonExistantRecordReturnsNotFound = function(test) {
 }
 
 exports.sortsDescendingByModifiedDateByDefault = function(test) {
-  t.get('/data/documents',
+  t.get('/data/beacons',
   function(err, res, body) {
     docs = body.data
     t.assert(docs && docs.length)
     var modDate = Infinity
     docs.forEach(function(doc) {
-      t.assert(modDate > doc.modifiedDate)
+      t.assert(modDate >= doc.modifiedDate)
       modDate = doc.modifiedDate
     })
     test.done()
