@@ -1,7 +1,7 @@
 {
 
   "name": "proxibase",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "private": true,
   "description": "Proxibase Service",
   "author": {
