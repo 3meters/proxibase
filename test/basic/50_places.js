@@ -80,17 +80,18 @@ exports.getPlacesNearLocationCapsBadLimits = function(test) {
     body: {
       location: ballRoomLoc,
       provider: 'foursquare',
-      includeRaw: false,
+      includeRaw: true,
       timeout: 15000,
+      log: true,
       limit: 100,
     }
   }
   t.post(post, function(err, res, body) {
-    t.assert(50 === body.data.length)
+    t.assert(30 < body.data.length < 50)  // foursquares limit is 50, popularity filter applied after
     // Google's max limit is 200
     post.body.provider = 'google'
     t.post(post, function(err, res, body) {
-      t.assert(100 === body.data.length)
+      t.assert(90 < body.data.length <= 100)
       test.done()
     })
   })
@@ -146,6 +147,7 @@ exports.placesNearExcludeWorksFoursquare = function(test) {
       location: ballRoomLoc,
       provider: 'foursquare',
       excludePlaceIds: [ballRoomId], // The Ballroom's 4sId
+      timeout: 15000,
     }
   }, function(err, res) {
     var places = res.body.data
@@ -243,10 +245,11 @@ exports.getPlacesNearLocationGoogle = function(test) {
       limit: 50,
       excludePlaceIds: [ballRoomGooId],
       includeRaw: false,
+      timeout: 15000,
     }
   }, function(err, res, body) {
     var places = body.data
-    t.assert(places.length === 50)  // default
+    t.assert(40 < places.length < 50)
     var lastDistance = 0
     places.forEach(function(place) {
       t.assert(place)
@@ -351,7 +354,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
     var places = body.data
     var ksthai = null
     var hasFactualProviderId = 0
-    t.assert(places.length > 10)
+    t.assert(40 < places.length < 50)
     places.forEach(function(place) {
       t.assert(place.provider)
       if (place.provider.factual) {
@@ -424,6 +427,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
               location: ballRoomLoc,
               provider: 'foursquare',
               limit: 50,
+              timeout: 15000,
             }
           }, function(err, res, body) {
             // Make sure the real entitiy is in the found places
