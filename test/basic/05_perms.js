@@ -247,3 +247,36 @@ exports.userCannotReadSysCollections = function(test) {
     })
   })
 }
+
+
+exports.ownerAccessCollectionsWork = function(test) {
+  t.post({
+    uri: '/data/documents?' + user1Cred,
+    body: {data: {_id: 'do.user1DocOwnerAccessTest'}}
+  }, 201, function(err, res, body) {
+    t.assert('do.user1DocOwnerAccessTest' === body.data._id)
+    t.post({
+      uri: '/data/documents?' + user2Cred,
+      body: {data: {_id: 'do.user2DocOwnerAccessTest'}}
+    }, 201, function(err, res, body) {
+      t.assert('do.user2DocOwnerAccessTest' === body.data._id)
+      t.get('/data/documents?' + user1Cred, 
+      function(err, res, body) {
+        t.assert(body.data && body.data.length)
+        body.data.forEach(function(doc) {
+          t.assert(doc._id && doc._owner)
+          t.assert(user1._id === doc._owner)
+          t.assert('do.use2DocOwnerAccessTest' !== doc._id)  // can't see user 2's document
+        })
+        t.get('/find/users?' + user1Cred,
+        function(err, res, body) {
+          t.assert(body.data && 1 === body.data.length)
+          t.assert(user1._id === body.data[0]._id)
+          t.assert(user1._id === body.data[0]._owner)
+          test.done()
+        })
+      })
+    })
+  })
+}
+

@@ -225,7 +225,7 @@ exports.findLinksAcceptsSingletonQueries = function(test) {
 
 exports.findLinksFromWorksWithGetSyntax = function(test) {
   var query = {
-    uri: '/find/documents?links[from][users][]' + userId + '?' + userCred,
+    uri: '/find/documents?links[from][users][]&' + userCred,
   }
   t.get(query, function(err, res, body) {
     t.assert(body.data.length >= 3)
