@@ -18,7 +18,6 @@ module.exports = {
     }
   },
   log: 1,                                // 0-3 higher numbers mean more log output
-  perfLog: '/var/log/prox/perf.csv',     // set to null to skip logging perf metrics
   db: {
     host: 'localhost',
     port: 27017,

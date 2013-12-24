@@ -138,8 +138,8 @@ h2 {
   <div id="container" class="translate">
     <a href="https://foursquare.com" id="logo"><img src="https://playfoursquare.s3.amazonaws.com/misc/errorpage/logo.png" alt="foursquare" height="50" width="178" /></a>
     <h1>We couldn't find the page you're looking for.</h1>
-    <h2>Search for people, places, or tips:</h2>
-    <form action="https://foursquare.com/search" method="GET">
+    <h2>Search for great places nearby:</h2>
+    <form action="https://foursquare.com/explore" method="GET">
       <input type="text" class="formStyle" name="q">
       <button name="submit" class="greenButton" type="submit">Search</button>
     </form>
