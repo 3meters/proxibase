@@ -106,6 +106,32 @@ exports.restInsertAsTaskWorks = function(test) {
   })
 }
 
+// Start a task which inserts one new document per second.
+// Wait a couple of seconds and then query the db for those
+// documents.
+exports.restUpdateTaskWorks = function(test) {
+  t.post({
+    uri: '/data/tasks/' + taskId + '?' + adminCred,
+    body: { data: {
+      name:     'task2',
+      schedule: sched1,
+      module:   'utils',
+      method:   'db.documents.safeInsert',
+      args:     [{type: 'taskTest2Updated'}, {user: {_id: adminId, role: 'admin'}}]
+    }}
+  }, function(err, res, body) {
+    t.assert(taskId === body.data._id)
+    setTimeout(function(){
+      t.get('/data/documents?find[type]=taskTest2Updated&' + adminCred,
+      function(err, res, body) {
+        t.assert(body.data.length >= 2)
+        test.done()
+      })
+    }, 1500)
+  })
+}
+
+
 exports.canStopInsertTask = function(test) {
   t.delete({
     uri: '/data/tasks/' + taskId + '?' + adminCred,
