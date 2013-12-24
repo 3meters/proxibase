@@ -3,133 +3,138 @@
  */
 
 var
+  util = require('proxutils')
   assert = require('assert'),
-  _ = require('underscore'),                                  // For cloning objects
   timeStamp = '010101.00000.555',                             // Jan 1 2000 + 555 miliseconds
   timeStampMs = new Date(2001, 0, 1, 0, 0, 0, 555).getTime()  // Same but in milliseconds
-  uid1 = '0001.' + timeStamp + '.000001',                     // Standard user
-  uid2 = '0001.' + timeStamp + '.000002',                     // Dev user
+  _schemas = util.statics.schemas
+  uid1 = _schemas.user.id + '.' + timeStamp + '.000001',                     // Standard user
+  uid2 = _schemas.user.id + '.' + timeStamp + '.000002',                     // Dev user
   bssid = '00:00:00:00:00:01',
-  beaconId = '0008.' + bssid,
-  entityId = '0004.' + timeStamp + '.000001',
-  childEntityId = '0004.' + timeStamp + '.000501',
-  documentId = '0007.' + timeStamp + '.000001',
-  linkId = '0005.' + timeStamp + '.000001',
+  beaconId = _schemas.beacon.id + '.' + bssid,
+  applinkId = _schemas.applink.id + '.' + timeStamp + '.000001',
+  commentId = _schemas.comment.id + '.' + timeStamp + '.000001',
+  placeId = _schemas.place.id + '.' + timeStamp + '.000001',
+  postId = _schemas.post.id + '.' + timeStamp + '.000001',
+  documentId = _schemas.document.id + '.' + timeStamp + '.000001',
+  linkId = _schemas.link.id + '.'  + timeStamp + '.000001',
   latitude = 47,                                              // Nearby
   longitude = -122,
   password = 'password',
-  tableIds = {
-    users: '0001',
-    links: '0005',
-    entities: '0004',
-    beacons: '0008',
-    documents: '0007'
-  },
-  recordLimit = 1000,
-  defaultRecord = {},
+  limit = 1000,
+  defaultDoc = {},
   dbProfile = {
     smokeTest: {
       users: 10,
-      beacons: 100,
-      epb: 5,
-      spe: 5,
-      cpe: 5,
+      beacons: 10,
+      epb: 1,       // place entities per beacon
+      spe: 5,       // post entities per place entity
+      ape: 5,       // applinks per place
+      cpe: 2,       // comment entities per place and post entity
+      likes: 2,
+      watch: 2,
       database: 'smokeData'
     }
   }
 
-// Add system properties
-function addSystemFields(record) {
-  record.createdDate = timeStampMs
-  record.modifiedDate = timeStampMs
-}
 
-defaultRecord.users = defaultRecord.users1 = {
+defaultDoc.user = defaultDoc.users1 = {
   _id: uid1,
   name: 'Test User',
   email: 'test@3meters.com',
-  location: 'Testville, WA',
-  isDeveloper: false
+  photo: {
+    prefix:"resource:placeholder_user",
+    source:"resource",
+  },
+  area: 'Testville, WA',
+  developer: false,
 }
 
-defaultRecord.users2 = {
+defaultDoc.user2 = {
   _id: uid2,
   name: 'Test User Dev',
   email: 'testdev@3meters.com',
-  location: 'Testville, WA',
+  photo: {
+    prefix:"resource:placeholder_user",
+    source:"resource",
+  },
+  area: 'Testville, WA',
   password: password,
-  isDeveloper: true
+  developer: true,
 }
 
-defaultRecord.documents = {
+defaultDoc.document = {
   _id: documentId,
-  name : 'aircandi',
   type : 'version',
   data: {
-    major : 0,
-    minor : 1,
-    revision : 100,
-    updateRequired : true,
-    versionCode : 1,
-    versionName : '0.01.0100'
-  }
+    androidMinimumVersion:10
+  },
 }
 
-var comment = {
-  _creator: uid1,
-  title : 'Worth the trip',
-  description : 'Everyone makes a big fuss about it so I figured a letdown was inevitable but wow!',
-  name : 'Test User',
-  location : 'Testville, WA',
-  createdDate : timeStampMs
-}
-
-defaultRecord.beacons = {
+defaultDoc.beacon = {
   _id: beaconId,
-  label: 'Test Beacon Label',
+  name: 'Beacon',
+  location: { lat:latitude, lng:longitude, altitude:0, accuracy:30, speed: 0, geometry:[longitude, latitude] },
   ssid: 'Test Beacon',
   bssid: bssid,
-  beaconType: 'fixed',
-  visibility: 'public',
-  accuracy : 30,
-  altitude : 0,
-  latitude : latitude,
-  longitude : longitude,
-  speed : 0,
-  loc : [longitude, latitude]
+  signal: -80,
+  _creator: uid1,
 }
 
-defaultRecord.entities = {
-  _id: entityId,
-  type: 'com.aircandi.candi.picture',
+defaultDoc.place = {
+  _id: placeId,
+  name: 'Museum of Modern Art',
+  subtitle: 'Contemporary Galleries: 1980-Now',
+  description: 'The Museum of Modern Art is a place that fuels creativity, ignites minds, and provides inspiration. With extraordinary exhibitions and the world\'s finest collection of modern and contemporary art, MoMA is dedicated to the conversation between the past and the present, the established and the experimental. Our mission is helping you understand and enjoy the art of our time.',
+  photo: { prefix:"https://s3.amazonaws.com/3meters_images/test_preview.jpg", source:"aircandi" },
+  signalFence: -100,
+  location: { lat:latitude, lng:longitude, altitude:0, accuracy:30, speed: 0, geometry:[longitude, latitude] },
+  address:"123 Central Park", city:"New York", region:"NY", country:"USA", // phone:"2065551212",
+  // provider:{
+  //  foursquare:"4bcfbae19854d13a82b8f64d"
+  // },
+  category:{
+    id:"4bf58dd8d48988d18c941735",
+    name : "Baseball Stadium",
+    photo:{
+      prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
+      source : "assets.categories",
+    },
+  },
+  _creator: uid1,
+}
+
+defaultDoc.applink = {
+  _id: applinkId,
+  type: 'foursquare',
+  name: "Bannerwood Park",
+  photo: { prefix:"https://graph.facebook.com/143970268959049/picture?type=large", source:"facebook" },
+  appId: "143970268959049",
+  appUrl: "https://www.facebook.com/pages/Bannerwood-Park/143970268959049",
+  data: { origin : "facebook", validated : 1369167109174.0, likes : 9 },
+  _creator: uid1,
+}
+
+defaultDoc.post = {
+  _id: postId,
   name: 'Mona Lisa',
   subtitle: 'Leonardo daVinci',
   description: 'Mona Lisa (also known as La Gioconda or La Joconde) is a 16th-century portrait painted in oil on a poplar panel by Leonardo di ser Piero da Vinci during the Renaissance in Florence, Italy.',
-  signalFence: -100,
-  comments: [
-    comment,
-    comment,
-    comment,
-    comment,
-    comment
-  ],
   photo: {prefix:"https://s3.amazonaws.com/3meters_images/test_preview.jpg"},
-  place: {location:{lat:latitude,lng:longitude}},
-  visibility: 'public',
-  enabled: true,
-  locked: false
+  _creator: uid1,
 }
 
-defaultRecord.links = {
+defaultDoc.comment = {
+  _id: commentId,
+  name: 'Hmmm, not sure what the fuss is',
+  description: 'Stuck behind thick plexiglass, tiny, I could hardly see it.',
+  _creator: uid1,
+}
+
+defaultDoc.link = {
   _id: linkId,
-  toCollectionId : tableIds['beacons'],
-  fromCollectionId : tableIds['entities'],
-  _to : beaconId,
-  _from : entityId
-}
-
-for (tableName in defaultRecord) {
-  addSystemFields(defaultRecord[tableName])
+  _to : placeId,
+  _from : postId
 }
 
 // Remeber to _.clone() all exported objects!
@@ -137,22 +142,24 @@ module.exports = {
   uid1: uid1,
   uid2: uid2,
   password: password,
-  beaconId: beaconId,
-  entityId: entityId,
-  childEntityId: childEntityId,
   documentId: documentId,
   linkId: linkId,
+  bssid: bssid,
+  beaconId: beaconId,
+  applinkId: applinkId,
+  commentId: commentId,
+  placeId: placeId,
+  postId: postId,
   latitude: latitude,
   longitude: longitude,
   timeStamp: timeStamp,
   timeStampMs: timeStampMs,
-  recordLimit: recordLimit,
-  tableIds: _.clone(tableIds),
-  comment: _.clone(comment),
-  dbProfile: _.clone(dbProfile)
+  limit: limit,
+  dbProfile: util._.clone(dbProfile)
 }
-module.exports.getDefaultRecord = function(tableName) {
-  assert(defaultRecord[tableName], 'No default record for ' + tableName)
-  return _.clone(defaultRecord[tableName])
+
+module.exports.getDefaultDoc = function(schema) {
+  assert(defaultDoc[schema], 'No default doc for ' + schema)
+  return util.clone(defaultDoc[schema])
 }
 

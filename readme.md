@@ -22,22 +22,30 @@ send an authticated request
 
 find documents
 
-    path: /do/find
-    method: POST
+    path: /find/<collection>/<_id>
+    method: GET|POST
     body: {
-      "collection|stat": string,          // base collection or statitistics collection
+      "collection": string,          // base collection or statitistics collection
       "name": string,                     // case-insensitive
       "fields": [string],
-      "find": {mongodb find expression},  // pass-through to mongodb, case-sensitive.
+      "filter": {mongodb query expression},  // pass-through to mongodb, case-sensitive.
                                           // Also accepts get params using
                                           // https://github.com/visionmedia/node-querystring
       "lookups": boolean,
       "limit": number,                    // default 100, max 1000
       "skip": number,
-      "sort": {field1:1, field2:-1},
+      "sort": [{field1:1}, {field2:-1}]
       "count": boolean,                   // returns no records, only count, limit and skip are ignored
       "countBy":  [string]                // returns count of collection grouped by field or fields
-    }
+	  "links": {from: {collection1: 1, collection2: 1},  // returns links from this document
+	              to: {collection3: 1, collection4: 1},  // returns links to this document
+		        sort: number,
+			    skip: number,
+			   limit: number,
+		      fields: {fieldexpr}
+		   docFields: {fieldexpr}  // fields from the linked document to include in a document property of the link
+		}  
+	}
 
 or
     GET /data/users?countBy=role&lookups=true  etc
@@ -165,7 +173,7 @@ Returns records with the specified ids
 ### GET /data/\<collection\>?name=<name>
 Returns the record beginning with the specified name, case-insensitive.
 
-### GET /data/\<collection\>/genid
+### GET /data/\<collection\>/genId
 Generates a valid id for the table with the UTC timestamp of the request.  Useful if you want to make posts to mulitple tables with the primary and foreign keys preassigned.
 
     ?sort[namelc]=1&sort[age]=-1
@@ -264,7 +272,7 @@ Updates every record in a table.  Usefull when you need to re-run triggers on al
 
 <a name="stats">
 ### Statistics
-Site statistics are acceessed via 
+Site statistics are acceessed via
 
     GET /stats
 
@@ -278,7 +286,24 @@ will return a collection of the statistics.  These are ordinary monogodb collect
 
 Refreshing statitics requires admin credentials since the operation can be expensive
 
+### Recurring Tasks
+The service supports a built-in recurring task scheduler based on the later module, https://github.com/bunkat/later.  It enables admins to insert, update, or remove scheduled tasks via the rest api.  
 
+When the server starts, it reads all task documents from the tasks collection, and starts later tasks based on those documents.  Tasks can be inserted, updated, or removed dynamically.  Tasks execute trusted server methods.  The tasks schema extends the _base schema with these fields:
+
+
+```js
+  {
+    schedule: {type: 'object', required: true, value: {
+      // See http://bunkat.github.io/later/schedules.html
+      schedules:  {type: 'array', required: true},
+      exceptions: {type: 'array'}
+    }},
+    module:   {type: 'string', required: true},   // relative to prox/lib
+    method:   {type: 'string', required: true},   // must be exported
+    args:     {type: 'array'},                    // arguments passed to method
+  },
+```
 ## Wiki
 * (proxibase/wiki/)
 

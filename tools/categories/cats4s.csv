@@ -36,6 +36,7 @@
 4e39a891bd410d7aed40cbc2,Tennis,4bf58dd8d48988d184941735,Stadium
 4bf58dd8d48988d187941735,Track Stadium,4bf58dd8d48988d184941735,Stadium
 4bf58dd8d48988d184941735,Stadium,4d4b7104d754a06370d81259,Arts & Entertainment
+5109983191d435c0d71c2bb1,Theme Park Ride / Attraction,4bf58dd8d48988d182941735,Theme Park
 4bf58dd8d48988d182941735,Theme Park,4d4b7104d754a06370d81259,Arts & Entertainment
 4bf58dd8d48988d193941735,Water Park,4d4b7104d754a06370d81259,Arts & Entertainment
 4bf58dd8d48988d17b941735,Zoo,4d4b7104d754a06370d81259,Arts & Entertainment
@@ -91,9 +92,9 @@
 4bf58dd8d48988d16a941735,Bakery,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d16b941735,Brazilian Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d143941735,Breakfast Spot,4d4b7105d754a06374d81259,Food
-50327c8591d4c4b30a586d5d,Brewery,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d16c941735,Burger Joint,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d153941735,Burrito Place,4d4b7105d754a06374d81259,Food
+4bf58dd8d48988d128941735,Cafeteria,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d16d941735,Café,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d17a941735,Cajun / Creole Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d144941735,Caribbean Restaurant,4d4b7105d754a06374d81259,Food
@@ -166,9 +167,11 @@
 4bf58dd8d48988d14a941735,Vietnamese Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d14b941735,Winery,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d14c941735,Wings Joint,4d4b7105d754a06374d81259,Food
+512e7cae91d4cbb4e5efe0af,Frozen Yogurt,4d4b7105d754a06374d81259,Food
 4d4b7105d754a06374d81259,Food,,
 4bf58dd8d48988d116941735,Bar,4d4b7105d754a06376d81259,Nightlife Spot
 4bf58dd8d48988d117941735,Beer Garden,4d4b7105d754a06376d81259,Nightlife Spot
+50327c8591d4c4b30a586d5d,Brewery,4d4b7105d754a06376d81259,Nightlife Spot
 4bf58dd8d48988d11e941735,Cocktail Bar,4d4b7105d754a06376d81259,Nightlife Spot
 4bf58dd8d48988d118941735,Dive Bar,4d4b7105d754a06376d81259,Nightlife Spot
 4bf58dd8d48988d1d8941735,Gay Bar,4d4b7105d754a06376d81259,Nightlife Spot
@@ -186,17 +189,17 @@
 4bf58dd8d48988d122941735,Whisky Bar,4d4b7105d754a06376d81259,Nightlife Spot
 4bf58dd8d48988d123941735,Wine Bar,4d4b7105d754a06376d81259,Nightlife Spot
 4d4b7105d754a06376d81259,Nightlife Spot,,
-4bf58dd8d48988d1e8941735,Baseball Field,4f4528bc4b90abdf24c9de85,Athletic & Sport
-4bf58dd8d48988d1e1941735,Basketball Court,4f4528bc4b90abdf24c9de85,Athletic & Sport
-4bf58dd8d48988d1e6941735,Golf Course,4f4528bc4b90abdf24c9de85,Athletic & Sport
-4f452cd44b9081a197eba860,Hockey Field,4f4528bc4b90abdf24c9de85,Athletic & Sport
-5032829591d4c4b30a586d5e,Paintball Field,4f4528bc4b90abdf24c9de85,Athletic & Sport
-4bf58dd8d48988d167941735,Skate Park,4f4528bc4b90abdf24c9de85,Athletic & Sport
-4bf58dd8d48988d168941735,Skating Rink,4f4528bc4b90abdf24c9de85,Athletic & Sport
-4cce455aebf7b749d5e191f5,Soccer Field,4f4528bc4b90abdf24c9de85,Athletic & Sport
-4e39a956bd410d7aed40cbc3,Tennis Court,4f4528bc4b90abdf24c9de85,Athletic & Sport
-4eb1bf013b7b6f98df247e07,Volleyball Court,4f4528bc4b90abdf24c9de85,Athletic & Sport
-4f4528bc4b90abdf24c9de85,Athletic & Sport,4d4b7105d754a06377d81259,Outdoors & Recreation
+4bf58dd8d48988d1e8941735,Baseball Field,4f4528bc4b90abdf24c9de85,Athletics & Sports
+4bf58dd8d48988d1e1941735,Basketball Court,4f4528bc4b90abdf24c9de85,Athletics & Sports
+4bf58dd8d48988d1e6941735,Golf Course,4f4528bc4b90abdf24c9de85,Athletics & Sports
+4f452cd44b9081a197eba860,Hockey Field,4f4528bc4b90abdf24c9de85,Athletics & Sports
+5032829591d4c4b30a586d5e,Paintball Field,4f4528bc4b90abdf24c9de85,Athletics & Sports
+4bf58dd8d48988d167941735,Skate Park,4f4528bc4b90abdf24c9de85,Athletics & Sports
+4bf58dd8d48988d168941735,Skating Rink,4f4528bc4b90abdf24c9de85,Athletics & Sports
+4cce455aebf7b749d5e191f5,Soccer Field,4f4528bc4b90abdf24c9de85,Athletics & Sports
+4e39a956bd410d7aed40cbc3,Tennis Court,4f4528bc4b90abdf24c9de85,Athletics & Sports
+4eb1bf013b7b6f98df247e07,Volleyball Court,4f4528bc4b90abdf24c9de85,Athletics & Sports
+4f4528bc4b90abdf24c9de85,Athletics & Sports,4d4b7105d754a06377d81259,Outdoors & Recreation
 4bf58dd8d48988d1e3941735,Surf Spot,4bf58dd8d48988d1e2941735,Beach
 4bf58dd8d48988d1e2941735,Beach,4d4b7105d754a06377d81259,Outdoors & Recreation
 4bf58dd8d48988d1df941735,Bridge,4d4b7105d754a06377d81259,Outdoors & Recreation
@@ -209,7 +212,6 @@
 4bf58dd8d48988d15f941735,Field,4d4b7105d754a06377d81259,Outdoors & Recreation
 4bf58dd8d48988d15a941735,Garden,4d4b7105d754a06377d81259,Outdoors & Recreation
 4bf58dd8d48988d1e0941735,Harbor / Marina,4d4b7105d754a06377d81259,Outdoors & Recreation
-4bf58dd8d48988d159941735,Hiking Trail,4d4b7105d754a06377d81259,Outdoors & Recreation
 4bf58dd8d48988d160941735,Hot Spring,4d4b7105d754a06377d81259,Outdoors & Recreation
 50aaa4314b90af0d42d5de10,Island,4d4b7105d754a06377d81259,Outdoors & Recreation
 4bf58dd8d48988d161941735,Lake,4d4b7105d754a06377d81259,Outdoors & Recreation
@@ -232,6 +234,7 @@
 4eb1c0f63b7b52c0e1adc2eb,Ski Trail,4bf58dd8d48988d1e9941735,Ski Area
 4bf58dd8d48988d1e9941735,Ski Area,4d4b7105d754a06377d81259,Outdoors & Recreation
 4eb1baf03b7b2c5b1d4306ca,Stables,4d4b7105d754a06377d81259,Outdoors & Recreation
+4bf58dd8d48988d159941735,Trail,4d4b7105d754a06377d81259,Outdoors & Recreation
 4bf58dd8d48988d1de941735,Vineyard,4d4b7105d754a06377d81259,Outdoors & Recreation
 5032848691d4c4b30a586d61,Volcano,4d4b7105d754a06377d81259,Outdoors & Recreation
 4fbc1be21983fc883593e321,Well,4d4b7105d754a06377d81259,Outdoors & Recreation
@@ -248,6 +251,7 @@
 4bf58dd8d48988d12a941735,Capitol Building,4bf58dd8d48988d126941735,Government Building
 4bf58dd8d48988d129941735,City Hall,4bf58dd8d48988d126941735,Government Building
 4bf58dd8d48988d12b941735,Courthouse,4bf58dd8d48988d126941735,Government Building
+4bf58dd8d48988d12c951735,Embassy / Consulate,4bf58dd8d48988d126941735,Government Building
 4bf58dd8d48988d12c941735,Fire Station,4bf58dd8d48988d126941735,Government Building
 4bf58dd8d48988d12d941735,Monument / Landmark,4bf58dd8d48988d126941735,Government Building
 4bf58dd8d48988d12e941735,Police Station,4bf58dd8d48988d126941735,Government Building
@@ -256,14 +260,13 @@
 4bf58dd8d48988d178941735,Dentist's Office,4bf58dd8d48988d104941735,Medical Center
 4bf58dd8d48988d177941735,Doctor's Office,4bf58dd8d48988d104941735,Medical Center
 4bf58dd8d48988d194941735,Emergency Room,4bf58dd8d48988d104941735,Medical Center
+522e32fae4b09b556e370f19,Eye Doctor,4bf58dd8d48988d104941735,Medical Center
 4bf58dd8d48988d196941735,Hospital,4bf58dd8d48988d104941735,Medical Center
 4f4531b14b9074f6e4fb0103,Laboratory,4bf58dd8d48988d104941735,Medical Center
-4d954afda243a5684865b473,Optical Shop,4bf58dd8d48988d104941735,Medical Center
 4d954af4a243a5684765b473,Veterinarian,4bf58dd8d48988d104941735,Medical Center
 4bf58dd8d48988d104941735,Medical Center,4d4b7105d754a06375d81259,Professional & Other Places
 4e52adeebd41615f56317744,Military Base,4d4b7105d754a06375d81259,Professional & Other Places
 50328a8e91d4c4b30a586d6c,Non-Profit,4d4b7105d754a06375d81259,Professional & Other Places
-4bf58dd8d48988d128941735,Cafeteria,4bf58dd8d48988d124941735,Office
 5032764e91d4c4b30a586d5a,Campaign Office,4bf58dd8d48988d124941735,Office
 4bf58dd8d48988d127941735,Conference Room,4bf58dd8d48988d124941735,Office
 4bf58dd8d48988d174941735,Coworking Space,4bf58dd8d48988d124941735,Office
@@ -360,6 +363,7 @@
 4bf58dd8d48988d1fe941735,Music Store,4d4b7105d754a06378d81259,Shop & Service
 4f04aa0c2fb6e1c99f3db0b8,Nail Salon,4d4b7105d754a06378d81259,Shop & Service
 4f04ad622fb6e1c99f3db0b9,Newsstand,4d4b7105d754a06378d81259,Shop & Service
+4d954afda243a5684865b473,Optical Shop,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d121951735,Paper / Office Supplies Store,4d4b7105d754a06378d81259,Shop & Service
 5032897c91d4c4b30a586d69,Pet Service,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d100951735,Pet Store,4d4b7105d754a06378d81259,Shop & Service
@@ -389,12 +393,9 @@
 4bf58dd8d48988d1f7931735,Plane,4bf58dd8d48988d1ed931735,Airport
 4bf58dd8d48988d1ed931735,Airport,4d4b7105d754a06379d81259,Travel & Transport
 4e4c9077bd41f78e849722f9,Bike Rental / Bike Share,4d4b7105d754a06379d81259,Travel & Transport
+4bf58dd8d48988d12d951735,Boat or Ferry,4d4b7105d754a06379d81259,Travel & Transport
 4bf58dd8d48988d12b951735,Bus Line,4bf58dd8d48988d1fe931735,Bus Station
 4bf58dd8d48988d1fe931735,Bus Station,4d4b7105d754a06379d81259,Travel & Transport
-4bf58dd8d48988d12c951735,Embassy / Consulate,4d4b7105d754a06379d81259,Travel & Transport
-4bf58dd8d48988d12d951735,Boat or Ferry,4e51a0c0bd41d3446defbb2e,Ferry
-4e74f6cabd41c4836eac4c31,Pier,4e51a0c0bd41d3446defbb2e,Ferry
-4e51a0c0bd41d3446defbb2e,Ferry,4d4b7105d754a06379d81259,Travel & Transport
 4bf58dd8d48988d1f6931735,General Travel,4d4b7105d754a06379d81259,Travel & Transport
 4bf58dd8d48988d1f8931735,Bed & Breakfast,4bf58dd8d48988d1fa931735,Hotel
 4f4530a74b9074f6e4fb0100,Boarding House,4bf58dd8d48988d1fa931735,Hotel
@@ -406,6 +407,7 @@
 4bf58dd8d48988d1fa931735,Hotel,4d4b7105d754a06379d81259,Travel & Transport
 4bf58dd8d48988d1fc931735,Light Rail,4d4b7105d754a06379d81259,Travel & Transport
 4f2a23984b9023bd5841ed2c,Moving Target,4d4b7105d754a06379d81259,Travel & Transport
+4e74f6cabd41c4836eac4c31,Pier,4d4b7105d754a06379d81259,Travel & Transport
 4bf58dd8d48988d1ef941735,Rental Car Location,4d4b7105d754a06379d81259,Travel & Transport
 4d954b16a243a5684b65b473,Rest Area,4d4b7105d754a06379d81259,Travel & Transport
 4bf58dd8d48988d1f9931735,Road,4d4b7105d754a06379d81259,Travel & Transport

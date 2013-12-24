@@ -7,4 +7,5 @@ var
   genData = require(__dirname + '/genData'),
   constants = require(__dirname + '/../../test/constants')
 
-genData(constants.dbProfile.smokeTest)
+// genData(constants.dbProfile.smokeTest)
+genData()
