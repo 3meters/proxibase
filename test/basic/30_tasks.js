@@ -97,7 +97,7 @@ exports.restInsertAsTaskWorks = function(test) {
   }, 201, function(err, res, body) {
     taskId = body.data._id
     setTimeout(function(){
-      t.get('/data/documents?find[type]=taskTest2',
+      t.get('/data/documents?find[type]=taskTest2&' + adminCred,
       function(err, res, body) {
         t.assert(body.data.length >= 2)
         test.done()
@@ -112,12 +112,12 @@ exports.canStopInsertTask = function(test) {
   }, function (err, res, body) {
     t.get('/data/tasks?' + adminCred, function(err, res, body) {
       t.assert(body.data && 0 === body.data.length)  // all tasks records are gone
-      t.get('/data/documents?find[type]=taskTest2',
+      t.get('/data/documents?find[type]=taskTest2&' + adminCred,
       function(err, res, body) {
         t.assert(body.data)
         docCount = body.data.length  // count records inserted by recurring task
         setTimeout(function() {
-          t.get('/data/documents?find[type]=taskTest2',
+          t.get('/data/documents?find[type]=taskTest2&' + adminCred,
           function() {
             t.assert(body.data && docCount === body.data.length)  // make sure we have no new records
             test.done()
@@ -145,7 +145,7 @@ exports.restInsertDisabledTestDoesNotStartIt = function(test) {
   }, 201, function(err, res, body) {
     taskId = body.data._id
     setTimeout(function(){
-      t.get('/data/documents?find[type]=taskTest3',
+      t.get('/data/documents?find[type]=taskTest3&' + adminCred,
       function(err, res, body) {
         t.assert(body.data.length === 0)
         test.done()

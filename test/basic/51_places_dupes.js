@@ -48,7 +48,7 @@ exports.dupePlaceMaggiano = function(test) {
 
   if (disconnected) return skip(test)
 
-    var locMag = {
+  var locMag = {
     lat : 47.617099145207682,
     lng : -122.20097064971924,
   }
@@ -73,6 +73,7 @@ exports.dupePlaceMaggiano = function(test) {
         radius: 500,
         includeRaw: false,
         limit: 100,
+        timeout: 15000,
       }
     }, function(err, res, body) {
       var cMaggiano = 0
