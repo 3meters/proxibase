@@ -180,7 +180,7 @@ exports.cannotValidateSessionWithBogusKey = function(test) {
 
 exports.canValidateSession = function(test) {
   t.get({
-    uri: '/data/documents?user=' + session._owner + '&session=' + session.key
+    uri: '/data/places?user=' + session._owner + '&session=' + session.key
   }, function(err, res, body) {
     t.assert(body.user)
     t.assert(body.user._id === testUser._id)
@@ -192,7 +192,7 @@ exports.canValidateSession = function(test) {
 exports.canValidateSessionUsingParamsInBody = function(test) {
   t.post({
     uri: '/do/find',
-    body: {collection: 'documents', user: session._owner, session: session.key}
+    body: {collection: 'places', user: session._owner, session: session.key}
   }, function(err, res, body) {
     t.assert(body.user)
     t.assert(body.user._id === testUser._id)
@@ -204,11 +204,11 @@ exports.canValidateSessionUsingParamsInBody = function(test) {
 exports.sessionParamsInQueryStringOverrideOnesInBody = function(test) {
   t.post({
     uri: '/do/find?user=' + session._owner + '&session=' + session.key,
-    body: {collection: 'users', user: util.adminUser._id, session: session.key}
+    body: {collection: 'places', user: util.adminUser._id, session: session.key}
   }, function(err, res, body) {
     t.post({
       uri: '/do/find?user=' + util.adminUser._id + '&session=' + session.key,
-      body: {collection: 'users', user: session._owner, session: session.key}
+      body: {collection: 'places', user: session._owner, session: session.key}
     }, 401, function(err, res, body) {
       test.done()
     })
@@ -268,7 +268,7 @@ exports.userCanChangePassword = function(test) {
 
 exports.changingPasswordDestroysOldSession = function(test) {
   t.get({
-    uri: '/data/documents?' + userOldCred
+    uri: '/data/places?' + userOldCred
   }, 401, function(err, res, body) {
     test.done()
   })
@@ -276,7 +276,7 @@ exports.changingPasswordDestroysOldSession = function(test) {
 
 exports.changingPasswordsCreatesNewSession = function(test) {
   t.get({
-    uri: '/data/documents?' + userCred
+    uri: '/data/places?' + userCred
   }, function(err, res, body) {
     test.done()
   })
@@ -411,9 +411,13 @@ _exports.newUserEmailValidateUrlWorksSlowly = function(test) {
   })
 }
 
+exports.userCannotSeeNewUser = function(test) {
+  return testUtil.skip(test)
+}
+
 exports.newUserEmailValidateUrlWorksFaster = function(test) {
   if (testUtil.disconnected) return testUtil.skip(test)
-  t.get('/data/users/' + newUserId, function(err, res, body) {
+  t.get('/data/users/' + newUserId + '?' + newUserCred, function(err, res, body) {
     t.assert(body.data)
     t.assert(body.data.validationNotifyDate)
     t.assert(!body.data.validationDate)
@@ -424,7 +428,7 @@ exports.newUserEmailValidateUrlWorksFaster = function(test) {
     // Give time for the update to finish, but don't wait for the
     // call to redirect the user to http://aircandi.com
     setTimeout(function() {
-      t.get('/data/users/' + newUserId, function(err, res, body) {
+      t.get('/data/users/' + newUserId + '?' + newUserCred, function(err, res, body) {
         t.assert(body.data.validationDate)
         t.assert(body.data.validationDate > body.data.validationNotifyDate)
         test.done()
@@ -479,7 +483,7 @@ exports.userCanInviteNewUser = function(test) {
     t.assert(body.results && body.results.length)
     // Check the db for whitelisted records
     t.post({
-      uri: '/find/documents?' + userCred,
+      uri: '/find/documents?' + adminCred,
       body: {
         find: {
           type: 'validUser',

@@ -39,7 +39,7 @@ exports.getUserSession = function(test) {
 }
 
 exports.genIdWorks = function(test) {
-  t.get('/data/places?genId=1',
+  t.get('/data/places/genId',
   function(err, res, body) {
     t.assert(body.data._id)
     var schemaId = body.data._id.split('.')[0]
@@ -50,7 +50,7 @@ exports.genIdWorks = function(test) {
 }
 
 exports.genIdBeacons = function(test) {
-  t.get('/data/beacons?genId=1&bssid=00:11:22:33:44',
+  t.get('/data/beacons/genId?bssid=00:11:22:33:44',
   function(err, res, body) {
     t.assert(body.data._id)
     t.assert(body.data._id === util.statics.schemas.beacon.id + '.00:11:22:33:44')
@@ -59,7 +59,7 @@ exports.genIdBeacons = function(test) {
 }
 
 exports.genIdInstalls = function(test) {
-  t.get('/data/installs?genId=1&installId=12345',
+  t.get('/data/installs/genId?installId=12345',
   function(err, res, body) {
     t.assert(body.data._id)
     t.assert(body.data._id === util.statics.schemas.install.id + '.12345')
@@ -120,7 +120,7 @@ exports.canAddDoc = function(test) {
 
 exports.fieldsParamWorks = function(test) {
   t.get({
-    uri: '/data/documents/' + testDoc1._id + '?fields=name'
+    uri: '/data/documents/' + testDoc1._id + '?fields=name&' + userCred
   }, function(err, res, body) {
     t.assert(body.data)
     t.assert(body.data.name)
@@ -304,9 +304,9 @@ exports.findDocsByGetAndFindWithBadJson = function(test) {
   })
 }
 
-exports.findDocsByNameWhenNotSignedIn = function(test) {
+exports.findDocsByName = function(test) {
   t.get({
-    uri: '/data/documents?name=' + testDoc1.name.toUpperCase()
+    uri: '/data/documents?name=' + testDoc1.name.toUpperCase() + '&' + userCred
   }, function(err, res, body) {
     t.assert(body.count === 1)
     test.done()
@@ -315,7 +315,7 @@ exports.findDocsByNameWhenNotSignedIn = function(test) {
 
 exports.findDocsByNameStartsWithMatch = function(test) {
   t.get({
-    uri: '/data/documents?name=' + testDoc1.name.slice(0, testDoc1.name.length -2)
+    uri: '/data/documents?name=' + testDoc1.name.slice(0, testDoc1.name.length -2) + '&' + userCred
   }, function(err, res, body) {
     t.assert(body.count === 2)
     test.done()
@@ -324,7 +324,7 @@ exports.findDocsByNameStartsWithMatch = function(test) {
 
 exports.findWithLookups = function(test) {
   t.get({
-    uri: '/data/documents?name=' + testDoc1.name + '&lookups=1'
+    uri: '/data/documents?name=' + testDoc1.name + '&lookups=1&' + userCred
   }, function(err, res, body) {
     var doc = body.data[0]
     t.assert('Test User' === doc.owner)
@@ -348,7 +348,7 @@ exports.updateDoc = function(test) {
 
 exports.checkUpdatedDoc = function(test) {
   t.get({
-    uri: '/data/documents/' + testDoc1._id
+    uri: '/data/documents/' + testDoc1._id + '?' + userCred
   }, function(err, res, body) {
     t.assert(body.data && body.data)
     t.assert(body.data.name === 'Changed Name')
@@ -472,7 +472,7 @@ exports.userCanLinkDocs = function(test) {
 
 exports.checkLink = function(test) {
   t.get({
-    uri: '/data/links/' + linkId
+    uri: '/data/links/' + linkId  // not owner access, fully readable, ok?
   }, function(err, res, body) {
     t.assert(body.data._from = testDoc1._id)
     t.assert(body.data._to = testDoc2._id)
@@ -654,13 +654,13 @@ exports.deleteNonExistantRecordReturnsNotFound = function(test) {
 }
 
 exports.sortsDescendingByModifiedDateByDefault = function(test) {
-  t.get('/data/documents',
+  t.get('/data/beacons',
   function(err, res, body) {
     docs = body.data
     t.assert(docs && docs.length)
     var modDate = Infinity
     docs.forEach(function(doc) {
-      t.assert(modDate > doc.modifiedDate)
+      t.assert(modDate >= doc.modifiedDate)
       modDate = doc.modifiedDate
     })
     test.done()
@@ -668,31 +668,31 @@ exports.sortsDescendingByModifiedDateByDefault = function(test) {
 }
 
 exports.sortWorks = function(test) {
-  t.get('/data/users?sort[0][_id]=-1',
+  t.get('/data/places?sort[0][_id]=-1',
   function(err, res, body) {
-    var lastId = 'us.999999.99999.999.999999'
-    body.data.forEach(function(user, i) {
-      t.assert(user._id < lastId, i)
-      lastId = user._id
+    var lastId = 'pl.999999.99999.999.999999'
+    body.data.forEach(function(place, i) {
+      t.assert(place._id < lastId, i)
+      lastId = place._id
     })
     test.done()
   })
 }
 
 exports.sortAltFormatWorks = function(test) {
-  t.get('/data/users?sort[0][0]=namelc&sort[0][1]=asc',
+  t.get('/data/places?sort[0][0]=namelc&sort[0][1]=asc',
   function(err, res, body) {
     var namelc = 'a'
-    body.data.forEach(function(user, i) {
-      t.assert(user.namelc > namelc, i)
-      namelc = user.namelc
+    body.data.forEach(function(place, i) {
+      t.assert(place.namelc > namelc, i)
+      namelc = place.namelc
     })
     test.done()
   })
 }
 
 exports.formatDatesWorks = function(test) {
-  t.get('/data/users?datesToUTC=1',
+  t.get('/data/places?datesToUTC=1',
   function(err, res, body) {
     t.assert(util.type.isString(body.data[1].createdDate))
     t.assert(util.type.isString(body.data[1].modifiedDate))
