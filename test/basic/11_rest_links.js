@@ -4,7 +4,7 @@
 
 var util = require('proxutils')
 var log = util.log
-var type = util.type
+var tipe = util.tipe
 var testUtil = require('../util')
 var skip = testUtil.skip
 var t = testUtil.treq
