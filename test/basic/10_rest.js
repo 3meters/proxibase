@@ -4,7 +4,7 @@
 
 var util = require('proxutils')
 var log = util.log
-var type = util.type
+var tipe = util.tipe
 var testUtil = require('../util')
 var t = testUtil.treq
 var userSession
@@ -175,7 +175,7 @@ exports.canRemovePropertyOfNestedObject = function(test) {
     t.assert(body.data)
     t.assert(body.data.data)
     t.assert(body.data.data.number === 4)
-    t.assert(util.type.isUndefined(body.data.data.foo))
+    t.assert(tipe.isUndefined(body.data.data.foo))
     test.done()
   })
 }
@@ -191,7 +191,7 @@ exports.updateCanRemoveNestedObjects = function(test) {
     }
   }, function(err, res, body) {
     t.assert(body.data.type === 'I have lost my data')
-    t.assert(type.isUndefined(body.data.data))
+    t.assert(tipe.isUndefined(body.data.data))
     test.done()
   })
 }
@@ -250,8 +250,8 @@ _exports.canUpdateNestedArrays = function(test) {
     }, function(err, res, body) {
       var ent = body.data
       t.assert(ent._id && ent.type && ent.comments)
-      t.assert(type.isUndefined(ent.name))
-      t.assert(type.isUndefined(ent.namelc))
+      t.assert(tipe.isUndefined(ent.name))
+      t.assert(tipe.isUndefined(ent.namelc))
       t.assert(ent.comments[0].description === 'I am comment 1')
       t.assert(ent.comments[1].description === 'I am new comment 2')
       t.delete({
@@ -363,8 +363,8 @@ exports.settingFieldsToNullUnsetsThem = function(test) {
     uri: '/data/documents/' + testDoc1._id + '?' + userCred,
     body: {name: null, data: {data: null} }
   }, function(err, res, body) {
-    t.assert(util.type(body.data.name === 'undefined'))
-    t.assert(util.type(body.data.data === 'undefined'))
+    t.assert(tipe(body.data.name === 'undefined'))
+    t.assert(tipe(body.data.data === 'undefined'))
     test.done()
   })
 }
@@ -538,9 +538,9 @@ exports.nullsAreNotPersistedOnInsert = function(test) {
     }
   }, 201, function(err, res, body) {
     var data = body.data
-    t.assert(util.type.isUndefined(data.name))
+    t.assert(tipe.isUndefined(data.name))
     t.assert(data.data.p1 === 1)
-    t.assert(util.type.isUndefined(data.data.p2))
+    t.assert(tipe.isUndefined(data.data.p2))
     test.done()
   })
 }
@@ -694,8 +694,8 @@ exports.sortAltFormatWorks = function(test) {
 exports.formatDatesWorks = function(test) {
   t.get('/data/places?datesToUTC=1',
   function(err, res, body) {
-    t.assert(util.type.isString(body.data[1].createdDate))
-    t.assert(util.type.isString(body.data[1].modifiedDate))
+    t.assert(tipe.isString(body.data[1].createdDate))
+    t.assert(tipe.isString(body.data[1].modifiedDate))
     test.done()
   })
 }

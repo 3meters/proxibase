@@ -21,7 +21,7 @@ exports.serverUrl = util.config.service.url
 function makeReq(options) {
 
   var req = {}
-  if (type.isString(options)) {
+  if (tipe.isString(options)) {
     options = {method: 'get', uri: options}
   }
   _.extend(req, options)
@@ -30,7 +30,7 @@ function makeReq(options) {
   else req.uri = exports.serverUrl
 
   req.method = options.method || 'get'
-  req.json = type.isBoolean(options.json) ? options.json : true
+  req.json = tipe.isBoolean(options.json) ? options.json : true
   req.strictSSL = false  // Defaulted to false with node.0.8, in node 0.10 it defaults to true
   return req
 }
@@ -55,7 +55,7 @@ function TestRequest() {
 
   // Main method
   function treq(options, statusCode, cb) {
-    if (arguments.length < 3 && (type.isFunction(statusCode))) {
+    if (arguments.length < 3 && (tipe.isFunction(statusCode))) {
       // status code not included, shift left and set default
       cb = statusCode
       statusCode = 200
@@ -183,7 +183,7 @@ function getSession(user, asAdmin, cb) {
       })
     }
     else {
-      if (res.body && type.isString((res.body))) {
+      if (res.body && tipe.isString((res.body))) {
         try { res.body = JSON.parse(res.body) }
         catch (e) { throw e }
       }
@@ -199,7 +199,7 @@ function dump(req, res, msg) {
   var out = '\n\nTest failed: '
 
   if (msg) {
-    out += (type.isObject(msg) || type.isArray(msg))
+    out += (tipe.isObject(msg) || tipe.isArray(msg))
       ? '\n' + util.inspect(msg, false, 12)
       : String(msg)
   }
@@ -232,11 +232,11 @@ function check(req, res, code) {
   assert(res, 'Missing response')
   assert(res.statusCode, 'Missing response.statusCode')
   code = code || 200
-  if (req.body && type.isString(req.body)) {
+  if (req.body && tipe.isString(req.body)) {
     try { req.body = JSON.parse(req.body) }
     catch (e) { } // we allow non-JSON in request body
   }
-  if (res.body && (type.isString(res.body))) {
+  if (res.body && (tipe.isString(res.body))) {
     try { res.body = JSON.parse(res.body) }
     catch (e) {
       if (req.json) {
