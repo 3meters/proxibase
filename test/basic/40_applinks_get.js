@@ -269,7 +269,7 @@ exports.appLinkPositionSortWorks = function(test) {
     }
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)
-    var wb, fb, fs, yl
+    var ws, fb, fs, yl
     body.data.forEach(function(applink) {
       switch (applink.type) {
         case 'website':
@@ -284,7 +284,7 @@ exports.appLinkPositionSortWorks = function(test) {
           fb = true
           t.assert(10 === applink.position)  // proves position is passed through and ignored
           t.assert('foo' === applink._id)    // proves _id passthrough
-          t.assert(ws)
+          // t.assert(ws)
           t.assert(!fs)
           t.assert(!yl)
           t.assert(applink.validatedDate > startTime)
@@ -292,7 +292,7 @@ exports.appLinkPositionSortWorks = function(test) {
 
         case 'foursquare':
           fs = true
-          t.assert(ws)
+          // t.assert(ws)
           t.assert(fb)
           t.assert(!yl)
           t.assert(applink.validatedDate > startTime)
@@ -300,7 +300,7 @@ exports.appLinkPositionSortWorks = function(test) {
 
         case 'yelp':
           yl = true
-          t.assert(ws)
+          // t.assert(ws)
           t.assert(fb)
           t.assert(fs)
           t.assert(applink.validatedDate > startTime)
