@@ -67,7 +67,7 @@ exports.findWithLimitNotSignedIn = function(test) {
 
 exports.findById = function(test) {
   t.post({
-    uri: '/do/find?' + userCred,
+    uri: '/do/find?' + adminCred,
     body: {collection:'users', ids:[constants.uid1]}
   }, function(err, res, body) {
     t.assert(body.data.length === 1 && body.count === 1)
@@ -80,7 +80,7 @@ exports.findById = function(test) {
 
 exports.findByNameCaseInsensitive = function(test) {
   t.post({
-    uri: '/do/find?' + userCred,
+    uri: '/do/find?' + adminCred,
     body: {collection:'users', name: testUser1.name.toUpperCase(), sort: {_id: -1}}
   }, function(err, res, body) {
     t.assert(body.data.length === 2 && body.count === 2) //Test users 1 and 10
@@ -92,7 +92,7 @@ exports.findByNameCaseInsensitive = function(test) {
 
 exports.findPassThrough = function(test) {
   t.post({
-    uri: '/do/find?' + userCred,
+    uri: '/do/find?' + adminCred,
     body: {collection:'users', find:{email: testUser1.email}}
   }, function(err, res, body) {
     t.assert(body.data.length === 1 && body.count === 1)
