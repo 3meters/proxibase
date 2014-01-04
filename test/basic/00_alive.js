@@ -76,3 +76,13 @@ exports.speakSpanishToMe = function(test) {
     test.done()
   })
 }
+
+// Make sure public database read works
+exports.canReadPublidData = function(test) {
+  t.get('/data/links', function(err, res, body) {
+    t.assert(body)
+    t.assert(body.data)
+    t.assert(body.data.length)  // relies on sample data
+    test.done()
+  })
+}
