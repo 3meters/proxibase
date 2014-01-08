@@ -42,13 +42,6 @@ exports.getErrorsPage = function(test) {
   })
 }
 
-// Make sure server barfs on post without body
-exports.postWithMissingBody = function(test) {
-  t.post('/do/find', 400, function(err, res, body) {
-    t.assert(body.error)
-    test.done()
-  })
-}
 
 // Make sure server barfs on body not parsable as JSON
 exports.postWithBadJsonInBody = function(test) {
@@ -73,6 +66,18 @@ exports.speakSpanishToMe = function(test) {
   t.get('/aPageThatWillNotBeFound?lang=es', 404, function(err, res, body) {
     t.assert(body.error)
     t.assert(body.error.message === 'No se ha encontrado')
+    test.done()
+  })
+}
+
+// Test echo
+exports.echo = function(test) {
+  var rBody = {foo: {bar: {baz: 'foo'}}}
+  t.post({
+    uri: '/echo',
+    body: rBody
+  }, function(err, res, body) {
+    t.assert(body.foo.bar.baz === rBody.foo.bar.baz)
     test.done()
   })
 }

@@ -191,8 +191,8 @@ exports.canValidateSession = function(test) {
 
 exports.canValidateSessionUsingParamsInBody = function(test) {
   t.post({
-    uri: '/do/find',
-    body: {collection: 'places', user: session._owner, session: session.key}
+    uri: '/find/places',
+    body: {user: session._owner, session: session.key}
   }, function(err, res, body) {
     t.assert(body.user)
     t.assert(body.user._id === testUser._id)
@@ -203,12 +203,12 @@ exports.canValidateSessionUsingParamsInBody = function(test) {
 
 exports.sessionParamsInQueryStringOverrideOnesInBody = function(test) {
   t.post({
-    uri: '/do/find?user=' + session._owner + '&session=' + session.key,
-    body: {collection: 'places', user: util.adminUser._id, session: session.key}
+    uri: '/find/places?user=' + session._owner + '&session=' + session.key,
+    body: {user: util.adminUser._id, session: session.key}
   }, function(err, res, body) {
     t.post({
-      uri: '/do/find?user=' + util.adminUser._id + '&session=' + session.key,
-      body: {collection: 'places', user: session._owner, session: session.key}
+      uri: '/find/places?user=' + util.adminUser._id + '&session=' + session.key,
+      body: {user: session._owner, session: session.key}
     }, 401, function(err, res, body) {
       test.done()
     })
@@ -485,7 +485,7 @@ exports.userCanInviteNewUser = function(test) {
     t.post({
       uri: '/find/documents?' + adminCred,
       body: {
-        find: {
+        query: {
           type: 'validUser',
           'data.email': 'test@3meters.com'
         }
