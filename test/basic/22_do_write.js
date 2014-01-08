@@ -376,6 +376,7 @@ exports.registerInstallOne = function (test) {
     }, function(err, res, body) {
       t.assert(body.count === 1)
       t.assert(body.data && body.data[0])
+      t.assert('in.' + installId1 == body.data[0]._id)  // proves custom genId works
       t.assert(body.data[0].installId)
       t.assert(body.data[0].registrationId)
       t.assert(body.data[0].registrationId === 'registration_id_testing_user_bob')
@@ -402,7 +403,7 @@ exports.registerSecondUserOnInstallOne = function (test) {
 
     /* Check registger install second user */
     t.post({
-      uri: '/find/installs',
+      uri: '/find/installs?' + adminCred,
       body: {
         query: { installId: installId1 }
       }
@@ -434,7 +435,7 @@ exports.registerInstallTwo = function (test) {
 
     /* Check register install second user */
     t.post({
-      uri: '/find/installs',
+      uri: '/find/installs?' + adminCred,
       body: {
         query: { installId: installId2 }
       }
@@ -808,7 +809,7 @@ exports.insertPlaceCustom2 = function (test) {
 
       /* Check beacon link count */
       t.post({
-        uri: '/find/beacons',
+        uri: '/find/links',
         body: {
           query: { _to:testBeacon._id }
         }
@@ -1106,7 +1107,7 @@ exports.trackEntityNoBeacons = function(test) {
 
 exports.updateBeaconLocationUsingNewLocation = function (test) {
   t.post({
-    uri: '/do/updateBeaconLocation',
+    uri: '/do/updateBeaconLocation?' + userCredTom,
     body: {
       beaconIds: [testBeacon._id],
       beaconSignals: [-79],

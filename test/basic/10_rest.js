@@ -58,14 +58,6 @@ exports.genIdBeacons = function(test) {
   })
 }
 
-exports.genIdInstalls = function(test) {
-  t.get('/data/installs/genId?installId=12345',
-  function(err, res, body) {
-    t.assert(body.data._id)
-    t.assert(body.data._id === util.statics.schemas.install.id + '.12345')
-    test.done()
-  })
-}
 
 exports.cannotPostDocWithMissingDataTag = function(test) {
   t.post({
