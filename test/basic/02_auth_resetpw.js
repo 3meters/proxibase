@@ -39,7 +39,7 @@ exports.getUserSession = function(test) {
 }
 
 exports.oneUserSession = function(test) {
-  t.get('/data/sessions?filter[_owner]=' + user._id + '&' + adminCred,
+  t.get('/data/sessions?query[_owner]=' + user._id + '&' + adminCred,
   function(err, res, body) {
     t.assert(1 === body.count)
     test.done()
@@ -93,7 +93,7 @@ exports.requestPasswordReset = function(test) {
 }
 
 exports.requestPasswordResetDoesntLeakSessions = function(test) {
-  t.get('/data/sessions?filter[_owner]=' + user._id + '&filter[_install]=in.' + installId + '&' + adminCred,
+  t.get('/data/sessions?query[_owner]=' + user._id + '&query[_install]=in.' + installId + '&' + adminCred,
   function(err, res, body) {
     t.assert(1 === body.count)
     test.done()
@@ -103,6 +103,7 @@ exports.requestPasswordResetDoesntLeakSessions = function(test) {
 exports.userRoleIsSetToReset = function(test) {
   t.get('/data/users/' + user._id + '?' + adminCred,
   function(err, res, body) {
+    t.assert(body.data)
     t.assert('reset' === body.data.role)
     test.done()
   })
@@ -149,7 +150,7 @@ exports.userWithResetRoleCanExecuteResetPassword = function(test) {
 }
 
 exports.resetPasswordDoesntLeakSessions = function(test) {
-  t.get('/data/sessions?filter[_owner]=' + user._id + '&filter[_install]=in.' + installId + '&' + adminCred,
+  t.get('/data/sessions?query[_owner]=' + user._id + '&query[_install]=in.' + installId + '&' + adminCred,
   function(err, res, body) {
     t.assert(1 === body.count)
     test.done()
