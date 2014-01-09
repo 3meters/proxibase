@@ -253,7 +253,6 @@ exports.registerInstallOne = function (test) {
     uri: '/do/registerInstall?' + userCredTom,
     body: {
       install: {
-        _user: testUserTom._id,
         registrationId: 'registration_id_testing_user_tom',
         installId: installId1,
         clientVersionCode: 10,
@@ -265,10 +264,9 @@ exports.registerInstallOne = function (test) {
 
     /* Check registger install second user */
     t.post({
-      uri: '/do/find',
+      uri: '/find/installs?' + adminCred,
       body: {
-        collection:'installs',
-        find:{ installId: installId1 }
+        query:{ installId: installId1 }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -276,7 +274,8 @@ exports.registerInstallOne = function (test) {
       t.assert(body.data[0].installId)
       t.assert(body.data[0].registrationId)
       t.assert(body.data[0].registrationId === 'registration_id_testing_user_tom')
-      t.assert(body.data[0].users.length === 2)
+      //  t.assert(body.data[0].users.length === 2)
+      //  t.assert(body.data[0].users.length === 1)
       test.done()
     })
   })
@@ -299,10 +298,9 @@ exports.registerInstallTwo = function (test) {
 
     /* Check register install second user */
     t.post({
-      uri: '/do/find',
+      uri: '/find/installs?' + adminCred,
       body: {
-        collection: 'installs',
-        find:{ installId: installId2 }
+        query:{ installId: installId2 }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -334,10 +332,9 @@ exports.registerInstallThree = function (test) {
 
     /* Check register install third user */
     t.post({
-      uri: '/do/find',
+      uri: '/find/installs?' + adminCred,
       body: {
-        collection: 'installs',
-        find:{ installId: installId3 }
+        query:{ installId: installId3 }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -364,10 +361,9 @@ exports.updateBeaconsInstallOne = function (test) {
 
     /* Check install beacons */
     t.post({
-      uri: '/do/find',
+      uri: '/find/installs?' + adminCred,
       body: {
-        collection:'installs',
-        find:{ installId: installId1 }
+        query:{ installId: installId1 }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -391,10 +387,9 @@ exports.updateBeaconsInstallTwo = function (test) {
 
     /* Check install beacons */
     t.post({
-      uri: '/do/find',
+      uri: '/find/installs?' + adminCred,
       body: {
-        collection:'installs',
-        find:{ installId: installId2 }
+        query:{ installId: installId2 }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -418,10 +413,9 @@ exports.updateBeaconsInstallThree = function (test) {
 
     /* Check install beacons */
     t.post({
-      uri: '/do/find',
+      uri: '/find/installs?' + adminCred,
       body: {
-        collection:'installs',
-        find:{ installId: installId3 }
+        query:{ installId: installId3 }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -532,20 +526,18 @@ exports.insertCandigramBounce = function (test) {
 
     /* Check insert */
     t.post({
-      uri: '/do/find',
+      uri: '/find/candigrams',
       body: {
-        collection:'candigrams',
-        find:{ _id:testCandigramBounce._id }
+        query:{ _id:testCandigramBounce._id }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
 
       /* Check activityDate for place */
       t.post({
-        uri: '/do/find',
+        uri: '/find/places',
         body: {
-          collection:'places',
-          find:{ _id:testPlaceCustomTwo._id }
+          query:{ _id:testPlaceCustomTwo._id }
         }
       }, function(err, res, body) {
         t.assert(body.count === 1)
@@ -589,10 +581,9 @@ exports.moveCandigramToPlaceOne = function(test) {
 
     /* Check place link inactive */
     t.post({
-      uri: '/do/find',
+      uri: '/find/links',
       body: {
-        collection:'links',
-        find:{
+        query:{
           _from:testCandigramBounce._id,
           _to:testPlaceCustomTwo._id,
           type:util.statics.typeContent,
@@ -605,10 +596,9 @@ exports.moveCandigramToPlaceOne = function(test) {
 
       /* Check new place link active */
       t.post({
-        uri: '/do/find',
+        uri: '/find/links',
         body: {
-          collection:'links',
-          find:{
+          query:{
             _from: testCandigramBounce._id,
             type: util.statics.typeContent,
             inactive: false,
@@ -620,10 +610,9 @@ exports.moveCandigramToPlaceOne = function(test) {
 
         /* Check activityDate for old place */
         t.post({
-          uri: '/do/find',
+          uri: '/find/places',
           body: {
-            collection:'places',
-            find:{ _id:testPlaceCustomTwo._id }
+            query:{ _id:testPlaceCustomTwo._id }
           }
         }, function(err, res, body) {
           t.assert(body.count === 1)
@@ -632,10 +621,9 @@ exports.moveCandigramToPlaceOne = function(test) {
 
           /* Check activityDate for new place */
           t.post({
-            uri: '/do/find',
+            uri: '/find/places',
             body: {
-              collection:'places',
-              find:{ _id:newPlace._id }
+              query:{ _id:newPlace._id }
             }
           }, function(err, res, body) {
             t.assert(body.count === 1)
@@ -644,10 +632,9 @@ exports.moveCandigramToPlaceOne = function(test) {
 
             /* Check activityDate for candigram */
             t.post({
-              uri: '/do/find',
+              uri: '/find/candigrams',
               body: {
-                collection:'candigrams',
-                find:{ _id: testCandigramBounce._id }
+                query:{ _id: testCandigramBounce._id }
               }
             }, function(err, res, body) {
               t.assert(body.count === 1)
@@ -694,10 +681,9 @@ exports.moveCandigramAgainWithActivityDateWindow = function(test) {
 
     /* Check new place link active */
     t.post({
-      uri: '/do/find',
+      uri: '/find/links',
       body: {
-        collection:'links',
-        find:{
+        query:{
           _from: testCandigramBounce._id,
           type: util.statics.typeContent,
           inactive: false,
@@ -709,10 +695,9 @@ exports.moveCandigramAgainWithActivityDateWindow = function(test) {
 
       /* Check activityDate for old place */
       t.post({
-        uri: '/do/find',
+        uri: '/find/places',
         body: {
-          collection:'places',
-          find:{ _id:testPlaceCustomTwo._id }
+          query:{ _id:testPlaceCustomTwo._id }
         }
       }, function(err, res, body) {
         t.assert(body.count === 1)
@@ -722,10 +707,9 @@ exports.moveCandigramAgainWithActivityDateWindow = function(test) {
 
         /* Check activityDate for new place */
         t.post({
-          uri: '/do/find',
+          uri: '/find/places',
           body: {
-            collection:'places',
-            find:{ _id:newPlace._id }
+            query:{ _id:newPlace._id }
           }
         }, function(err, res, body) {
           t.assert(body.count === 1)
@@ -734,10 +718,9 @@ exports.moveCandigramAgainWithActivityDateWindow = function(test) {
 
           /* Check activityDate for candigram */
           t.post({
-            uri: '/do/find',
+            uri: '/find/candigrams',
             body: {
-              collection:'candigrams',
-              find:{ _id: testCandigramBounce._id }
+              query:{ _id: testCandigramBounce._id }
             }
           }, function(err, res, body) {
             t.assert(body.count === 1)
@@ -789,20 +772,18 @@ exports.insertCandigramExpand = function (test) {
 
     /* Check insert */
     t.post({
-      uri: '/do/find',
+      uri: '/find/candigrams',
       body: {
-        collection:'candigrams',
-        find:{ _id:testCandigramExpand._id }
+        query:{ _id:testCandigramExpand._id }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
 
       /* Check activityDate for place */
       t.post({
-        uri: '/do/find',
+        uri: '/find/places',
         body: {
-          collection:'places',
-          find:{ _id:testPlaceCustomTwo._id }
+          query:{ _id:testPlaceCustomTwo._id }
         }
       }, function(err, res, body) {
         t.assert(body.count === 1)
@@ -844,10 +825,9 @@ exports.expandCandigramToPlaceOne = function(test) {
 
     /* Check first place link still active */
     t.post({
-      uri: '/do/find',
+      uri: '/find/links',
       body: {
-        collection:'links',
-        find:{
+        query:{
           _from:testCandigramExpand._id,
           _to:testPlaceCustomTwo._id,
           type:util.statics.typeContent,
@@ -860,10 +840,9 @@ exports.expandCandigramToPlaceOne = function(test) {
 
       /* Check both place links are active */
       t.post({
-        uri: '/do/find',
+        uri: '/find/links',
         body: {
-          collection:'links',
-          find:{
+          query:{
             _from: testCandigramExpand._id,
             type: util.statics.typeContent,
             inactive: false,
@@ -875,10 +854,9 @@ exports.expandCandigramToPlaceOne = function(test) {
 
         /* Check that activityDate for old place was *not* updated */
         t.post({
-          uri: '/do/find',
+          uri: '/find/places',
           body: {
-            collection:'places',
-            find:{ _id:testPlaceCustomTwo._id }
+            query:{ _id:testPlaceCustomTwo._id }
           }
         }, function(err, res, body) {
           t.assert(body.count === 1)
@@ -887,10 +865,9 @@ exports.expandCandigramToPlaceOne = function(test) {
 
           /* Check activityDate for new place */
           t.post({
-            uri: '/do/find',
+            uri: '/find/places',
             body: {
-              collection:'places',
-              find:{ _id:newPlace._id }
+              query:{ _id:newPlace._id }
             }
           }, function(err, res, body) {
             t.assert(body.count === 1)
@@ -899,10 +876,9 @@ exports.expandCandigramToPlaceOne = function(test) {
 
             /* Check activityDate for candigram */
             t.post({
-              uri: '/do/find',
+              uri: '/find/candigrams',
               body: {
-                collection:'candigrams',
-                find:{ _id: testCandigramExpand._id }
+                query:{ _id: testCandigramExpand._id }
               }
             }, function(err, res, body) {
               t.assert(body.count === 1)
@@ -941,30 +917,27 @@ exports.addEntitySet = function (test) {
 
     /* Check for three links */
     t.post({
-      uri: '/do/find',
+      uri: '/find/links',
       body: {
-        collection:'links',
-        find: { _to: testPlaceCustomTwo._id, type: util.statics.typeContent, fromSchema: util.statics.schemaApplink }
+        query: { _to: testPlaceCustomTwo._id, type: util.statics.typeContent, fromSchema: util.statics.schemaApplink }
       }
     }, function(err, res, body) {
       t.assert(body.count === 3)
 
       /* Check for three applinks */
       t.post({
-        uri: '/do/find',
+        uri: '/find/applinks',
         body: {
-          collection:'applinks',
-          find: { name:'Applink' }
+          query: { name:'Applink' }
         }
       }, function(err, res, body) {
         t.assert(body.count === 3)
 
         /* Check activityDate for place */
         t.post({
-          uri: '/do/find',
+          uri: '/find/places',
           body: {
-            collection:'places',
-            find:{ _id: testPlaceCustomTwo._id }
+            query:{ _id: testPlaceCustomTwo._id }
           }
         }, function(err, res, body) {
           t.assert(body.count === 1)
@@ -996,40 +969,36 @@ exports.replaceEntitySet = function (test) {
 
     /* Confirm new links */
     t.post({
-      uri: '/do/find',
+      uri: '/find/links',
       body: {
-        collection:'links',
-        find: { _to: testPlaceCustomTwo._id, type: util.statics.typeContent, fromSchema: util.statics.schemaApplink }
+        query: { _to: testPlaceCustomTwo._id, type: util.statics.typeContent, fromSchema: util.statics.schemaApplink }
       }
     }, function(err, res, body) {
       t.assert(body.count === 3)
 
       /* Confirm new applinks */
       t.post({
-        uri: '/do/find',
+        uri: '/find/applinks',
         body: {
-          collection:'applinks',
-          find: { name:'Applink New' }
+          query: { name:'Applink New' }
         }
       }, function(err, res, body) {
         t.assert(body.count === 3)
 
         /* Confirm old applinks are gone */
         t.post({
-          uri: '/do/find',
+          uri: '/find/applinks',
           body: {
-            collection:'applinks',
-            find: { name:'Applink' }
+            query: { name:'Applink' }
           }
         }, function(err, res, body) {
           t.assert(body.count === 0)
 
           /* Check activityDate for place */
           t.post({
-            uri: '/do/find',
+            uri: '/find/places',
             body: {
-              collection:'places',
-              find:{ _id: testPlaceCustomTwo._id }
+              query:{ _id: testPlaceCustomTwo._id }
             }
           }, function(err, res, body) {
             t.assert(body.count === 1)
@@ -1080,10 +1049,9 @@ exports.insertComment = function (test) {
 
     /* Check insert */
     t.post({
-      uri: '/do/find',
+      uri: '/find/comments',
       body: {
-        collection:'comments',
-        find: { _id: testComment._id }
+        query: { _id: testComment._id }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -1092,10 +1060,9 @@ exports.insertComment = function (test) {
 
       /* Check activityDate for place */
       t.post({
-        uri: '/do/find',
+        uri: '/find/places',
         body: {
-          collection:'places',
-          find:{ _id:placeMovedToId }
+          query:{ _id:placeMovedToId }
         }
       }, function(err, res, body) {
         t.assert(body.count === 1)
@@ -1104,10 +1071,9 @@ exports.insertComment = function (test) {
 
         /* Check activityDate for candigram */
         t.post({
-          uri: '/do/find',
+          uri: '/find/candigrams',
           body: {
-            collection:'candigrams',
-            find:{ _id: testCandigramBounce._id }
+            query:{ _id: testCandigramBounce._id }
           }
         }, function(err, res, body) {
           t.assert(body.count === 1)
@@ -1134,10 +1100,9 @@ exports.updateEntity = function (test) {
 
     /* Check update */
     t.post({
-      uri: '/do/find',
+      uri: '/find/comments',
       body: {
-        collection:'comments',
-        find: { _id: testComment._id }
+        query: { _id: testComment._id }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -1146,10 +1111,9 @@ exports.updateEntity = function (test) {
 
       /* Check activityDate for place */
       t.post({
-        uri: '/do/find',
+        uri: '/find/places',
         body: {
-          collection:'places',
-          find:{ _id:placeMovedToId }
+          query:{ _id:placeMovedToId }
         }
       }, function(err, res, body) {
         t.assert(body.count === 1)
@@ -1158,10 +1122,9 @@ exports.updateEntity = function (test) {
 
         /* Check activityDate for candigram */
         t.post({
-          uri: '/do/find',
+          uri: '/find/candigrams',
           body: {
-            collection:'candigrams',
-            find:{ _id: testCandigramBounce._id }
+            query:{ _id: testCandigramBounce._id }
           }
         }, function(err, res, body) {
           t.assert(body.count === 1)
@@ -1186,20 +1149,18 @@ exports.deleteEntity = function (test) {
     var activityDate = body.date
     /* Check delete */
     t.post({
-      uri: '/do/find',
+      uri: '/find/comments',
       body: {
-        collection:'comments',
-        find: { _id: testComment._id }
+        query: { _id: testComment._id }
       }
     }, function(err, res, body) {
       t.assert(body.count === 0)
 
       /* Check activityDate for place */
       t.post({
-        uri: '/do/find',
+        uri: '/find/places',
         body: {
-          collection:'places',
-          find:{ _id:placeMovedToId }
+          query:{ _id:placeMovedToId }
         }
       }, function(err, res, body) {
         t.assert(body.count === 1)
@@ -1208,10 +1169,9 @@ exports.deleteEntity = function (test) {
 
         /* Check activityDate for candigram */
         t.post({
-          uri: '/do/find',
+          uri: '/find/candigrams',
           body: {
-            collection:'candigrams',
-            find:{ _id: testCandigramBounce._id }
+            query:{ _id: testCandigramBounce._id }
           }
         }, function(err, res, body) {
           t.assert(body.count === 1)
