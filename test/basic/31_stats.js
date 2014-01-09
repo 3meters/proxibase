@@ -121,9 +121,9 @@ exports.staticsUpdateOnRefresh = function(test) {
   })
 }
 
-exports.statsPassThroughFindCriteria = function(test) {
+exports.statsPassThroughQueryCriteria = function(test) {
   t.get({
-    uri: '/stats/linksFromUsers?find[linkType]=watch'
+    uri: '/stats/linksFromUsers?query[linkType]=watch'
   }, function(err, res, body) {
     t.assert(body.data.length)
     body.data.forEach(function(doc) {
