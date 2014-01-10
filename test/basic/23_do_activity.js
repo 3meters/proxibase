@@ -87,6 +87,7 @@ var testPlaceCustomTwo = {
   _id : "pl.111111.11111.111.211115",
   schema : util.statics.schemaPlace,
   name : "Testing place entity custom two for candigrams",
+  locked: true,  //
   photo: {
     prefix:"1001_20111224_104245.jpg",
     source:"aircandi"
@@ -490,6 +491,32 @@ exports.insertCustomPlaceTwoForCandigram = function (test) {
     test.done()
   })
 }
+
+
+exports.cannotUpdateApplinksforPlaceOwnedByAnotherUser = function(test) {
+  t.post({
+    uri: '/do/replaceEntitiesForEntity?' + userCredTom,  // place is owned by Bob
+    body: {
+      entityId: testPlaceCustomTwo._id,
+      entities: [
+        util.clone(testApplink),
+        util.clone(testApplink),
+        util.clone(testApplink)],
+      schema: util.statics.schemaApplink,
+      activityDateWindow: 0,
+    }
+  }, 401, function(err, res, body) {
+    t.assert(401.6 === body.error.code)
+    t.post({
+      uri: '/data/places/' + testPlaceCustomTwo._id + '?' + userCredBob,
+      body: {data: {locked: false}},
+    }, function(err, res, body) {
+      t.assert(false === body.data.locked)
+      test.done()
+    })
+  })
+}
+
 
 exports.insertCandigramBounce = function (test) {
   testCandigramBounce.hopLastDate = util.now()
@@ -899,26 +926,9 @@ exports.expandCandigramToPlaceOne = function(test) {
  * ----------------------------------------------------------------------------
  */
 
-exports.cannotUpdateApplinksforPlaceOwnedByAnotherUser = function(test) {
-  t.post({
-    uri: '/do/replaceEntitiesForEntity?' + userCredTom,  // place is owned by Bob
-    body: {
-      entityId: testPlaceCustomTwo._id,
-      entities: [
-        util.clone(testApplink),
-        util.clone(testApplink),
-        util.clone(testApplink)],
-      schema: util.statics.schemaApplink,
-      activityDateWindow: 0,
-    }
-  }, 401, function(err, res, body) {
-   test.done()
-  })
-}
-
 exports.addEntitySet = function (test) {
   t.post({
-    uri: '/do/replaceEntitiesForEntity?' + userCredBob,
+    uri: '/do/replaceEntitiesForEntity?' + userCredTom,
     body: {
       entityId: testPlaceCustomTwo._id,
       entities: [
@@ -969,7 +979,7 @@ exports.addEntitySet = function (test) {
 
 exports.replaceEntitySet = function (test) {
   t.post({
-    uri: '/do/replaceEntitiesForEntity?' + userCredBob,
+    uri: '/do/replaceEntitiesForEntity?' + userCredTom,
     body: {
       entityId: testPlaceCustomTwo._id,
       entities: [
