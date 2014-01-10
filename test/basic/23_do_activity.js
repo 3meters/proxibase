@@ -899,9 +899,26 @@ exports.expandCandigramToPlaceOne = function(test) {
  * ----------------------------------------------------------------------------
  */
 
+exports.cannotUpdateApplinksforPlaceOwnedByAnotherUser = function(test) {
+  t.post({
+    uri: '/do/replaceEntitiesForEntity?' + userCredTom,  // place is owned by Bob
+    body: {
+      entityId: testPlaceCustomTwo._id,
+      entities: [
+        util.clone(testApplink),
+        util.clone(testApplink),
+        util.clone(testApplink)],
+      schema: util.statics.schemaApplink,
+      activityDateWindow: 0,
+    }
+  }, 401, function(err, res, body) {
+   test.done()
+  })
+}
+
 exports.addEntitySet = function (test) {
   t.post({
-    uri: '/do/replaceEntitiesForEntity?' + userCredTom,
+    uri: '/do/replaceEntitiesForEntity?' + userCredBob,
     body: {
       entityId: testPlaceCustomTwo._id,
       entities: [
@@ -952,7 +969,7 @@ exports.addEntitySet = function (test) {
 
 exports.replaceEntitySet = function (test) {
   t.post({
-    uri: '/do/replaceEntitiesForEntity?' + userCredTom,
+    uri: '/do/replaceEntitiesForEntity?' + userCredBob,
     body: {
       entityId: testPlaceCustomTwo._id,
       entities: [
