@@ -1212,10 +1212,10 @@ exports.insertPost = function (test) {
     uri: '/do/insertEntity?' + userCredBob,
     body: {
       entity: testPost,
-      link: {
+      links: [{
         _to: testPlaceCustomOne._id,
         type: util.statics.typeContent,
-      },
+      }],
       returnMessages: true,
     }
   }, 201, function(err, res, body) {
@@ -1284,10 +1284,10 @@ exports.insertComment = function (test) {
     uri: '/do/insertEntity?' + userCredTom,
     body: {
       entity: testComment,
-      link: {
+      links: [{
         _to: testPost._id,
         type: util.statics.typeContent,
-      },
+      }],
       returnMessages: true,
     }
   }, 201, function(err, res, body) {
@@ -1597,10 +1597,10 @@ exports.nonOwnerCannotCommentOnLockedRecord = function(test) {
     uri: '/do/insertEntity?' + userCredBob,
     body: {
       entity: testComment2,
-      link: {
+      links: [{
         _to: testPlaceCustomLocked._id,
         type: util.statics.typeContent
-      },
+      }],
     }
   }, 401, function(err, res, body) {
     t.assert(body.error && body.error.code === 401.6)
@@ -1613,10 +1613,10 @@ exports.ownerCanCommentOnLockedRecord = function(test) {
     uri: '/do/insertEntity?' + userCredTom,
     body: {
       entity: testComment2,
-      link: {
+      links: [{
         _to: testPlaceCustomLocked._id,
         type: util.statics.typeContent
-      },
+      }],
       returnMessages: true,
     }
   }, 201, function(err, res, body) {
@@ -1651,10 +1651,10 @@ exports.adminCanCommentOnLockedRecord = function(test) {
     uri: '/do/insertEntity?' + adminCred,
     body: {
       entity: testComment3,
-      link: {
+      links: [{
         _to: testPlaceCustomLocked._id,
         type: util.statics.typeContent
-      },
+      }],
       returnMessages: true,
     }
   }, 201, function(err, res, body) {

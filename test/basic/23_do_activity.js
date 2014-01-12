@@ -144,17 +144,17 @@ var testCandigramTour = {
   },
 }
 
-var testCandigramExpand = {
+var testCandigramMessage = {
   _id : "ca.111111.11111.111.333333",
   schema : util.statics.schemaCandigram,
-  type : "expand",
+  type : "message",
   lifetime: 86400000, // one day
   range: -1,      // in meters
   stopped: false,
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
-  name : "Testing expanding candigram entity",
+  name : "Testing message candigram entity",
   photo: {
     prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
     source:"aircandi",
@@ -503,10 +503,10 @@ exports.insertCandigramBounce = function (test) {
     uri: '/do/insertEntity?' + userCredBob,
     body: {
       entity: testCandigramBounce,
-      link: {
+      links: [{
         _to: testPlaceCustomTwo._id,
         type: util.statics.typeContent
-      },
+      }],
       returnMessages: true,
     }
   }, 201, function(err, res, body) {
@@ -752,15 +752,15 @@ exports.moveCandigramAgainWithActivityDateWindow = function(test) {
 }
 
 
-exports.insertCandigramExpand = function (test) {
+exports.insertCandigramMessage = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCredTom,
     body: {
-      entity: testCandigramExpand,
-      link: {
+      entity: testCandigramMessage,
+      links: [{
         _to: testPlaceCustomTwo._id,          // Bobs place
         type: util.statics.typeContent
-      },
+      }],
       returnMessages: true,
       activityDateWindow: 0,
     }
@@ -792,7 +792,7 @@ exports.insertCandigramExpand = function (test) {
       uri: '/do/find',
       body: {
         collection:'candigrams',
-        find:{ _id:testCandigramExpand._id }
+        find:{ _id:testCandigramMessage._id }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -814,14 +814,14 @@ exports.insertCandigramExpand = function (test) {
   })
 }
 
-exports.expandCandigramToPlaceOne = function(test) {
+exports.forwardCandigramToPlaceOne = function(test) {
   t.post({
     uri: '/do/moveCandigrams?' + userCredBob,
     body: {
-      entityIds:[testCandigramExpand._id],
+      entityIds:[testCandigramMessage._id],
       toId: testPlaceCustomOne._id,           // Moving to toms place
       verbose: true,
-      expand: true,
+      forward: true,
       returnMessages: true,
       activityDateWindow: 0,
     }
@@ -848,7 +848,7 @@ exports.expandCandigramToPlaceOne = function(test) {
       body: {
         collection:'links',
         find:{
-          _from:testCandigramExpand._id,
+          _from:testCandigramMessage._id,
           _to:testPlaceCustomTwo._id,
           type:util.statics.typeContent,
         }
@@ -864,7 +864,7 @@ exports.expandCandigramToPlaceOne = function(test) {
         body: {
           collection:'links',
           find:{
-            _from: testCandigramExpand._id,
+            _from: testCandigramMessage._id,
             type: util.statics.typeContent,
             inactive: false,
           }
@@ -902,7 +902,7 @@ exports.expandCandigramToPlaceOne = function(test) {
               uri: '/do/find',
               body: {
                 collection:'candigrams',
-                find:{ _id: testCandigramExpand._id }
+                find:{ _id: testCandigramMessage._id }
               }
             }, function(err, res, body) {
               t.assert(body.count === 1)
@@ -1054,10 +1054,10 @@ exports.insertComment = function (test) {
     uri: '/do/insertEntity?' + userCredTom,
     body: {
       entity: testComment,
-      link: {
+      links: [{
         _to: testCandigramBounce._id,
         type: util.statics.typeContent,
-      },
+      }],
       returnMessages: true,
       activityDateWindow: 0,
     }
