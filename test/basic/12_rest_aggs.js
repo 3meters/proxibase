@@ -30,7 +30,7 @@ exports.getUserSession = function(test) {
 
 exports.countByDeliversSomeResults = function(test) {
   t.get({
-    uri: '/data/links?countBy=_owner'
+    uri: '/data/links/count/_owner'
   }, function(err, res, body) {
     // These are based on data in template test database
     t.assert(body.count >= profile.users)
@@ -45,7 +45,7 @@ exports.countByDeliversSomeResults = function(test) {
 
 exports.countByMultipleFieldsReturnsResults = function(test) {
   t.get({
-    uri: '/data/links?countBy=_owner,type'
+    uri: '/data/links/count/_owner,type'
   }, function(err, res, body) {
     // These are based on data in template test database
     t.assert(body.count >= profile.users)

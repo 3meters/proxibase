@@ -58,14 +58,6 @@ exports.genIdBeacons = function(test) {
   })
 }
 
-exports.genIdInstalls = function(test) {
-  t.get('/data/installs/genId?installId=12345',
-  function(err, res, body) {
-    t.assert(body.data._id)
-    t.assert(body.data._id === util.statics.schemas.install.id + '.12345')
-    test.done()
-  })
-}
 
 exports.cannotPostDocWithMissingDataTag = function(test) {
   t.post({
@@ -280,7 +272,7 @@ exports.findDocsByIdAndCheckSysFields = function(test) {
 
 exports.findDocsByGetAndFindAndJson = function(test) {
   t.get({
-    uri: '/data/documents?filter={"_id":"' + testDoc1._id + '"}&' + userCred
+    uri: '/data/documents?query={"_id":"' + testDoc1._id + '"}&' + userCred
   }, function(err, res, body) {
     t.assert(body.data.length === 1)
     test.done()
@@ -290,7 +282,7 @@ exports.findDocsByGetAndFindAndJson = function(test) {
 exports.findDocsByGetAndFindAndJsonFailsWithBadUserCred = function(test) {
   t.get({
     // bogus session key
-    uri: '/data/documents?filter={"_id":"' + testDoc1._id + '"}&' + userCred.slice(0, -1)
+    uri: '/data/documents?query={"_id":"' + testDoc1._id + '"}&' + userCred.slice(0, -1)
   }, 401, function(err, res, body) {
     test.done()
   })
@@ -298,7 +290,7 @@ exports.findDocsByGetAndFindAndJsonFailsWithBadUserCred = function(test) {
 
 exports.findDocsByGetAndFindWithBadJson = function(test) {
   t.get({
-    uri: '/data/documents?filter={"_id:"' + testDoc1._id + '"}&' + userCred
+    uri: '/data/documents?query={"_id:"' + testDoc1._id + '"}&' + userCred
   }, 400, function(err, res, body) {
     test.done()
   })
@@ -492,17 +484,17 @@ exports.canDeleteLink = function(test) {
 }
 
 exports.userCannotDeleteUsingWildcard = function(test) {
-  t.del({ uri: '/data/documents/*?' + userCred }, 403,
+  t.del({uri: '/data/documents/*?' + userCred }, 403,
   function(err, res, body) {
     test.done()
   })
 }
 
-exports.userCanDeleteMultipleDocs = function(test) {
+exports.userCanDeleteSingleDoc = function(test) {
   t.del({
-    uri: '/data/documents/' + testDoc1._id + ',' + testDoc2._id + '?' + userCred
-    }, function(err, res, body) {
-    t.assert(body.count === 2)
+    uri: '/data/documents/' + testDoc1._id + '?' + userCred
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
     test.done()
   })
 }
@@ -564,92 +556,22 @@ exports.admiCanReadSystemCollections = function(test) {
   })
 }
 
-exports.usersCannotSkipSafeInsert = function(test) {
-  t.post({
-    uri: '/data/beacons?' + userCred,
-    body: {
-      data: {
-        _id: 'bogusid1',
-        type: util.statics.schemaBeacon,
-        bssid: '01:10:11:22:44:88',
-        bogusField: 'I am a bogus field'
-      },
-      skipValidation: true
-    }
-  }, 401, function(err, res, body) {
-    test.done()
-  })
-}
-
-exports.adminsCanSkipSafeInsert = function(test) {
-  t.post({
-    uri: '/data/beacons?' + adminCred,
-    body: {
-      data: {
-        _id: 'bogusid1',
-        type: util.statics.schemaBeacon,
-        bssid: '01:10:11:22:44:88',
-        bogusField: 'I am a bogus field'
-      },
-      skipValidation: true
-    }
-  }, 201, function(err, res, body) {
-    test.done()
-  })
-}
-
-exports.usersCannotSkipSafeUpdate = function(test) {
-  t.post({
-    uri: '/data/beacons/bogusid1?' + userCred,
-    body: {
-      data: {
-        bogusField2: 'I am a bogus field too'
-      },
-      skipValidation: true
-    }
-  }, 401, function(err, res, body) {
-    test.done()
-  })
-}
-
-exports.adminsCanSkipSafeUpdate = function(test) {
-  t.post({
-    uri: '/data/beacons/bogusid1?' + adminCred,
-    body: {
-      data: {
-        bogusField2: 'I am a bogus field too'
-      },
-      skipValidation: true
-    }
-  }, function(err, res, body) {
-    t.assert(body.count === 1)
-    t.assert(body.data === 1) // unsafe update does not return updated record
-    test.done()
-  })
-}
-
 exports.countByFailsOnBogusFields = function(test) {
   t.get({
-    uri: '/data/beacons?countBy=_foo,bar'
+    uri: '/data/beacons/count/_foo,bar'
   }, 400, function(err, res, body) {
     t.assert(body.error.code === 400.11)
     test.done()
   })
 }
 
-exports.deleteBogusRecord = function(test) {
+exports.deleteNonExistantRecordSucceedsWithZeroCount = function(test) {
   t.del({uri: '/data/beacons/bogusid1?' + adminCred}, function(err, res, body) {
-    t.assert(body.count === 1)
+    t.assert(body.count === 0)
     t.get('/data/beacons/bogusid1', function(err, res, body) {
       t.assert(null === body.data)
       test.done()
     })
-  })
-}
-
-exports.deleteNonExistantRecordReturnsNotFound = function(test) {
-  t.del({uri: '/data/beacons/idonotexist?' + adminCred}, 404, function(err, res, body) {
-    test.done()
   })
 }
 

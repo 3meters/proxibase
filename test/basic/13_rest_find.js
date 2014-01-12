@@ -24,23 +24,10 @@ exports.getUserSession = function(test) {
 }
 
 
-exports.echo = function(test) {
-  var rBody = {foo: {bar: {baz: 'foo'}}}
-  t.post({
-    uri: '/do/echo',
-    body: rBody
-  }, function(err, res, body) {
-    t.assert(body.foo.bar.baz === rBody.foo.bar.baz)
-    // TODO:  get t.assert to inherit from assert and do t.assert.deepequal(body, rBody)
-    test.done()
-  })
-}
-
-
 exports.simpleFind = function(test) {
   t.post({
-    uri: '/do/find?' + userCred,
-    body: {collection: 'users'}
+    uri: '/find/users?' + userCred,
+    body: {},
   }, function(err, res, body) {
     t.assert(body && body.data)
     t.assert(body.data instanceof Array && body.data.length)
@@ -52,8 +39,8 @@ exports.simpleFind = function(test) {
 exports.findWithLimitNotSignedIn = function(test) {
   var limit = 2
   t.post({
-    uri: '/do/find',
-    body: {collection:'places', limit: limit}
+    uri: '/find/places',
+    body: {limit: limit}
   }, function(err, res, body) {
     t.assert(body && body.data)
     t.assert(body.data instanceof Array)
@@ -67,8 +54,8 @@ exports.findWithLimitNotSignedIn = function(test) {
 
 exports.findById = function(test) {
   t.post({
-    uri: '/do/find?' + userCred,
-    body: {collection:'users', ids:[constants.uid1]}
+    uri: '/find/users?' + adminCred,
+    body: {query: {_id: {$in: [constants.uid1]}}}
   }, function(err, res, body) {
     t.assert(body.data.length === 1 && body.count === 1)
     t.assert(body.data[0]._id === constants.uid1)
@@ -80,8 +67,8 @@ exports.findById = function(test) {
 
 exports.findByNameCaseInsensitive = function(test) {
   t.post({
-    uri: '/do/find?' + userCred,
-    body: {collection:'users', name: testUser1.name.toUpperCase(), sort: {_id: -1}}
+    uri: '/find/users?' + adminCred,
+    body: {name: testUser1.name.toUpperCase(), sort: {_id: -1}}
   }, function(err, res, body) {
     t.assert(body.data.length === 2 && body.count === 2) //Test users 1 and 10
     t.assert(body.data[1]._id === constants.uid1)
@@ -92,8 +79,8 @@ exports.findByNameCaseInsensitive = function(test) {
 
 exports.findPassThrough = function(test) {
   t.post({
-    uri: '/do/find?' + userCred,
-    body: {collection:'users', find:{email: testUser1.email}}
+    uri: '/find/users?' + adminCred,
+    body: {query:{email: testUser1.email}}
   }, function(err, res, body) {
     t.assert(body.data.length === 1 && body.count === 1)
     t.assert(body.data[0].email === testUser1.email)

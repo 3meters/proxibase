@@ -358,7 +358,6 @@ exports.registerInstallOne = function (test) {
     uri: '/do/registerInstall?' + userCredBob,
     body: {
       install: {
-        _user: testUserBob._id,
         registrationId: 'registration_id_testing_user_bob',
         installId: installId1,
         clientVersionCode: 10,
@@ -370,14 +369,14 @@ exports.registerInstallOne = function (test) {
 
     /* Check register install */
     t.post({
-      uri: '/do/find',
+      uri: '/find/installs?' + adminCred,
       body: {
-        collection:'installs',
-        find:{ installId: installId1 }
+        query: { installId: installId1 }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
       t.assert(body.data && body.data[0])
+      t.assert('in.' + installId1 == body.data[0]._id)  // proves custom genId works
       t.assert(body.data[0].installId)
       t.assert(body.data[0].registrationId)
       t.assert(body.data[0].registrationId === 'registration_id_testing_user_bob')
@@ -393,7 +392,6 @@ exports.registerSecondUserOnInstallOne = function (test) {
     uri: '/do/registerInstall?' + userCredTom,
     body: {
       install: {
-        _user: testUserTom._id,
         registrationId: 'registration_id_testing_user_tom',
         installId: installId1,
         clientVersionCode: 10,
@@ -405,10 +403,9 @@ exports.registerSecondUserOnInstallOne = function (test) {
 
     /* Check registger install second user */
     t.post({
-      uri: '/do/find',
+      uri: '/find/installs?' + adminCred,
       body: {
-        collection:'installs',
-        find:{ installId: installId1 }
+        query: { installId: installId1 }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -427,7 +424,6 @@ exports.registerInstallTwo = function (test) {
     uri: '/do/registerInstall?' + userCredBob,
     body: {
       install: {
-        _user: testUserBob._id,
         registrationId: 'registration_id_testing_user_bob',
         installId: installId2,
         clientVersionCode: 10,
@@ -439,10 +435,9 @@ exports.registerInstallTwo = function (test) {
 
     /* Check register install second user */
     t.post({
-      uri: '/do/find',
+      uri: '/find/installs?' + adminCred,
       body: {
-        collection: 'installs',
-        find:{ installId: installId2 }
+        query: { installId: installId2 }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -462,7 +457,6 @@ exports.registerInstallThree = function (test) {
     uri: '/do/registerInstall?' + userCredAlice,
     body: {
       install: {
-        _user: testUserAlice._id,
         registrationId: 'registration_id_testing_user_alice',
         installId: installId3,
         clientVersionCode: 10,
@@ -474,10 +468,9 @@ exports.registerInstallThree = function (test) {
 
     /* Check register install second user */
     t.post({
-      uri: '/do/find',
+      uri: '/find/installs?' + adminCred,
       body: {
-        collection: 'installs',
-        find:{ installId: installId3 }
+        query: { installId: installId3 }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -504,10 +497,9 @@ exports.updateBeaconsInstallOne = function (test) {
 
     /* Check install beacons */
     t.post({
-      uri: '/do/find',
+      uri: '/find/installs?' + adminCred,
       body: {
-        collection:'installs',
-        find:{ installId: installId1 }
+        query: { installId: installId1 }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -531,10 +523,9 @@ exports.updateBeaconsInstallTwo = function (test) {
 
     /* Check install beacons */
     t.post({
-      uri: '/do/find',
+      uri: '/find/installs?' + adminCred,
       body: {
-        collection:'installs',
-        find:{ installId: installId2 }
+        query: { installId: installId2 }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -558,10 +549,9 @@ exports.updateBeaconsInstallThree = function (test) {
 
     /* Check install beacons */
     t.post({
-      uri: '/do/find',
+      uri: '/find/installs?' + adminCred,
       body: {
-        collection:'installs',
-        find:{ installId: installId3 }
+        query:{ installId: installId3 }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -611,10 +601,9 @@ exports.insertPlaceOne = function (test) {
 
     /* Check insert place */
     t.post({
-      uri: '/do/find',
+      uri: '/find/places',
       body: {
-        collection:'places',
-        find:{ _id:testPlaceOne._id }
+        query: { _id: testPlaceOne._id }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -624,10 +613,9 @@ exports.insertPlaceOne = function (test) {
        * that user is both owner and creator.
        */
       t.post({
-        uri: '/do/find',
+        uri: '/find/links',
         body: {
-          collection:'links',
-          find:{
+          query: {
             _from: testUserTom._id,
             _to: testPlaceOne._id,
             type: 'create',
@@ -638,10 +626,9 @@ exports.insertPlaceOne = function (test) {
 
         /* Check inserted action */
         t.post({
-          uri: '/do/find',
+          uri: '/find/actions?' + adminCred,
           body: {
-            collection:'actions',
-            find:{ _entity:testPlaceOne._id, event:'insert_entity_place_linked'}
+            query: { _entity:testPlaceOne._id, event:'insert_entity_place_linked'}
           }
         }, function(err, res, body) {
           t.assert(body.count === 1)
@@ -682,20 +669,18 @@ exports.insertPlaceCustomOne = function (test) {
 
     /* Check insert place custom */
     t.post({
-      uri: '/do/find',
+      uri: '/find/places',
       body: {
-        collection:'places',
-        find:{ _id:testPlaceCustomOne._id }
+        query: { _id:testPlaceCustomOne._id }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
 
       /* Check inserted beacon */
       t.post({
-        uri: '/do/find',
+        uri: '/find/beacons',
         body: {
-          collection:'beacons',
-          find:{ _id:testBeacon._id }
+          query: { _id:testBeacon._id }
         }
       }, function(err, res, body) {
         t.assert(body.count === 1)
@@ -705,10 +690,9 @@ exports.insertPlaceCustomOne = function (test) {
 
         /* Check inserted beacon link, store the link */
         t.post({
-          uri: '/do/find',
+          uri: '/find/links',
           body: {
-            collection:'links',
-            find:{
+            query:{
               _to:testBeacon._id,
               _from:testPlaceCustomOne._id,
               'proximity.primary':true
@@ -719,10 +703,9 @@ exports.insertPlaceCustomOne = function (test) {
 
           /* Check insert 'create' link */
           t.post({
-            uri: '/do/find',
+            uri: '/find/links',
             body: {
-              collection:'links',
-              find:{
+              query:{
                 _from: testUserTom._id,
                 _to: testPlaceCustomOne._id,
                 type: 'create',
@@ -733,10 +716,9 @@ exports.insertPlaceCustomOne = function (test) {
 
             /* Check inserted action */
             t.post({
-              uri: '/do/find',
+              uri: '/find/actions?' + adminCred,
               body: {
-                collection:'actions',
-                find:{ _entity:testPlaceCustomOne._id, event:'insert_entity_place_custom'}
+                query: { _entity:testPlaceCustomOne._id, event:'insert_entity_place_custom'}
               }
             }, function(err, res, body) {
               t.assert(body.count === 1)
@@ -769,10 +751,9 @@ exports.insertPlaceCustomLockedWithNoLinks = function (test) {
 
     /* Check insert entity no links */
     t.post({
-      uri: '/do/find',
+      uri: '/find/places',
       body: {
-        collection:'places',
-        find:{_id:testPlaceCustomLocked._id}
+        query:{_id:testPlaceCustomLocked._id}
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -819,20 +800,18 @@ exports.insertPlaceCustom2 = function (test) {
 
     /* Check insert place custom */
     t.post({
-      uri: '/do/find',
+      uri: '/find/places',
       body: {
-        collection:'places',
-        find:{ _id:testPlaceCustomTwo._id }
+        query:{ _id:testPlaceCustomTwo._id }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
 
       /* Check beacon link count */
       t.post({
-        uri: '/do/find',
+        uri: '/find/links',
         body: {
-          collection:'links',
-          find:{ _to:testBeacon._id }
+          query: { _to:testBeacon._id }
         }
       }, function(err, res, body) {
         t.assert(body.count === 2)
@@ -862,10 +841,9 @@ exports.likeEntity = function(test) {
 
     /* Check like entity link to entity 2 */
     t.post({
-      uri: '/do/find',
+      uri: '/find/links',
       body: {
-        collection:'links',
-        find:{
+        query: {
           _to:testPlaceCustomOne._id,
           _from:testUserBob._id,
           type: util.statics.typeLike
@@ -876,10 +854,9 @@ exports.likeEntity = function(test) {
 
       /* Check link entity log action */
       t.post({
-        uri: '/do/find',
+        uri: '/find/actions?' + adminCred,
         body: {
-          collection:'actions',
-          find:{ _entity:testPlaceCustomOne._id, event:'like'}
+          query:{ _entity:testPlaceCustomOne._id, event:'like'}
         }
       }, function(err, res, body) {
         t.assert(body.count === 1)
@@ -903,10 +880,9 @@ exports.unlikeEntity = function(test) {
 
     /* Check unlike entity */
     t.post({
-      uri: '/do/find',
+      uri: '/find/links',
       body: {
-        collection:'links',
-        find:{
+        query:{
           _to:testPlaceCustomOne._id,
           _from:testUserBob._id,
           type:util.statics.typeLike
@@ -933,10 +909,9 @@ exports.watchPlace = function(test) {
 
     /* Check watch entity link to entity 2 */
     t.post({
-      uri: '/do/find',
+      uri: '/find/links',
       body: {
-        collection:'links',
-        find:{
+        query: {
           _to: testPlaceCustomOne._id,
           _from: testUserAlice._id,
           type: util.statics.typeWatch
@@ -947,10 +922,9 @@ exports.watchPlace = function(test) {
 
       /* Check link entity log action */
       t.post({
-        uri: '/do/find',
+        uri: '/find/actions?' + adminCred,
         body: {
-          collection:'actions',
-          find:{
+          query:{
             _entity:testPlaceCustomOne._id,
             event:'watch',
             _user: testUserAlice._id,
@@ -978,10 +952,9 @@ exports.watchUser = function(test) {
 
     /* Check watch entity link to entity 2 */
     t.post({
-      uri: '/do/find',
+      uri: '/find/links',
       body: {
-        collection:'links',
-        find:{
+        query:{
           _to: testUserTom._id,
           _from: testUserAlice._id,
           type: util.statics.typeWatch
@@ -992,10 +965,9 @@ exports.watchUser = function(test) {
 
       /* Check link entity log action */
       t.post({
-        uri: '/do/find',
+        uri: '/find/actions?' + adminCred,
         body: {
-          collection:'actions',
-          find:{
+          query:{
             _entity:testUserTom._id,
             event:'watch',
             _user: testUserAlice._id,
@@ -1029,10 +1001,9 @@ exports.trackEntityProximity = function(test) {
 
     /* Check track entity proximity links from entity 1 */
     t.post({
-      uri: '/do/find',
+      uri: '/find/links',
       body: {
-        collection:'links',
-        find:{
+        query:{
           _from:testPlaceOne._id,
           type:util.statics.typeProximity
         }
@@ -1042,10 +1013,9 @@ exports.trackEntityProximity = function(test) {
 
       /* Check track entity proximity link from entity 1 to beacon 2 */
       t.post({
-        uri: '/do/find',
+        uri: '/find/links',
         body: {
-          collection:'links',
-          find:{
+          query:{
             _to:testBeacon2._id,
             _from:testPlaceOne._id,
             type:util.statics.typeProximity
@@ -1059,10 +1029,9 @@ exports.trackEntityProximity = function(test) {
 
         /* Check track entity log action */
         t.post({
-          uri: '/do/find',
+          uri: '/find/actions?' + adminCred,
           body: {
-            collection:'actions',
-            find:{
+            query:{
               _entity:trackingLink._id,
               event:'link_proximity'
             }
@@ -1090,10 +1059,9 @@ exports.untrackEntityProximity = function(test) {
 
     /* Check untrack entity proximity links from entity 1 */
     t.post({
-      uri: '/do/find',
+      uri: '/find/links',
       body: {
-        collection:'links',
-        find:{
+        query:{
           _from:testPlaceOne._id,
           type:util.statics.typeProximity
         }
@@ -1117,10 +1085,9 @@ exports.trackEntityNoBeacons = function(test) {
 
     /* Check track entity no beacons log action */
     t.post({
-      uri: '/do/find',
+      uri: '/find/actions?' + adminCred,
       body: {
-        collection:'actions',
-        find:{
+        query:{
           _entity:testPlaceOne._id,
           event:'entity_proximity'
         }
@@ -1140,7 +1107,7 @@ exports.trackEntityNoBeacons = function(test) {
 
 exports.updateBeaconLocationUsingNewLocation = function (test) {
   t.post({
-    uri: '/do/updateBeaconLocation',
+    uri: '/do/updateBeaconLocation?' + userCredTom,
     body: {
       beaconIds: [testBeacon._id],
       beaconSignals: [-79],
@@ -1152,10 +1119,9 @@ exports.updateBeaconLocationUsingNewLocation = function (test) {
 
       /* Check beacon location update */
       t.post({
-        uri: '/do/find',
+        uri: '/find/beacons',
         body: {
-          collection:'beacons',
-          find:{ _id:testBeacon._id }
+          query:{ _id:testBeacon._id }
         }
       }, function(err, res, body) {
         t.assert(body.count === 1)
@@ -1234,10 +1200,9 @@ exports.insertPost = function (test) {
 
     /* Check inserted post */
     t.post({
-      uri: '/do/find',
+      uri: '/find/posts',
       body: {
-        collection:'posts',
-        find: { _id: testPost._id }
+        query: { _id: testPost._id }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -1245,10 +1210,9 @@ exports.insertPost = function (test) {
 
       /* Check content link for post */
       t.post({
-        uri: '/do/find',
+        uri: '/find/links',
         body: {
-          collection:'links',
-          find:{
+          query:{
             _from: testPost._id,
             _to: testPlaceCustomOne._id,
             type: 'content',
@@ -1260,10 +1224,9 @@ exports.insertPost = function (test) {
 
         /* Check create link for post */
         t.post({
-          uri: '/do/find',
+          uri: '/find/links',
           body: {
-            collection:'links',
-            find:{
+            query:{
               _from: testUserBob._id,
               _to: testPost._id,
               type: 'create',
@@ -1306,10 +1269,9 @@ exports.insertComment = function (test) {
 
     /* Check insert */
     t.post({
-      uri: '/do/find',
+      uri: '/find/comments',
       body: {
-        collection:'comments',
-        find: { _id: testComment._id }
+        query: { _id: testComment._id }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -1317,10 +1279,9 @@ exports.insertComment = function (test) {
 
       /* Check content link for comment */
       t.post({
-        uri: '/do/find',
+        uri: '/find/links',
         body: {
-          collection:'links',
-          find:{
+          query:{
             _from: testComment._id,
             _to: testPost._id,
             type: 'content',
@@ -1332,10 +1293,9 @@ exports.insertComment = function (test) {
 
         /* Check create link for comment */
         t.post({
-          uri: '/do/find',
+          uri: '/find/links',
           body: {
-            collection:'links',
-            find:{
+            query:{
               _from: testUserTom._id,
               _to: testComment._id,
               type: 'create',
@@ -1386,10 +1346,9 @@ exports.deletePost = function (test) {
 
     /* Check delete post */
     t.post({
-      uri: '/do/find',
+      uri: '/find/posts',
       body: {
-        collection:'posts',
-        find:{
+        query:{
           _id:testPost._id
         }
       }
@@ -1398,10 +1357,9 @@ exports.deletePost = function (test) {
 
       /* Check delete all links to/from post */
       t.post({
-        uri: '/do/find',
+        uri: '/find/links',
         body: {
-          collection:'links',
-          find:{
+          query:{
             $or: [
               { _to:testPost._id },
               { _from:testPost._id },
@@ -1413,10 +1371,9 @@ exports.deletePost = function (test) {
 
         /* Check delete linked comment */
         t.post({
-          uri: '/do/find',
+          uri: '/find/links',
           body: {
-            collection:'comments',
-            find:{
+            query:{
               _id:testComment._id
             }
           }
@@ -1425,10 +1382,9 @@ exports.deletePost = function (test) {
 
           /* Check delete all links to/from comment */
           t.post({
-            uri: '/do/find',
+            uri: '/find/links',
             body: {
-              collection:'links',
-              find:{
+              query:{
                 $or: [
                   { _to:testComment._id },
                   { _from:testComment._id },
@@ -1440,10 +1396,9 @@ exports.deletePost = function (test) {
 
             /* Check delete post entity log actions */
             t.post({
-              uri: '/do/find',
+              uri: '/find/actions?' + adminCred,
               body: {
-                collection:'actions',
-                find:{
+                query:{
                   $and: [
                     { event: { $ne: 'delete_entity_post' }},
                     { $or: [
@@ -1459,10 +1414,9 @@ exports.deletePost = function (test) {
 
               /* Check delete comment log actions */
               t.post({
-                uri: '/do/find',
+                uri: '/find/actions?' + adminCred,
                 body: {
-                  collection:'actions',
-                  find:{
+                  query:{
                     $or: [
                       { _entity: testComment._id },
                       { _toEntity: testComment._id },
@@ -1542,10 +1496,9 @@ exports.deletePlace = function (test) {
 
     /* Check delete entity */
     t.post({
-      uri: '/do/find',
+      uri: '/find/places',
       body: {
-        collection:'places',
-        find:{
+        query:{
           _id:testPlaceOne._id
         }
       }
@@ -1554,10 +1507,9 @@ exports.deletePlace = function (test) {
 
       /* Check delete all links from/to place */
       t.post({
-        uri: '/do/find',
+        uri: '/find/links',
         body: {
-          collection:'links',
-          find:{
+          query:{
             $or: [
               { _to: testPlaceOne._id },
               { _from: testPlaceOne._id },
@@ -1569,10 +1521,9 @@ exports.deletePlace = function (test) {
 
         /* Check delete entity log actions */
         t.post({
-          uri: '/do/find',
+          uri: '/find/actions?' + adminCred,
           body: {
-            collection:'actions',
-            find:{
+            query:{
               $and: [
                 { event: { $ne: 'delete_entity_place' }},
                 { $or: [
@@ -1634,10 +1585,9 @@ exports.ownerCanCommentOnLockedRecord = function(test) {
 
     /* Check owner inserted comment on locked record */
     t.post({
-      uri: '/do/find',
+      uri: '/find/comments',
       body: {
-        collection:'comments',
-        find:{ _id:testComment2._id }
+        query:{ _id:testComment2._id }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -1672,10 +1622,9 @@ exports.adminCanCommentOnLockedRecord = function(test) {
 
     /* Check admin inserted comment on locked record */
     t.post({
-      uri: '/do/find',
+      uri: '/find/comments',
       body: {
-        collection:'comments',
-        find:{ _id:testComment3._id }
+        query:{ _id:testComment3._id }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
