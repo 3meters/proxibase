@@ -47,7 +47,7 @@ exports.getEntitiesMinimum = function (test) {
   t.post({
     uri: '/do/getEntities',
     body: {
-      entityIds: [constants.placeId], 
+      entityIds: [constants.placeId],
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
@@ -70,7 +70,7 @@ exports.getEntitiesMaximum = function (test) {
     body: {
       entityIds: [constants.placeId], 
       links: {
-        active: [ 
+        active: [
           { type:statics.typeProximity, schema:statics.schemaBeacon, links: true, count: true, direction: 'both' }, 
           { type:statics.typeContent, schema:statics.schemaApplink, links: true, count: true, direction: 'both' }, 
           { type:statics.typeContent, schema:statics.schemaComment, links: true, count: true, direction: 'both' }, 

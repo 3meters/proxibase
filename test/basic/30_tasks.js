@@ -171,7 +171,7 @@ exports.restInsertDisabledTestDoesNotStartIt = function(test) {
   }, 201, function(err, res, body) {
     taskId = body.data._id
     setTimeout(function(){
-      t.get('/data/documents?find[type]=taskTest3&' + adminCred,
+      t.get('/find/documents?query[type]=taskTest3&' + adminCred,
       function(err, res, body) {
         t.assert(body.data.length === 0)
         test.done()
