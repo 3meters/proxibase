@@ -2,7 +2,7 @@
  * testprox.js: run the proxibase nodeunit tests
  *   see readme.txt and https://github.com/caolan/nodeunit
  *
- *   usage:  node run
+ *   usage:  node test
  */
 
 var util = require('proxutils') // load proxibase extensions
