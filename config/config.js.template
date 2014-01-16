@@ -24,6 +24,7 @@ module.exports = {
     database: 'prox',                    // dev:prox test:smokeData stage:stage production:prox
   },
   sendMail: './testMail.log',            // boolean or filename for logging, default false
+  ignoreTasks: false,                    // default false, if true recurring tasks will not run
   notify: {
     onStart: false,
     to: 'pager2010@3meters.com',
