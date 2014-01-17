@@ -17,6 +17,7 @@ module.exports = {
       caFilePath: null,
     }
   },
+  maxWorkers: -1,                        // default -1 means let server decide
   log: 1,                                // 0-3 higher numbers mean more log output
   db: {
     host: 'localhost',
