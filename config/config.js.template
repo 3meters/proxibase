@@ -22,6 +22,7 @@ module.exports = {
     host: 'localhost',
     port: 27017,
     database: 'prox',                    // dev:prox test:smokeData stage:stage production:prox
+    ensureIndexes: false,
   },
   sendMail: './testMail.log',            // boolean or filename for logging, default false
   ignoreTasks: false,                    // default false, if true recurring tasks will not run
