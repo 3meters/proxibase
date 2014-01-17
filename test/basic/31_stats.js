@@ -46,8 +46,7 @@ exports.badStatName404s = function(test) {
   })
 }
 
-
-exports.statsCollectionCreatesFirstTimeAsAnnon = function(test){
+exports.statsCollectionCreatesFirstTimeAsAnnon = function(test) {
   t.get({
     uri: '/stats/linksFromUsers'
   }, function(err, res, body){
@@ -56,7 +55,6 @@ exports.statsCollectionCreatesFirstTimeAsAnnon = function(test){
     test.done()
   })
 }
-
 
 exports.cannotCreateStatsAsUser = function(test) {
   t.get({
