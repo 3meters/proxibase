@@ -29,6 +29,7 @@ module.exports = {
   ignoreTasks: false,                    // default false, if true recurring tasks will not run
   notify: {
     onStart: false,
+    onCrash: false,
     to: 'pager2010@3meters.com',
   },
 }
