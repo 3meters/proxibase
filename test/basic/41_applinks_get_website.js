@@ -60,11 +60,14 @@ exports.checkFacebookUrls = function(test) {
     t.assert(applinks.length >= 5)
     // make a map of the results array by id
     var map = {}
-    applinks = applinks.slice(1) // the original test web page
+    var cPanera = 0
+    var cPapas = 0
     applinks.forEach(function(applink, i) {
       map[applink.appId] = applink
       if ('website' === applink.type) {
         t.assert(applink.appId)
+        if (applink.appId === 'http://www.panerabread.com') cPanera++
+        if (applink.appId === 'http://www.papamurphys.com') cPapas++
       }
       if ('facebook' === applink.type) {
         t.assert(applink.appId)
@@ -74,6 +77,8 @@ exports.checkFacebookUrls = function(test) {
         t.assert(applink.originId === url)
       }
     })
+    t.assert(cPanera === 1)
+    t.assert(cPapas === 1)
     t.assert(Object.keys(map).length === applinks.length)  // no dupes by id
     t.assert(map['620955808'])
     t.assert(map['620955808'].name === 'George Snelling')
