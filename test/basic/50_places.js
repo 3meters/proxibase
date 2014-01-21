@@ -386,6 +386,17 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
       var applinks = body.data.linksIn
       t.assert(applinks && applinks.length > 8)
 
+      // Add a post to ksthai
+      t.post({
+        uri: '/do/insertEntity?' + userCred,
+        body: {
+          entity: {
+            type: 'post',
+            
+                  }
+        }
+      })
+
       // Add a user-created place inside the ballroom
       t.post({
         uri: '/do/insertEntity?' + userCred,
