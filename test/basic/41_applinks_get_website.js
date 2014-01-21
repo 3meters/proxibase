@@ -56,14 +56,12 @@ exports.checkFacebookUrls = function(test) {
       timeout: 20000,
     },
   }, function(err, res) {
-    var cPanera = 0
-    var cPapas = 0
     var applinks = res.body.data
     t.assert(applinks.length >= 5)
     // make a map of the results array by id
     var map = {}
-    // applinks = applinks.slice(1) // prune the original test web page
-    util.debug('applinks', applinks)
+    var cPanera = 0
+    var cPapas = 0
     applinks.forEach(function(applink, i) {
       map[applink.appId] = applink
       if ('website' === applink.type) {
