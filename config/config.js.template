@@ -5,11 +5,11 @@
 module.exports = {
   service: {
     name: 'CandiService',
-    mode: 'development',                 // development | test | stage | production
-    protocol: 'https',                   // https | http  (security tests require https)
+    mode: 'development',                // development | test | stage | production
+    protocol: 'https',                  // https | http  (security tests require https)
     host: 'localhost',
     host_external: 'api.aircandi.com',
-    port: 6643,                          // 6643:dev 6644:test 444:stage 443:production
+    port: 6643,                         // 6643:dev 6644:test 444:stage 443:production
     newAccountSecret: 'larissa',
     ssl: {
       keyFilePath: './keys/dev/dev.pem',
@@ -17,16 +17,16 @@ module.exports = {
       caFilePath: null,
     }
   },
-  maxWorkers: -1,                        // default -1 means let server decide
-  log: 1,                                // 0-3 higher numbers mean more log output
+  maxWorkers: -1,                       // default -1 means let server decide
+  log: 1,                               // 0-3 higher numbers mean more log output
   db: {
     host: 'localhost',
     port: 27017,
-    database: 'prox',                    // dev:prox test:smokeData stage:stage production:prox
+    database: 'prox',                   // dev:prox test:smokeData stage:stage production:prox
     ensureIndexes: false,
   },
-  sendMail: './testMail.log',            // boolean or filename for logging, default false
-  ignoreTasks: false,                    // default false, if true recurring tasks will not run
+  sendMail: './testMail.log',           // boolean or filename for logging, default false
+  ignoreTasks: false,                   // default false, if true skip autostart of recurring tasks
   notify: {
     onStart: false,
     onCrash: false,
