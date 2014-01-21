@@ -2,7 +2,7 @@
  * testprox.js: run the proxibase nodeunit tests
  *   see readme.txt and https://github.com/caolan/nodeunit
  *
- *   usage:  node run
+ *   usage:  node test
  */
 
 var util = require('proxutils') // load proxibase extensions
@@ -245,7 +245,9 @@ function ensureServer(cb) {
     testServer.stdout.on('data', function(data) {
       logStream.write(data)
       // Parse server stdout to see if server is ready. Fragile!
-      if (!testServerStarted && data.indexOf(config.service.name + ' listening') >= 0) {
+      if (!testServerStarted
+          && data.indexOf(config.service.name) >= 0
+          && data.indexOf('listening') >= 0) {
         testServerStarted = true
         log('Starting the tests')
         return cb()

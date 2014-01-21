@@ -1,0 +1,22 @@
+{
+  "node": true,
+  "asi": true,
+  "undef": true,
+  "unused": true,
+  "bitwise": true,
+  "freeze": true,
+  "noarg": true,
+  "laxbreak": true,
+  "globals": {
+    "util": false,
+    "db": false,
+    "perr": false,
+    "proxErr": false,
+    "statics": false,
+    "tipe": false,
+    "scrub": false,
+    "log": false,
+    "logErr": false,
+    "_": false
+  }
+}

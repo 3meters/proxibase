@@ -391,19 +391,22 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
         uri: '/do/insertEntity?' + userCred,
         body: {
           entity: {
-            name: 'A user-created Test Entity Inside the BallRoom',
+            name: 'A user-created Test Place Inside the BallRoom',
             schema : util.statics.schemaPlace,
-            // provider: { aircandi: user._id },  old
             provider: { aircandi: true }, // new
             location: ballRoomLoc,
             enabled : true,
             locked : false,
-          }
+          },
+          insertApplinks: true,
+          includeRaw: true,
         }
       }, 201, function(err, res, body) {
         var newEnt = body.data
         t.assert(newEnt)
         t.assert(newEnt.provider.aircandi === newEnt._id)
+        t.assert(body.raw)
+        t.assert(Object.keys(body.raw).length === 0)  // proves that place seach did not occur, isssue 137
 
         // Add a user-created place about a mile away, at George's house
         t.post({
