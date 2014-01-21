@@ -36,7 +36,7 @@ exports.getSessions = function (test) {
   })
 }
 
-exports.actionsWork = function(test) {
+exports.actionStatsWork = function(test) {
   t.post({
     uri: '/do/insertEntity?' + userCred,
     body: {entity: testPlace},
@@ -45,7 +45,6 @@ exports.actionsWork = function(test) {
     function(err, res, body) {
       t.assert(body.data.length)
       body.data.forEach(function(action) {
-        t.assert(userId === action._user)
         t.assert(action.event)
         t.assert(action.countBy)
       })

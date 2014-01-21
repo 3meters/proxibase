@@ -17,15 +17,19 @@ module.exports = {
       caFilePath: null,
     }
   },
+  maxWorkers: -1,                        // default -1 means let server decide
   log: 1,                                // 0-3 higher numbers mean more log output
   db: {
     host: 'localhost',
     port: 27017,
     database: 'prox',                    // dev:prox test:smokeData stage:stage production:prox
+    ensureIndexes: false,
   },
   sendMail: './testMail.log',            // boolean or filename for logging, default false
+  ignoreTasks: false,                    // default false, if true recurring tasks will not run
   notify: {
     onStart: false,
+    onCrash: false,
     to: 'pager2010@3meters.com',
   },
 }

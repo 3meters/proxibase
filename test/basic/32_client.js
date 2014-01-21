@@ -27,6 +27,7 @@ exports.getSessions = function (test) {
 // get version info and also make sure the server is responding
 exports.getVersion = function(test) {
   t.get('/client', function(err, res, body) {
+    t.assert(body.data)
     t.assert(body.data.androidMinimumVersion === 0)
     test.done()
   })
@@ -68,7 +69,7 @@ exports.canSetVersionAsAdmin = function(test) {
 //
 exports.canRefreshVersionViaDatabaseAndGetOnClient = function(test) {
   t.post({
-    uri: '/data/documents/' + util.statics.clientVersion._id + '?' + adminCred,
+    uri: '/data/documents/do.clientVersion?' + adminCred,
     body: {
       data: {
         data: {
@@ -79,8 +80,9 @@ exports.canRefreshVersionViaDatabaseAndGetOnClient = function(test) {
   }, function(err, res, body) {
     t.get('/', function(err, res, body) {
       t.assert(body.androidMinimumVersion === 1)  // not refreshed
-      t.get('/client', function(err, res, body) {
+      t.get('/client?refresh=true', function(err, res, body) {
         t.assert(body.data.androidMinimumVersion === 2) // refreshed
+        t.assert(body.androidMinimumVersion === 2) // refreshed
         test.done()
       })
     })
