@@ -93,11 +93,11 @@ exports.findNext = function(test) {
   t.get('/data/places/next', 401, function(err, res, body) {
     t.get('/data/places/next?' + adminCred, function(err, res, body) {
       t.assert(body.data)
-      t.assert(body.data.data)
-      var firstId = body.data.data._id
+      t.assert(body.data._id)
+      var firstId = body.data._id
       t.assert(firstId)
       t.get('/data/places/next?' + adminCred, function(err, res, body) {
-        t.assert(body.data.data._id > firstId)
+        t.assert(body.data._id > firstId)
         test.done()
         // TODO: check for rolling over by looping until hitting a limit (fail)
         // or finding an id === firstId

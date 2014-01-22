@@ -262,7 +262,7 @@ function save(collectionName, callback) {
     var user = (row._creator)
       ? {_id: row._creator, role: 'user'}
       : util.adminUser
-    collection.safeInsert(row, {user: user}, function(err) {
+    collection.safeInsert(row, {user: user, ip: '127.0.0.1'}, function(err) {
       return callback(err)
     })
   }
