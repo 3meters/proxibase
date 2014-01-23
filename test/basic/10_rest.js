@@ -101,7 +101,9 @@ exports.canAddDoc = function(test) {
     var doc = body.data
     t.assert(doc && doc._id)
     t.assert(doc.createdDate)
+    t.assert(doc.createdIp)
     t.assert(doc.modifiedDate)
+    t.assert(doc.modifiedIp)
     t.assert(doc.createdDate === doc.modifiedDate)
     // proves timestamp of _id matches created date
     t.assert(getTimeString(doc._id) === getTimeString(util.genId('do', doc._createdDate)))

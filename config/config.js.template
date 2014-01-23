@@ -17,7 +17,6 @@ module.exports = {
       caFilePath: null,
     }
   },
-  maxWorkers: -1,                       // default -1 means let server decide
   log: 1,                               // 0-3 higher numbers mean more log output
   db: {
     host: 'localhost',
@@ -25,8 +24,10 @@ module.exports = {
     database: 'prox',                   // dev:prox test:smokeData stage:stage production:prox
     ensureIndexes: false,
   },
-  sendMail: './testMail.log',           // boolean or filename for logging, default false
+  maxWorkers: -1,                       // default -1 means one per cpu core
   ignoreTasks: false,                   // default false, if true skip autostart of recurring tasks
+  doNotRestart: false,                  // default false, if true do not restart dead workers
+  sendMail: './testMail.log',           // boolean or filename for logging, default false
   notify: {
     onStart: false,
     onCrash: false,
