@@ -21,8 +21,8 @@ var constants = require('./constants')
 var dbProfile = constants.dbProfile.smokeTest
 var testUtil = require('./util')
 var configFile = 'configtest.js'
-var testDirs = ['basic']
-var allTestDirs = ['basic', 'oauth', 'admin', 'perf']
+var tests = ['basic']
+var allTests = ['basic', 'oauth', 'admin', 'perf']
 var logFile = 'testServer.log'
 var logStream
 var cwd = process.cwd()
@@ -39,7 +39,6 @@ process.chdir(__dirname)
 // Command line interface
 cli
   .option('-c, --config <file>', 'Config file [configtest.js]')
-  .option('-s, --server <url>', 'Server url')
   .option('-t, --test <dir>', 'Only run the specified test directory')
   .option('-a, --all', 'Run all tests, not just basic')
   .option('-n, --none', 'Do not run any tests -- just ensure the test db')
@@ -51,37 +50,27 @@ cli
 
 
 // Process command-line interface flags
-if (cli.all) testDirs = allTestDirs
-if (cli.test) testDirs = [cli.test]
+if (cli.all) tests = allTests
+if (cli.test) tests = [cli.test]
 if (cli.log) logFile = cli.log
 if (cli.disconnected) testUtil.disconnected = true
 if (cli.perf) {
-  configFile = 'configperf.js'
+  configFile = 'configperf.js',
   dbProfile = constants.dbProfile.perfTest
 }
 
+// Load the config file
+util.setConfig(cli.config || configFile)
+config = util.config
+serverUrl = testUtil.serverUrl = config.service.url
 
-if (cli.server) {
-  // This option is used for running tests locally against a remote server
-  // Assume it is already running and go
-  serverUrl = testUtil.serverUrl = cli.server
-  return runTests()
-}
-else {auto_reconnect: true
-
-  // Load the config file
-  util.setConfig(cli.config || configFile)
-  config = util.config
-  serverUrl = testUtil.serverUrl = config.service.url
-
-  // Make sure the right database exists
-  ensureDb(dbProfile, function(err) {
-    if (err) throw err
-    ensureServer(function() {
-      runTests()
-    })
+// Make sure the right database exists
+ensureDb(dbProfile, function(err) {
+  if (err) throw err
+  ensureServer(function() {
+    runTests()
   })
-}
+})
 
 // Drop the database
 function ensureEmptyDb(cb) {
@@ -105,7 +94,7 @@ function ensureEmptyDb(cb) {
  *  called <database>Template. If it exists copy it to the target
  *  database.  If not, create it using $PROX/tools/genData.
  *
- *  Ops are the the same as genData
+ *  Ops are the same as genData
  */
 function ensureDb(ops, cb) {
 
@@ -252,8 +241,8 @@ function ensureServer(cb) {
 function runTests() {
   if (cli.none) return finish()
   log('\nTesting: ' + serverUrl)
-  log('Test dirs: ' + testDirs)
-  reporter.run(testDirs, false, finish)
+  log('Tests: ' + tests)
+  reporter.run(tests, false, finish)
 }
 
 
