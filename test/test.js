@@ -17,10 +17,10 @@ var req = require('request')
 var mongo = require('mongodb')
 var adminDb
 var genData = require(__dirname + '/../tools/pump/genData')
-var dbProfile = require('./constants').dbProfile
+var constants = require('./constants')
+var dbProfile = constants.dbProfile.smokeTest
 var testUtil = require('./util')
 var configFile = 'configtest.js'
-var basicDirs = ['unit', 'basic']
 var testDirs = ['basic']
 var allTestDirs = ['basic', 'oauth', 'admin', 'perf']
 var logFile = 'testServer.log'
@@ -43,10 +43,10 @@ cli
   .option('-t, --test <dir>', 'Only run the specified test directory')
   .option('-a, --all', 'Run all tests, not just basic')
   .option('-n, --none', 'Do not run any tests -- just ensure the test db')
-  .option('-e, --empty', 'run against an empty database')
   .option('-g, --generate', 'generate a fresh template test db from code')
   .option('-l, --log <file>', 'Test server log file [' + logFile + ']')
   .option('-d, --disconnected', 'skip tests that require internet connectivity')
+  .option('-p, --perf', 'Run perf tests')
   .parse(process.argv)
 
 
@@ -55,6 +55,10 @@ if (cli.all) testDirs = allTestDirs
 if (cli.test) testDirs = [cli.test]
 if (cli.log) logFile = cli.log
 if (cli.disconnected) testUtil.disconnected = true
+if (cli.perf) {
+  configFile = 'configperf.js'
+  dbProfile = constants.dbProfile.perfTest
+}
 
 
 if (cli.server) {
@@ -70,25 +74,13 @@ else {auto_reconnect: true
   config = util.config
   serverUrl = testUtil.serverUrl = config.service.url
 
-  if (cli.empty) {
-    // Drop the existing test database i
-    ensureEmptyDb(function(err) {
-      if (err) throw err
-      ensureServer(function(err) {
-        if (err) throw err
-        runTests()
-      })
+  // Make sure the right database exists
+  ensureDb(dbProfile, function(err) {
+    if (err) throw err
+    ensureServer(function() {
+      runTests()
     })
-  }
-  else {
-    // Make sure the right database exists
-    ensureDb(dbProfile.smokeTest, function(err) {
-      if (err) throw err
-      ensureServer(function() {
-        runTests()
-      })
-    })
-  }
+  })
 }
 
 // Drop the database
