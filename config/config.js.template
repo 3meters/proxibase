@@ -33,4 +33,10 @@ module.exports = {
     onCrash: false,
     to: 'pager2010@3meters.com',
   },
+  perfTest: {
+    seconds: 10,                        // default 10
+    tests: [
+      'basic',                          // default basic, include files by name: basic/test1.js
+    ]
+  },
 }
