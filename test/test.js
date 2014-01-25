@@ -10,7 +10,7 @@ var timer = util.timer()
 var log = util.log
 var fs = require('fs')
 var assert = require('assert')
-var spawn = require('child_process').spawn
+var child_process = require('child_process')
 var cli = require('commander')
 var reporter = require('nodeunit').reporters.default
 var req = require('request')
@@ -64,6 +64,7 @@ util.setConfig(cli.config || configFile)
 config = util.config
 serverUrl = testUtil.serverUrl = config.service.url
 
+
 // Make sure the right database exists
 ensureDb(dbProfile, function(err) {
   if (err) throw err
@@ -71,6 +72,7 @@ ensureDb(dbProfile, function(err) {
     runTests()
   })
 })
+
 
 // Drop the database
 function ensureEmptyDb(cb) {
@@ -201,11 +203,10 @@ function ensureServer(cb) {
 
       log('Starting test server ' + serverUrl + ' using config ' + configFile)
       log('Test server log: ' + logFile)
-      testServer = spawn('node', [__dirname + '/../prox', '--config', configFile])
+      testServer = child_process.spawn('node', [__dirname + '/../prox', '--config', configFile])
     }
-    else {  // Test server is already running
-      return cb()
-    }
+    // Test server is already running
+    else return cb()
 
     logStream.on('error', function(err) {
       throw err
@@ -242,7 +243,23 @@ function runTests() {
   if (cli.none) return finish()
   log('\nTesting: ' + serverUrl)
   log('Tests: ' + tests)
-  reporter.run(tests, false, finish)
+  if (cli.perf) runPerf()
+  else reporter.run(tests, false, finish)
+}
+
+function runPerf() {
+  var conf = config.perfTest
+  var hammers = []
+  log('Running for ' + conf.seconds + ' seconds')
+  log('Concurency: ' + conf.concurency)
+  for (var i = 0; i < conf.concurency; i++) {
+    hammers.push(child_process.fork('./perf.js', conf.tests))
+  }
+  setTimeout(stop, conf.seconds * 1000)
+  function stop() {
+    hammers.forEach(function(hammer) { hammer.kill() })
+    finish()
+  }
 }
 
 
