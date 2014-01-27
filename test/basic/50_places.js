@@ -279,6 +279,12 @@ exports.getPlacesNearLocationGoogle = function(test) {
       t.assert(ballRoomId !== place.provider.google) //excluded
       t.assert(place.location.lat)
       t.assert(place.location.lng)
+      var cat = place.category
+      t.assert(cat)
+      t.assert(cat.name)
+      t.assert(cat.photo)
+      var iconFileName = path.join(util.statics.assetsDir, '/img/categories', cat.photo.prefix + '88' + cat.photo.suffix)
+      t.assert(fs.existsSync(iconFileName))
       if (roxyGooId === place.provider.google.split('|')[0]) {
         foundRoxy++
         t.assert(place.address)
@@ -286,13 +292,8 @@ exports.getPlacesNearLocationGoogle = function(test) {
         t.assert(place.region)
         t.assert(place.country)
         t.assert(place.postalCode)
+        t.assert(place.photo)
       }
-      var cat = place.category
-      t.assert(cat)
-      t.assert(cat.name)
-      t.assert(cat.photo)
-      var iconFileName = path.join(util.statics.assetsDir, '/img/categories', cat.photo.prefix + '88' + cat.photo.suffix)
-      t.assert(fs.existsSync(iconFileName))
     })
     t.assert(1 === foundRoxy)
     t.assert(googleProvided)
