@@ -249,15 +249,17 @@ function runTests() {
 
 function runPerf() {
   var conf = config.perfTest
-  var hammers = []
+  var cpus = []
+  conf.tests.push(conf.hammers) // Add last parameter
   log('Running for ' + conf.seconds + ' seconds')
-  log('Concurency: ' + conf.concurency)
-  for (var i = 0; i < conf.concurency; i++) {
-    hammers.push(child_process.fork('./perf.js', conf.tests))
+  log('Cpus: ' + conf.cpus)
+  log('Hammers per cpu: ' + conf.hammers)
+  for (var i = 0; i < conf.cpus; i++) {
+    cpus.push(child_process.fork('./perf.js', conf.tests))
   }
   setTimeout(stop, conf.seconds * 1000)
   function stop() {
-    hammers.forEach(function(hammer) { hammer.kill() })
+    cpus.forEach(function(cpu) { cpu.kill() })
     finish()
   }
 }
