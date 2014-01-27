@@ -9,8 +9,6 @@ var testUtil = require('../util')
 var t = testUtil.treq  // newfangled test helper
 var disconnected = testUtil.disconnected
 var skip = testUtil.skip
-var userCred
-var adminCred
 var _exports = {} // for commenting out tests
 
 
@@ -358,6 +356,41 @@ exports.checkTimeoutWorks = function(test) {
     }
   }, function(err, res, body) {
     t.assert(body.data.length === 0)
+    test.done()
+  })
+}
+
+
+exports.getsWebsiteNameFromTitle= function(test) {
+  if (disconnected) return skip(test)
+  t.post({
+    uri: '/applinks/get',
+    body: {
+      applinks: [
+        {type: 'website', appId: 'http://www.georgeandcherry.com'},
+      ],
+      timeout: 10000,
+    }
+  }, function(err, res, body) {
+    t.assert(body.data.length >= 1)
+    t.assert(body.data[0].name = 'George and Cherry Snelling')
+    test.done()
+  })
+}
+
+exports.preservesWebsiteNameIfSet = function(test) {
+  if (disconnected) return skip(test)
+  t.post({
+    uri: '/applinks/get',
+    body: {
+      applinks: [
+        {type: 'website', appId: 'http://www.georgeandcherry.com', name: 'Custom Name'},
+      ],
+      timeout: 10000,
+    }
+  }, function(err, res, body) {
+    t.assert(body.data.length >= 1)
+    t.assert(body.data[0].name === 'Custom Name')
     test.done()
   })
 }
