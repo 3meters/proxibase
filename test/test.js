@@ -10,19 +10,19 @@ var timer = util.timer()
 var log = util.log
 var fs = require('fs')
 var assert = require('assert')
-var spawn = require('child_process').spawn
+var child_process = require('child_process')
 var cli = require('commander')
 var reporter = require('nodeunit').reporters.default
 var req = require('request')
 var mongo = require('mongodb')
 var adminDb
 var genData = require(__dirname + '/../tools/pump/genData')
-var dbProfile = require('./constants').dbProfile
+var constants = require('./constants')
+var dbProfile = constants.dbProfile.smokeTest
 var testUtil = require('./util')
 var configFile = 'configtest.js'
-var basicDirs = ['unit', 'basic']
-var testDirs = ['basic']
-var allTestDirs = ['basic', 'oauth', 'admin', 'perf']
+var tests = ['basic']
+var allTests = ['basic', 'oauth', 'admin', 'perf']
 var logFile = 'testServer.log'
 var logStream
 var cwd = process.cwd()
@@ -39,57 +39,40 @@ process.chdir(__dirname)
 // Command line interface
 cli
   .option('-c, --config <file>', 'Config file [configtest.js]')
-  .option('-s, --server <url>', 'Server url')
   .option('-t, --test <dir>', 'Only run the specified test directory')
   .option('-a, --all', 'Run all tests, not just basic')
   .option('-n, --none', 'Do not run any tests -- just ensure the test db')
-  .option('-e, --empty', 'run against an empty database')
   .option('-g, --generate', 'generate a fresh template test db from code')
   .option('-l, --log <file>', 'Test server log file [' + logFile + ']')
   .option('-d, --disconnected', 'skip tests that require internet connectivity')
+  .option('-p, --perf', 'Run perf tests')
   .parse(process.argv)
 
 
 // Process command-line interface flags
-if (cli.all) testDirs = allTestDirs
-if (cli.test) testDirs = [cli.test]
+if (cli.all) tests = allTests
+if (cli.test) tests = [cli.test]
 if (cli.log) logFile = cli.log
 if (cli.disconnected) testUtil.disconnected = true
-
-
-if (cli.server) {
-  // This option is used for running tests locally against a remote server
-  // Assume it is already running and go
-  serverUrl = testUtil.serverUrl = cli.server
-  return runTests()
+if (cli.perf) {
+  configFile = 'configperf.js',
+  dbProfile = constants.dbProfile.perfTest
 }
-else {auto_reconnect: true
 
-  // Load the config file
-  util.setConfig(cli.config || configFile)
-  config = util.config
-  serverUrl = testUtil.serverUrl = config.service.url
+// Load the config file
+util.setConfig(cli.config || configFile)
+config = util.config
+serverUrl = testUtil.serverUrl = config.service.url
 
-  if (cli.empty) {
-    // Drop the existing test database i
-    ensureEmptyDb(function(err) {
-      if (err) throw err
-      ensureServer(function(err) {
-        if (err) throw err
-        runTests()
-      })
-    })
-  }
-  else {
-    // Make sure the right database exists
-    ensureDb(dbProfile.smokeTest, function(err) {
-      if (err) throw err
-      ensureServer(function() {
-        runTests()
-      })
-    })
-  }
-}
+
+// Make sure the right database exists
+ensureDb(dbProfile, function(err) {
+  if (err) throw err
+  ensureServer(function() {
+    runTests()
+  })
+})
+
 
 // Drop the database
 function ensureEmptyDb(cb) {
@@ -113,7 +96,7 @@ function ensureEmptyDb(cb) {
  *  called <database>Template. If it exists copy it to the target
  *  database.  If not, create it using $PROX/tools/genData.
  *
- *  Ops are the the same as genData
+ *  Ops are the same as genData
  */
 function ensureDb(ops, cb) {
 
@@ -220,11 +203,10 @@ function ensureServer(cb) {
 
       log('Starting test server ' + serverUrl + ' using config ' + configFile)
       log('Test server log: ' + logFile)
-      testServer = spawn('node', [__dirname + '/../prox', '--config', configFile])
+      testServer = child_process.spawn('node', [__dirname + '/../prox', '--config', configFile])
     }
-    else {  // Test server is already running
-      return cb()
-    }
+    // Test server is already running
+    else return cb()
 
     logStream.on('error', function(err) {
       throw err
@@ -260,8 +242,24 @@ function ensureServer(cb) {
 function runTests() {
   if (cli.none) return finish()
   log('\nTesting: ' + serverUrl)
-  log('Test dirs: ' + testDirs)
-  reporter.run(testDirs, false, finish)
+  log('Tests: ' + tests)
+  if (cli.perf) runPerf()
+  else reporter.run(tests, false, finish)
+}
+
+function runPerf() {
+  var conf = config.perfTest
+  var hammers = []
+  log('Running for ' + conf.seconds + ' seconds')
+  log('Concurency: ' + conf.concurency)
+  for (var i = 0; i < conf.concurency; i++) {
+    hammers.push(child_process.fork('./perf.js', conf.tests))
+  }
+  setTimeout(stop, conf.seconds * 1000)
+  function stop() {
+    hammers.forEach(function(hammer) { hammer.kill() })
+    finish()
+  }
 }
 
 

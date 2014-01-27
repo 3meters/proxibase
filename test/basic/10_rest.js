@@ -25,6 +25,13 @@ var linkId
 var testStartTime = util.getTimeUTC()
 var _exports = {}  // For commenting out tests
 
+function removeDoc(id, cred, cb) {
+  if (arguments.length === 2) {
+    cb = cred
+    cred = adminCred
+  }
+  t.del({uri: '/data/documents/' + id + '?' + cred}, cb)
+}
 
 exports.getUserSession = function(test) {
   testUtil.getUserSession(function(session) {
@@ -429,7 +436,11 @@ exports.canAddDocsWithPreexitingIds = function(test) {
       uri: '/data/documents?' + userCred,
       body: {data: {_id: newDocId2, name: 'I do too'}}
     }, 201, function(err, res, body) {
-      test.done()
+      removeDoc(newDocId1, function() {
+        removeDoc(newDocId2, function() {
+          test.done()
+        })
+      })
     })
   })
 }
@@ -497,7 +508,12 @@ exports.userCanDeleteSingleDoc = function(test) {
     uri: '/data/documents/' + testDoc1._id + '?' + userCred
   }, function(err, res, body) {
     t.assert(body.count === 1)
-    test.done()
+    t.del({
+      uri: '/data/documents/' + testDoc2._id + '?' + userCred
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+      test.done()
+    })
   })
 }
 
@@ -514,7 +530,9 @@ exports.customGenIdsWork = function(test) {
   }, 201, function(err, res, body) {
     t.assert('be.' + bssid === body.data._id)
     t.assert(body.data.enabled === true)  // proves defaults work
-    test.done()
+    removeDoc(body.data._id, function() {
+      test.done()
+    })
   })
 }
 
@@ -535,7 +553,9 @@ exports.nullsAreNotPersistedOnInsert = function(test) {
     t.assert(tipe.isUndefined(data.name))
     t.assert(data.data.p1 === 1)
     t.assert(tipe.isUndefined(data.data.p2))
-    test.done()
+    removeDoc(data._id, function() {
+      test.done()
+    })
   })
 }
 
@@ -626,7 +646,7 @@ exports.formatDatesWorks = function(test) {
 
 // This has to be the last test because all subsequent logins will fail
 // since it deletes all the sessions
-exports.adminCanDeleteAllUsingWildcard = function(test) {
+_exports.adminCanDeleteAllUsingWildcard = function(test) {
   t.del({
     uri: '/data/sessions/*?' + adminCred
   }, function(err, res, body) {
