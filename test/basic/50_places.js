@@ -70,7 +70,7 @@ exports.getSessions = function(test) {
 exports.getCategories = function(test) {
   t.get({uri: '/places/categories'}, function(err, res) {
     var cats = res.body.data
-    t.assert(cats.length === 11)
+    t.assert(cats.length === 12)
     test.done()
   })
 }
