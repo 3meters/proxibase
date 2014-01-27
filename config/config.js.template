@@ -35,7 +35,8 @@ module.exports = {
   },
   perfTest: {
     seconds: 10,                        // default 10
-    concurency: 10,                     // default 10
+    hammers: 10,                        // default 10
+    cpus: 1,                            // defualt 1
     tests: [
       'basic',                          // default basic, include files by name: basic/test1.js
     ]
