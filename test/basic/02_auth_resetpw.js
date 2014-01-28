@@ -124,6 +124,35 @@ exports.usersWithResetRoleCannotExecuteRegularCalls = function(test) {
   })
 }
 
+exports.signingInAfterResetPasswordRequestRestoresRoleToUser = function(test) {
+  t.post({
+    uri: '/auth/signin',
+    body: {
+      email: 'test@3meters.com',
+      password: 'foobar',
+      installId: installId,
+    }
+  }, function(err, res, body) {
+    t.assert(body.session)
+    t.assert(body.user)
+    t.assert(body.user.role === 'user')
+    // request password reset again
+    t.post({
+      uri: '/user/reqresetpw',
+      body: {
+        email: user.email,
+        installId: installId,
+      },
+    }, function(err, res, body) {
+      t.assert(body.session)
+      t.assert(body.user)
+      t.assert(body.user.role === 'reset')
+      newUserCred = 'user=' + user._id + '&session=' + body.session.key
+      test.done()
+    })
+  })
+}
+
 exports.userWithResetRoleCanExecuteResetPassword = function(test) {
   t.post({
     uri: '/user/resetpw?' + newUserCred,
