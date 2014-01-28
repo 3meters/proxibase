@@ -15,8 +15,6 @@ var adminCred
 var _exports = {} // for commenting out tests
 
 
-
-
 // Issue 112
 exports.getWebsiteWaitForContent = function(test) {
   // TODO:  once we have a public photo service, delete this
