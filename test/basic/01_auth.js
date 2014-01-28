@@ -49,6 +49,16 @@ exports.canSignInAsAdmin = function(test) {
   })
 }
 
+exports.cannotSignInAsAnonymous = function(test) {
+  t.post({
+    uri: '/auth/signin',
+    body: {email: 'anonymous', password: 'anonymous', installId: '123456'}
+  }, 401, function(err, res, body) {
+    t.assert(401.1 === body.error.code)
+    test.done()
+  })
+}
+
 exports.adminCannotAddUserWithoutEmail = function(test) {
   t.post({
     uri: '/user/create?' + adminCred,
