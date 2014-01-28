@@ -122,6 +122,17 @@ var adminUser = {
   password: 'admin',
 }
 
+/** 
+
+  var seed = String(Math.floor(Math.random() * 1000000))
+  var err = util.scrub(user, {
+    _id: {type: 'string'},
+    name: {type: 'string', default: 'Test User ' + seed},
+    email: {type: 'string', default: 'test' + seed + '@3meters.com'},
+  })
+  if (err) return cb(err)
+*/
+
 function getUserSession(user, cb) {
   if (!cb) {
     cb = user
@@ -163,7 +174,8 @@ function getSession(user, asAdmin, cb) {
 
   request(req, function(err, res, body) {
     if (err) throw (err)
-    if (res.statusCode >= 400) {
+    if (res.statusCode === 200) return finish(res)
+    else {
       if (asAdmin) {
         util.logErr('res.body', body)
         throw new Error('Cannot sign in with default admin credentials')
@@ -177,18 +189,14 @@ function getSession(user, asAdmin, cb) {
       request(req, function(err, res) {
         if (err) throw err
         check(req, res)
-        assert(res.body.user)
-        assert(res.body.session)
-        cb(res.body.session)
+        finish(res)
       })
     }
-    else {
-      if (res.body && tipe.isString((res.body))) {
-        try { res.body = JSON.parse(res.body) }
-        catch (e) { throw e }
-      }
+
+    function finish(res) {
       assert(res.body.session)
-      cb(res.body.session)
+      assert(res.body.user)
+      cb(res.body.session, res.body.user)
     }
   })
 }

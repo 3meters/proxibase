@@ -248,20 +248,68 @@ function runTests() {
 }
 
 function runPerf() {
+  var cBytes = 0
+  var cTests = 0
   var conf = config.perfTest
-  var cpus = []
+  var processes = []
+  log('\nPerf Tests\n==========')
+  log('Tests: ' + conf.tests)
+  log('Duration: ' + conf.seconds + ' seconds')
+  log('Processes: ' + conf.processes)
+  log('Hammers per process: ' + conf.hammers)
+  log()
   conf.tests.push(conf.hammers) // Add last parameter
-  log('Running for ' + conf.seconds + ' seconds')
-  log('Cpus: ' + conf.cpus)
-  log('Hammers per cpu: ' + conf.hammers)
-  for (var i = 0; i < conf.cpus; i++) {
-    cpus.push(child_process.fork('./perf.js', conf.tests))
+  var start = timer.read()
+
+  // async fork starter
+  function fork(i) {
+    if (!i--) return
+    log('Forking perf process ' + i)
+    var ps = child_process.fork('./perf.js', conf.tests, {silent: true})
+    ps.stdout.on('data', function(data) {
+      cBytes+= data.length
+      if (Buffer.isBuffer(data)) data = data.toString()
+      if (data.indexOf('✔') > -1) cTests++
+    })
+    ps.stderr.on('data', function(data) {
+      if (Buffer.isBuffer(data)) data = data.toString()
+      process.stderr.write(data)
+    })
+    processes.push(ps)
+    // give the frist proc a little longer to warm up
+    setTimeout(function(){fork(i)}, (i === conf.processes - 1) ? 200 : 10)
   }
+
+  // Start the kill switch timer
   setTimeout(stop, conf.seconds * 1000)
+
+  // Kick off
+  fork(conf.processes)
+
+  var teasing = true
+  setTimeout(tease, 2000)
+
+  function tease() {
+    if (!teasing) return
+    util.print('.')
+    setTimeout(tease, 2000)
+  }
+
   function stop() {
-    cpus.forEach(function(cpu) { cpu.kill() })
+    teasing = false
+    var stopBytes = cBytes
+    var time = timer.read() - start
+    processes.forEach(function(ps) { ps.kill() })
+    log('\n\nPerf results\n============')
+    log('Time: ' + Math.round(time))
+    log('Bytes: ' + stopBytes)
+    log('Bytes/sec: ' + Math.floor(stopBytes / time))
+    log('Tests: ' + cTests)
+    log('Tests/sec: ' + Math.floor(cTests / time))
+    log()
     finish()
   }
+
 }
 
 
