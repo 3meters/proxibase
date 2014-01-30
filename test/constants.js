@@ -36,9 +36,9 @@ var
       database: 'smokeData',
     },
     perfTest: {
-      users: 10,
-      beacons: 10,
-      epb: 1,       // place entities per beacon
+      users: 100,
+      beacons: 100,
+      epb: 5,       // place entities per beacon
       spe: 5,       // post entities per place entity
       ape: 5,       // applinks per place
       cpe: 2,       // comment entities per place and post entity

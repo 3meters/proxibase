@@ -20,15 +20,15 @@ var newUserCred
 
 
 exports.getUserSession = function(test) {
-  testUtil.getUserSession(function(session) {
+  testUtil.getUserSession(function(session, savedUser) {
     userSession = session
     userCred = 'user=' + session._owner + '&session=' + session.key
-    userId = session._owner
+    user = savedUser
     testUtil.getAdminSession(function(session) {
       adminSession = session
       adminCred = 'user=' + session._owner + '&session=' + session.key
       adminId = session._owner
-      t.get('/data/users/' + userId + '?' + userCred,
+      t.get('/data/users/' + user._id + '?' + userCred,
       function(err, res, body) {
         t.assert(body.data)
         user = body.data
@@ -54,7 +54,7 @@ exports.canRegisterDevice = function(test) {
       install: {
         installId: installId,
         registrationId: registrationId,
-        _user: userId
+        _user: user._id
       }
     },
   }, function(err, res, body) {
@@ -128,7 +128,7 @@ exports.signingInAfterResetPasswordRequestRestoresRoleToUser = function(test) {
   t.post({
     uri: '/auth/signin',
     body: {
-      email: 'test@3meters.com',
+      email: user.email,
       password: 'foobar',
       installId: installId,
     }
