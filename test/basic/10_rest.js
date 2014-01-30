@@ -328,9 +328,9 @@ exports.findWithLookups = function(test) {
     uri: '/data/documents?name=' + testDoc1.name + '&lookups=1&' + userCred
   }, function(err, res, body) {
     var doc = body.data[0]
-    t.assert('Test User' === doc.owner)
-    t.assert('Test User' === doc.creator)
-    t.assert('Test User' === doc.modifier)
+    t.assert(/^Test User/.test(doc.owner))
+    t.assert(/^Test User/.test(doc.creator))
+    t.assert(/^Test User/.test(doc.modifier))
     test.done()
   })
 }
@@ -423,8 +423,8 @@ exports.adminCannotUpdateNonExistantDoc = function(test) {
 }
 
 exports.canAddDocsWithPreexitingIds = function(test) {
-  var newDocId1 = 'do.060101.55664.234.11111'
-  var newDocId2 = 'do.060101.55664.234.22222'
+  var newDocId1 = 'do.' + util.seed()
+  var newDocId2 = 'do.' + util.seed()
   t.post({
     uri: '/data/documents?' + userCred,
     body: {data: {_id: newDocId1, name: 'I have my own id'}}

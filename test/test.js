@@ -45,7 +45,7 @@ cli
   .option('-g, --generate', 'generate a fresh template test db from code')
   .option('-l, --log <file>', 'Test server log file [' + logFile + ']')
   .option('-d, --disconnected', 'skip tests that require internet connectivity')
-  .option('-p, --perf', 'Run perf tests')
+  .option('-p, --perf', 'Run perf tests. Requires configperf.js')
   .parse(process.argv)
 
 
@@ -248,7 +248,6 @@ function runTests() {
 }
 
 function runPerf() {
-  var cBytes = 0
   var cTests = 0
   var conf = config.perfTest
   var processes = []
@@ -267,7 +266,6 @@ function runPerf() {
     log('Forking perf process ' + i)
     var ps = child_process.fork('./perf.js', conf.tests, {silent: true})
     ps.stdout.on('data', function(data) {
-      cBytes+= data.length
       if (Buffer.isBuffer(data)) data = data.toString()
       if (data.indexOf('✔') > -1) cTests++
     })
@@ -297,15 +295,12 @@ function runPerf() {
 
   function stop() {
     teasing = false
-    var stopBytes = cBytes
     var time = timer.read() - start
     processes.forEach(function(ps) { ps.kill() })
     log('\n\nPerf results\n============')
     log('Time: ' + Math.round(time))
-    log('Bytes: ' + stopBytes)
-    log('Bytes/sec: ' + Math.floor(stopBytes / time))
     log('Tests: ' + cTests)
-    log('Tests/sec: ' + Math.floor(cTests / time))
+    log('Tests/sec: ' + Math.floor((cTests * 100) / time) / 100)
     log()
     finish()
   }

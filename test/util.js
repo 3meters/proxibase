@@ -122,25 +122,22 @@ var adminUser = {
   password: 'admin',
 }
 
-/** 
-
+function makeTestUser() {
   var seed = String(Math.floor(Math.random() * 1000000))
-  var err = util.scrub(user, {
-    _id: {type: 'string'},
-    name: {type: 'string', default: 'Test User ' + seed},
-    email: {type: 'string', default: 'test' + seed + '@3meters.com'},
-  })
-  if (err) return cb(err)
-*/
+  return {
+    name: 'Test User ' + seed,
+    email: 'test' + seed + '@3meters.com',
+    password: 'foobar',
+  }
+}
 
 function getUserSession(user, cb) {
   if (!cb) {
     cb = user
-    user = testUser
+    user = makeTestUser()
   }
   getSession(user, false, cb)
 }
-
 
 function getAdminSession(user, cb) {
   if (!cb) {
