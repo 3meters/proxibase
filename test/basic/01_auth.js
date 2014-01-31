@@ -486,7 +486,8 @@ exports.userCanInviteNewUser = function(test) {
     body: {
       emails: ['test@3meters.com'],
       name: 'Test Invite User From t1_auth',
-      message:  'This is soooo cool',
+      message: 'This is soooo cool',
+      appName: 'aruba',
     }
   }, function(err, res, body) {
     t.assert(body.errors && !body.errors.length)
