@@ -299,13 +299,12 @@ function runPerf() {
     processes.forEach(function(ps) { ps.kill() })
     var logFile = fs.readFileSync('./testServer.log', 'utf8')
     // util.debug('logFile', logFile)
-    var cRes, position = 0, resTag = 'Res: '
+    var cRes = 0, position = 0, resTag = 'Res: '
     while(true) {
       position = logFile.indexOf(resTag, position)
       if (position < 0) break
       cRes++
       position += resTag.length
-      log('position:', position)
     }
     log('\n\nPerf results\n============')
     log('Time: ' + Math.round(time))
