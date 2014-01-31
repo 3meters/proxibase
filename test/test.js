@@ -297,10 +297,22 @@ function runPerf() {
     teasing = false
     var time = timer.read() - start
     processes.forEach(function(ps) { ps.kill() })
+    var logFile = fs.readFileSync('./testServer.log', 'utf8')
+    var cRes
+    var position = 0
+    var resTag = 'Res: '
+    while(true) {
+      position = logFile.indexOf(resTag, position)
+      if (position < 0) break
+      cRes++
+      position += resTag.length
+    }
     log('\n\nPerf results\n============')
     log('Time: ' + Math.round(time))
     log('Tests: ' + cTests)
     log('Tests/sec: ' + Math.floor((cTests * 100) / time) / 100)
+    log('Requests: ', cRes)
+    log('Requests/sec: ' + Math.floor((cRes * 100) / time) / 100)
     log()
     finish()
   }
