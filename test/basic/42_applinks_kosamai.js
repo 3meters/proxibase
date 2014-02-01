@@ -156,9 +156,22 @@ exports.refreshKaosamai = function(test) {
               }
             })
             t.assert(yl)
-
-            cleanup(place, applinks, function(err) {
-              test.done()
+            // test refresh applinks without save
+            t.post({
+              uri: '/applinks/get?' + userCred,
+              body: {
+                placeId: place._id,
+                save: false,
+                waitForContent: true,
+                includeRaw: true,
+                log: true,
+                timeout: 20000,
+              }
+            }, function(err, res, body) {
+              t.assert(false)
+              cleanup(place, applinks, function(err) {
+                test.done()
+              })
             })
           })
         })
