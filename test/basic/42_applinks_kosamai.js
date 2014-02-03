@@ -156,19 +156,23 @@ exports.refreshKaosamai = function(test) {
               }
             })
             t.assert(yl)
-            // test refresh applinks without save
+            // Issue 164: test refresh applinks wait for content
             t.post({
               uri: '/applinks/get?' + userCred,
               body: {
                 placeId: place._id,
                 save: false,
                 waitForContent: true,
+                // testThumbnails: true,
+                forceRefresh: true,
                 includeRaw: true,
                 log: true,
                 timeout: 20000,
               }
             }, function(err, res, body) {
-              t.assert(false)
+              t.assert(body.data.some(function(applink) {
+                return ('website' === applink.type)
+              }))
               cleanup(place, applinks, function(err) {
                 test.done()
               })
