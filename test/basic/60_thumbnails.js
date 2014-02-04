@@ -60,7 +60,7 @@ exports.timeoutWorksWhenWaitingForContent = function(test) {
       waitForContent: true,
       testThumbnails: true,
       log: true,
-      timeout: 1000,
+      timeout: 50,
     }
   }, function(err, res, body) {
     t.assert(0 === body.data.length)
