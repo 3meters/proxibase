@@ -24,9 +24,8 @@ var mokshaId = '505d321ee4b05434c0cfdbbd'
 var moksha = {
   name: 'Moksha',
   schema: 'place',
-  provider: {
-    foursquare: mokshaId
-  },
+  provider: {foursquare: mokshaId},
+  location: {lng: -122.20160473223153, lat: 47.61652922796693},
 }
 
 // Get user and admin sessions and store the credentials in module globals
@@ -49,15 +48,15 @@ exports.insertMoksha = function(test) {
     uri: '/do/insertEntity?' + userCred,
     body: {
       entity: moksha,
-      insertApplinks: false,
-      includeRaw: true,
-      timeout: 15000,
+      insertApplinks: true,
+      testThumbnails: true,
+      log: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.data)
     t.assert(body.data._id)
     moksha._id = body.data._id
-    test.done()
+    setTimeout(function() {test.done()}, 3000)
   })
 }
 
@@ -66,7 +65,6 @@ exports.getMokshaApplinks = function(test) {
     uri: '/applinks/get?' + userCred,
     body: {
       placeId: moksha._id,
-      save: true, // try save false
       waitForContent: true,
       testThumbnails: true,
       forceRefresh: true,
