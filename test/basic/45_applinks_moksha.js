@@ -19,6 +19,7 @@ var user
 var admin
 var userCred
 var adminCred
+var _exports = {}
 
 var mokshaId = '505d321ee4b05434c0cfdbbd'
 var moksha = {
@@ -27,6 +28,8 @@ var moksha = {
   provider: {foursquare: mokshaId},
   location: {lng: -122.20160473223153, lat: 47.61652922796693},
 }
+
+var applinks = []
 
 // Get user and admin sessions and store the credentials in module globals
 exports.getSessions = function(test) {
@@ -73,30 +76,27 @@ exports.getMokshaApplinks = function(test) {
       timeout: 20000,
     }
   }, function(err, res, body) {
-    var applinks = body.data
+    applinks = body.data
     t.assert(applinks.some(function(applink) {
       return ('website' === applink.type)
     }))
-    cleanup(moksha, applinks, function(err) {
-      test.done()
-    })
+    test.done()
   })
 }
 
 
 // return the db to a clean state.  twould be nice if the test harness did
 // this automatically between test files.
-function cleanup(place, applinks, cb) {
+exports.cleanupApplinks = function(test) {
 
   async.eachSeries(applinks, removeApplink, function(err) {
     t.assert(!err)
-    t.delete({uri: '/data/places/' + place._id + '?' + adminCred}, function(err, res, body) {
-      t.assert(1 === body.count)
-      cb()
-    })
+    test.done()
   })
+
   function removeApplink(applink, next) {
-    t.get('/data/links?query[_from]=' + applink._id + '&query[_to]=' + place._id,
+    t.assert(applink._id)
+    t.get('/data/links?query[_from]=' + applink._id + '&query[_to]=' + moksha._id,
     function(err, res, body) {
       t.assert(1 === body.data.length)
       t.delete({uri: '/data/links/' + body.data[0]._id + '?' + adminCred}, function(err, res, body) {
@@ -108,4 +108,11 @@ function cleanup(place, applinks, cb) {
       })
     })
   }
+}
+
+exports.cleanupPlace = function(test) {
+  t.delete({uri: '/data/places/' + moksha._id + '?' + adminCred}, function(err, res, body) {
+    t.assert(1 === body.count)
+    test.done()
+  })
 }
