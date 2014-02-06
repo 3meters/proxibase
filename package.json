@@ -25,7 +25,7 @@
     "nodeunit": "*",
     "async": "*",
     "nodemailer": "*",
-    "superagent": "<0.15.5",
+    "superagent": "*",
     "request": "*",
     "authom": "*",
     "cheerio": "*",
