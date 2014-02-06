@@ -64,6 +64,7 @@ exports.insertMoksha = function(test) {
 }
 
 exports.getMokshaApplinks = function(test) {
+  if (disconnected) return skip(test)
   t.post({
     uri: '/applinks/get?' + userCred,
     body: {
@@ -88,6 +89,7 @@ exports.getMokshaApplinks = function(test) {
 // return the db to a clean state.  twould be nice if the test harness did
 // this automatically between test files.
 exports.cleanupApplinks = function(test) {
+  if (disconnected) return skip(test)
 
   async.eachSeries(applinks, removeApplink, function(err) {
     t.assert(!err)
@@ -111,6 +113,7 @@ exports.cleanupApplinks = function(test) {
 }
 
 exports.cleanupPlace = function(test) {
+  if (disconnected) return skip(test)
   t.delete({uri: '/data/places/' + moksha._id + '?' + adminCred}, function(err, res, body) {
     t.assert(1 === body.count)
     test.done()
