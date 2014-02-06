@@ -78,8 +78,7 @@ exports.checkFacebookUrls = function(test) {
       }
     })
     t.assert(cPanera === 1)
-    log('papa murphys is crushed by superbowl')
-    // t.assert(cPapas === 1)
+    t.assert(cPapas === 1)
     t.assert(Object.keys(map).length === applinks.length)  // no dupes by id
     t.assert(map['620955808'])
     t.assert(map['620955808'].name === 'George Snelling')
