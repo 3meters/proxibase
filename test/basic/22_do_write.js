@@ -569,7 +569,8 @@ exports.updateBeaconsInstallThree = function (test) {
  * ----------------------------------------------------------------------------
  */
 
-exports.cannotInsertEntityNotLoggedIn = function (test) {
+// Test removed becasue now you can, see test 50
+_exports.cannotInsertEntityNotLoggedIn = function (test) {
   t.post({
     uri: '/do/insertEntity',
     body: {
