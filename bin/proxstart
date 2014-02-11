@@ -8,8 +8,6 @@ LOGDIR="/var/log/prox"
 PROXLOG="$LOGDIR/prox.log"
 ERRLOG="$LOGDIR/proxerr.log"
 
-proxrotate
-
 echo "proxerr.log: $ERRLOG"
 echo "prox.log: $PROXLOG ..."
 
