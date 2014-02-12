@@ -2,8 +2,10 @@
  * Generate proxibase categories
  */
 
-var util = require('../../lib/utils')   // load proxibase util extensions
+var util = require('proxutils')   // load proxibase util extensions
 var log = util.log
+var tipe = util.tipe
+var scrub = util.scrub
 var call = util.callService
 var request = require('request')
 var cli = require('commander')
