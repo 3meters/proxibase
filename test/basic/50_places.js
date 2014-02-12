@@ -379,7 +379,8 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
 
     // Insert ksthai as an entity
     t.post({
-      uri: '/do/insertEntity?' + userCred,
+      // uri: '/do/insertEntity?' + userCred,
+      uri: '/do/insertEntity',  // upsize as anon
       body: {
         entity: ksthai,
         insertApplinks: true,
@@ -389,7 +390,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
       t.assert(body.data)
       ksthai = body.data
       t.assert(body.data._owner === admin._id)   // upsized places are owned by admin
-      t.assert(body.data._modifier === user._id)
+      t.assert(body.data._modifier === util.anonId)
       var applinks = body.data.linksIn
       t.assert(applinks && applinks.length > 8)
 
@@ -399,7 +400,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
         t.assert(body.data._id)
         var newPostId = body.data._id
         t.post({
-          uri: '/do/insertEntity?' + userCred,
+          uri: '/do/insertEntity',  // add post as anon, should fail
           body: {
             entity: {
               _id: newPostId,
@@ -411,135 +412,150 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
               type: 'content',
             }],
           }
-        }, 201, function(err, res, body) {
-          t.assert(body.data)
-          t.assert(body.data._id === newPostId)
-          t.assert(body.data._owner === user._id)
-          // Confirm link was created
+        }, 401, function(err, res, body) {
           t.post({
-            uri: '/find/links',
+            uri: '/do/insertEntity?' + userCred,  // now as post as user, should work
             body: {
-              query: {
-                _to: ksthai._id,
-                _from: newPostId,
+              entity: {
+                _id: newPostId,
+                schema: 'post',
+                description: 'I am a post attached to Kaosamai Thai',
               },
+              links: [{
+                _to: ksthai._id,
+                type: 'content',
+              }],
             }
-          }, function(err, res, body) {
+          }, 201, function(err, res, body) {
             t.assert(body.data)
-            t.assert(1 === body.data.length)
-            var link = body.data[0]
-            t.assert(link._owner === user._id)
-            t.assert('content' === link.type)
-
-            // Add a user-created place inside the ballroom
+            t.assert(body.data._id === newPostId)
+            t.assert(body.data._owner === user._id)
+            // Confirm link was created
             t.post({
-              uri: '/do/insertEntity?' + userCred,
+              uri: '/find/links',
               body: {
-                entity: {
-                  name: 'A user-created Test Place Inside the BallRoom',
-                  schema : util.statics.schemaPlace,
-                  provider: { aircandi: true }, // new
-                  location: ballRoomLoc,
-                  enabled : true,
-                  locked : false,
+                query: {
+                  _to: ksthai._id,
+                  _from: newPostId,
                 },
-                insertApplinks: true,
-                includeRaw: true,
               }
-            }, 201, function(err, res, body) {
-              var newEnt = body.data
-              t.assert(newEnt)
-              t.assert(newEnt.provider.aircandi === newEnt._id)
-              t.assert(body.raw)
-              t.assert(Object.keys(body.raw).length === 0)  // proves that place seach did not occur, isssue 137
+            }, function(err, res, body) {
+              t.assert(body.data)
+              t.assert(1 === body.data.length)
+              var link = body.data[0]
+              t.assert(link._owner === user._id)
+              t.assert('content' === link.type)
 
-              // Add a user-created place about a mile away, at George's house
+              // Add a user-created place inside the ballroom
               t.post({
                 uri: '/do/insertEntity?' + userCred,
-                body: {entity: {
-                  name: 'A user-created Entity At George\'s House',
-                  schema : util.statics.schemaPlace,
-                  provider: {aircandi: true},  // new
-                  location: {lat: 47.664525, lng: -122.354787},
-                  enabled : true,
-                  locked : false,
-                }}
-              }, 201, function(err, res, body) {
-                var newEnt2 = body.data
-                t.assert(newEnt2)
-
-                // Run radar again
-                t.post({
-                  uri: '/places/near',
-                  body: {
+                body: {
+                  entity: {
+                    name: 'A user-created Test Place Inside the BallRoom',
+                    schema : util.statics.schemaPlace,
+                    provider: { aircandi: true }, // new
                     location: ballRoomLoc,
-                    provider: 'foursquare',
-                    limit: 50,
-                    timeout: 15000,
-                  }
-                }, function(err, res, body) {
-                  // Make sure the real entitiy is in the found places
-                  var places = body.data
-                  var foundKsthai = 0
-                  var foundNewEnt = 0
-                  var foundNewEnt2 = 0
-                  places.forEach(function(place) {
-                    t.assert(place.provider)
-                    if (place.provider.foursquare === ksthaiId) foundKsthai++
-                    if (place._id && place._id === newEnt._id) {
-                      foundNewEnt++
-                      t.assert(place.provider.aircandi)
-                      t.assert(place.provider.aircandi === place._id)
-                    }
-                    if (place._id && place._id === newEnt2._id) {
-                      foundNewEnt2++
-                    }
-                  })
-                  t.assert(foundKsthai === 1)
-                  t.assert(foundNewEnt === 1)
-                  t.assert(foundNewEnt2 === 0) // outside the radius
+                    enabled : true,
+                    locked : false,
+                  },
+                  insertApplinks: true,
+                  includeRaw: true,
+                }
+              }, 201, function(err, res, body) {
+                var newEnt = body.data
+                t.assert(newEnt)
+                t.assert(newEnt.provider.aircandi === newEnt._id)
+                t.assert(body.raw)
+                t.assert(Object.keys(body.raw).length === 0)  // proves that place seach did not occur, isssue 137
 
-                  // Now run radar with factual as the provider, ensuring the same
-                  // results, joining on phone number
+                // Add a user-created place about a mile away, at George's house
+                t.post({
+                  uri: '/do/insertEntity?' + userCred,
+                  body: {entity: {
+                    name: 'A user-created Entity At George\'s House',
+                    schema : util.statics.schemaPlace,
+                    provider: {aircandi: true},  // new
+                    location: {lat: 47.664525, lng: -122.354787},
+                    enabled : true,
+                    locked : false,
+                  }}
+                }, 201, function(err, res, body) {
+                  var newEnt2 = body.data
+                  t.assert(newEnt2)
+
+                  // Run radar again
                   t.post({
                     uri: '/places/near',
                     body: {
                       location: ballRoomLoc,
-                      provider: 'factual',
+                      provider: 'foursquare',
                       limit: 50,
+                      timeout: 15000,
                     }
                   }, function(err, res, body) {
+                    // Make sure the real entitiy is in the found places
                     var places = body.data
                     var foundKsthai = 0
                     var foundNewEnt = 0
                     var foundNewEnt2 = 0
                     places.forEach(function(place) {
-                      if (place._id && place._id === newEnt._id) foundNewEnt++
-                      if (place._id && place._id === newEnt2._id) foundNewEnt2++
                       t.assert(place.provider)
-                      if (place.provider.foursquare === ksthaiId) {
-                        foundKsthai++
-                        t.assert(place.provider.factual) // should have been added to the map
+                      if (place.provider.foursquare === ksthaiId) foundKsthai++
+                      if (place._id && place._id === newEnt._id) {
+                        foundNewEnt++
+                        t.assert(place.provider.aircandi)
+                        t.assert(place.provider.aircandi === place._id)
+                      }
+                      if (place._id && place._id === newEnt2._id) {
+                        foundNewEnt2++
                       }
                     })
                     t.assert(foundKsthai === 1)
                     t.assert(foundNewEnt === 1)
-                    t.assert(foundNewEnt2 === 0)
+                    t.assert(foundNewEnt2 === 0) // outside the radius
 
-                    // Confirm that excludePlaceIds works for our entities
+                    // Now run radar with factual as the provider, ensuring the same
+                    // results, joining on phone number
                     t.post({
                       uri: '/places/near',
                       body: {
                         location: ballRoomLoc,
-                        provider: 'foursquare',
-                        excludePlaceIds: [newEnt._id],
+                        provider: 'factual',
+                        limit: 50,
                       }
                     }, function(err, res, body) {
                       var places = body.data
-                      t.assert(!places.some(function(place) {
-                        return (place._id === newEnt._id)
-                      }))
-                      test.done()
+                      var foundKsthai = 0
+                      var foundNewEnt = 0
+                      var foundNewEnt2 = 0
+                      places.forEach(function(place) {
+                        if (place._id && place._id === newEnt._id) foundNewEnt++
+                        if (place._id && place._id === newEnt2._id) foundNewEnt2++
+                        t.assert(place.provider)
+                        if (place.provider.foursquare === ksthaiId) {
+                          foundKsthai++
+                          t.assert(place.provider.factual) // should have been added to the map
+                        }
+                      })
+                      t.assert(foundKsthai === 1)
+                      t.assert(foundNewEnt === 1)
+                      t.assert(foundNewEnt2 === 0)
+
+                      // Confirm that excludePlaceIds works for our entities
+                      t.post({
+                        uri: '/places/near',
+                        body: {
+                          location: ballRoomLoc,
+                          provider: 'foursquare',
+                          excludePlaceIds: [newEnt._id],
+                        }
+                      }, function(err, res, body) {
+                        var places = body.data
+                        t.assert(!places.some(function(place) {
+                          return (place._id === newEnt._id)
+                        }))
+                        test.done()
+                      })
                     })
                   })
                 })
