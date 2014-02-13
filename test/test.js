@@ -39,7 +39,7 @@ process.chdir(__dirname)
 // Command line interface
 cli
   .option('-c, --config <file>', 'Config file [configtest.js]')
-  .option('-t, --test <dir>', 'Only run the specified test directory')
+  .option('-t, --test <dir|file>', 'Only run the specified tests. Must run from /test')
   .option('-a, --all', 'Run all tests, not just basic')
   .option('-n, --none', 'Do not run any tests -- just ensure the test db')
   .option('-g, --generate', 'generate a fresh template test db from code')

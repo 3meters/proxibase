@@ -32,7 +32,7 @@ function start(i) {
     if (err) console.error(err.stack || err)
   })
   // Give the first hammer chance to create the default test user just once
-  setTimeout(function(){start(i)}, (i === hammers -1) ? 100 : 10)
+  setTimeout(function(){start(i)}, (i === hammers -1) ? 500 : 100)
 }
 
 process.on('uncaughtException', function(err) {
