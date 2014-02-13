@@ -3,10 +3,16 @@
 4bf58dd8d48988d1e2931735,Art Gallery,4d4b7104d754a06370d81259,Arts & Entertainment
 4bf58dd8d48988d1e4931735,Bowling Alley,4d4b7104d754a06370d81259,Arts & Entertainment
 4bf58dd8d48988d17c941735,Casino,4d4b7104d754a06370d81259,Arts & Entertainment
+52e81612bcbc57f1066b79e7,Circus,4d4b7104d754a06370d81259,Arts & Entertainment
 4bf58dd8d48988d18e941735,Comedy Club,4d4b7104d754a06370d81259,Arts & Entertainment
 5032792091d4c4b30a586d5c,Concert Hall,4d4b7104d754a06370d81259,Arts & Entertainment
+52e81612bcbc57f1066b79ef,Country Dance Club,4d4b7104d754a06370d81259,Arts & Entertainment
+52e81612bcbc57f1066b79e8,Disc Golf,4d4b7104d754a06370d81259,Arts & Entertainment
 4bf58dd8d48988d1f1931735,General Entertainment,4d4b7104d754a06370d81259,Arts & Entertainment
+52e81612bcbc57f1066b79ea,Go Kart Track,4d4b7104d754a06370d81259,Arts & Entertainment
 4deefb944765f83613cdba6e,Historic Site,4d4b7104d754a06370d81259,Arts & Entertainment
+52e81612bcbc57f1066b79e6,Laser Tag,4d4b7104d754a06370d81259,Arts & Entertainment
+52e81612bcbc57f1066b79eb,Mini Golf,4d4b7104d754a06370d81259,Arts & Entertainment
 4bf58dd8d48988d17e941735,Indie Movie Theater,4bf58dd8d48988d17f941735,Movie Theater
 4bf58dd8d48988d180941735,Multiplex,4bf58dd8d48988d17f941735,Movie Theater
 4bf58dd8d48988d17f941735,Movie Theater,4d4b7104d754a06370d81259,Arts & Entertainment
@@ -19,6 +25,7 @@
 4bf58dd8d48988d1e8931735,Piano Bar,4bf58dd8d48988d1e5931735,Music Venue
 4bf58dd8d48988d1e9931735,Rock Club,4bf58dd8d48988d1e5931735,Music Venue
 4bf58dd8d48988d1e5931735,Music Venue,4d4b7104d754a06370d81259,Arts & Entertainment
+52e81612bcbc57f1066b79ed,Outdoor Sculpture,4d4b7104d754a06370d81259,Arts & Entertainment
 4bf58dd8d48988d134941735,Dance Studio,4bf58dd8d48988d1f2931735,Performing Arts Venue
 4bf58dd8d48988d135941735,Indie Theater,4bf58dd8d48988d1f2931735,Performing Arts Venue
 4bf58dd8d48988d136941735,Opera House,4bf58dd8d48988d1f2931735,Performing Arts Venue
@@ -27,6 +34,8 @@
 4bf58dd8d48988d1e3931735,Pool Hall,4d4b7104d754a06370d81259,Arts & Entertainment
 507c8c4091d498d9fc8c67a9,Public Art,4d4b7104d754a06370d81259,Arts & Entertainment
 4bf58dd8d48988d1f4931735,Racetrack,4d4b7104d754a06370d81259,Arts & Entertainment
+52e81612bcbc57f1066b79e9,Roller Rink,4d4b7104d754a06370d81259,Arts & Entertainment
+52e81612bcbc57f1066b79ec,Salsa Club,4d4b7104d754a06370d81259,Arts & Entertainment
 4bf58dd8d48988d18c941735,Baseball Stadium,4bf58dd8d48988d184941735,Stadium
 4bf58dd8d48988d18b941735,Basketball Stadium,4bf58dd8d48988d184941735,Stadium
 4bf58dd8d48988d18a941735,Cricket Ground,4bf58dd8d48988d184941735,Stadium
@@ -36,6 +45,7 @@
 4e39a891bd410d7aed40cbc2,Tennis,4bf58dd8d48988d184941735,Stadium
 4bf58dd8d48988d187941735,Track Stadium,4bf58dd8d48988d184941735,Stadium
 4bf58dd8d48988d184941735,Stadium,4d4b7104d754a06370d81259,Arts & Entertainment
+52e81612bcbc57f1066b79ee,Street Art,4d4b7104d754a06370d81259,Arts & Entertainment
 5109983191d435c0d71c2bb1,Theme Park Ride / Attraction,4bf58dd8d48988d182941735,Theme Park
 4bf58dd8d48988d182941735,Theme Park,4d4b7104d754a06370d81259,Arts & Entertainment
 4bf58dd8d48988d193941735,Water Park,4d4b7104d754a06370d81259,Arts & Entertainment
@@ -95,9 +105,13 @@
 4bf58dd8d48988d107941735,Argentinian Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d142941735,Asian Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d169941735,Australian Restaurant,4d4b7105d754a06374d81259,Food
+52e81612bcbc57f1066b7a01,Austrian Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d1df931735,BBQ Joint,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d179941735,Bagel Shop,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d16a941735,Bakery,4d4b7105d754a06374d81259,Food
+52e928d0bcbc57f1066b7e97,Belarusian Restaurant,4d4b7105d754a06374d81259,Food
+52e81612bcbc57f1066b7a02,Belgian Restaurant,4d4b7105d754a06374d81259,Food
+52e81612bcbc57f1066b79f1,Bistro,4d4b7105d754a06374d81259,Food
 5294c7523cf9994f4e043a62,Acai House,4bf58dd8d48988d16b941735,Brazilian Restaurant
 52939ae13cf9994f4e043a3b,Baiano Restaurant,4bf58dd8d48988d16b941735,Brazilian Restaurant
 52939a9e3cf9994f4e043a36,Central Brazilian Restaurant,4bf58dd8d48988d16b941735,Brazilian Restaurant
@@ -113,11 +127,14 @@
 52939a7d3cf9994f4e043a34,Tapiocaria,4bf58dd8d48988d16b941735,Brazilian Restaurant
 4bf58dd8d48988d16b941735,Brazilian Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d143941735,Breakfast Spot,4d4b7105d754a06374d81259,Food
+52e81612bcbc57f1066b7a0c,Bubble Tea Shop,4d4b7105d754a06374d81259,Food
+52e81612bcbc57f1066b79f4,Buffet,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d16c941735,Burger Joint,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d153941735,Burrito Place,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d128941735,Cafeteria,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d16d941735,Café,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d17a941735,Cajun / Creole Restaurant,4d4b7105d754a06374d81259,Food
+52e81612bcbc57f1066b7a03,Cambodian Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d144941735,Caribbean Restaurant,4d4b7105d754a06374d81259,Food
 5293a7d53cf9994f4e043a45,Caucasian Restaurant,4d4b7105d754a06374d81259,Food
 52af3a5e3cf9994f4e043bea,Anhui Restaurant,4bf58dd8d48988d145941735,Chinese Restaurant
@@ -153,8 +170,11 @@
 52af3ba23cf9994f4e043c08,Zhejiang Restaurant,4bf58dd8d48988d145941735,Chinese Restaurant
 4bf58dd8d48988d145941735,Chinese Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d1e0931735,Coffee Shop,4d4b7105d754a06374d81259,Food
+52e81612bcbc57f1066b7a00,Comfort Food Restaurant,4d4b7105d754a06374d81259,Food
+52e81612bcbc57f1066b79f2,Creperie,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d154941735,Cuban Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d1bc941735,Cupcake Shop,4d4b7105d754a06374d81259,Food
+52f2ae52bcbc57f1066b8b81,Czech Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d146941735,Deli / Bodega,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d1d0941735,Dessert Shop,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d1f5931735,Dim Sum Restaurant,4d4b7105d754a06374d81259,Food
@@ -163,11 +183,13 @@
 4bf58dd8d48988d148941735,Donut Shop,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d108941735,Dumpling Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d109941735,Eastern European Restaurant,4d4b7105d754a06374d81259,Food
+52e81612bcbc57f1066b7a05,English Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d10a941735,Ethiopian Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d10b941735,Falafel Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d16e941735,Fast Food Restaurant,4d4b7105d754a06374d81259,Food
 4eb1bd1c3b7b55596b4a748f,Filipino Restaurant,4d4b7105d754a06374d81259,Food
 4edd64a0c7ddd24ca188df1a,Fish & Chips Shop,4d4b7105d754a06374d81259,Food
+52e81612bcbc57f1066b7a09,Fondue Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d1cb941735,Food Truck,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d10c941735,French Restaurant,4d4b7105d754a06374d81259,Food
 4d4ae6fc7a7b7dea34424761,Fried Chicken Joint,4d4b7105d754a06374d81259,Food
@@ -175,8 +197,12 @@
 4bf58dd8d48988d10d941735,German Restaurant,4d4b7105d754a06374d81259,Food
 4c2cd86ed066bed06c3c5209,Gluten-free Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d10e941735,Greek Restaurant,4d4b7105d754a06374d81259,Food
+52e81612bcbc57f1066b79ff,Halal Restaurant,4d4b7105d754a06374d81259,Food
+52e81612bcbc57f1066b79fe,Hawaiian Restaurant,4d4b7105d754a06374d81259,Food
+52e81612bcbc57f1066b79fb,Himalayan Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d16f941735,Hot Dog Joint,4d4b7105d754a06374d81259,Food
 52af0bd33cf9994f4e043bdd,Hotpot Restaurant,4d4b7105d754a06374d81259,Food
+52e81612bcbc57f1066b79fa,Hungarian Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d1c9941735,Ice Cream Shop,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d10f941735,Indian Restaurant,4d4b7105d754a06374d81259,Food
 52960eda3cf9994f4e043ac9,Acehnese Restaurant,4deefc054765f83613cdba6f,Indonesian Restaurant
@@ -188,10 +214,13 @@
 52960eda3cf9994f4e043ac5,Padangnese Restaurant,4deefc054765f83613cdba6f,Indonesian Restaurant
 52960eda3cf9994f4e043ac6,Sundanese Restaurant,4deefc054765f83613cdba6f,Indonesian Restaurant
 4deefc054765f83613cdba6f,Indonesian Restaurant,4d4b7105d754a06374d81259,Food
+52e81612bcbc57f1066b7a06,Irish Pub,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d110941735,Italian Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d111941735,Japanese Restaurant,4d4b7105d754a06374d81259,Food
+52e81612bcbc57f1066b79fd,Jewish Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d112941735,Juice Bar,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d113941735,Korean Restaurant,4d4b7105d754a06374d81259,Food
+52e81612bcbc57f1066b79fc,Kosher Restaurant,4d4b7105d754a06374d81259,Food
 52939a8c3cf9994f4e043a35,Empanada Restaurant,4bf58dd8d48988d1be941735,Latin American Restaurant
 4bf58dd8d48988d1be941735,Latin American Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d1bf941735,Mac & Cheese Joint,4d4b7105d754a06374d81259,Food
@@ -199,16 +228,23 @@
 4bf58dd8d48988d1c0941735,Mediterranean Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d1c1941735,Mexican Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d115941735,Middle Eastern Restaurant,4d4b7105d754a06374d81259,Food
+52e81612bcbc57f1066b79f9,Modern European Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d1c2941735,Molecular Gastronomy Restaurant,4d4b7105d754a06374d81259,Food
 4eb1d5724b900d56c88a45fe,Mongolian Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d1c3941735,Moroccan Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d157941735,New American Restaurant,4d4b7105d754a06374d81259,Food
+52e81612bcbc57f1066b79f8,Pakistani Restaurant,4d4b7105d754a06374d81259,Food
+52e81612bcbc57f1066b79f7,Persian Restaurant,4d4b7105d754a06374d81259,Food
 4eb1bfa43b7b52c0e1adc2e8,Peruvian Restaurant,4d4b7105d754a06374d81259,Food
+52e81612bcbc57f1066b7a0a,Pie Shop,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d1ca941735,Pizza Place,4d4b7105d754a06374d81259,Food
+52e81612bcbc57f1066b7a04,Polish Restaurant,4d4b7105d754a06374d81259,Food
 4def73e84765ae376e57713a,Portuguese Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d1d1941735,Ramen / Noodle House,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d1c4941735,Restaurant,4d4b7105d754a06374d81259,Food
 52960bac3cf9994f4e043ac4,Romanian Restaurant,4d4b7105d754a06374d81259,Food
+52e928d0bcbc57f1066b7e9d,Blini House,5293a7563cf9994f4e043a44,Russian Restaurant
+52e928d0bcbc57f1066b7e9c,Pelmeni House,5293a7563cf9994f4e043a44,Russian Restaurant
 5293a7563cf9994f4e043a44,Russian Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d1bd941735,Salad Place,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d1c5941735,Sandwich Place,4d4b7105d754a06374d81259,Food
@@ -218,6 +254,7 @@
 4bf58dd8d48988d1dd931735,Soup Place,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d1cd941735,South American Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d14f941735,Southern / Soul Food Restaurant,4d4b7105d754a06374d81259,Food
+52e81612bcbc57f1066b79f3,Souvlaki Shop,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d14d941735,Paella Restaurant,4bf58dd8d48988d150941735,Spanish Restaurant
 4bf58dd8d48988d150941735,Spanish Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d1cc941735,Steakhouse,4d4b7105d754a06374d81259,Food
@@ -225,6 +262,7 @@
 4bf58dd8d48988d158941735,Swiss Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d151941735,Taco Place,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d1db931735,Tapas Restaurant,4d4b7105d754a06374d81259,Food
+52e928d0bcbc57f1066b7e98,Tatar Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d1dc931735,Tea Room,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d149941735,Thai Restaurant,4d4b7105d754a06374d81259,Food
 52af39fb3cf9994f4e043be9,Tibetan Restaurant,4d4b7105d754a06374d81259,Food
@@ -237,6 +275,9 @@
 5283c7b4e4b094cb91ec88d5,Manti Place,4f04af1f2fb6e1c99f3db0bb,Turkish Restaurant
 5283c7b4e4b094cb91ec88da,Meyhane,4f04af1f2fb6e1c99f3db0bb,Turkish Restaurant
 4f04af1f2fb6e1c99f3db0bb,Turkish Restaurant,4d4b7105d754a06374d81259,Food
+52e928d0bcbc57f1066b7e9a,Varenyky restaurant,52e928d0bcbc57f1066b7e96,Ukrainian Restaurant
+52e928d0bcbc57f1066b7e9b,West-Ukrainian Restaurant,52e928d0bcbc57f1066b7e96,Ukrainian Restaurant
+52e928d0bcbc57f1066b7e96,Ukrainian Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d1d3941735,Vegetarian / Vegan Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d14a941735,Vietnamese Restaurant,4d4b7105d754a06374d81259,Food
 4bf58dd8d48988d14b941735,Winery,4d4b7105d754a06374d81259,Food
@@ -244,8 +285,10 @@
 512e7cae91d4cbb4e5efe0af,Frozen Yogurt,4d4b7105d754a06374d81259,Food
 4d4b7105d754a06374d81259,Food,,
 4bf58dd8d48988d116941735,Bar,4d4b7105d754a06376d81259,Nightlife Spot
+52e81612bcbc57f1066b7a0d,Beach Bar,4d4b7105d754a06376d81259,Nightlife Spot
 4bf58dd8d48988d117941735,Beer Garden,4d4b7105d754a06376d81259,Nightlife Spot
 50327c8591d4c4b30a586d5d,Brewery,4d4b7105d754a06376d81259,Nightlife Spot
+52e81612bcbc57f1066b7a0e,Champagne Bar,4d4b7105d754a06376d81259,Nightlife Spot
 4bf58dd8d48988d11e941735,Cocktail Bar,4d4b7105d754a06376d81259,Nightlife Spot
 4bf58dd8d48988d118941735,Dive Bar,4d4b7105d754a06376d81259,Nightlife Spot
 4bf58dd8d48988d1d8941735,Gay Bar,4d4b7105d754a06376d81259,Nightlife Spot
@@ -316,8 +359,12 @@
 4e52d2d203646f7c19daa8ae,Animal Shelter,4d4b7105d754a06375d81259,Professional & Other Places
 4bf58dd8d48988d173941735,Auditorium,4d4b7105d754a06375d81259,Professional & Other Places
 4bf58dd8d48988d130941735,Building,4d4b7105d754a06375d81259,Professional & Other Places
+52e81612bcbc57f1066b7a35,Club House,4d4b7105d754a06375d81259,Professional & Other Places
+52e81612bcbc57f1066b7a34,Community Center,4d4b7105d754a06375d81259,Professional & Other Places
 4bf58dd8d48988d100941735,Meeting Room,4bf58dd8d48988d1ff931735,Convention Center
 4bf58dd8d48988d1ff931735,Convention Center,4d4b7105d754a06375d81259,Professional & Other Places
+52e81612bcbc57f1066b7a32,Cultural Center,4d4b7105d754a06375d81259,Professional & Other Places
+52e81612bcbc57f1066b7a37,Distribution Center,4d4b7105d754a06375d81259,Professional & Other Places
 4bf58dd8d48988d171941735,Event Space,4d4b7105d754a06375d81259,Professional & Other Places
 4eb1bea83b7b6f98df247e06,Factory,4d4b7105d754a06375d81259,Professional & Other Places
 4eb1daf44b900d56c88a4600,Fair,4d4b7105d754a06375d81259,Professional & Other Places
@@ -329,18 +376,24 @@
 4bf58dd8d48988d12c941735,Fire Station,4bf58dd8d48988d126941735,Government Building
 4bf58dd8d48988d12d941735,Monument / Landmark,4bf58dd8d48988d126941735,Government Building
 4bf58dd8d48988d12e941735,Police Station,4bf58dd8d48988d126941735,Government Building
+52e81612bcbc57f1066b7a38,Town Hall,4bf58dd8d48988d126941735,Government Building
 4bf58dd8d48988d126941735,Government Building,4d4b7105d754a06375d81259,Professional & Other Places
 4bf58dd8d48988d12f941735,Library,4d4b7105d754a06375d81259,Professional & Other Places
+52e81612bcbc57f1066b7a3b,Acupuncturist,4bf58dd8d48988d104941735,Medical Center
+52e81612bcbc57f1066b7a3c,Alternative Healer,4bf58dd8d48988d104941735,Medical Center
+52e81612bcbc57f1066b7a3a,Chiropractor,4bf58dd8d48988d104941735,Medical Center
 4bf58dd8d48988d178941735,Dentist's Office,4bf58dd8d48988d104941735,Medical Center
 4bf58dd8d48988d177941735,Doctor's Office,4bf58dd8d48988d104941735,Medical Center
 4bf58dd8d48988d194941735,Emergency Room,4bf58dd8d48988d104941735,Medical Center
 522e32fae4b09b556e370f19,Eye Doctor,4bf58dd8d48988d104941735,Medical Center
 4bf58dd8d48988d196941735,Hospital,4bf58dd8d48988d104941735,Medical Center
 4f4531b14b9074f6e4fb0103,Laboratory,4bf58dd8d48988d104941735,Medical Center
+52e81612bcbc57f1066b7a39,Mental Health Office,4bf58dd8d48988d104941735,Medical Center
 4d954af4a243a5684765b473,Veterinarian,4bf58dd8d48988d104941735,Medical Center
 4bf58dd8d48988d104941735,Medical Center,4d4b7105d754a06375d81259,Professional & Other Places
 4e52adeebd41615f56317744,Military Base,4d4b7105d754a06375d81259,Professional & Other Places
 50328a8e91d4c4b30a586d6c,Non-Profit,4d4b7105d754a06375d81259,Professional & Other Places
+52e81612bcbc57f1066b7a3d,Advertising Agency,4bf58dd8d48988d124941735,Office
 5032764e91d4c4b30a586d5a,Campaign Office,4bf58dd8d48988d124941735,Office
 4bf58dd8d48988d127941735,Conference Room,4bf58dd8d48988d124941735,Office
 4bf58dd8d48988d174941735,Coworking Space,4bf58dd8d48988d124941735,Office
@@ -349,19 +402,34 @@
 4c38df4de52ce0d596b336e1,Parking,4d4b7105d754a06375d81259,Professional & Other Places
 4bf58dd8d48988d172941735,Post Office,4d4b7105d754a06375d81259,Professional & Other Places
 5032856091d4c4b30a586d63,Radio Station,4d4b7105d754a06375d81259,Professional & Other Places
+52e81612bcbc57f1066b7a43,Circus School,4bf58dd8d48988d13b941735,School
+52e81612bcbc57f1066b7a42,Driving School,4bf58dd8d48988d13b941735,School
 4f4533804b9074f6e4fb0105,Elementary School,4bf58dd8d48988d13b941735,School
+52e81612bcbc57f1066b7a49,Flight School,4bf58dd8d48988d13b941735,School
 4bf58dd8d48988d13d941735,High School,4bf58dd8d48988d13b941735,School
+52e81612bcbc57f1066b7a48,Language School,4bf58dd8d48988d13b941735,School
 4f4533814b9074f6e4fb0106,Middle School,4bf58dd8d48988d13b941735,School
 4f04b10d2fb6e1c99f3db0be,Music School,4bf58dd8d48988d13b941735,School
 4f4533814b9074f6e4fb0107,Nursery School,4bf58dd8d48988d13b941735,School
+52e81612bcbc57f1066b7a45,Preschool,4bf58dd8d48988d13b941735,School
+52e81612bcbc57f1066b7a46,Private School,4bf58dd8d48988d13b941735,School
+52e81612bcbc57f1066b7a47,Religious School,4bf58dd8d48988d13b941735,School
+52e81612bcbc57f1066b7a44,Swim School,4bf58dd8d48988d13b941735,School
 4bf58dd8d48988d13b941735,School,4d4b7105d754a06375d81259,Professional & Other Places
+52e81612bcbc57f1066b7a33,Social Club,4d4b7105d754a06375d81259,Professional & Other Places
+52e81612bcbc57f1066b7a3e,Buddhist Temple,4bf58dd8d48988d131941735,Spiritual Center
 4bf58dd8d48988d132941735,Church,4bf58dd8d48988d131941735,Spiritual Center
+52e81612bcbc57f1066b7a3f,Hindu Temple,4bf58dd8d48988d131941735,Spiritual Center
+52e81612bcbc57f1066b7a40,Monastery,4bf58dd8d48988d131941735,Spiritual Center
 4bf58dd8d48988d138941735,Mosque,4bf58dd8d48988d131941735,Spiritual Center
+52e81612bcbc57f1066b7a41,Prayer Room,4bf58dd8d48988d131941735,Spiritual Center
 4eb1d80a4b900d56c88a45ff,Shrine,4bf58dd8d48988d131941735,Spiritual Center
 4bf58dd8d48988d139941735,Synagogue,4bf58dd8d48988d131941735,Spiritual Center
 4bf58dd8d48988d13a941735,Temple,4bf58dd8d48988d131941735,Spiritual Center
 4bf58dd8d48988d131941735,Spiritual Center,4d4b7105d754a06375d81259,Professional & Other Places
+52e81612bcbc57f1066b7a31,TV Station,4d4b7105d754a06375d81259,Professional & Other Places
 4cae28ecbf23941eb1190695,Voting Booth,4d4b7105d754a06375d81259,Professional & Other Places
+52e81612bcbc57f1066b7a36,Warehouse,4d4b7105d754a06375d81259,Professional & Other Places
 4d4b7105d754a06375d81259,Professional & Other Places,,
 5032891291d4c4b30a586d68,Assisted Living,4e67e38e036454776db1fb3a,Residence
 4bf58dd8d48988d103941735,Home (private),4e67e38e036454776db1fb3a,Residence
@@ -371,8 +439,13 @@
 5267e446e4b0ec79466e48c4,Adult Boutique,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d116951735,Antique Shop,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d127951735,Arts & Crafts Store,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b43,Astrologer,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b44,Auto Garage,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d124951735,Automotive Shop,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b32,Baby Store,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d10a951735,Bank,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b40,Betting Shop,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b42,Big Box Store,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d115951735,Bike Shop,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d1f1941735,Board Shop,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d114951735,Bookstore,4d4b7105d754a06378d81259,Shop & Service
@@ -381,6 +454,10 @@
 4bf58dd8d48988d117951735,Candy Store,4d4b7105d754a06378d81259,Shop & Service
 4eb1c1623b7b52c0e1adc2ec,Car Dealership,4d4b7105d754a06378d81259,Shop & Service
 4f04ae1f2fb6e1c99f3db0ba,Car Wash,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b2a,Carpet Store,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b2d,Check Cashing Service,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b31,Chocolate Shop,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b3b,Christmas Market,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d102951735,Accessories Store,4bf58dd8d48988d103951735,Clothing Store
 4bf58dd8d48988d104951735,Boutique,4bf58dd8d48988d103951735,Clothing Store
 4bf58dd8d48988d105951735,Kids Store,4bf58dd8d48988d103951735,Clothing Store
@@ -389,17 +466,24 @@
 4bf58dd8d48988d107951735,Shoe Store,4bf58dd8d48988d103951735,Clothing Store
 4bf58dd8d48988d108951735,Women's Store,4bf58dd8d48988d103951735,Clothing Store
 4bf58dd8d48988d103951735,Clothing Store,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b18,Comic Shop,4d4b7105d754a06378d81259,Shop & Service
 4d954b0ea243a5684a65b473,Convenience Store,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d10c951735,Cosmetics Shop,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b17,Costume Shop,4d4b7105d754a06378d81259,Shop & Service
 5032850891d4c4b30a586d62,Credit Union,4d4b7105d754a06378d81259,Shop & Service
 4f4532974b9074f6e4fb0104,Daycare,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d1f6941735,Department Store,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d1f4941735,Design Studio,4d4b7105d754a06378d81259,Shop & Service
-52dea92d3cf9994f4e043dbb,Discount Stores,4d4b7105d754a06378d81259,Shop & Service
+52dea92d3cf9994f4e043dbb,Discount Store,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b1a,Dive Shop,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d10f951735,Drugstore / Pharmacy,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b1d,Dry Cleaner,4d4b7105d754a06378d81259,Shop & Service
 5032872391d4c4b30a586d64,EV Charging Station,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d122951735,Electronics Store,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b26,Fabric Shop,4d4b7105d754a06378d81259,Shop & Service
 503287a291d4c4b30a586d65,Financial or Legal Service,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b3a,Fireworks Store,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b16,Fishing Store,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d1f7941735,Flea Market,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d11b951735,Flower Shop,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d11d951735,Butcher,4bf58dd8d48988d1f9941735,Food & Drink Shop
@@ -411,29 +495,48 @@
 4bf58dd8d48988d118951735,Grocery Store,4bf58dd8d48988d1f9941735,Food & Drink Shop
 50aa9e744b90af0d42d5de0e,Health Food Store,4bf58dd8d48988d1f9941735,Food & Drink Shop
 4bf58dd8d48988d186941735,Liquor Store,4bf58dd8d48988d1f9941735,Food & Drink Shop
+52f2ab2ebcbc57f1066b8b45,Organic Grocery,4bf58dd8d48988d1f9941735,Food & Drink Shop
+52f2ab2ebcbc57f1066b8b46,Supermarket,4bf58dd8d48988d1f9941735,Food & Drink Shop
 4bf58dd8d48988d119951735,Wine Shop,4bf58dd8d48988d1f9941735,Food & Drink Shop
 4bf58dd8d48988d1f9941735,Food & Drink Shop,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b24,Frame Store,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b1c,Fruit & Vegetable Store,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d1f8941735,Furniture / Home Store,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d18d941735,Gaming Cafe,4d4b7105d754a06378d81259,Shop & Service
 4eb1c0253b7b52c0e1adc2e9,Garden Center,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d113951735,Gas Station / Garage,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d128951735,Gift Shop,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b19,Gun Shop,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b47,Boxing Gym,4bf58dd8d48988d175941735,Gym / Fitness Center
 503289d391d4c4b30a586d6a,Climbing Gym,4bf58dd8d48988d175941735,Gym / Fitness Center
+52f2ab2ebcbc57f1066b8b49,Cycle Studio,4bf58dd8d48988d175941735,Gym / Fitness Center
 4bf58dd8d48988d105941735,Gym Pool,4bf58dd8d48988d175941735,Gym / Fitness Center
+52f2ab2ebcbc57f1066b8b48,Gymnastics Gym,4bf58dd8d48988d175941735,Gym / Fitness Center
 4bf58dd8d48988d176941735,Gym,4bf58dd8d48988d175941735,Gym / Fitness Center
 4bf58dd8d48988d101941735,Martial Arts Dojo,4bf58dd8d48988d175941735,Gym / Fitness Center
 4bf58dd8d48988d106941735,Track,4bf58dd8d48988d175941735,Gym / Fitness Center
 4bf58dd8d48988d102941735,Yoga Studio,4bf58dd8d48988d175941735,Gym / Fitness Center
 4bf58dd8d48988d175941735,Gym / Fitness Center,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d112951735,Hardware Store,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b2c,Herbs & Spices Store,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d1fb941735,Hobby Shop,4d4b7105d754a06378d81259,Shop & Service
 50aaa5234b90af0d42d5de12,Hunting Supply,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b36,IT Services,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d1f0941735,Internet Cafe,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d111951735,Jewelry Store,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b25,Knitting Store,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b33,Laundromat,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d1fc941735,Laundry Service,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b3f,Lawyer,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b2b,Leather Goods Store,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b1e,Locksmith,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b38,Lottery Retailer,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b29,Luggage Store,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d1fd941735,Mall,4d4b7105d754a06378d81259,Shop & Service
 52c71aaf3cf9994f4e043d17,Marijuana Dispensary,4d4b7105d754a06378d81259,Shop & Service
 50be8ee891d4fa8dcc7199a7,Market,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b3c,Massage Parlor,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b27,Mattress Store,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d1ff941735,Miscellaneous Shop,4d4b7105d754a06378d81259,Shop & Service
 4f04afc02fb6e1c99f3db0bc,Mobile Phone Shop,4d4b7105d754a06378d81259,Shop & Service
 5032833091d4c4b30a586d60,Motorcycle Shop,4d4b7105d754a06378d81259,Shop & Service
@@ -441,17 +544,31 @@
 4f04aa0c2fb6e1c99f3db0b8,Nail Salon,4d4b7105d754a06378d81259,Shop & Service
 4f04ad622fb6e1c99f3db0b9,Newsstand,4d4b7105d754a06378d81259,Shop & Service
 4d954afda243a5684865b473,Optical Shop,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b2f,Other Repair Shop,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b22,Outdoor Supply Store,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b35,Outlet Store,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d121951735,Paper / Office Supplies Store,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b34,Pawn Shop,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b23,Perfume Shop,4d4b7105d754a06378d81259,Shop & Service
 5032897c91d4c4b30a586d69,Pet Service,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d100951735,Pet Store,4d4b7105d754a06378d81259,Shop & Service
 4eb1bdde3b7b55596b4a7490,Photography Lab,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b20,Piercing Parlor,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b3d,Pop-Up Shop,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b28,Print Shop,4d4b7105d754a06378d81259,Shop & Service
 5032885091d4c4b30a586d66,Real Estate Office,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d10d951735,Record Shop,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b37,Recording Studio,4d4b7105d754a06378d81259,Shop & Service
 4f4531084b9074f6e4fb0101,Recycling Facility,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d110951735,Salon / Barbershop,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b1f,Shipping Store,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b39,Shoe Repair,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d123951735,Smoke Shop,4d4b7105d754a06378d81259,Shop & Service
-4bf58dd8d48988d1ed941735,Spa / Massage,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b41,Smoothie Shop,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b1b,Souvenir Shop,4d4b7105d754a06378d81259,Shop & Service
+4bf58dd8d48988d1ed941735,Spa,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d1f2941735,Sporting Goods Shop,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b21,Stationery Store,4d4b7105d754a06378d81259,Shop & Service
 4f04b1572fb6e1c99f3db0bf,Storage Facility,4d4b7105d754a06378d81259,Shop & Service
 5032781d91d4c4b30a586d5b,Tailor Shop,4d4b7105d754a06378d81259,Shop & Service
 4d1cf8421a97d635ce361c31,Tanning Salon,4d4b7105d754a06378d81259,Shop & Service
@@ -459,8 +576,11 @@
 4bf58dd8d48988d101951735,Thrift / Vintage Store,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d1f3941735,Toy / Game Store,4d4b7105d754a06378d81259,Shop & Service
 4f04b08c2fb6e1c99f3db0bd,Travel Agency,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b30,Used Bookstore,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d10b951735,Video Game Store,4d4b7105d754a06378d81259,Shop & Service
 4bf58dd8d48988d126951735,Video Store,4d4b7105d754a06378d81259,Shop & Service
+52e816a6bcbc57f1066b7a54,Warehouse Store,4d4b7105d754a06378d81259,Shop & Service
+52f2ab2ebcbc57f1066b8b2e,Watch Repair Shop,4d4b7105d754a06378d81259,Shop & Service
 4d4b7105d754a06378d81259,Shop & Service,,
 4bf58dd8d48988d1ef931735,Airport Food Court,4bf58dd8d48988d1ed931735,Airport
 4bf58dd8d48988d1f0931735,Airport Gate,4bf58dd8d48988d1ed931735,Airport
