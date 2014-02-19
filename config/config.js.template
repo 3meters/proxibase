@@ -15,7 +15,12 @@ module.exports = {
       keyFilePath: './keys/dev/dev.pem',
       certFilePath: './keys/dev/dev.crt',
       caFilePath: null,
-    }
+    }.
+    dkim: {                             // for digitally signing mail, see http://dkimcore.org/
+      domainName: 'aircandi.com',           // default aircanid.com, matches our dkim public key at godadday
+      keyFilePath: null,
+      keySelector: null,
+    },
   },
   log: 1,                               // 0-3 higher numbers mean more log output
   db: {
