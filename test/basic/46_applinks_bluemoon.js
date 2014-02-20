@@ -18,11 +18,16 @@ var userCred
 var adminCred
 var _exports = {}
 
-var bluemoonId = '40b13b00f964a52038f61ee3'
+var foursquareId = '40b13b00f964a52038f61ee3'
+var googleId = '723b98d536bce94a1b5409d82e1444c2ea399469|CoQBcgAAAEsVgB6LDRqEi56Xgsr_BeZTyA7CFoteqjNCcVGPr50dKigXOGRfRO4yjjQUwRgKctHE6o-cymu9mzOT9hER6MbIbJ65pcX3lZgRnLjFKl9dhFDrANCCklUWW5Te4ocZ7eI-63EFs5_XaDU8qMtwDfsEOATOY74UUjrvUDb1L2vqEhCLexCY_6188gH5z6z1UnCDGhRS226-FJ0blzUXjUG7wngVBL6ndQ'
+
 var bluemoon = {
   name: 'Bluemoon',
   schema: 'place',
-  provider: {foursquare: bluemoonId},
+  provider: {
+    foursquare: foursquareId,
+    google: googleId,
+  },
   location: {lat: 47.66138, lng: -122.320078},
 }
 
@@ -48,26 +53,27 @@ exports.insertBluemoon = function(test) {
     uri: '/do/insertEntity?' + userCred,
     body: {
       entity: bluemoon,
-      insertApplinks: true,
-      testThumbnails: true,
+      insertApplinks: false,
       log: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.data)
     t.assert(body.data._id)
     bluemoon._id = body.data._id
-    setTimeout(function() {test.done()}, 3000)
+    test.done()
   })
 }
 
+
+// skipping for now since its not clear we can do anything about it,
+// and it takes a very long time to run
 exports.getBluemoonApplinks = function(test) {
+  // return skip(test)
   if (disconnected) return skip(test)
   t.post({
     uri: '/applinks/get?' + userCred,
     body: {
       placeId: bluemoon._id,
-      waitForContent: true,
-      testThumbnails: true,
       forceRefresh: true,
       includeRaw: true,
       log: true,
@@ -82,41 +88,17 @@ exports.getBluemoonApplinks = function(test) {
       }
       else applinkMap[link.type]++
     })
-    t.assert(1 === applinkMap.website, applinkMap)
-    t.assert(1 === applinkMap.facebook, applinkMap)
-    t.assert(1 === applinkMap.foursquare, applinkMap)
-    t.assert(1 === applinkMap.yelp, applinkMap)
-    t.assert(1 === applinkMap.twitter, applinkMap)
+    log('applinks:', applinkMap)
+    log('applinks:', applinks)
+    t.assert(applinkMap.website >= 1, applinkMap)
+    t.assert(applinkMap.facebook >= 1, applinkMap)
+    t.assert(applinkMap.foursquare === 1, applinkMap)
+    t.assert(applinkMap.yelp === 1, applinkMap)
+    t.assert(!applinkMap.twitter, applinkMap)  // we dectect too many and so throw them all out
     test.done()
   })
 }
 
-
-// return the db to a clean state.  twould be nice if the test harness did
-// this automatically between test files.
-exports.cleanupApplinks = function(test) {
-  if (disconnected) return skip(test)
-
-  async.eachSeries(applinks, removeApplink, function(err) {
-    t.assert(!err)
-    test.done()
-  })
-
-  function removeApplink(applink, next) {
-    t.assert(applink._id)
-    t.get('/data/links?query[_from]=' + applink._id + '&query[_to]=' + bluemoon._id,
-    function(err, res, body) {
-      t.assert(1 === body.data.length)
-      t.delete({uri: '/data/links/' + body.data[0]._id + '?' + adminCred}, function(err, res, body) {
-        t.assert(1 === body.count)
-        t.delete({uri: '/data/applinks/' + applink._id + '?' + adminCred}, function(err, res, body) {
-          t.assert(1 === body.count)
-          next()
-        })
-      })
-    })
-  }
-}
 
 exports.cleanupPlace = function(test) {
   if (disconnected) return skip(test)

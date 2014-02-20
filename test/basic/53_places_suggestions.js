@@ -49,6 +49,7 @@ exports.suggestPlacesFoursquare = function(test) {
       provider: 'foursquare',
       location: luckyStrikeLoc,
       input: 'lucky',
+      timeout: 15000,
       limit: 10,
     }
   }, 200, function(err, res, body) {
@@ -56,9 +57,9 @@ exports.suggestPlacesFoursquare = function(test) {
     t.assert(places && places.length > 5)
     var hitCount = 0
     places.forEach(function(place){
-      if (0 === place.name.indexOf('Lucky Strike Lanes')) hitCount++
+      if (0 === place.name.indexOf('Lucky Strike')) hitCount++
     })
-    t.assert(1 === hitCount)
+    t.assert(hitCount >= 1)
     test.done()
   })
 }

@@ -51,15 +51,16 @@ exports.insertMoksha = function(test) {
     uri: '/do/insertEntity?' + userCred,
     body: {
       entity: moksha,
-      insertApplinks: true,
-      testThumbnails: true,
+      insertApplinks: false,
+      testThumbnails: false,
       log: true,
+      timeout: 20000,
     }
   }, 201, function(err, res, body) {
     t.assert(body.data)
     t.assert(body.data._id)
     moksha._id = body.data._id
-    setTimeout(function() {test.done()}, 3000)
+    test.done()
   })
 }
 
@@ -70,7 +71,7 @@ exports.getMokshaApplinks = function(test) {
     body: {
       placeId: moksha._id,
       waitForContent: true,
-      testThumbnails: true,
+      testThumbnails: false,
       forceRefresh: true,
       includeRaw: true,
       log: true,
@@ -78,39 +79,22 @@ exports.getMokshaApplinks = function(test) {
     }
   }, function(err, res, body) {
     applinks = body.data
-    t.assert(applinks.some(function(applink) {
-      return ('website' === applink.type)
-    }))
-    test.done()
-  })
-}
-
-
-// return the db to a clean state.  twould be nice if the test harness did
-// this automatically between test files.
-exports.cleanupApplinks = function(test) {
-  if (disconnected) return skip(test)
-
-  async.eachSeries(applinks, removeApplink, function(err) {
-    t.assert(!err)
-    test.done()
-  })
-
-  function removeApplink(applink, next) {
-    t.assert(applink._id)
-    t.get('/data/links?query[_from]=' + applink._id + '&query[_to]=' + moksha._id,
-    function(err, res, body) {
-      t.assert(1 === body.data.length)
-      t.delete({uri: '/data/links/' + body.data[0]._id + '?' + adminCred}, function(err, res, body) {
-        t.assert(1 === body.count)
-        t.delete({uri: '/data/applinks/' + applink._id + '?' + adminCred}, function(err, res, body) {
-          t.assert(1 === body.count)
-          next()
-        })
-      })
+    var applinkMap = {}
+    applinks.forEach(function(link) {
+      if (!applinkMap[link.type]) {
+        applinkMap[link.type] = 1
+      }
+      else applinkMap[link.type]++
     })
-  }
+    t.assert(1 === applinkMap.website, applinkMap)
+    t.assert(1 === applinkMap.facebook, applinkMap)
+    t.assert(1 === applinkMap.foursquare, applinkMap)
+    t.assert(1 === applinkMap.email, applinkMap)
+    t.assert(1 === applinkMap.twitter, applinkMap)
+    test.done()
+  })
 }
+
 
 exports.cleanupPlace = function(test) {
   if (disconnected) return skip(test)
