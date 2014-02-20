@@ -163,7 +163,7 @@ exports.refreshKaosamai = function(test) {
                 placeId: place._id,
                 save: false,
                 waitForContent: true,
-                // testThumbnails: true,
+                testThumbnails: false,
                 forceRefresh: true,
                 includeRaw: true,
                 log: true,
