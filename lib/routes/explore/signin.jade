@@ -1,0 +1,7 @@
+extends layout
+
+block content
+  .form: form#signin(method='post', action='/signin')
+    .field: input(name='email', placeholder='Email')
+    .field: input(name='password', placeholder='Password')
+    .button: input(type='submit', value='Sign in')

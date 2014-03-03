@@ -1,0 +1,14 @@
+//- layout without the header or footer bars
+
+include base
+doctype html
+html
+  head
+    title= title
+    link(rel='stylesheet', href='/styles/css-content.css')
+    block scripts
+      //- jQuery commented out for now, uncomment if needed
+      //- script(src='//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js')
+      //- script(src='//ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/jquery-ui.min.js')
+  body
+    block content
