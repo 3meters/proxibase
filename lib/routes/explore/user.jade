@@ -1,0 +1,20 @@
+extends layout
+
+block content
+  h2= title
+  - for (var i in data)
+    - var row = data[i]
+      div
+        a(href='/candi/' + row._id)
+          case row.type
+            when 'com.aircandi.candi.picture'
+              img.preview-picture(src=config.service.imageUri + '/' + row.imageUri)
+            when 'com.aircandi.candi.link'
+              | Link
+            when 'com.aircandi.candi.post'
+              | Post
+            when 'com.aircandi.candi.collection'
+              | Collection
+        | #{row.title}
+
+

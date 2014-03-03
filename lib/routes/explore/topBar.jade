@@ -1,0 +1,15 @@
+block topBar
+  #topBar.top
+    a(href='/') #{appName}
+    | 
+    a(href='/about') About
+    | 
+    if user
+      | Welcome #{user.name}
+      | 
+      a(href='/signout') Sign out
+    else
+      a(href='/newaccount') Sign up
+      | 
+      a(href='/signin') Sign in
+

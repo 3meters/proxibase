@@ -1,0 +1,9 @@
+extends layout
+
+block content
+  h2= title
+  - for (var field in doc)
+    - if (field.toLowerCase().indexOf('image') > -1)
+      div: img.picture(src=config.service.imageUri + '/' + doc[field])
+    - else
+      div= field + ': ' + doc[field]
