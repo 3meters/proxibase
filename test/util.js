@@ -244,9 +244,8 @@ function check(req, res, code) {
   if (res.body && (tipe.isString(res.body))) {
     try { res.body = JSON.parse(res.body) }
     catch (e) {
-      util.debug('test util body should be json', res.body)
       if (req.json) {
-        console.error(res.body)
+        util.logErr('Server did not return valid JSON in res.body:\n', res.body)
         throw e
       }
     }
