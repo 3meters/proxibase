@@ -1,7 +1,10 @@
 extends layout
 
 block content
-  .form: form#explore(method='post', action='/explore')
+  include signinLinks
+  br
+  br
+  form#explore(method='post', action='/explore')
     .field: input(name='collection', placeholder='collection')
     .field: input(name='_id', placeholder='id')
     .field: input(name='name', placeholder='name')
