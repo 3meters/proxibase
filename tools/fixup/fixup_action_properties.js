@@ -32,12 +32,15 @@ function execute() {
   db.collection('actions').find().toArray(function(err, docs) {
     log('find returned ' + docs.length + ' actions')
     for (var i = docs.length; i--;) {
-      docs[i]._entity = docs[i]._target
-      docs[i].event = docs[i].type
-      delete docs[i].targetCollection
-      delete docs[i].targetCollectionId
-      delete docs[i].type
-      delete docs[i]._target
+      if (docs[i].event == 'link_proximity_plus') {
+        docs[i].event = 'link_proximity'
+      }
+      // docs[i]._entity = docs[i]._target
+      // docs[i].event = docs[i].type
+      // delete docs[i].targetCollection
+      // delete docs[i].targetCollectionId
+      // delete docs[i].type
+      // delete docs[i]._target
       log(docs[i]._id)
       db.collection('actions').update({ _id:docs[i]._id }, docs[i], {safe:true}, function(err) {
         if (err) return(err)
