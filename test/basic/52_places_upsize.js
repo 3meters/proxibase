@@ -14,12 +14,13 @@ var userCred
 var adminCred
 var _exports = {} // for commenting out tests
 
-var outlander
-var outlanderLoc = {
-  lat: 47.6523894,
-  lng: -122.3555151,
+var seventyfourth
+var seventyfourthLoc = {
+  lat: 47.682681,
+  lng: -122.355431,
 }
 
+var id = '40b13b00f964a5201df61ee3'
 
 // Get user and admin sessions and store the credentials in module globals
 exports.getSessions = function(test) {
@@ -34,29 +35,28 @@ exports.getSessions = function(test) {
 
 exports.insertPlaceFoursquareSaveApplinks = function(test) {
   if (disconnected) return skip(test)
-  log('\nAlert: Outlander has disappeared from google neaby search.  Entire test busted\n')
-  return skip(test)
   var post = {
     uri: '/places/near',
     body: {
-      location: outlanderLoc,
+      location: seventyfourthLoc,
       provider: 'foursquare',
       includeRaw: false,
-      limit: 100,
+      timeout: 20000,
+      limit: 50,
     }
   }
   t.post(post, function(err, res, body) {
     body.data.forEach(function(place) {
-      if (/^Outlander/.test(place.name)) {
-        outlander = place
+      if (/^74th/.test(place.name)) {
+        seventyfourth = place
         return
       }
     })
-    t.assert(outlander)
+    t.assert(seventyfourth)
     var post = {
       uri: '/do/insertEntity?' + userCred,
       body: {
-        entity: outlander,
+        entity: seventyfourth,
         insertApplinks: true,
         applinksTimeout: 15000,
         includeRaw: true,
@@ -75,28 +75,27 @@ exports.insertPlaceFoursquareSaveApplinks = function(test) {
         }
         else applinkMap[link.shortcut.app]++
       })
-      t.assert(1 === applinkMap.website)
-      log('skipping the facebook test: too flaky')
-      // t.assert(1 === applinkMap.facebook)
-      t.assert(1 === applinkMap.googleplus)
-      t.assert(1 === applinkMap.foursquare)
-      t.assert(1 === applinkMap.twitter)
-      outlander = place
+      t.assert(2 === applinkMap.website, applinkMap)
+      log('facebook has a dupe place that we cannot detect yet')
+      t.assert(2 === applinkMap.facebook, applinkMap)
+      t.assert(1 === applinkMap.foursquare, applinkMap)
+      t.assert(1 === applinkMap.googleplus, applinkMap)
+      t.assert(1 === applinkMap.twitter, applinkMap)
+      seventyfourth = place
       test.done()
     })
   })
 }
 
 exports.googlePlaceDedupesWhenRefChanges = function(test) {
-  return skip(test)
-  if (disconnected) return skip(test) // Has a dependency on previous test
+  if (disconnected) return skip(test)
   var dupe = {
-    name: outlander.name,
+    name: seventyfourth.name,
     schema: 'place',
-    provider: util.clone(outlander.provider),
-    location: outlanderLoc,
+    provider: util.clone(seventyfourth.provider),
+    location: seventyfourthLoc,
   }
-  var googleId = outlander.provider.google.split('|')
+  var googleId = seventyfourth.provider.google.split('|')
   dupe.provider.google = googleId[0] + '|' + 'IamAFakeGoogleRefString'
   t.post({
     uri: '/do/insertEntity?' + userCred,
@@ -109,8 +108,8 @@ exports.googlePlaceDedupesWhenRefChanges = function(test) {
   }, 403, function(err, res, body) {
     var place = body.data
     t.assert(place)
-    t.assert(place._id === outlander._id)
-    t.assert(outlander.provider.google === place.provider.google)  // the update was discarded
+    t.assert(place._id === seventyfourth._id)
+    t.assert(seventyfourth.provider.google === place.provider.google)  // the update was discarded
     cleanup(place, function() {
       test.done()
     })
@@ -118,13 +117,12 @@ exports.googlePlaceDedupesWhenRefChanges = function(test) {
 }
 
 exports.insertPlaceGoogleSaveApplinks = function(test) {
-  return skip(test)
   if (disconnected) return skip(test)
-  var ltd = null
+  var herkimer = null
   var post = {
     uri: '/places/near',
     body: {
-      location: outlanderLoc,
+      location: seventyfourthLoc,
       provider: 'google',
       includeRaw: true,
       radius: 100,
@@ -134,16 +132,15 @@ exports.insertPlaceGoogleSaveApplinks = function(test) {
   }
   t.post(post, function(err, res, body) {
     body.data.forEach(function(place) {
-      if (/^LTD/.test(place.name)) {
-        ltd = place
-        return
+      if (/^Herkimer/.test(place.name)) {
+        return herkimer = place
       }
     })
-    t.assert(ltd)
+    t.assert(herkimer)
     var post = {
       uri: '/do/insertEntity?' + userCred,
       body: {
-        entity: ltd,
+        entity: herkimer,
         insertApplinks: true,
         applinksTimeout: 15000,
         includeRaw: true,
@@ -176,8 +173,8 @@ exports.insertPlaceGoogleSaveApplinks = function(test) {
       t.assert(applinkMap.yelp === 1)
       t.assert(applinkMap.urbanspoon === 1)  // proves that factual lookup works
 
-      ltd = place
-      cleanup(ltd, function(err) {
+      herkimer = place
+      cleanup(herkimer, function(err) {
         test.done()
       })
     })
