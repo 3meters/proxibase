@@ -90,7 +90,7 @@ exports.getApplinksFactual = function(test) {
     t.assert(applinks.length > 4)
     t.assert(res.body.raw)
     t.assert(res.body.raw.initialApplinks)
-    t.assert(res.body.raw.factualCandidates.length > 12)
+    t.assert(res.body.raw.factual)
     applinks.forEach(function(applink) {
       t.assert('applink' === applink.schema)
       t.assert(applink.appId || applink.appUrl)
@@ -242,10 +242,8 @@ exports.getFacebookFromPlaceJoinWithFoursquare = function(test) {
     }))
     var raw = res.body.raw
     t.assert(raw)
-    t.assert(raw.facebookCandidates)
-    t.assert(raw.factualCandidates)
-    t.assert(raw.facebookCandidates.length >= 1)
-    t.assert(raw.factualCandidates.length >= 12)
+    t.assert(raw.facebook)
+    t.assert(raw.factual)
     test.done()
   })
 }
