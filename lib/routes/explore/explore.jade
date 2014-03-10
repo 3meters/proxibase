@@ -8,13 +8,21 @@ block content
     .field: input(name='collection', placeholder='collection')
     .field: input(name='_id', placeholder='id')
     .field: input(name='name', placeholder='name')
-    .field: input(name='sort', placeholder='sort')
-    .field: input(name='count', placeholder='count')
-    .field: input(name='links', placeholder='links')
     .field: input(name='query', placeholder='query')
+    .field: input(name='sort', placeholder='sort')
+    .field: input(name='links', placeholder='links')
     .field: input(name='limit', placeholder='limit')
-    .button: input(type='submit', name='cmdShowQuery', value='Show Query')
-    .button: input(type='submit', name='cmdShowJSON', value='Show JSON')
-    .button: input(type='submit', name='cmdRunQuery', value='Run')
-  div
-    | #{displayText}
+    .field: input(name='count', placeholder='count')
+    .field: input(name='countBy', placeholder='count')
+    .button: input(type='submit', name='cmdRun', value='Run')
+    .button: input(type='submit', name='cmdShow', value='Show')
+  if displayPath
+    br
+    div Path: #{displayPath}
+    if displayQuery
+      br
+      div Query Object:
+      div #{displayQuery}
+      br
+      div Query JSON:
+      div #{displayJSON}
