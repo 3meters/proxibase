@@ -24,11 +24,23 @@ exports.getSessions = function (test) {
   })
 }
 
+// Check main signiture
+exports.allResponsesIncludeClientMinVersion = function(test) {
+  t.get('/', function(err, res, body) {
+    t.assert(body.data)
+    t.assert(1 === body.clientMinVersions['com_aircandi_aruba'])
+    t.assert(1 === body.clientMinVersions['com_aircandi_catalina'])
+    test.done()
+  })
+}
+
 // get version info and also make sure the server is responding
 exports.getVersion = function(test) {
   t.get('/client', function(err, res, body) {
     t.assert(body.data)
-    t.assert(body.data.androidMinimumVersion === 0)
+    t.assert(body.data)
+    t.assert(body.data['com_aircandi_aruba'] === 1)
+    t.assert(body.data['com_aircandi_catalina'] === 1)
     test.done()
   })
 }
@@ -36,7 +48,10 @@ exports.getVersion = function(test) {
 exports.setVersionRequiresAuth = function(test) {
   t.post({
     uri: '/client',
-    body: {data: {androidMinimumVersion: 1}}
+    body: {data: {
+      'com_aircandi_aruba': 95,
+      'com_aircandi_catalina': 100,
+    }},
   }, 401, function(err, res, body) {
     test.done()
   })
@@ -45,7 +60,10 @@ exports.setVersionRequiresAuth = function(test) {
 exports.setVersionRequiresAdmin = function(test) {
   t.post({
     uri: '/client?' + userCred,
-    body: {data: {androidMinimumVersion: 1}}
+    body: {data: {
+      'com_aircandi_aruba': 95,
+      'com_aircandi_catalina': 100,
+    }},
   }, 401, function(err, res, body) {
     test.done()
   })
@@ -54,9 +72,14 @@ exports.setVersionRequiresAdmin = function(test) {
 exports.canSetVersionAsAdmin = function(test) {
   t.post({
     uri: '/client?' + adminCred,
-    body: {data: {androidMinimumVersion: 1}}
+    body: {data: {
+      'com_aircandi_aruba': 95,
+      'com_aircandi_catalina': 99,
+    }},
   }, function(err, res, body) {
-    t.assert(body.data.androidMinimumVersion === 1)
+    t.assert(body.data)
+    t.assert(95 === body.data['com_aircandi_aruba'])
+    t.assert(99 === body.data['com_aircandi_catalina'])
     test.done()
   })
 }
@@ -69,20 +92,21 @@ exports.canSetVersionAsAdmin = function(test) {
 //
 exports.canRefreshVersionViaDatabaseAndGetOnClient = function(test) {
   t.post({
-    uri: '/data/documents/do.clientVersion?' + adminCred,
-    body: {
-      data: {
-        data: {
-          androidMinimumVersion: 2
-        }
-      }
-    }
+    uri: '/data/documents/do.clientMinVersions?' + adminCred,
+    body: {data: {data: {
+      'com_aircandi_aruba': 96,
+      'com_aircandi_catalina': 100,
+    }}},
   }, function(err, res, body) {
     t.get('/', function(err, res, body) {
-      t.assert(body.androidMinimumVersion === 1)  // not refreshed
+      t.assert(body.data)
+      // not refreshed
+      t.assert(95 === body.clientMinVersions['com_aircandi_aruba'])
+      t.assert(99 === body.clientMinVersions['com_aircandi_catalina'])
       t.get('/client?refresh=true', function(err, res, body) {
-        t.assert(body.data.androidMinimumVersion === 2) // refreshed
-        t.assert(body.androidMinimumVersion === 2) // refreshed
+        // refreshed
+        t.assert(96 === body.clientMinVersions['com_aircandi_aruba'])
+        t.assert(100 === body.clientMinVersions['com_aircandi_catalina'])
         test.done()
       })
     })
