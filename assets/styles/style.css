@@ -10,16 +10,37 @@ a {
   margin: -20px -20px 20px;
 }
 .bottom {
+  width: 100%;
   text-align: center;
 }
+.div {}
+.pad {
+  margin: 10px; /*Margins for inner DIV inside each column (to provide padding)*/
+  margin-top: 0;
+}
 .form {
-
 }
 .field {
-
+  width: 160px;
 }
 .button {
-
+}
+.col-container {
+  width: 100%;
+  float: right;
+  margin-left: -530px; /*Set left margin to -(leftColumnWidth + RightColumnWidth)*/
+}
+.col-left {
+  float: left;
+  width: 230px;
+  text-align: right;
+}
+.col-center {
+  float: left;
+  width: 300px;
+}
+.col-right {
+  margin-left: 630px; /*Set left margin to (leftColumnWidth + RightColumnWidth)*/
 }
 .preview-picture {
   max-height: 80px;
