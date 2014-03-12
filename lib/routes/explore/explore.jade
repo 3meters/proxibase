@@ -1,47 +1,58 @@
 extends layout
 
 block content
+
+  // - console.log(util.inspect(locals))
+
   include signinLinks
   br
   br
   .container
     .col-left.pad
-      .row: | Collection:
+      .row: | collection:
       .row: | _id:
       .row: | name:
       .row: | query:
       .row: | sort:
       .row: | links:
+      .row: | lookups:
+      .row: | skip:
       .row: | limit:
       .row: | count:
       .row: | countBy:
     .col-center.pad
       form#explore(method='post', action='/explore')
-        .row: input.field(name='collection', placeholder='collection')
-        .row: input.field(name='_id', placeholder='id')
-        .row: input.field(name='name', placeholder='name')
-        .row: input.field(name='query', placeholder='query')
-        .row: input.field(name='sort', placeholder='sort')
-        .row: input.field(name='links', placeholder='links')
-        .row: input.field(name='limit', placeholder='limit')
-        .row: input.field(name='count', placeholder='count')
-        .row: input.field(name='countBy', placeholder='count')
+        .row: input#collection.field(name='collection', placeholder='collection', value=query.collection)
+        .row: input#_id.field(name='_id', placeholder='id', value=query._id)
+        .row: input#name.field(name='name', placeholder='name', value=query.name)
+        .row: input#query.field(name='query', placeholder='query', value=JSON.stringify(query.query))
+        .row: input#sort.field(name='sort', placeholder='sort', value=JSON.stringify(query.sort))
+        .row: input#links.field(name='links', placeholder='links', value=JSON.stringify(query.links))
+        .row: input#lookups.field(name='lookups', placeholder='lookups', value=query.lookups)
+        .row: input#skip.field(name='skip', placeholder='skip', value=query.skip)
+        .row: input#limit.field(name='limit', placeholder='limit', value=query.limit)
+        .row: input#count.field(name='count', placeholder='count', value=query.count)
+        .row: input#countBy.field(name='countBy', placeholder='countBy', value=query.countBy)
         input(type='submit', name='cmdRun', value='Run')
         input(type='submit', name='cmdShow', value='Show')
     .col-right.pad
-      .row: | places
-      .row: | pl.93939
-      .row: | massena
-      .row: | qry example
-      .row: | [{name: 1}]
-      .row: | links exmaple
-      .row: | 100
-      .row: | true
+      .row: | 
+      .row: | 
+      .row: | case-insensitve starts-with
+      .row: | {city: {$in: ['Seattle', 'Spokane']}}
+      .row: | [{_owner: 1}, {modifiedDate: -1}]
+      .row: | 
+      .row: | boolean, shows names of linked documents
+      .row: | number
+      .row: | number
+      .row: | boolean
       .row: | field1, field2
-  .example.pad
-    if displayPath
+  .content.pad
+    if findUrl
+      - var uri = config.service.uri + findUrl
       br
-      div Path: #{displayPath}
+      a(href=uri) #{uri}
+      br
       if displayQuery
         br
         div Query Object:

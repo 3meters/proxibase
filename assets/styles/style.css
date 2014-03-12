@@ -1,17 +1,18 @@
 body {
-  padding: 50px;
+  padding: 20px;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 a {
   color: #00b7ff;
 }
 .top {
-  padding: 20px 20px 10px;
-  margin: -20px -20px 20px;
+  padding: 10px 10px 10px;
+  margin: -10px -10px 10px;
 }
 .bottom {
   width: 100%;
   text-align: center;
+  font-size: 10px;
   clear: left;
 }
 .div {}
@@ -46,9 +47,9 @@ a {
 .col-right {
   margin-left: 350px; /*Set left margin to (leftColumnWidth + RightColumnWidth)*/
 }
-.example {
+.content {
+  clear: left;
   width: 100%;
-  margin-left: 100;
   text-align: left;
 }
 .preview-picture {
