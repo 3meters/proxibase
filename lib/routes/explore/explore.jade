@@ -1,0 +1,28 @@
+extends layout
+
+block content
+  include signinLinks
+  br
+  br
+  form#explore(method='post', action='/explore')
+    .field: input(name='collection', placeholder='collection')
+    .field: input(name='_id', placeholder='id')
+    .field: input(name='name', placeholder='name')
+    .field: input(name='query', placeholder='query')
+    .field: input(name='sort', placeholder='sort')
+    .field: input(name='links', placeholder='links')
+    .field: input(name='limit', placeholder='limit')
+    .field: input(name='count', placeholder='count')
+    .field: input(name='countBy', placeholder='count')
+    .button: input(type='submit', name='cmdRun', value='Run')
+    .button: input(type='submit', name='cmdShow', value='Show')
+  if displayPath
+    br
+    div Path: #{displayPath}
+    if displayQuery
+      br
+      div Query Object:
+      div #{displayQuery}
+      br
+      div Query JSON:
+      div #{displayJSON}
