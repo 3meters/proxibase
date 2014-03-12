@@ -12,8 +12,12 @@ a {
 .bottom {
   width: 100%;
   text-align: center;
+  clear: left;
 }
 .div {}
+.row {
+  height: 25px;
+}
 .pad {
   margin: 10px; /*Margins for inner DIV inside each column (to provide padding)*/
   margin-top: 0;
@@ -21,26 +25,31 @@ a {
 .form {
 }
 .field {
-  width: 160px;
+  width: 200px;
 }
 .button {
 }
 .col-container {
   width: 100%;
   float: right;
-  margin-left: -530px; /*Set left margin to -(leftColumnWidth + RightColumnWidth)*/
+  margin-left: -300px; /*Set left margin to -(leftColumnWidth + RightColumnWidth)*/
 }
 .col-left {
   float: left;
-  width: 230px;
+  width: 100px;
   text-align: right;
 }
 .col-center {
   float: left;
-  width: 300px;
+  width: 200px;
 }
 .col-right {
-  margin-left: 630px; /*Set left margin to (leftColumnWidth + RightColumnWidth)*/
+  margin-left: 350px; /*Set left margin to (leftColumnWidth + RightColumnWidth)*/
+}
+.example {
+  width: 100%;
+  margin-left: 100;
+  text-align: left;
 }
 .preview-picture {
   max-height: 80px;
