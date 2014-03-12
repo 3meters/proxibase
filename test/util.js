@@ -245,7 +245,7 @@ function check(req, res, code) {
     try { res.body = JSON.parse(res.body) }
     catch (e) {
       if (req.json) {
-        console.error(res.body)
+        util.logErr('Server did not return valid JSON in res.body:\n', res.body)
         throw e
       }
     }

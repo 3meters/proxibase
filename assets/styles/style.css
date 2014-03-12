@@ -1,0 +1,27 @@
+body {
+  padding: 50px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+a {
+  color: #00b7ff;
+}
+.top {
+  padding: 20px 20px 10px;
+  margin: -20px -20px 20px;
+}
+.bottom {
+  text-align: center;
+}
+.form {
+
+}
+.field {
+
+}
+.button {
+
+}
+.preview-picture {
+  max-height: 80px;
+  max-width: 80px;
+}

@@ -1,0 +1,11 @@
+extends layoutSimple
+
+block content
+  h2 Error: #{error.message}
+  if error.errors
+    ul
+      each val in error.errors
+        li #{val}
+  if error.stack
+    ul
+      li #{error.stack}

@@ -1,0 +1,8 @@
+if user
+  | Welcome #{user.role} #{user.name}
+  = ' '
+  a(href='/explore/signout') Sign out
+else
+  a(href='/explore/newaccount') Sign up
+  = ' '
+  a(href='/explore/signin') Sign in

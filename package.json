@@ -35,7 +35,8 @@
     "url2png": "*",
     "knox": "*",
     "moment": "*",
-    "later": "*"
+    "later": "*",
+    "jade": "*"
   },
 
   "repository": "git://github.com:3meters/proxibase",
