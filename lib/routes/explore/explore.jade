@@ -11,6 +11,7 @@ block content
     .col-left.pad
       .row: | collection:
       .row: | _id:
+      .row: | fields:
       .row: | name:
       .row: | query:
       .row: | sort:
@@ -24,6 +25,7 @@ block content
       form#explore(method='post', action='/explore')
         .row: input#collection.field(name='collection', placeholder='collection', value=query.collection)
         .row: input#_id.field(name='_id', placeholder='id', value=query._id)
+        .row: input#fields.field(name='fields', placeholder='fields', value=query.fields)
         .row: input#name.field(name='name', placeholder='name', value=query.name)
         .row: input#query.field(name='query', placeholder='query', value=JSON.stringify(query.query))
         .row: input#sort.field(name='sort', placeholder='sort', value=JSON.stringify(query.sort))
@@ -38,6 +40,7 @@ block content
     .col-right.pad
       .row: | 
       .row: | 
+      .row: | {name: 1, _owner: 1}
       .row: | case-insensitve starts-with
       .row: | {city: {$in: ['Seattle', 'Spokane']}}
       .row: | [{_owner: 1}, {modifiedDate: -1}]
