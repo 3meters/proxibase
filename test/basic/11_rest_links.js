@@ -63,43 +63,6 @@ exports.addLinkedData = function(test) {
     })
   })
 }
-exports.findAllLinksWorks = function(test) {
-  var query = {
-    uri: '/find/documents?links[to]=1&links[from]=1&' + userCred,
-  }
-  t.get(query, function(err, res, body) {
-    t.assert(body.data.length >= 3)
-    body.data.forEach(function(doc) {
-      var cLinks = 0
-      t.assert(doc.links)
-      t.assert(doc.links.to)
-      t.assert(doc.links.from)
-      if (doc._id === 'do.linkdoc1') {
-        cLinks++
-        t.assert(doc.links.from.users)
-        t.assert(doc.links.from.users.length === 1)
-        t.assert(doc.links.from.users[0].type === 'like')
-        t.assert(doc.links.from.users[0].document)
-      }
-      if (doc._id === 'do.linkdoc2') {
-        cLinks++
-        t.assert(doc.links.from.users)
-        t.assert(doc.links.from.users.length === 1)
-        t.assert(doc.links.from.users[0].type === 'watch')
-        t.assert(doc.links.from.users[0].document)
-      }
-      if (doc._id === 'do.linkdoc3') {
-        cLinks++
-        t.assert(doc.links.from.users)
-        t.assert(doc.links.to.users.length === 1)
-        t.assert(doc.links.to.users[0].type === 'content')
-        t.assert(doc.links.to.users[0].document)
-      }
-    })
-    t.assert(3 === cLinks)
-    test.done()
-  })
-}
 
 exports.findLinksFailProperlyOnBadInputs = function(test) {
   var query = {
@@ -302,8 +265,8 @@ exports.findAllLinksWorks = function(test) {
   }
   t.get(query, function(err, res, body) {
     t.assert(body.data.length >= 3)
+    var cLinks = 0
     body.data.forEach(function(doc) {
-      var cLinks = 0
       t.assert(doc.links)
       t.assert(doc.links.to)
       t.assert(doc.links.from)
@@ -323,7 +286,7 @@ exports.findAllLinksWorks = function(test) {
       }
       if (doc._id === 'do.linkdoc3') {
         cLinks++
-        t.assert(doc.links.from.users)
+        t.assert(doc.links.to.users)
         t.assert(doc.links.to.users.length === 1)
         t.assert(doc.links.to.users[0].type === 'content')
         t.assert(doc.links.to.users[0].document)
