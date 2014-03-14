@@ -63,15 +63,51 @@ exports.addLinkedData = function(test) {
     })
   })
 }
-
+exports.findAllLinksWorks = function(test) {
+  var query = {
+    uri: '/find/documents?links[to]=1&links[from]=1&' + userCred,
+  }
+  t.get(query, function(err, res, body) {
+    t.assert(body.data.length >= 3)
+    body.data.forEach(function(doc) {
+      var cLinks = 0
+      t.assert(doc.links)
+      t.assert(doc.links.to)
+      t.assert(doc.links.from)
+      if (doc._id === 'do.linkdoc1') {
+        cLinks++
+        t.assert(doc.links.from.users)
+        t.assert(doc.links.from.users.length === 1)
+        t.assert(doc.links.from.users[0].type === 'like')
+        t.assert(doc.links.from.users[0].document)
+      }
+      if (doc._id === 'do.linkdoc2') {
+        cLinks++
+        t.assert(doc.links.from.users)
+        t.assert(doc.links.from.users.length === 1)
+        t.assert(doc.links.from.users[0].type === 'watch')
+        t.assert(doc.links.from.users[0].document)
+      }
+      if (doc._id === 'do.linkdoc3') {
+        cLinks++
+        t.assert(doc.links.from.users)
+        t.assert(doc.links.to.users.length === 1)
+        t.assert(doc.links.to.users[0].type === 'content')
+        t.assert(doc.links.to.users[0].document)
+      }
+    })
+    t.assert(3 === cLinks)
+    test.done()
+  })
+}
 
 exports.findLinksFailProperlyOnBadInputs = function(test) {
   var query = {
     uri: '/find/users/' + userId + '?' + userCred,
-    body: {links: [{bogus: 'documents'}]},
+    body: {links: {to: {fakeCollection: 1}}},
   }
   t.post(query, 400, function(err, res, body) {
-    t.assert(400.11 === body.error.code)
+    t.assert(400.13 === body.error.code)
     test.done()
   })
 }
@@ -79,15 +115,37 @@ exports.findLinksFailProperlyOnBadInputs = function(test) {
 exports.findLinksWorks = function(test) {
   var query = {
     uri: '/find/users/' + userId + '?' + userCred,
-    body: {links: [{to: {documents: 1}}]},
+    body: {links: {to: {documents: 1}}},
   }
   t.post(query, function(err, res, body) {
     t.assert(body.data.links)
-    t.assert(1 === body.data.links.length)
-    var links = body.data.links[0]
+    var links = body.data.links
     t.assert(links.to)
     t.assert(links.to.documents)
     t.assert(2 === links.to.documents.length)
+    links.to.documents.forEach(function(link) {
+      t.assert(link._id)
+      t.assert(link.document)
+      t.assert(link.document._id)
+    })
+    test.done()
+  })
+}
+
+exports.findLinksNoDocumentsWorks = function(test) {
+  var query = {
+    uri: '/find/users/' + userId + '?' + userCred,
+    body: {links: {to: {documents: 1}, noDocuments: true}},
+  }
+  t.post(query, function(err, res, body) {
+    t.assert(body.data.links)
+    var links = body.data.links
+    t.assert(links.to)
+    t.assert(links.to.documents)
+    t.assert(2 === links.to.documents.length)
+    links.to.documents.forEach(function(link) {
+      t.assert(!link.document)
+    })
     test.done()
   })
 }
@@ -95,12 +153,11 @@ exports.findLinksWorks = function(test) {
 exports.findLinksFieldProjectionWorks = function(test) {
   var query = {
     uri: '/find/users/' + userId + '?' + userCred,
-    body: {links: [{to: {documents: 1}, fields: {type: 1}}]}
+    body: {links: {to: {documents: 1}, fields: {name: 1}, linkFields: {type: 1}}}
   }
   t.post(query, function(err, res, body) {
     t.assert(body.data.links)
-    t.assert(1 === body.data.links.length)
-    var links = body.data.links[0]
+    var links = body.data.links
     t.assert(links.to)
     t.assert(links.to.documents)
     t.assert(2 === links.to.documents.length)
@@ -108,6 +165,10 @@ exports.findLinksFieldProjectionWorks = function(test) {
       t.assert(doc._id)
       t.assert(doc.type)
       t.assert(!doc.modifiedDate)
+      t.assert(doc.document)
+      t.assert(doc.document._id)
+      t.assert(doc.document.name)
+      t.assert(!doc.document._owner)
     })
     test.done()
   })
@@ -116,12 +177,11 @@ exports.findLinksFieldProjectionWorks = function(test) {
 exports.findLinksFilterWorks = function(test) {
   var query = {
     uri: '/find/users/' + userId + '?' + userCred,
-    body: {links: [{to: {documents: 1}, filter: {type: 'watch'}}]}
+    body: {links: {to: {documents: 1}, linkFilter: {type: 'watch'}}}
   }
   t.post(query, function(err, res, body) {
     t.assert(body.data.links)
-    t.assert(1 === body.data.links.length)
-    var links = body.data.links[0]
+    var links = body.data.links
     t.assert(links.to)
     t.assert(links.to.documents)
     t.assert(1 === links.to.documents.length)
@@ -129,35 +189,14 @@ exports.findLinksFilterWorks = function(test) {
   })
 }
 
-exports.findLinksWithDocFieldsWorks = function(test) {
-  var query = {
-    uri: '/find/users/' + userId + '?' + userCred,
-    body: {links: [{to: {documents: {name: 1}}}]}
-  }
-  t.post(query, function(err, res, body) {
-    t.assert(body.data.links)
-    t.assert(body.data.links.length)
-    var links = body.data.links[0]
-    t.assert(links.to)
-    t.assert(links.to.documents)
-    t.assert(2 === links.to.documents.length)
-    t.assert(links.to.documents[0].document)
-    t.assert(links.to.documents[1].document)
-    t.assert(links.to.documents[0].document.name)
-    t.assert(links.to.documents[1].document.name)
-    t.assert(!links.to.documents[0].document.data)
-    t.assert(!links.to.documents[1].document.data)
-    test.done()
-  })
-}
 
 exports.findLinksSortsDescendingByDefault = function(test) {
   var query = {
     uri: '/find/users/' + userId + '?' + userCred,
-    body: {links: [{to: {documents: 1}}]}
+    body: {links: {to: {documents: 1}}}
   }
   t.post(query, function(err, res, body) {
-    var toDocs = body.data.links[0].to.documents
+    var toDocs = body.data.links.to.documents
     t.assert(toDocs[0]._id > toDocs[1]._id)
     test.done()
   })
@@ -166,10 +205,10 @@ exports.findLinksSortsDescendingByDefault = function(test) {
 exports.findLinksSortWorks = function(test) {
   var query = {
     uri: '/find/users/' + userId + '?' + userCred,
-    body: {links: [{to: {documents: 1}, sort: [{_id: 1}]}]}
+    body: {links: {to: {documents: 1}, sort: [{_id: 1}]}}
   }
   t.post(query, function(err, res, body) {
-    var toDocs = body.data.links[0].to.documents
+    var toDocs = body.data.links.to.documents
     t.assert(toDocs[0]._id < toDocs[1]._id)
     test.done()
   })
@@ -178,10 +217,10 @@ exports.findLinksSortWorks = function(test) {
 exports.findLinksLimitsWork = function(test) {
   var query = {
     uri: '/find/users/' + userId + '?' + userCred,
-    body: {links: [{to: {documents: 1}, limit: 1}]}
+    body: {links: {to: {documents: 1}, limit: 1}}
   }
   t.post(query, function(err, res, body) {
-    var toDocs = body.data.links[0].to.documents
+    var toDocs = body.data.links.to.documents
     t.assert(1 === toDocs.length)
     t.assert('do.linkdoc2' === toDocs[0]._to)
     test.done()
@@ -191,26 +230,27 @@ exports.findLinksLimitsWork = function(test) {
 exports.findLinksSkipWorks = function(test) {
   var query = {
     uri: '/find/users/' + userId + '?' + userCred,
-    body: {links: [{to: {documents: 1}, limit: 1, skip: 1}]}
+    body: {links: {to: {documents: 1}, limit: 1, skip: 1}}
   }
   t.post(query, function(err, res, body) {
-    var toDocs = body.data.links[0].to.documents
+    var toDocs = body.data.links.to.documents
     t.assert(1 === toDocs.length)
     t.assert('do.linkdoc1' === toDocs[0]._to)
     test.done()
   })
 }
 
-exports.findLinksAcceptsSingletonQueries = function(test) {
+exports.findLinksAcceptsArrays = function(test) {
   var query = {
     uri: '/find/users/' + userId + '?' + userCred,
-    body: {links: {to: {documents: {}}}}
+    body: {links: [{to: {documents: 1}}, {from: {documents: 1}}]}
   }
   t.post(query, function(err, res, body) {
     t.assert(body.data.links)
-    t.assert(body.data.links.to)              // not nested in an array
-    t.assert(body.data.links.to.documents)
-    var toDocs = body.data.links.to.documents
+    t.assert(body.data.links.length === 2)  // nested in an array
+    t.assert(body.data.links[0].to)
+    t.assert(body.data.links[0].to.documents)
+    var toDocs = body.data.links[0].to.documents
     t.assert(2 === toDocs.length)
     t.assert(toDocs[0]._id > toDocs[1]._id)
     t.assert(toDocs[0].document)
@@ -218,6 +258,8 @@ exports.findLinksAcceptsSingletonQueries = function(test) {
     t.assert(toDocs[0]._id > toDocs[1]._id)
     t.assert('LinkDoc2' === toDocs[0].document.name)
     t.assert('LinkDoc1' === toDocs[1].document.name)
+    t.assert(body.data.links[1].from.documents)
+    t.assert(body.data.links[1].from.documents.length)
     test.done()
   })
 }
@@ -225,7 +267,7 @@ exports.findLinksAcceptsSingletonQueries = function(test) {
 
 exports.findLinksFromWorksWithGetSyntax = function(test) {
   var query = {
-    uri: '/find/documents?links[from][users][]&' + userCred,
+    uri: '/find/documents?links[from][users]=1&' + userCred,
   }
   t.get(query, function(err, res, body) {
     t.assert(body.data.length >= 3)
@@ -254,7 +296,40 @@ exports.findLinksFromWorksWithGetSyntax = function(test) {
   })
 }
 
-exports.specifyLinkDocfieldsAtLinkQueryOverrideSpecAtCollection = function(test) {
-  return skip(test)
-  // NYI
+exports.findAllLinksWorks = function(test) {
+  var query = {
+    uri: '/find/documents?links[to]=1&links[from]=1&' + userCred,
+  }
+  t.get(query, function(err, res, body) {
+    t.assert(body.data.length >= 3)
+    body.data.forEach(function(doc) {
+      var cLinks = 0
+      t.assert(doc.links)
+      t.assert(doc.links.to)
+      t.assert(doc.links.from)
+      if (doc._id === 'do.linkdoc1') {
+        cLinks++
+        t.assert(doc.links.from.users)
+        t.assert(doc.links.from.users.length === 1)
+        t.assert(doc.links.from.users[0].type === 'like')
+        t.assert(doc.links.from.users[0].document)
+      }
+      if (doc._id === 'do.linkdoc2') {
+        cLinks++
+        t.assert(doc.links.from.users)
+        t.assert(doc.links.from.users.length === 1)
+        t.assert(doc.links.from.users[0].type === 'watch')
+        t.assert(doc.links.from.users[0].document)
+      }
+      if (doc._id === 'do.linkdoc3') {
+        cLinks++
+        t.assert(doc.links.from.users)
+        t.assert(doc.links.to.users.length === 1)
+        t.assert(doc.links.to.users[0].type === 'content')
+        t.assert(doc.links.to.users[0].document)
+      }
+    })
+    t.assert(3 === cLinks)
+    test.done()
+  })
 }
