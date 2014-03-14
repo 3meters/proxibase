@@ -17,6 +17,7 @@ block content
       .row: | sort:
       .row: | links:
       .row: | lookups:
+      .row: | datesToUTC:
       .row: | skip:
       .row: | limit:
       .row: | count:
@@ -31,6 +32,7 @@ block content
         .row: input#sort.field(name='sort', placeholder='sort', value=JSON.stringify(query.sort))
         .row: input#links.field(name='links', placeholder='links', value=JSON.stringify(query.links))
         .row: input#lookups.field(name='lookups', placeholder='lookups', value=query.lookups)
+        .row: input#datesToUTC.field(name='datesToUTC', placeholder='datesToUTC', value=query.datesToUTC)
         .row: input#skip.field(name='skip', placeholder='skip', value=query.skip)
         .row: input#limit.field(name='limit', placeholder='limit', value=query.limit)
         .row: input#count.field(name='count', placeholder='count', value=query.count)
@@ -41,11 +43,12 @@ block content
       .row: | 
       .row: | 
       .row: | {name: 1, _owner: 1}
-      .row: | case-insensitve starts-with
+      .row: | starts-with
       .row: | {city: {$in: ['Seattle', 'Spokane']}}
       .row: | [{_owner: 1}, {modifiedDate: -1}]
-      .row: | 
+      .row: | {from: {applinks: 1}, to: true}
       .row: | boolean, shows names of linked documents
+      .row: | boolean
       .row: | number
       .row: | number
       .row: | boolean
