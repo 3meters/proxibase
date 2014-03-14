@@ -26,14 +26,14 @@ a {
 .form {
 }
 .field {
-  width: 200px;
+  width: 300px;
 }
 .button {
 }
 .col-container {
   width: 100%;
   float: right;
-  margin-left: -300px; /*Set left margin to -(leftColumnWidth + RightColumnWidth)*/
+  margin-left: -400px; /*Set left margin to -(leftColumnWidth + RightColumnWidth)*/
 }
 .col-left {
   float: left;
@@ -42,10 +42,10 @@ a {
 }
 .col-center {
   float: left;
-  width: 200px;
+  width: 300px;
 }
 .col-right {
-  margin-left: 350px; /*Set left margin to (leftColumnWidth + RightColumnWidth)*/
+  margin-left: 450px; /*Set left margin to (leftColumnWidth + RightColumnWidth)*/
 }
 .content {
   clear: left;
