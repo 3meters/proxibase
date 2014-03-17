@@ -5,7 +5,7 @@ https://api.aircandi.com
 
 ## Quick Reference
 
-sign in
+Sign in
 
     path: /auth/signin
     method: POST
@@ -16,16 +16,16 @@ sign in
       }
     }
 
-send an authticated request
+Send an authticated request
 
     path:  ?user=<user._id>&session=<session.key>
 
-find documents
+Find Documents
 
     path: /find/<collection>/<_id>
     method: GET|POST
     body: {
-      "collection": string,          // base collection or statitistics collection
+      "collection": string,               // base collection or statitistics collection
       "name": string,                     // case-insensitive
       "fields": [string],
       "filter": {mongodb query expression},  // pass-through to mongodb, case-sensitive.
@@ -44,7 +44,7 @@ find documents
 			   limit: number,
 		      fields: {fieldexpr}
 		   docFields: {fieldexpr}  // fields from the linked document to include in a document property of the link
-		}  
+		}   // the links param can also accept and array of link specs
 	}
 
 or
