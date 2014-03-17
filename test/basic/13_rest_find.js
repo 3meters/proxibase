@@ -90,6 +90,24 @@ exports.findPassThrough = function(test) {
   })
 }
 
+exports.findFieldProjections = function(test) {
+  t.post({
+    uri: '/find/users?' + adminCred,
+    body: {
+      query:{email: testUser1.email},
+      fields: {name: 1, email: 1},
+    }
+
+  }, function(err, res, body) {
+    t.assert(body.data.length === 1 && body.count === 1)
+    t.assert(body.data[0].email === testUser1.email)
+    t.assert(body.data[0].name === testUser1.name)
+    t.assert(body.data[0]._id === testUser1._id)
+    t.assert(!body.data[0]._owner)
+    test.done()
+  })
+}
+
 exports.findNext = function(test) {
   t.get('/data/places/next', 401, function(err, res, body) {
     t.get('/data/places/next?' + adminCred, function(err, res, body) {
