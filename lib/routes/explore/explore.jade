@@ -2,7 +2,7 @@ extends layout
 
 block content
 
-  // - console.log(util.inspect(locals))
+  - var truthy = tipe.truthy
 
   include signinLinks
   br
@@ -26,19 +26,21 @@ block content
       form#explore(method='post', action='/explore')
         .row: input#collection.field(name='collection', placeholder='collection', value=query.collection)
         .row: input#_id.field(name='_id', placeholder='id', value=query._id)
-        .row: input#fields.field(name='fields', placeholder='fields', value=query.fields)
+        .row: input#fields.field(name='fields', placeholder='fields', value=JSON.stringify(query.fields))
         .row: input#name.field(name='name', placeholder='name', value=query.name)
         .row: input#query.field(name='query', placeholder='query', value=JSON.stringify(query.query))
         .row: input#sort.field(name='sort', placeholder='sort', value=JSON.stringify(query.sort))
         .row: input#links.field(name='links', placeholder='links', value=JSON.stringify(query.links))
-        .row: input#lookups.checkbox(name='lookups', type='checkbox', value=query.lookups)
-        .row: input#datesToUTC.checkbox(name='datesToUTC', type='checkbox', checked=((query.datesToUTC === 'on') ? 'checked' : undefined))
+        .row: input#lookups.checkbox(name='lookups', type='checkbox', checked=(truthy(query.lookups) ? 'checked' : undefined))
+        .row: input#datesToUTC.checkbox(name='datesToUTC', type='checkbox', checked=(truthy(query.datesToUTC) ? 'checked' : undefined))
         .row: input#skip.field(name='skip', placeholder='skip', value=query.skip)
         .row: input#limit.field(name='limit', placeholder='limit', value=query.limit)
-        .row: input#count.checkbox(name='count', type='checkbox', value=query.count)
+        .row: input#count.checkbox(name='count', type='checkbox', checked=(truthy(query.count) ? 'checked' : undefined))
         .row: input#countBy.field(name='countBy', placeholder='countBy', value=query.countBy)
         input(type='submit', name='cmdRun', value='Run')
         input(type='submit', name='cmdShow', value='Show')
+        =' '
+        a(href='https://github.com/3meters/proxibase#quick-reference') Docs
     .col-right.pad
       .row: | 
       .row: | 
@@ -48,10 +50,10 @@ block content
       .row: | [{_owner: 1}, {modifiedDate: -1}]
       .row: | {from: {applinks: 1}, to: true}
       .row: | include names of linked documents
-      .row: | boolean
-      .row: | number
-      .row: | number
-      .row: | boolean
+      .row: | 
+      .row: | 
+      .row: | 
+      .row: | 
       .row: | field1, field2
   .content.pad
     if findUrl
