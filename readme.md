@@ -25,27 +25,31 @@ Find Documents
     path: /find/<collection>/<_id>
     method: GET|POST
     body: {
-      "collection": string,               // base collection or statitistics collection
-      "name": string,                     // case-insensitive
-      "fields": [string],
-      "filter": {mongodb query expression},  // pass-through to mongodb, case-sensitive.
+      collection: string,               // base collection or statitistics collection
+      name: string,                     // case-insensitive
+      fields: [string],
+      filter: {mongodb query expression},  // pass-through to mongodb, case-sensitive.
                                           // Also accepts get params using
                                           // https://github.com/visionmedia/node-querystring
-      "lookups": boolean,
-      "limit": number,                    // default 100, max 1000
-      "skip": number,
-      "sort": [{field1:1}, {field2:-1}]
-      "count": boolean,                   // returns no records, only count, limit and skip are ignored
-      "countBy":  [string]                // returns count of collection grouped by field or fields
-	  "links": {from: {collection1: 1, collection2: 1},  // returns links from this document
-	              to: {collection3: 1, collection4: 1},  // returns links to this document
-		        sort: number,
-			    skip: number,
-			   limit: number,
-		      fields: {fieldexpr}
-		   docFields: {fieldexpr}  // fields from the linked document to include in a document property of the link
-		}   // the links param can also accept and array of link specs
-	}
+      lookups: boolean,
+      limit: number,                    // default 100, max 1000
+      skip: number,
+      sort: [{field1:1}, {field2:-1}]
+      count: boolean,                   // returns no records, only count, limit and skip are ignored
+      countBy:  [string]                // returns count of collection grouped by field or fields
+        links: {
+	        from: {collection1: 1, collection2: 1},  // returns links from this document
+	          to: {collection3: 1, collection4: 1},  // returns links to this document
+                sort: [fieldExpr],  // applies to link fields, not document fields
+                skip: number,
+               limit: number,
+              fields: {fieldExpr},
+          linkFields: {fieldExpr},
+	      filter: {queryExpr},
+          linkFilter: {queryExpr},
+         noDocuments: boolean,     // set to true to return links only
+	}   // the links param can also accept and array of link specs
+      }
 
 or
     GET /data/users?countBy=role&lookups=true  etc
