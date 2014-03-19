@@ -38,20 +38,21 @@ Find Documents
       count: boolean,                   // returns no records, only count, limit and skip are ignored
       countBy:  [string]                // returns count of collection grouped by field or fields
         links: {
-	        from: {collection1: 1, collection2: 1},  // returns links from this document
-	          to: {collection3: 1, collection4: 1},  // returns links to this document
-                sort: [fieldExpr],  // applies to link fields, not document fields
-                skip: number,
-               limit: number,
-              fields: {fieldExpr},
+          from: {collection1: 1, collection2: 1},  // returns links from this documen
+          to: {collection3: 1, collection4: 1},    // returns links to this document
+          sort: [fieldExpr],                       // applies to link fields, not document fields
+          skip: number,
+          limit: number,
+          fields: {fieldExpr},
           linkFields: {fieldExpr},
-	      filter: {queryExpr},
+          filter: {queryExpr},
           linkFilter: {queryExpr},
-         noDocuments: boolean,     // set to true to return links only
-	}   // the links param can also accept and array of link specs
+          noDocuments: boolean,                   // set to true to return links only
+        }   // the links param can also accept and array of link specs
       }
 
 or
+
     GET /data/users?countBy=role&lookups=true  etc
 
 ## Users and Admins
