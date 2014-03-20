@@ -25,35 +25,34 @@ Find Documents
     path: /find/<collection>/<_id>
     method: GET|POST
     body: {
-      collection: string,               // base collection or statitistics collection
-      name: string,                     // case-insensitive
-      fields: [string],
-      filter: {mongodb query expression},  // pass-through to mongodb, case-sensitive.
-                                          // Also accepts get params using
-                                          // https://github.com/visionmedia/node-querystring
-      lookups: boolean,
-      limit: number,                    // default 100, max 1000
+      name: string,                     // case-insensitive starts-with
+      fields: {fieldExpr} || comma-separated string,
+      query: {mongodb query expression},  // pass-through to mongodb
+      lookups: boolean,                 // display names of linked documents
+      limit: number,                    // default 50, max 1000
       skip: number,
       sort: [{field1:1}, {field2:-1}]
       count: boolean,                   // returns no records, only count, limit and skip are ignored
       countBy:  [string]                // returns count of collection grouped by field or fields
-        links: {
-          from: {collection1: 1, collection2: 1},  // returns links from this documen
-          to: {collection3: 1, collection4: 1},    // returns links to this document
-          sort: [fieldExpr],                       // applies to link fields, not document fields
-          skip: number,
-          limit: number,
-          fields: {fieldExpr},
-          linkFields: {fieldExpr},
-          filter: {queryExpr},
-          linkFilter: {queryExpr},
-          noDocuments: boolean,                   // set to true to return links only
+      links: {
+        from: {collection1: 1, collection2: 1},  // returns links from this documen
+        to: {collection3: 1, collection4: 1},    // returns links to this document
+        sort: [fieldExpr],                       // applies to link fields, not document fields
+        skip: number,
+        limit: number,
+        fields: {fieldExpr},
+        linkFields: {fieldExpr},
+        filter: {queryExpr},
+        linkFilter: {queryExpr},
+        noDocuments: boolean,                   // set to true to return links only
         }   // the links param can also accept and array of link specs
       }
 
 or
 
-    GET /data/users?countBy=role&lookups=true  etc
+    GET /data/users?countBy=role&lookups=true
+    
+get params are parsed using the querystring module
 
 ## Users and Admins
 Each user account has a role.  The only valid roles are 'user', the default, and 'admin'.  When the server starts it checks for a user with _id 00000.000000.00000.000.00000.  If it does not exist the server creates the user with 
@@ -76,11 +75,13 @@ See the guidelines for posting below, the api is
 
     path: /user/create
     method: post
-    secret: <secret>
-    body:  {data: {
-      email: <email>
-      password: <password>
-    }}
+    body:  {
+      data: {
+        email: <email>
+        password: <password>
+      },
+      secret: <secret>
+     }
 
 All other fields are optional. Secret is currently a static string. Someday it may be provided by a captcha API.  On successful account creation, the service signs in the user, creating a new session object.  The complete user and session object are returned to the caller.
 
@@ -97,10 +98,8 @@ Users sign in via :
     path: /auth/signin
     method: post
     body: {
-      user: {
-        email: (case-insensitive)
-        password: password  (case-sensitive)
-      }
+      email: (case-insensitive)
+      password: password  (case-sensitive)
     }
 
 On success the api returns a session object with two fields of interest, _owner and key.  _owner is user's _id, and key is a session key.  In order to validate a request, include those values on each request, either as query parameters like so:
@@ -170,7 +169,7 @@ meaning
     collectionId.dateSince2000.secondsSinceMidnight.milliseconds.randomNumber
 
 ### GET /data/\<collection\>
-Returns the collection's first 100 records unsorted.
+Returns the collection's first 50 records unsorted.
 
 ### GET /data/\<collection\>/\<id1\>,\<id2\>
 Returns records with the specified ids
@@ -220,12 +219,10 @@ ie
 or
 
     request.body = {
-      "data": [
-        {
-          "field1": "foo",
-          "field2": "bar"
-        }
-      ]
+      data: {
+        field1: "foo",
+        field2: "bar"
+      }
     }
 
 ### POST /data/\<collection\>
@@ -248,34 +245,8 @@ Lists the web methods. POST to /do/methodName executes a method passing in the f
 ### POST /do/echo
 Returns request.body
 
-### POST /do/find
-POST /do/find is the same as GET /data/<collection>, but with the paramters in the request body rather than on the query string, useful for complex queries. Request body should be JSON of this form:
 
-    {
-      "collection|stat": string,          // base collection or statitistics collection
-      "name": string,                     // case-insensitive
-      "fields": [string],
-      "find": {mongodb find expression},  // pass-through to mongodb, case-sensitive
-      "lookups": boolean,
-      "limit": number,                    // default 100, max 1000
-      "skip": number,
-      "sort": {field1:1, field2:-1},
-      "count": boolean,                   // returns no records, only count, limit and skip are ignored
-      "countBy": fieldName                // returns count of collection grouped by any field
-      "datesToUTC": boolean               // convert dates from numbers to strings
-    }
-    
-The collection|stat property is required.  All others are optional.
 
-### POST /do/touch
-Updates every record in a table.  Usefull when you need to re-run triggers on all records
-
-    {
-      "collection": <collection>,     // required
-      "preserveModified, boolean      // optional, default true, if false the method will update the modified date
-    }
-
-<a name="stats">
 ### Statistics
 Site statistics are acceessed via
 
@@ -312,33 +283,8 @@ When the server starts, it reads all task documents from the tasks collection, a
 ## Wiki
 * (proxibase/wiki/)
 
-## Bugs
+## Bugs and Feature Ideas
 https://github.com/3meters/proxibase/issues?state=open
-
-## Todo
-
-### Models
-* Broken links: prevent or garbage collect
-* Create user captcha
-
-### Custom Methods
-* Respect locked Entity on InsertEntity, UpdateEntity, DeleteEntity, InsertComment
-
-### Authentication
-* Validate user email workflow
-* Recover lost password workflow
-* Create user with oauth workflow
-* Oauth tests for Facebook and Google
-
-### Rate limiting
-* Map users to accounts
-* Accrue user requests to acconts
-* Rate limit gets
-* Rate limit posts
-* Lock / unlock account
-
-### Rest
-* get: linked entites
 
 ## Developer Notes
 To build
@@ -349,15 +295,10 @@ By default tests require internet connectivity and a working sendmail server
 
 Run basic tests
 
-    make test
-
-Run all tests
-
-    make testall
+    cd test
+    node test
 
 More test options
 
     cd test
-    node run --help
-
-
+    node test --help
