@@ -239,14 +239,12 @@ Deletes all records in the collection (admins only)
 
 <a name="webmethods"></a>
 ## Custom Web Methods
+    
     /do
-Lists the web methods. POST to /do/methodName executes a method passing in the full request and response objects. The request body must be in JSON format.  Read-only methods, those begging with get can also be called via GET with parameters specified in the format defined by node-querystring.
+    
+Lists the custom web methods. 
 
-### POST /do/echo
-Returns request.body
-
-
-
+<a name="statistics"></a>
 ### Statistics
 Site statistics are acceessed via
 
