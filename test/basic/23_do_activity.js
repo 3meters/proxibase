@@ -960,7 +960,7 @@ exports.addEntitySet = function (test) {
       }, function(err, res, body) {
         t.assert(body.count === 3)
 
-        /* Check activityDate for place */
+        /* Check activityDate and _applinkModifier for place */
         t.post({
           uri: '/find/places',
           body: {
@@ -970,6 +970,7 @@ exports.addEntitySet = function (test) {
           t.assert(body.count === 1)
           t.assert(body.data && body.data[0])
           t.assert(body.data[0].activityDate >= activityDate)
+          t.assert(body.data[0]._applinkModifier === testUserTom._id)
           test.done()
         })
       })
