@@ -285,8 +285,13 @@ When the server starts, it reads all task documents from the tasks collection, a
 https://github.com/3meters/proxibase/issues?state=open
 
 ## Developer Notes
-To build
+To build and run
+
+    cd /config
+    cp config.js.template config.js  # modify as needed but should work unmodified
+    cd ..
     npm install
+    node prox
 
 ## Tests
 By default tests require internet connectivity and a working sendmail server
