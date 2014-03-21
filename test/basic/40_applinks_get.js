@@ -312,17 +312,26 @@ exports.appLinkPositionSortWorks = function(test) {
 // kosamai has two valid yelp entries
 exports.appLinkPopularitySortWorks = function(test) {
   if (disconnected) return skip(test)
+  var idTruck = 'fH7CPQ8194yGgSKK0fL-sg'
+  var idPlace = 'QYv7LvaoyuaEJRDRpPtFDQ'
   t.post({
     uri: '/applinks/get',
     body: {
       applinks: [
-        {type: 'yelp', appId: 'fH7CPQ8194yGgSKK0fL-sg'},   // 45 reviews
-        {type: 'yelp', appId: 'QYv7LvaoyuaEJRDRpPtFDQ'},   // 132 reviews
+        {type: 'yelp', appId: idTruck},   // 45 reviews
+        {type: 'yelp', appId: idPlace},   // 132 reviews
       ],
     }
   }, function(err, res, body) {
-    t.assert(body.data.length === 2)
-    t.assert(body.data[0].appId === 'QYv7LvaoyuaEJRDRpPtFDQ')
+    iTruck = 0
+    iPlace = 0
+    body.data.forEach(function(applink, i) {
+      if (applink.appId === idTruck) iTruck = i
+      if (applink.appId === idPlace) iPlace = i
+    })
+    t.assert(iTruck)
+    t.assert(iPlace)
+    t.assert(iTruck === iPlace + 1)
     test.done()
   })
 }
