@@ -50,6 +50,7 @@ var ladroId = '45d62041f964a520d2421fe3'
 // Roxys Diner
 var roxyFacId = '021d77ee-2db5-4300-ae2b-5f841df77a4e'  // this changed 2013-Sep
 var roxyGooId = 'd9083f5df362b2ed27c9e10339c9510960192624'
+var roxyYelpId = 'roxys-diner-seattle'
 
 // Kaosamai Thai
 var ksthaiId = '4a3d9c80f964a52088a21fe3'
@@ -161,18 +162,19 @@ exports.placesNearExcludeWorksFoursquare = function(test) {
 }
 
 
-exports.getPlacesNearLocationFactual = function(test) {
+exports.getPlacesNearLocationYelp = function(test) {
   if (disconnected) return skip(test)
   var foundRoxy = false
   t.post({
     uri: '/places/near',
     body: {
       location: ballRoomLoc,
-      provider: 'factual',
+      provider: 'yelp',
       radius: 200,
       limit: 20,
       excludePlaceIds: [ballRoomFacId],
       includeRaw: true,
+      log: true,
     }
   }, function(err, res) {
     var places = res.body.data
@@ -180,8 +182,8 @@ exports.getPlacesNearLocationFactual = function(test) {
     places.forEach(function(place) {
       t.assert(place)
       t.assert(place.provider)
-      t.assert(place.provider.factual)
-      t.assert(ballRoomFacId !== place.provider.factual) //excluded
+      t.assert(place.provider.yelp)
+      t.assert(ballRoomFacId !== place.provider.yelp) //excluded
       var cat = place.category
       t.assert(cat)
       t.assert(cat.name)
@@ -190,7 +192,7 @@ exports.getPlacesNearLocationFactual = function(test) {
       t.assert(fs.existsSync(iconFileName))
     })
     var roxys = places.filter(function(place) {
-      return (place.provider.factual === roxyFacId) // Roxy's Diner
+      return (place.provider.yelp === roxyYelpId) // Roxy's Diner
     })
     t.assert(roxys.length === 1)
     insertEnt(roxys[0])
@@ -209,7 +211,7 @@ exports.getPlacesNearLocationFactual = function(test) {
     }, 201, function(err, res, body) {
       t.assert(body.data)
       savedRoxy = res.body.data
-      t.assert(savedRoxy.provider.factual === roxy.provider.factual)
+      t.assert(savedRoxy.provider.yelp === roxy.provider.yelp)
       t.assert(savedRoxy.linksIn && savedRoxy.linksIn.length >=2)
       savedRoxy.linksIn.forEach(function(link) {
         t.assert(link.shortcut)
