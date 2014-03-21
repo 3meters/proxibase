@@ -1051,7 +1051,7 @@ exports.untrackEntityProximity = function(test) {
     uri: '/do/untrackEntity?' + userCredTom,
     body: {
       entityId:testPlaceOne._id,
-      beaconIds:[testBeacon._id, testBeacon2._id, testBeacon3._id],
+      beacons:[testBeacon, testBeacon2, testBeacon3],
       primaryBeaconId:testBeacon2._id,
       actionEvent:'proximity_minus',
     }
