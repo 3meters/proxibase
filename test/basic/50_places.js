@@ -240,7 +240,7 @@ exports.getPlacesNearLocationGoogle = function(test) {
 
   var foundRoxy = 0
   var googleProvided = 0
-  var factualProvided = 0
+  var yelpProvided = 0
   t.post({
     uri: '/places/near',
     body: {
@@ -263,8 +263,8 @@ exports.getPlacesNearLocationGoogle = function(test) {
         googleProvided++
         t.assert(2 === place.provider.google.split('|').length)  //  id + '|' + refrence
       }
-      if (place.provider.factual) {
-        factualProvided++
+      if (place.provider.yelp) {
+        yelpProvided++
       }
       // proves sorted by distance from current location
       var distance = util.haversine(
@@ -300,7 +300,7 @@ exports.getPlacesNearLocationGoogle = function(test) {
     })
     t.assert(1 === foundRoxy)
     t.assert(googleProvided)
-    t.assert(factualProvided) // proves dupe merging on phone works
+    t.assert(yelpProvided) // proves dupe merging on phone works
     test.done()
   })
 }
@@ -332,6 +332,9 @@ exports.insertPlaceEntitySuggestApplinksFromFactual = function(test) {
       t.assert(links.some(function(link) {
         return (link.shortcut.app === 'twitter')
       }))
+      t.assert(links.some(function(link) {
+        return (link.shortcut.app === 'yelp')
+      }))
       links.forEach(function(link) {
         t.assert(link.shortcut.app !== 'factual')
       })
@@ -360,13 +363,15 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
   }, function(err, res, body) {
     var places = body.data
     var ksthai = null
-    var hasFactualProviderId = 0
+    var hasYelpProviderId = 0
     t.assert(40 < places.length < 50)
     places.forEach(function(place) {
       t.assert(place.provider)
-      if (place.provider.factual) {
-        hasFactualProviderId++
+      if (place.provider.yelp) {
+        hasYelpProviderId++
         t.assert(place.provider.foursquare) // we merged them
+        t.assert(place.location)
+        t.assert(!place.location.accuracy) // proves we upgraded yelp's lame lat/lng
       }
       if (ksthaiId === place.provider.foursquare) {
         ksthai = place
@@ -377,7 +382,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
     // We added a Roxy entity above, sourced from factual.
     // This proves we have merged multiple provider ids onto
     // single entity
-    t.assert(hasFactualProviderId)
+    t.assert(hasYelpProviderId)
 
     // Insert ksthai as an entity
     t.post({
