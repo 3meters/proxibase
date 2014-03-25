@@ -45,6 +45,7 @@ Find Documents
         filter: {queryExpr},
         linkFilter: {queryExpr},
         noDocuments: boolean,                   // set to true to return links only
+        count: boolean,                         // return count of qualifying links, ignores skip and limit
         }   // the links param can also accept and array of link specs
       }
 

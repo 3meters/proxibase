@@ -203,6 +203,18 @@ exports.findLinksSkipWorks = function(test) {
   })
 }
 
+exports.findLinksCountWorks = function(test) {
+  var query = {
+    uri: '/find/users/' + userId + '?' + userCred,
+    body: {links: {to: {documents: 1}, from: {documents: 1}, count: true}}
+  }
+  t.post(query, function(err, res, body) {
+    t.assert(1 === body.data.links.from.documents)
+    t.assert(2 === body.data.links.to.documents)
+    test.done()
+  })
+}
+
 exports.findLinksAcceptsArrays = function(test) {
   var query = {
     uri: '/find/users/' + userId + '?' + userCred,
