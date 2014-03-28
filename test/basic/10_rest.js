@@ -335,6 +335,19 @@ exports.findWithLookups = function(test) {
   })
 }
 
+exports.findWithRefs = function(test) {
+  t.get({
+    uri: '/data/documents?name=' + testDoc1.name + '&refs=1&' + userCred
+  }, function(err, res, body) {
+    var doc = body.data[0]
+    t.assert(/^Test User/.test(doc.owner))
+    t.assert(/^Test User/.test(doc.creator))
+    t.assert(/^Test User/.test(doc.modifier))
+    test.done()
+  })
+}
+
+
 exports.updateDoc = function(test) {
   t.post({
     uri: '/data/documents/' + testDoc1._id + '?' + userCred,
