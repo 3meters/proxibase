@@ -84,7 +84,7 @@ exports.checkFacebookUrls = function(test) {
     t.assert(map['620955808'].name === 'George Snelling')
     t.assert(map['227605257298019'])
     t.assert(map['284314854066'])
-    t.assert(map['115450755150958'])
+    t.assert(!map['115450755150958']) // Local page that is bogus
     test.done()
   })
 }

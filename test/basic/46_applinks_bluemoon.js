@@ -65,8 +65,11 @@ exports.insertBluemoon = function(test) {
 }
 
 
-// skipping for now since its not clear we can do anything about it,
-// and it takes a very long time to run
+// Bluemoon puts links to the facebook pages of all its upcoming
+// bands on its home page.  We dutifully find them all and their
+// web pages too.
+// Skipping for now since its not clear we can do anything about it,
+// and it takes a very long time to run.
 exports.getBluemoonApplinks = function(test) {
   return skip(test)
   if (disconnected) return skip(test)

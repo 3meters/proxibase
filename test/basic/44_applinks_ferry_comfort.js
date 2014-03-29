@@ -120,8 +120,7 @@ exports.commuterComforts = function(test) {
         appMap[applink.type]++
       })
       t.assert(util.tipe.isUndefined(appMap.factual))
-      log('dupe facebook entry that we cannot detect')
-      t.assert(appMap.facebook === 1 || appMap.facebook === 2)
+      t.assert(appMap.facebook === 1)
       t.assert(appMap.foursquare === 1)
       t.assert(appMap.yelp === 1)
       t.assert(appMap.citygrid === 1)
