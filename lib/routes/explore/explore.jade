@@ -15,11 +15,11 @@ block content
       .row: | name:
       .row: | query:
       .row: | sort:
+      .row: | refs:
       .row: | links:
-      .row: | lookups:
-      .row: | datesToUTC:
       .row: | skip:
       .row: | limit:
+      .row: | datesToUTC:
       .row: | count:
       .row: | countBy:
     .col-center.pad
@@ -30,11 +30,11 @@ block content
         .row: input#name.field(name='name', placeholder='name', value=query.name)
         .row: input#query.field(name='query', placeholder='query', value=JSON.stringify(query.query))
         .row: input#sort.field(name='sort', placeholder='sort', value=JSON.stringify(query.sort))
+        .row: input#refs.field(name='refs', placeholder='refs', value=query.refs)
         .row: input#links.field(name='links', placeholder='links', value=JSON.stringify(query.links))
-        .row: input#lookups.checkbox(name='lookups', type='checkbox', checked=(truthy(query.lookups) ? 'checked' : undefined))
-        .row: input#datesToUTC.checkbox(name='datesToUTC', type='checkbox', checked=(truthy(query.datesToUTC) ? 'checked' : undefined))
         .row: input#skip.field(name='skip', placeholder='skip', value=query.skip)
         .row: input#limit.field(name='limit', placeholder='limit', value=query.limit)
+        .row: input#datesToUTC.checkbox(name='datesToUTC', type='checkbox', checked=(truthy(query.datesToUTC) ? 'checked' : undefined))
         .row: input#count.checkbox(name='count', type='checkbox', checked=(truthy(query.count) ? 'checked' : undefined))
         .row: input#countBy.field(name='countBy', placeholder='countBy', value=query.countBy)
         input(type='submit', name='cmdRun', value='Run')
@@ -48,8 +48,8 @@ block content
       .row: | starts-with
       .row: | {city: {$in: ['Seattle', 'Spokane']}}
       .row: | [{_owner: 1}, {modifiedDate: -1}]
+      .row: | include linked documents, boolean or fieldlist
       .row: | {from: {applinks: 1}, to: true}
-      .row: | include names of linked documents
       .row: | 
       .row: | 
       .row: | 

@@ -323,21 +323,10 @@ exports.findDocsByNameStartsWithMatch = function(test) {
   })
 }
 
-exports.findWithLookups = function(test) {
-  t.get({
-    uri: '/data/documents?name=' + testDoc1.name + '&lookups=1&' + userCred
-  }, function(err, res, body) {
-    var doc = body.data[0]
-    t.assert(/^Test User/.test(doc.owner))
-    t.assert(/^Test User/.test(doc.creator))
-    t.assert(/^Test User/.test(doc.modifier))
-    test.done()
-  })
-}
 
 exports.findWithRefs = function(test) {
   t.get({
-    uri: '/data/documents?name=' + testDoc1.name + '&refs=1&' + userCred
+    uri: '/data/documents?name=' + testDoc1.name + '&refs=name&' + userCred
   }, function(err, res, body) {
     var doc = body.data[0]
     t.assert(/^Test User/.test(doc.owner))
@@ -348,6 +337,55 @@ exports.findWithRefs = function(test) {
 }
 
 
+exports.findWithRefsNestedObject = function(test) {
+  t.get({
+    uri: '/data/documents?name=' + testDoc1.name + '&refs=true&' + userCred
+  }, function(err, res, body) {
+    var doc = body.data[0]
+    t.assert(doc.owner && doc.owner._id && doc.owner.name)
+    t.assert(doc.creator && doc.creator._id && doc.creator.name)
+    t.assert(doc.modifier && doc.modifier._id && doc.modifier.name)
+    test.done()
+  })
+}
+
+exports.findWithRefsNestedObjectFieldList = function(test) {
+  t.get({
+    uri: '/data/documents?name=' + testDoc1.name + '&refs=_id,role&' + userCred
+  }, function(err, res, body) {
+    var doc = body.data[0]
+    t.assert(doc.owner && doc.owner._id && doc.owner.role && !doc.owner.name)
+    t.assert(doc.creator && doc.creator._id && !doc.creator.name)
+    t.assert(doc.modifier && doc.modifier._id && !doc.modifier.name)
+    test.done()
+  })
+}
+
+exports.refOnLinksDontShowDataYouCannotSee = function(test) {
+  t.get({
+    uri: '/find/links?refs=name&sort[modifiedDate]=1&limit=5&' + userCred
+  }, function(err, res, body) {
+    t.assert(body.data)
+    body.data.forEach(function(link) {
+      t.assert(!link.to)
+      t.assert(!link.from)
+    })
+    test.done()
+  })
+}
+
+exports.refOnLinksWork = function(test) {
+  t.get({
+    uri: '/find/links?refs=name&sort[modifiedDate]=1&limit=5&' + adminCred
+  }, function(err, res, body) {
+    t.assert(body.data)
+    body.data.forEach(function(link) {
+      t.assert(tipe.isString(link.to))
+      t.assert(tipe.isString(link.from))
+    })
+    test.done()
+  })
+}
 exports.updateDoc = function(test) {
   t.post({
     uri: '/data/documents/' + testDoc1._id + '?' + userCred,

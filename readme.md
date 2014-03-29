@@ -25,19 +25,19 @@ Find Documents
     path: /find/<collection>/<_id>
     method: GET|POST
     body: {
-      name: string,                     // case-insensitive starts-with
+      name: string,                             // case-insensitive starts-with
       fields: {fieldExpr} || comma-separated string,
-      query: {mongodb query expression},  // pass-through to mongodb
-      lookups: boolean,                 // display names of linked documents
-      limit: number,                    // default 50, max 1000
+      query: {mongodb query expression},        // pass-through to mongodb
+      refs: boolean || comma-separated string,  // display data from linked documents, try refs=name
+      limit: number,                            // default 50, max 1000
       skip: number,
       sort: [{field1:1}, {field2:-1}]
-      count: boolean,                   // returns no records, only count, limit and skip are ignored
-      countBy:  [string]                // returns count of collection grouped by field or fields
+      count: boolean,                           // returns no records, only count, limit and skip are ignored
+      countBy:  [string]                        // returns count of collection grouped by field or fields
       links: {
-        from: {collection1: 1, collection2: 1},  // returns links from this documen
-        to: {collection3: 1, collection4: 1},    // returns links to this document
-        sort: [fieldExpr],                       // applies to link fields, not document fields
+        from: {collection1: 1, collection2: 1}, // returns links from this documen
+        to: {collection3: 1, collection4: 1},   // returns links to this document
+        sort: [fieldExpr],                      // applies to link fields, not document fields
         skip: number,
         limit: number,
         fields: {fieldExpr},
@@ -46,8 +46,8 @@ Find Documents
         linkFilter: {queryExpr},
         noDocuments: boolean,                   // set to true to return links only
         count: boolean,                         // return count of qualifying links, ignores skip and limit
-        }   // the links param can also accept and array of link specs
-      }
+      }   // the links param can also accept and array of link specs
+    }
 
 or
 

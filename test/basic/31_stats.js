@@ -30,43 +30,29 @@ exports.getUserSession = function(test) {
   })
 }
 
-exports.statsWelcomeWorks = function(test) {
-  t.get({
-    uri: '/stats'
-  }, function(err, res, body) {
-    test.done()
-  })
-}
-
-exports.badStatName404s = function(test) {
-  t.get({
-    uri: '/stats/linksFromUsersBogus' + adminCred
-  }, 404, function(err, res, body) {
-    test.done()
-  })
-}
-
-exports.statsCollectionCreatesFirstTimeAsAnnon = function(test) {
-  t.get({
-    uri: '/stats/linksFromUsers'
-  }, function(err, res, body){
-    t.assert(body.data)
-    t.assert(body.data.length)
-    test.done()
-  })
-}
 
 exports.cannotCreateStatsAsUser = function(test) {
   t.get({
-    uri: '/stats/linksFromUsers?refresh=true&' + userCred
-  }, 401, function(err, res, body){
+    uri: '/data/lstats?refresh=true&' + userCred
+  }, 403, function(err, res, body){
     test.done()
   })
 }
 
-exports.statUserFilterWorks = function(test) {
+exports.adminCanRefreshStat = function(test) {
   t.get({
-    uri: '/stats/linksFromUsers/' + testUserId + '?' + userCred
+    uri: '/data/lstats?refresh=true&' + adminCred
+  }, function(err, res, body){
+    t.assert(body.data.length)
+    // t.assert(false)
+    test.done()
+  })
+}
+
+
+exports.statFilterWorks = function(test) {
+  t.get({
+    uri: '/data/lstats?query[_from]=' + testUserId + '&' + userCred
   }, function(err, res, body) {
     t.assert(body.data)
     oldLinkCount = 0
@@ -77,14 +63,6 @@ exports.statUserFilterWorks = function(test) {
   })
 }
 
-exports.adminCanRefreshStat = function(test) {
-  t.get({
-    uri: '/stats/linksFromUsers?refresh=true&' + adminCred
-  }, function(err, res, body){
-    t.assert(body.data.length)
-    test.done()
-  })
-}
 
 // Add a new link from the test user liking himself, then update
 // the statistics and ensure that his new link appears in the stats
@@ -101,7 +79,7 @@ exports.staticsUpdateOnRefresh = function(test) {
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.get({
-      uri: '/stats/linksFromUsers/' + testUserId + '?refresh=true&' + adminCred
+      uri: '/data/lstats?query[_from]=' + testUserId + '&refresh=true&' + adminCred
     }, function(err, res2, body){
       t.assert(body.data.length)
       var newLinkCount = 0
@@ -110,9 +88,9 @@ exports.staticsUpdateOnRefresh = function(test) {
       })
       t.assert(newLinkCount === oldLinkCount + 1)
       t.assert(body.data.some(function(stat) {
-        return testUserId === stat._user
-          && 'users' === stat.collection
-          && 'like' === stat.linkType
+        return testUserId === stat._from
+          && 'user' === stat.fromSchema
+          && 'like' === stat.type
       }))
       test.done()
     })
@@ -121,22 +99,35 @@ exports.staticsUpdateOnRefresh = function(test) {
 
 exports.statsPassThroughQueryCriteria = function(test) {
   t.get({
-    uri: '/stats/linksFromUsers?query[linkType]=watch'
+    uri: '/data/lstats?query[_from]=' + testUserId + '&query[type]=like'
   }, function(err, res, body) {
     t.assert(body.data.length)
     body.data.forEach(function(doc) {
-      t.assert('watch' === doc.linkType)
+      t.assert('like' === doc.type)
     })
     test.done()
   })
 }
 
-exports.statsCanTurnLookupsOff = function(test) {
+exports.statRefsWork = function(test) {
   t.get({
-    uri: '/stats/linksFromUsers?lookups=0'
+    uri: '/data/lstats?query[_from]=' + testUserId + '&refs=true&' + userCred
   }, function(err, res, body) {
-    t.assert(body.data[0]._user)
-    t.assert(!body.data[0].user)
+    t.assert(body.data[0]._from)
+    t.assert(body.data[0].from)
+    t.assert(body.data[0].from._id)
+    t.assert(body.data[0].from.name)
+    test.done()
+  })
+}
+
+exports.statRefsDoNotPopulateForAnonUsers = function(test) {
+  return skip(test)
+  t.get({
+    uri: '/data/lstats?query[_from]=' + testUserId + '&refs=true'
+  }, function(err, res, body) {
+    t.assert(body.data[0]._from)
+    t.assert(!body.data[0].from)
     test.done()
   })
 }
