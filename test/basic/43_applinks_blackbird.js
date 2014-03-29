@@ -70,13 +70,8 @@ exports.blackBirdBakery = function(test) {
       t.assert(util.tipe.isUndefined(appMap.factual))
       t.assert(appMap.website === 1)
       t.assert(appMap.foursquare === 1)
-      t.assert(!appMap.email)
-      // These 4 prove that factual has duped this business
-      // and we have thrown own the factual crosswalk results
-      t.assert(!appMap.twitter)
-      t.assert(!appMap.urbanspoon)
-      t.assert(!appMap.yelp)
-      t.assert(!appMap.citygrid)
+      t.assert(appMap.urbanspoon === 1)
+      t.assert(appMap.yelp === 1)
       t.assert(appMap.googleplus === 1)
       log('There is a dupe facebook entry for blackbird that we cannot detect so far')
       t.assert(appMap.facebook === 1 || appMap.facebook === 2)

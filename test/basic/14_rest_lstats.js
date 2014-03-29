@@ -1,5 +1,6 @@
 /**
- *  Proxibase stats basic test
+ *  Proxibase link stats basic test
+ *     linkStats is a computed collection
  */
 
 var util = require('proxutils')
@@ -29,7 +30,6 @@ exports.getUserSession = function(test) {
     })
   })
 }
-
 
 exports.cannotCreateStatsAsUser = function(test) {
   t.get({

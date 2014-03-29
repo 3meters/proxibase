@@ -79,7 +79,7 @@ exports.getApplinksFactual = function(test) {
   t.post({
     uri: '/applinks/get',
     body: {
-      applinks: [{type: 'factual', appId: '46aef19f-2990-43d5-a9e3-11b78060150c'}],
+      applinks: [{type: 'factual', appId: '174dd9e0-8b6b-4465-b722-43907ee7d285'}],
       includeRaw: true, 
       timeout: 20000,
       log: true,
@@ -176,7 +176,7 @@ exports.compareFoursquareToFactual = function(test) {
       uri: '/applinks/get',
       // Seattle Ballroom
       body: {
-        applinks: [{type: 'factual', appId: '46aef19f-2990-43d5-a9e3-11b78060150c'}],
+        applinks: [{type: 'factual', appId: '174dd9e0-8b6b-4465-b722-43907ee7d285'}],
         includeRaw: true,
         timeout: 20000
       }
