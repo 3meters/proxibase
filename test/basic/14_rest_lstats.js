@@ -122,7 +122,6 @@ exports.statRefsWork = function(test) {
 }
 
 exports.statRefsDoNotPopulateForAnonUsers = function(test) {
-  return skip(test)
   t.get({
     uri: '/data/lstats?query[_from]=' + testUserId + '&refs=true'
   }, function(err, res, body) {
