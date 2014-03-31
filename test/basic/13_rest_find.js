@@ -108,6 +108,19 @@ exports.findFieldProjections = function(test) {
   })
 }
 
+exports.findFieldProjectionsGetSyntax = function(test) {
+  t.get({
+    uri: '/find/users?query[email]=' + testUser1.email + '&fields=email,name,-_id&' + adminCred,
+  }, function(err, res, body) {
+    t.assert(body.data.length === 1 && body.count === 1)
+    t.assert(body.data[0].email === testUser1.email)
+    t.assert(body.data[0].name === testUser1.name)
+    t.assert(!body.data[0]._id)
+    t.assert(!body.data[0]._owner)
+    test.done()
+  })
+}
+
 exports.findNext = function(test) {
   t.get('/data/places/next', 401, function(err, res, body) {
     t.get('/data/places/next?' + adminCred, function(err, res, body) {
