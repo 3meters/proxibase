@@ -33,7 +33,7 @@ exports.getUserSession = function(test) {
 
 exports.cannotCreateStatsAsUser = function(test) {
   t.get({
-    uri: '/data/lstats?refresh=true&' + userCred
+    uri: '/data/tostats?refresh=true&' + userCred
   }, 403, function(err, res, body){
     test.done()
   })
@@ -41,7 +41,7 @@ exports.cannotCreateStatsAsUser = function(test) {
 
 exports.adminCanRefreshStat = function(test) {
   t.get({
-    uri: '/data/lstats?refresh=true&' + adminCred
+    uri: '/data/tostats?refresh=true&' + adminCred
   }, function(err, res, body){
     t.assert(body.data.length)
     // t.assert(false)
@@ -52,7 +52,7 @@ exports.adminCanRefreshStat = function(test) {
 
 exports.statFilterWorks = function(test) {
   t.get({
-    uri: '/data/lstats?query[_from]=' + testUserId + '&' + userCred
+    uri: '/data/tostats?query[_to]=' + testUserId + '&' + userCred
   }, function(err, res, body) {
     t.assert(body.data)
     oldLinkCount = 0
@@ -64,8 +64,9 @@ exports.statFilterWorks = function(test) {
 }
 
 
-// Add a new link from the test user liking himself, then update
-// the statistics and ensure that his new link appears in the stats
+// Manually add a new link from the test user to the same user liking
+// himself, then update the statistics and ensure that his new link
+// appears in the stats
 exports.staticsUpdateOnRefresh = function(test) {
   t.post({
     uri: '/data/links?' + userCred,
@@ -79,7 +80,7 @@ exports.staticsUpdateOnRefresh = function(test) {
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.get({
-      uri: '/data/lstats?query[_from]=' + testUserId + '&refresh=true&' + adminCred
+      uri: '/data/tostats?query[_to]=' + testUserId + '&refresh=true&' + adminCred
     }, function(err, res2, body){
       t.assert(body.data.length)
       var newLinkCount = 0
@@ -88,8 +89,8 @@ exports.staticsUpdateOnRefresh = function(test) {
       })
       t.assert(newLinkCount === oldLinkCount + 1)
       t.assert(body.data.some(function(stat) {
-        return testUserId === stat._from
-          && 'user' === stat.fromSchema
+        return testUserId === stat._to
+          && 'user' === stat.toSchema
           && 'like' === stat.type
       }))
       test.done()
@@ -99,7 +100,7 @@ exports.staticsUpdateOnRefresh = function(test) {
 
 exports.statsPassThroughQueryCriteria = function(test) {
   t.get({
-    uri: '/data/lstats?query[_from]=' + testUserId + '&query[type]=like'
+    uri: '/data/tostats?query[_to]=' + testUserId + '&query[type]=like'
   }, function(err, res, body) {
     t.assert(body.data.length)
     body.data.forEach(function(doc) {
@@ -111,22 +112,22 @@ exports.statsPassThroughQueryCriteria = function(test) {
 
 exports.statRefsWork = function(test) {
   t.get({
-    uri: '/data/lstats?query[_from]=' + testUserId + '&refs=true&' + userCred
+    uri: '/data/tostats?query[_to]=' + testUserId + '&refs=true&' + userCred
   }, function(err, res, body) {
-    t.assert(body.data[0]._from)
-    t.assert(body.data[0].from)
-    t.assert(body.data[0].from._id)
-    t.assert(body.data[0].from.name)
+    t.assert(body.data[0]._to)
+    t.assert(body.data[0].to)
+    t.assert(body.data[0].to._id)
+    t.assert(body.data[0].to.name)
     test.done()
   })
 }
 
 exports.statRefsDoNotPopulateForAnonUsers = function(test) {
   t.get({
-    uri: '/data/lstats?query[_from]=' + testUserId + '&refs=true'
+    uri: '/data/tostats?query[_to]=' + testUserId + '&refs=true'
   }, function(err, res, body) {
-    t.assert(body.data[0]._from)
-    t.assert(!body.data[0].from)
+    t.assert(body.data[0]._to)
+    t.assert(!body.data[0].to)
     test.done()
   })
 }
