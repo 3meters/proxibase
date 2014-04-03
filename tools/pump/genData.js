@@ -19,6 +19,7 @@ var docs = {                            // Map of collections to be generated
   beacons: [],
   places: [],
   posts: [],
+  messages: [],
   applinks: [],
   comments: [],
   links: [],
@@ -29,6 +30,7 @@ var options = {                           // Default options
   beacons: 10,                         // Count of beacons
   epb: 1,                             // Places per beacon
   spe: 5,                             // Posts (aka children) per place
+  mpp: 5,                             // Messages per place
   ape: 5,                             // Applinks per place
   cpe: 2,                             // Comments per post and place entity
   likes: 2,
@@ -38,6 +40,7 @@ var options = {                           // Default options
 var beaconIds = []
 var placeIds = []
 var postIds = []
+var messageIds = []
 var applinkIds = []
 var commentIds = []
 var entityCount = { applinks: 0, beacons: 0, comments: 0, places: 0, posts: 0 }
@@ -90,6 +93,9 @@ function run(callback) {
 
   log('generating posts')
   genEntityRecords(placeIds, options.spe, 'post', 'content')
+
+  log('generating messages')
+  genEntityRecords(placeIds, options.mpp, 'message', 'content')
 
   log('generating applinks')
   genEntityRecords(placeIds, options.ape, 'applink', 'content')
@@ -229,6 +235,7 @@ function genEntityRecords(parentIds, count, entitySchema, linkType) {
         case 'place':   placeIds.push(newEnt._id);    break
         case 'applink': applinkIds.push(newEnt._id);  break
         case 'post':    postIds.push(newEnt._id);    break
+        case 'message': messageIds.push(newEnt._id);    break
         case 'comment': commentIds.push(newEnt._id);  break
       }
 

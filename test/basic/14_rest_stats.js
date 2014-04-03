@@ -131,3 +131,57 @@ exports.statRefsDoNotPopulateForAnonUsers = function(test) {
     test.done()
   })
 }
+
+// This depends on generated test data added in version 0.9.35
+exports.doCountLinksToPlacesFromMessages = function(test) {
+  t.get({
+    uri: '/do/countLinksTo?query[toSchema]=place&query[fromSchema]=message',
+  }, function(err, res, body) {
+    t.assert(body.data && body.data.length)
+    body.data.forEach(function(doc) {
+      t.assert(doc._id)
+      t.assert(doc.name)
+      t.assert(doc.photo)
+      t.assert(doc.category)
+      t.assert(doc.count)
+      t.assert(doc.rank)
+    })
+    test.done()
+  })
+}
+
+exports.doCountLinksToPlacesTypeWatch = function(test) {
+  t.get({
+    uri: '/do/countLinksTo?query[toSchema]=place&query[type]=like',
+  }, function(err, res, body) {
+    t.assert(body.data && body.data.length)
+    body.data.forEach(function(doc) {
+      t.assert(doc._id)
+      t.assert(doc.name)
+      t.assert(doc.photo)
+      t.assert(doc.category)
+      t.assert(doc.count)
+      t.assert(doc.rank)
+    })
+    test.done()
+  })
+}
+
+exports.doCountLinksFromPeopleToPlaces = function(test) {
+  // do/countLinksFrom is NYI
+  return skip(test)
+  t.get({
+    uri: '/do/countLinksFrom?query[fromSchema]=people&query[toSchema]=place',
+  }, function(err, res, body) {
+    t.assert(body.data && body.data.length)
+    body.data.forEach(function(doc) {
+      t.assert(doc._id)
+      t.assert(doc.name)
+      t.assert(doc.photo)
+      t.assert(doc.category)
+      t.assert(doc.count)
+      t.assert(doc.rank)
+    })
+    test.done()
+  })
+}

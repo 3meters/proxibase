@@ -16,6 +16,7 @@ var
   commentId = _schemas.comment.id + '.' + timeStamp + '.000001',
   placeId = _schemas.place.id + '.' + timeStamp + '.000001',
   postId = _schemas.post.id + '.' + timeStamp + '.000001',
+  messageId = _schemas.message.id + '.' + timeStamp + '.000001',
   documentId = _schemas.document.id + '.' + timeStamp + '.000001',
   linkId = _schemas.link.id + '.'  + timeStamp + '.000001',
   latitude = 47,                                              // Nearby
@@ -29,6 +30,7 @@ var
       beacons: 10,
       epb: 1,       // place entities per beacon
       spe: 5,       // post entities per place entity
+      mpp: 5,       // messages per place entity
       ape: 5,       // applinks per place
       cpe: 2,       // comment entities per place and post entity
       likes: 2,
@@ -40,6 +42,7 @@ var
       beacons: 100,
       epb: 5,       // place entities per beacon
       spe: 5,       // post entities per place entity
+      mpp: 5,       // messages per place
       ape: 5,       // applinks per place
       cpe: 2,       // comment entities per place and post entity
       likes: 2,
@@ -131,6 +134,13 @@ defaultDoc.post = {
   name: 'Mona Lisa',
   subtitle: 'Leonardo daVinci',
   description: 'Mona Lisa (also known as La Gioconda or La Joconde) is a 16th-century portrait painted in oil on a poplar panel by Leonardo di ser Piero da Vinci during the Renaissance in Florence, Italy.',
+  photo: {prefix:"https://s3.amazonaws.com/3meters_images/test_preview.jpg"},
+  _creator: uid1,
+}
+
+defaultDoc.message = {
+  _id: messageId,
+  description: 'Hey, check out my cool message to everyone here',
   photo: {prefix:"https://s3.amazonaws.com/3meters_images/test_preview.jpg"},
   _creator: uid1,
 }
