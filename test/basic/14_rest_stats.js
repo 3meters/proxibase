@@ -39,16 +39,23 @@ exports.cannotCreateStatsAsUser = function(test) {
   })
 }
 
-exports.adminCanRefreshStat = function(test) {
+exports.adminCanRefreshtoStats = function(test) {
   t.get({
     uri: '/data/tostats?refresh=true&' + adminCred
   }, function(err, res, body){
     t.assert(body.data.length)
-    // t.assert(false)
     test.done()
   })
 }
 
+exports.adminCanRefreshfromStats = function(test) {
+  t.get({
+    uri: '/data/fromstats?refresh=true&' + adminCred
+  }, function(err, res, body){
+    t.assert(body.data.length)
+    test.done()
+  })
+}
 
 exports.statFilterWorks = function(test) {
   t.get({
@@ -167,18 +174,31 @@ exports.doCountLinksToPlacesTypeWatch = function(test) {
   })
 }
 
-exports.doCountLinksFromPeopleToPlaces = function(test) {
-  // do/countLinksFrom is NYI
-  return skip(test)
+exports.doCountCreatedLinksFromUsers = function(test) {
   t.get({
-    uri: '/do/countLinksFrom?query[fromSchema]=people&query[toSchema]=place',
+    uri: '/do/countLinksFrom?query[fromSchema]=user&query[type]=create',
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)
     body.data.forEach(function(doc) {
       t.assert(doc._id)
       t.assert(doc.name)
       t.assert(doc.photo)
-      t.assert(doc.category)
+      t.assert(doc.count)
+      t.assert(doc.rank)
+    })
+    test.done()
+  })
+}
+
+exports.doCountPlacesByTunings = function(test) {
+  t.get({
+    uri: '/do/countLinksFrom?query[fromSchema]=place&query[type]=proximity',
+  }, function(err, res, body) {
+    t.assert(body.data && body.data.length)
+    body.data.forEach(function(doc) {
+      t.assert(doc._id)
+      t.assert(doc.name)
+      t.assert(doc.photo)
       t.assert(doc.count)
       t.assert(doc.rank)
     })
