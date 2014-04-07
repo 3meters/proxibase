@@ -686,6 +686,25 @@ exports.sortAltFormatWorks = function(test) {
   })
 }
 
+exports.sortAltFormat2Works = function(test) {
+  t.get('/data/places?sort=_owner,-namelc',
+  function(err, res, body) {
+    var namelc, _owner = ''
+    body.data.forEach(function(place, i) {
+      if (place._owner !== _owner) {
+        t.assert(place._owner > _owner, i)
+        _owner = place._owner
+        namelc = 'zzzzzzzzzzzzzzzzzzzzzzzz'
+      }
+      if (place.namelc !== namelc) {
+        t.assert(place.namelc < namelc, i)
+        namelc = place.namelc
+      }
+    })
+    test.done()
+  })
+}
+
 exports.formatDatesWorks = function(test) {
   t.get('/data/places?datesToUTC=1',
   function(err, res, body) {
