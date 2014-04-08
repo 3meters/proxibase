@@ -197,7 +197,7 @@ exports.getEntitiesCreatedByUser = function (test) {
       },
     }
   }, function(err, res, body) {
-    t.assert(body.count > 0 && body.count <= statics.optionsLimitDefault)
+    t.assert(body.count > 0 && body.count <= statics.db.limits.default)
     test.done()
   })
 }
@@ -214,7 +214,7 @@ exports.getEntitiesCreatedByUserPostsOnly = function (test) {
       },
     }
   }, function(err, res, body) {
-    t.assert(body.count > 0 && body.count <= statics.optionsLimitDefault)
+    t.assert(body.count > 0 && body.count <= statics.db.limits.default)
     t.assert(body.data && body.data[0] && body.data[0].schema === statics.schemaPost)
     test.done()
   })

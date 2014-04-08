@@ -27,6 +27,11 @@ module.exports = {
     host: 'localhost',
     port: 27017,
     database: 'prox',                   // dev:prox test:smokeData stage:stage production:prox perfTest: perfTest
+    limits: {
+      default: 50,
+      max: 1000,
+      join: 1000,
+    },
   },
   maxWorkers: -1,                       // default -1 means one per cpu core
   ignoreTasks: false,                   // default false, if true skip autostart of recurring tasks
