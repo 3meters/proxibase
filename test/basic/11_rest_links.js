@@ -245,7 +245,7 @@ exports.findLinksFromWorksWithGetSyntax = function(test) {
     uri: '/find/documents?links[from][users]=1&' + userCred,
   }
   t.get(query, function(err, res, body) {
-    t.assert(body.data.length >= 3)
+    t.assert(body.data.length === 2)
     body.data.forEach(function(doc) {
       t.assert(doc.links)
       t.assert(doc.links.from)              // not nested in an array
@@ -271,7 +271,7 @@ exports.findLinksFromWorksWithGetSyntax = function(test) {
   })
 }
 
-exports.findAllLinksWorks = function(test) {
+_exports.findAllLinksWorks = function(test) {
   var query = {
     uri: '/find/documents?links[to]=1&links[from]=1&' + userCred,
   }
