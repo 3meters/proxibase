@@ -69,6 +69,7 @@ var testPlaceCustom = {
 
 var testMessage = {
   _id : "me.111111.11111.111.111111",
+  _root : "me.111111.11111.111.111111",
   schema : util.statics.schemaMessage,
   type : "root",
   lifetime: 1000,
@@ -82,6 +83,7 @@ var testMessage = {
 
 var testReply = {
   _id : "me.111111.11111.111.111112",
+  _root : "me.111111.11111.111.111111",
   schema : util.statics.schemaMessage,
   type : "reply",
   expired: false,
@@ -471,6 +473,47 @@ exports.expireMessages = function(test) {
             test.done()
           })
         })
+      })
+    })
+  })
+}
+
+exports.removeMessageFromPlace = function(test) {
+  t.post({
+    uri: '/do/removeLinks?' + userCredTom,  // place owner
+    body: {
+      toId: testPlaceCustom._id,
+      fromId: testMessage._id,              // owned by bob
+      type: util.statics.typeContent,
+      actionEvent: 'remove'
+    }
+  }, function(err, res, body) {
+    t.assert(body.info.indexOf('success') > 0)
+
+    /* Check unlike entity */
+    t.post({
+      uri: '/find/links',
+      body: {
+        query:{
+          _to:testPlaceCustom._id,
+          _from:testMessage._id,            // owned by bob
+          type:util.statics.typeContent
+        }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 0)
+      t.post({
+        uri: '/find/links',
+        body: {
+          query:{
+            _to:testPlaceCustom._id,
+            _from:testReply._id,            // owned by tom
+            type:util.statics.typeContent
+          }
+        }
+      }, function(err, res, body) {
+        t.assert(body.count === 0)
+        test.done()
       })
     })
   })
