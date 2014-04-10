@@ -450,7 +450,8 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
               t.assert(body.data)
               t.assert(1 === body.data.length)
               var link = body.data[0]
-              t.assert(link._owner === user._id)
+              t.assert(link._creator === user._id)
+              t.assert(link._owner === admin._id)   // strong links to entites are owned by ent owner
               t.assert('content' === link.type)
 
               // Add a user-created place inside the ballroom

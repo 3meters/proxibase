@@ -311,17 +311,33 @@ exports.insertMessage = function (test) {
     }, function(err, res, body) {
       t.assert(body.count === 1)
 
-      /* Check activityDate for place */
+      /* Check link */
       t.post({
-        uri: '/find/places',
+        uri: '/find/links?' + adminCred,
         body: {
-          query:{ _id:testPlaceCustom._id }
+          query: {
+            _to: testPlaceCustom._id,
+            _from: testMessage._id,
+          }
         }
       }, function(err, res, body) {
-        t.assert(body.count === 1)
-        t.assert(body.data && body.data[0])
-        t.assert(body.data[0].activityDate >= activityDate)
-        test.done()
+        t.assert(body && body.data && 1 === body.data.length)
+        var link = body.data[0]
+        t.assert(link._creator === testUserBob._id)
+        t.assert(link._owner === testUserTom._id)  // strong links to entites are owned by ent owner
+
+        /* Check activityDate for place */
+        t.post({
+          uri: '/find/places',
+          body: {
+            query:{ _id:testPlaceCustom._id }
+          }
+        }, function(err, res, body) {
+          t.assert(body.count === 1)
+          t.assert(body.data && body.data[0])
+          t.assert(body.data[0].activityDate >= activityDate)
+          test.done()
+        })
       })
     })
   })
