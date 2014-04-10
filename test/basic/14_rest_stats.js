@@ -33,24 +33,24 @@ exports.getUserSession = function(test) {
 
 exports.cannotCreateStatsAsUser = function(test) {
   t.get({
-    uri: '/data/tostats?refresh=true&' + userCred
+    uri: '/data/tos?refresh=true&' + userCred
   }, 403, function(err, res, body){
     test.done()
   })
 }
 
-exports.adminCanRefreshtoStats = function(test) {
+exports.adminCanRefreshTos = function(test) {
   t.get({
-    uri: '/data/tostats?refresh=true&' + adminCred
+    uri: '/data/tos?refresh=true&' + adminCred
   }, function(err, res, body){
     t.assert(body.data.length)
     test.done()
   })
 }
 
-exports.adminCanRefreshfromStats = function(test) {
+exports.adminCanRefreshfroms = function(test) {
   t.get({
-    uri: '/data/fromstats?refresh=true&' + adminCred
+    uri: '/data/froms?refresh=true&' + adminCred
   }, function(err, res, body){
     t.assert(body.data.length)
     test.done()
@@ -59,7 +59,7 @@ exports.adminCanRefreshfromStats = function(test) {
 
 exports.statFilterWorks = function(test) {
   t.get({
-    uri: '/data/tostats?query[_to]=' + testUserId + '&' + userCred
+    uri: '/data/tos?query[_to]=' + testUserId + '&' + userCred
   }, function(err, res, body) {
     t.assert(body.data)
     oldLinkCount = 0
@@ -87,7 +87,7 @@ exports.staticsUpdateOnRefresh = function(test) {
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.get({
-      uri: '/data/tostats?query[_to]=' + testUserId + '&refresh=true&' + adminCred
+      uri: '/data/tos?query[_to]=' + testUserId + '&refresh=true&' + adminCred
     }, function(err, res2, body){
       t.assert(body.data.length)
       var newLinkCount = 0
@@ -107,7 +107,7 @@ exports.staticsUpdateOnRefresh = function(test) {
 
 exports.statsPassThroughQueryCriteria = function(test) {
   t.get({
-    uri: '/data/tostats?query[_to]=' + testUserId + '&query[type]=like'
+    uri: '/data/tos?query[_to]=' + testUserId + '&query[type]=like'
   }, function(err, res, body) {
     t.assert(body.data.length)
     body.data.forEach(function(doc) {
@@ -119,7 +119,7 @@ exports.statsPassThroughQueryCriteria = function(test) {
 
 exports.statRefsWork = function(test) {
   t.get({
-    uri: '/data/tostats?query[_to]=' + testUserId + '&refs=true&' + userCred
+    uri: '/data/tos?query[_to]=' + testUserId + '&refs=true&' + userCred
   }, function(err, res, body) {
     t.assert(body.data[0]._to)
     t.assert(body.data[0].to)
@@ -131,7 +131,7 @@ exports.statRefsWork = function(test) {
 
 exports.statRefsDoNotPopulateForAnonUsers = function(test) {
   t.get({
-    uri: '/data/tostats?query[_to]=' + testUserId + '&refs=true'
+    uri: '/data/tos?query[_to]=' + testUserId + '&refs=true'
   }, function(err, res, body) {
     t.assert(body.data[0]._to)
     t.assert(!body.data[0].to)
