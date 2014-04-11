@@ -143,29 +143,24 @@ exports.statRefsDoNotPopulateForAnonUsers = function(test) {
 exports.doCountLinksToPlacesFromMessages = function(test) {
   t.post({
     uri: '/do/countLinksTo',
-    body: [
-      {$match: {$and: [
+    body: {
+      query: {$and: [
         {day: {$lt: '130315'}},
         {toSchema: 'place'},
         {fromSchema: 'message'},
-      ]}},
-      {$group: {
-        _id: '$_to',
-        count: {$sum: '$count'}
-      }},
-    ]
+      ]},
+    }
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)
-    /*
     body.data.forEach(function(doc) {
       t.assert(doc._id)
       t.assert(doc.name)
       t.assert(doc.photo)
+      t.assert(doc.schema)
       t.assert(doc.category)
       t.assert(doc.count)
       t.assert(doc.rank)
     })
-    */
     test.done()
   })
 }
