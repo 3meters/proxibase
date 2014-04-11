@@ -69,7 +69,6 @@ var testPlaceCustom = {
 
 var testMessage = {
   _id : "me.111111.11111.111.111111",
-  _root : "me.111111.11111.111.111111",
   schema : util.statics.schemaMessage,
   type : "root",
   lifetime: 1000,
