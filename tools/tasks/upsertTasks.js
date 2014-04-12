@@ -6,11 +6,11 @@ var async = require('async')
 var log = util.log
 
 var host = 'https://api.aircandi.com'
-var host = 'https://localhost:6643'
-var adminpw = 'admin'
+// var host = 'https://localhost:6643'
+var adminpw = ''
 
 // accept unsigned certs from test or dev boxes
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0
+// process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0
 
 function run() {
   var session
