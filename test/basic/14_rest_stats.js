@@ -165,7 +165,7 @@ exports.doCountLinksToPlacesFromMessages = function(test) {
   })
 }
 
-_exports.doCountLinksToPlacesTypeWatch = function(test) {
+exports.doCountLinksToPlacesTypeWatch = function(test) {
   t.get({
     uri: '/do/countLinksTo?query[toSchema]=place&query[type]=like',
   }, function(err, res, body) {
@@ -182,7 +182,7 @@ _exports.doCountLinksToPlacesTypeWatch = function(test) {
   })
 }
 
-_exports.doCountCreatedLinksFromUsers = function(test) {
+exports.doCountCreatedLinksFromUsers = function(test) {
   t.get({
     uri: '/do/countLinksFrom?query[fromSchema]=user&query[type]=create',
   }, function(err, res, body) {
@@ -198,7 +198,7 @@ _exports.doCountCreatedLinksFromUsers = function(test) {
   })
 }
 
-_exports.doCountPlacesByTunings = function(test) {
+exports.doCountPlacesByTunings = function(test) {
   t.get({
     uri: '/do/countLinksFrom?query[fromSchema]=place&query[type]=proximity',
   }, function(err, res, body) {
