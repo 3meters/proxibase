@@ -59,12 +59,12 @@ exports.adminCanRefreshfroms = function(test) {
 
 exports.statFilterWorks = function(test) {
   t.get({
-    uri: '/data/tos?query[_to]=' + testUserId + '&' + userCred
+    uri: '/data/tos?query[_id._to]=' + testUserId + '&' + userCred
   }, function(err, res, body) {
     t.assert(body.data)
     oldLinkCount = 0
     body.data.forEach(function(stat) {
-      oldLinkCount += stat.count
+      oldLinkCount += stat.value
     })
     test.done()
   })
@@ -87,18 +87,18 @@ exports.staticsUpdateOnRefresh = function(test) {
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.get({
-      uri: '/data/tos?query[_to]=' + testUserId + '&refresh=true&' + adminCred
+      uri: '/data/tos?query[_id._to]=' + testUserId + '&refresh=true&' + adminCred
     }, function(err, res2, body){
       t.assert(body.data.length)
       var newLinkCount = 0
       body.data.forEach(function(stat) {
-        newLinkCount += stat.count
+        newLinkCount += stat.value
       })
       t.assert(newLinkCount === oldLinkCount + 1)
       t.assert(body.data.some(function(stat) {
-        return testUserId === stat._to
-          && 'user' === stat.toSchema
-          && 'like' === stat.type
+        return testUserId === stat._id._to
+          && 'user' === stat._id.toSchema
+          && 'like' === stat._id.type
       }))
       test.done()
     })
@@ -107,34 +107,35 @@ exports.staticsUpdateOnRefresh = function(test) {
 
 exports.statsPassThroughQueryCriteria = function(test) {
   t.get({
-    uri: '/data/tos?query[_to]=' + testUserId + '&query[type]=like'
+    uri: '/data/tos?query[_id._to]=' + testUserId + '&query[_id.type]=like'
   }, function(err, res, body) {
     t.assert(body.data.length)
     body.data.forEach(function(doc) {
-      t.assert('like' === doc.type)
+      t.assert('like' === doc._id.type)
     })
     test.done()
   })
 }
 
-exports.statRefsWork = function(test) {
+_exports.statRefsWork = function(test) {
   t.get({
-    uri: '/data/tos?query[_to]=' + testUserId + '&refs=true&' + userCred
+    uri: '/data/tos?query[_id._to]=' + testUserId + '&refs=true&' + userCred
   }, function(err, res, body) {
-    t.assert(body.data[0]._to)
-    t.assert(body.data[0].to)
-    t.assert(body.data[0].to._id)
-    t.assert(body.data[0].to.name)
+    t.assert(body.data[0]._id)
+    t.assert(body.data[0]._id._to)
+    t.assert(body.data[0]._id.to)
+    t.assert(body.data[0]._id.to._id)
+    t.assert(body.data[0]._id.to.name)
     test.done()
   })
 }
 
 exports.statRefsDoNotPopulateForAnonUsers = function(test) {
   t.get({
-    uri: '/data/tos?query[_to]=' + testUserId + '&refs=true'
+    uri: '/data/tos?query[_id._to]=' + testUserId + '&refs=true'
   }, function(err, res, body) {
-    t.assert(body.data[0]._to)
-    t.assert(!body.data[0].to)
+    t.assert(body.data[0]._id._to)
+    t.assert(!body.data[0]._id.to)
     test.done()
   })
 }
@@ -145,9 +146,9 @@ exports.doCountLinksToPlacesFromMessages = function(test) {
     uri: '/do/countLinksTo',
     body: {
       query: {$and: [
-        {day: {$lt: '130315'}},
-        {toSchema: 'place'},
-        {fromSchema: 'message'},
+        {'_id.day': {$lt: '130315'}},
+        {'_id.toSchema': 'place'},
+        {'_id.fromSchema': 'message'},
       ]},
     }
   }, function(err, res, body) {
@@ -167,7 +168,7 @@ exports.doCountLinksToPlacesFromMessages = function(test) {
 
 exports.doCountLinksToPlacesTypeWatch = function(test) {
   t.get({
-    uri: '/do/countLinksTo?query[toSchema]=place&query[type]=like',
+    uri: '/do/countLinksTo?query[_id.toSchema]=place&query[_id.type]=like',
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)
     body.data.forEach(function(doc) {
@@ -184,7 +185,7 @@ exports.doCountLinksToPlacesTypeWatch = function(test) {
 
 exports.doCountCreatedLinksFromUsers = function(test) {
   t.get({
-    uri: '/do/countLinksFrom?query[fromSchema]=user&query[type]=create',
+    uri: '/do/countLinksFrom?query[_id.fromSchema]=user&query[_id.type]=create',
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)
     body.data.forEach(function(doc) {
@@ -200,7 +201,7 @@ exports.doCountCreatedLinksFromUsers = function(test) {
 
 exports.doCountPlacesByTunings = function(test) {
   t.get({
-    uri: '/do/countLinksFrom?query[fromSchema]=place&query[type]=proximity',
+    uri: '/do/countLinksFrom?query[_id.fromSchema]=place&query[_id.type]=proximity',
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)
     body.data.forEach(function(doc) {
