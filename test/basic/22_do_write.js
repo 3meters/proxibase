@@ -1052,7 +1052,6 @@ exports.untrackEntityProximity = function(test) {
     body: {
       entityId:testPlaceOne._id,
       beacons:[testBeacon, testBeacon2, testBeacon3],
-      primaryBeaconId:testBeacon2._id,
       actionEvent:'proximity_minus',
     }
   }, function(err, res, body) {
