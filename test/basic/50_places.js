@@ -38,10 +38,11 @@ var ballRoomLoc = {
 
 var savedRoxy  // shared between tests
 
-// Some persisted Ids.  No provider means 4square.  Factuals change periodically.
+// Some persisted Ids. Factuals change periodically.
 // Seattle Ballroom
-var ballRoomId = '4abebc45f964a520a18f20e3'
+var ballRoom4sId = '4abebc45f964a520a18f20e3'
 var ballRoomFacId = '46aef19f-2990-43d5-a9e3-11b78060150c'
+var ballRoomYelpId = 'the-ballroom-seattle'
 var ballRoomGooId = 'f0147a535bedf4bb948f35379873cab0747ba9e2|aGoogleRef'
 
 // Cafe Ladro
@@ -76,47 +77,29 @@ exports.getCategories = function(test) {
   })
 }
 
-exports.getPlacesNearLocationCapsBadLimits = function(test) {
-  if (disconnected) return skip(test)
-  var post = {
-    uri: '/places/near',
-    body: {
-      location: ballRoomLoc,
-      provider: 'foursquare',
-      includeRaw: true,
-      timeout: 15000,
-      log: true,
-      limit: 100,
-    }
-  }
-  t.post(post, function(err, res, body) {
-    t.assert(30 < body.data.length < 50)  // foursquares limit is 50, popularity filter applied after
-    // Google's max limit is 200
-    post.body.provider = 'google'
-    t.post(post, function(err, res, body) {
-      t.assert(90 < body.data.length <= 100)
-      test.done()
-    })
-  })
-}
-
-exports.getPlacesNearLocationFoursquare = function(test) {
+exports.getPlacesNearLocation = function(test) {
   if (disconnected) return skip(test)
   t.post({
     uri: '/places/near',
     body: {
       location: ballRoomLoc,
-      provider: 'foursquare',
       radius: 500,
-      includeRaw: false,
-      limit: 10,
+      includeRaw: true,
+      limit: 50,
+      waitForContent: true,
       timeout: 15000,
     }
   }, function(err, res, body) {
     var foundBallroom = 0
     var places = body.data
-    t.assert(places.length === 10)
+    t.assert(places.length === 50)
     var lastDistance = 0
+    placeCount = {
+      aircandi: 0,
+      foursquare: 0,
+      google: 0,
+      yelp: 0
+    }
     places.forEach(function(place) {
       // proves sorted by distance from current location
       var distance = util.haversine(
@@ -128,7 +111,10 @@ exports.getPlacesNearLocationFoursquare = function(test) {
       t.assert(distance > lastDistance)
       lastDistance = distance
       t.assert(place.provider)
-      if (place.provider.foursquare === ballRoomId) foundBallroom++
+      for (var p in place.provider) {
+        placeCount[p]++
+      }
+      if (place.provider.foursquare === ballRoom4sId) foundBallroom++
       var cat = place.category
       t.assert(cat)
       t.assert(cat.id)
@@ -137,60 +123,62 @@ exports.getPlacesNearLocationFoursquare = function(test) {
       var iconFileName = path.join(util.statics.assetsDir, '/img/categories', cat.photo.prefix + '88' + cat.photo.suffix)
       t.assert(fs.existsSync(iconFileName))
     })
-    t.assert(foundBallroom === 1)
+    t.assert(!placeCount.aircandi, placeCount)
+    t.assert(placeCount.foursquare, placeCount)
+    t.assert(placeCount.yelp, placeCount)
+    t.assert(placeCount.google, placeCount)
+    t.assert(foundBallroom === 1, {foundBallroom: foundBallroom})
     test.done()
   })
 }
 
-exports.placesNearExcludeWorksFoursquare = function(test) {
+exports.placesNearExcludeWorks = function(test) {
   if (disconnected) return skip(test)
   t.post({
     uri: '/places/near',
     body: {
       location: ballRoomLoc,
-      provider: 'foursquare',
-      excludePlaceIds: [ballRoomId], // The Ballroom's 4sId
+      excludePlaceIds: [ballRoom4sId], // The Ballroom's 4sId
+      waitForContent: true,
       timeout: 15000,
     }
   }, function(err, res) {
     var places = res.body.data
     places.forEach(function(place) {
-      t.assert(place.provider.foursquare !== ballRoomId)
+      t.assert(place.provider.foursquare !== ballRoom4sId)
+      t.assert(place.provider.google !== ballRoomGooId)
+      t.assert(place.provider.yelp !== ballRoomYelpId)
+      t.assert(place.provider.factual !== ballRoomFacId)
     })
     test.done()
   })
 }
 
 
-exports.getPlacesNearLocationYelp = function(test) {
+exports.getPlacesNearLocationAgain = function(test) {
   if (disconnected) return skip(test)
   var foundRoxy = false
   t.post({
     uri: '/places/near',
     body: {
       location: ballRoomLoc,
-      provider: 'yelp',
-      radius: 200,
-      limit: 20,
-      excludePlaceIds: [ballRoomFacId],
+      radius: 500,
+      limit: 50,
       includeRaw: true,
+      waitForContent: true,
       log: true,
     }
   }, function(err, res) {
     var places = res.body.data
-    t.assert(places.length >= 8)
+    t.assert(places.length === 50)
+    var cAircandi = 0
     places.forEach(function(place) {
-      t.assert(place)
       t.assert(place.provider)
-      t.assert(place.provider.yelp)
-      t.assert(ballRoomFacId !== place.provider.yelp) //excluded
-      var cat = place.category
-      t.assert(cat)
-      t.assert(cat.name)
-      t.assert(cat.photo)
-      var iconFileName = path.join(util.statics.assetsDir, '/img/categories', cat.photo.prefix + '88' + cat.photo.suffix)
-      t.assert(fs.existsSync(iconFileName))
+      if (place.provider.aircandi) cAircandi++
     })
+    debug('cAircandi', cAircandi)
+    debug('places.length', places.length)
+    t.assert(cAircandi === places.length)
     var roxys = places.filter(function(place) {
       return (place.provider.yelp === roxyYelpId) // Roxy's Diner
     })
@@ -245,7 +233,6 @@ exports.getPlacesNearLocationGoogle = function(test) {
     uri: '/places/near',
     body: {
       location: ballRoomLoc,
-      provider: 'google',
       radius: 200,
       limit: 50,
       excludePlaceIds: [ballRoomGooId],
@@ -278,7 +265,7 @@ exports.getPlacesNearLocationGoogle = function(test) {
       // Not all places returned need to have place.provider.google
       // They can be entities we already have in our system given by
       // foursquare, factual, or user
-      t.assert(ballRoomId !== place.provider.google) //excluded
+      t.assert(ballRoomGooId !== place.provider.google) //excluded
       t.assert(place.location.lat)
       t.assert(place.location.lng)
       var cat = place.category
@@ -287,7 +274,7 @@ exports.getPlacesNearLocationGoogle = function(test) {
       t.assert(cat.photo)
       var iconFileName = path.join(util.statics.assetsDir, '/img/categories', cat.photo.prefix + '88' + cat.photo.suffix)
       t.assert(fs.existsSync(iconFileName))
-      if (roxyGooId === place.provider.google.split('|')[0]) {
+      if (place.provider.google && roxyGooId === place.provider.google.split('|')[0]) {
         foundRoxy++
         t.assert(place.address)
         t.assert(place.city)
@@ -312,7 +299,7 @@ exports.insertPlaceEntitySuggestApplinksFromFactual = function(test) {
     insertApplinks: true,
     entity: util.clone(testEntity),
   }
-  body.entity.provider = {foursquare: ballRoomId}  // Seattle Ballroom
+  body.entity.provider = {foursquare: ballRoom4sId}  // Seattle Ballroom
   t.post({uri: '/do/insertEntity?' + userCred, body: body}, 201,
     function(err, res) {
       t.assert(res.body.data && res.body.data.linksIn)
@@ -320,7 +307,7 @@ exports.insertPlaceEntitySuggestApplinksFromFactual = function(test) {
       t.assert(links.length > 3)
       t.assert(links.some(function(link) {
         return (link.shortcut.app === 'foursquare'
-            && link.shortcut.appId === ballRoomId
+            && link.shortcut.appId === ballRoom4sId
           )
       }))
       t.assert(!links.some(function(link) {   // Invisible due to alcohal
@@ -357,24 +344,24 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
     uri: '/places/near',
     body: {
       location:  ballRoomLoc,
-      provider: 'foursquare',
       limit: 50,
+      waitForContent: true,
     }
   }, function(err, res, body) {
     var places = body.data
     var ksthai = null
     var hasYelpProviderId = 0
-    t.assert(40 < places.length < 50)
+    t.assert(40 < places.length <= 50)
     places.forEach(function(place) {
+      t.assert(place.location)
       t.assert(place.provider)
       if (place.provider.yelp) {
         hasYelpProviderId++
-        t.assert(place.provider.foursquare) // we merged them
-        t.assert(place.location)
-        t.assert(!place.location.accuracy) // proves we upgraded yelp's lame lat/lng
       }
       if (ksthaiId === place.provider.foursquare) {
         ksthai = place
+        t.assert(place.provider.yelp) // we merged them
+        t.assert(!place.location.accuracy) // proves we upgraded yelp's lame lat/lng to either 4s's or google's
       }
     })
     t.assert(ksthai)
@@ -499,6 +486,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
                       provider: 'foursquare',
                       limit: 50,
                       timeout: 15000,
+                      waitForContent: true,
                     }
                   }, function(err, res, body) {
                     // Make sure the real entitiy is in the found places
@@ -528,7 +516,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
                       uri: '/places/near',
                       body: {
                         location: ballRoomLoc,
-                        provider: 'factual',
+                        waitForContent: true,
                         limit: 50,
                       }
                     }, function(err, res, body) {
@@ -554,7 +542,6 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
                         uri: '/places/near',
                         body: {
                           location: ballRoomLoc,
-                          provider: 'foursquare',
                           excludePlaceIds: [newEnt._id],
                         }
                       }, function(err, res, body) {
@@ -605,7 +592,7 @@ exports.getPlacePhotos = function(test) {
     uri: '/places/photos',
     body: {
       provider: 'foursquare',
-      id: ballRoomId,
+      id: ballRoom4sId,
     }
   }, function(err, res, body) {
     t.assert(body.data.length > 10)
