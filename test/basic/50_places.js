@@ -108,7 +108,7 @@ exports.getPlacesNearLocation = function(test) {
         place.location.lat,
         place.location.lng
       )
-      t.assert(distance > lastDistance)
+      t.assert(distance > lastDistance, place)
       lastDistance = distance
       t.assert(place.provider)
       for (var p in place.provider) {
@@ -123,7 +123,7 @@ exports.getPlacesNearLocation = function(test) {
       var iconFileName = path.join(util.statics.assetsDir, '/img/categories', cat.photo.prefix + '88' + cat.photo.suffix)
       t.assert(fs.existsSync(iconFileName))
     })
-    t.assert(!placeCount.aircandi, placeCount)
+    t.assert(placeCount.aircandi, placeCount)
     t.assert(placeCount.foursquare, placeCount)
     t.assert(placeCount.yelp, placeCount)
     t.assert(placeCount.google, placeCount)
@@ -164,9 +164,9 @@ exports.getPlacesNearLocationAgain = function(test) {
       location: ballRoomLoc,
       radius: 500,
       limit: 50,
-      includeRaw: true,
+      includeRaw: false,
       waitForContent: true,
-      log: true,
+      log: false,
     }
   }, function(err, res) {
     var places = res.body.data
