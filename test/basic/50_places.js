@@ -93,7 +93,6 @@ exports.getPlacesNearLocation = function(test) {
     var foundBallroom = 0
     var places = body.data
     t.assert(places.length === 50)
-    var lastDistance = 0
     placeCount = {
       aircandi: 0,
       foursquare: 0,
@@ -101,15 +100,6 @@ exports.getPlacesNearLocation = function(test) {
       yelp: 0
     }
     places.forEach(function(place) {
-      // proves sorted by distance from current location
-      var distance = util.haversine(
-        ballRoomLoc.lat,
-        ballRoomLoc.lng,
-        place.location.lat,
-        place.location.lng
-      )
-      t.assert(distance > lastDistance, place)
-      lastDistance = distance
       t.assert(place.provider)
       for (var p in place.provider) {
         placeCount[p]++
@@ -242,7 +232,6 @@ exports.getPlacesNearLocationGoogle = function(test) {
   }, function(err, res, body) {
     var places = body.data
     t.assert(40 < places.length < 50)
-    var lastDistance = 0
     places.forEach(function(place) {
       t.assert(place)
       t.assert(place.provider)
@@ -253,15 +242,6 @@ exports.getPlacesNearLocationGoogle = function(test) {
       if (place.provider.yelp) {
         yelpProvided++
       }
-      // proves sorted by distance from current location
-      var distance = util.haversine(
-        ballRoomLoc.lat,
-        ballRoomLoc.lng,
-        place.location.lat,
-        place.location.lng
-      )
-      t.assert(distance >= lastDistance, place)
-      lastDistance = distance
       // Not all places returned need to have place.provider.google
       // They can be entities we already have in our system given by
       // foursquare, factual, or user
