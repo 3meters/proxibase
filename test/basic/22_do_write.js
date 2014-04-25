@@ -898,10 +898,11 @@ exports.unlikeEntity = function(test) {
 
 exports.watchPlace = function(test) {
   t.post({
-    uri: '/do/insertLink?' + userCredAlice,
+    uri: '/do/insertLink?' + userCredAlice,  // owned by tom
     body: {
       toId: testPlaceCustomOne._id,
       fromId: testUserAlice._id,
+      status: 'requested',
       type: util.statics.typeWatch,
       actionEvent: 'watch'
     }
@@ -920,6 +921,7 @@ exports.watchPlace = function(test) {
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
+      t.assert(body.data[0].status === 'requested')
 
       /* Check link entity log action */
       t.post({
