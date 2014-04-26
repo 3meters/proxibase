@@ -113,10 +113,10 @@ exports.getPlacesNearLocation = function(test) {
       var iconFileName = path.join(util.statics.assetsDir, '/img/categories', cat.photo.prefix + '88' + cat.photo.suffix)
       t.assert(fs.existsSync(iconFileName))
     })
-    t.assert(placeCount.aircandi, placeCount)
-    t.assert(placeCount.foursquare, placeCount)
-    t.assert(placeCount.yelp, placeCount)
-    t.assert(placeCount.google, placeCount)
+    t.assert(placeCount.aircandi === 50, placeCount)
+    t.assert(placeCount.foursquare > 10, placeCount)
+    t.assert(placeCount.yelp > 10, placeCount)
+    t.assert(placeCount.google > 10, placeCount)
     t.assert(foundBallroom === 1, {foundBallroom: foundBallroom})
     test.done()
   })
@@ -154,7 +154,7 @@ exports.getPlacesNearLocationAgain = function(test) {
       location: ballRoomLoc,
       radius: 500,
       limit: 50,
-      includeRaw: false,
+      includeRaw: true,
       waitForContent: true,
       log: false,
     }
@@ -166,11 +166,10 @@ exports.getPlacesNearLocationAgain = function(test) {
       t.assert(place.provider)
       if (place.provider.aircandi) cAircandi++
     })
-    debug('cAircandi', cAircandi)
-    debug('places.length', places.length)
     t.assert(cAircandi === places.length)
     var roxys = places.filter(function(place) {
-      return (place.provider.yelp === roxyYelpId) // Roxy's Diner
+      if (!place.provider.google) return false
+      return (place.provider.google.split('|')[0] === roxyGooId.split('|')[0]) // Roxy's Diner
     })
     t.assert(roxys.length === 1)
     insertEnt(roxys[0])
@@ -261,8 +260,7 @@ exports.getPlacesNearLocationGoogle = function(test) {
         t.assert(place.region)
         t.assert(place.country)
         t.assert(place.postalCode)
-        log('Roxys photo comes and goes')
-        // t.assert(place.photo)
+        t.assert(place.photo)
       }
     })
     t.assert(1 === foundRoxy)
