@@ -101,7 +101,7 @@ var testPlaceTwo = {
     },
   },
 }
-var testPlaceCustomOne = {
+var testPlaceCustomPublic = {
   _id : "pl.111111.11111.111.211111",
   schema : util.statics.schemaPlace,
   name : "Testing place entity custom",
@@ -125,8 +125,9 @@ var testPlaceCustomOne = {
       source : "assets.categories",
     },
   },
+  visibility: "public",
 }
-var testPlaceCustomTwo = {
+var testPlaceCustomPrivate = {
   _id : "pl.111111.11111.111.211112",
   schema : util.statics.schemaPlace,
   name : "Testing place entity custom two",
@@ -150,6 +151,7 @@ var testPlaceCustomTwo = {
       source : "assets.categories",
     },
   },
+  visibility: "private",
 }
 var testPlaceCustomLocked = {
   _id : "pl.111111.11111.111.211113",
@@ -640,11 +642,11 @@ exports.insertPlaceOne = function (test) {
   })
 }
 
-exports.insertPlaceCustomOne = function (test) {
+exports.insertPlaceCustomPublic = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCredTom,
     body: {
-      entity: testPlaceCustomOne,
+      entity: testPlaceCustomPublic,
       beacons: [testBeacon],
       primaryBeaconId: testBeacon._id,
       returnMessages: true,
@@ -672,7 +674,7 @@ exports.insertPlaceCustomOne = function (test) {
     t.post({
       uri: '/find/places',
       body: {
-        query: { _id:testPlaceCustomOne._id }
+        query: { _id:testPlaceCustomPublic._id }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -695,7 +697,7 @@ exports.insertPlaceCustomOne = function (test) {
           body: {
             query:{
               _to:testBeacon._id,
-              _from:testPlaceCustomOne._id,
+              _from:testPlaceCustomPublic._id,
               'proximity.primary':true
             }
           }
@@ -708,7 +710,7 @@ exports.insertPlaceCustomOne = function (test) {
             body: {
               query:{
                 _from: testUserTom._id,
-                _to: testPlaceCustomOne._id,
+                _to: testPlaceCustomPublic._id,
                 type: 'create',
               }
             }
@@ -719,7 +721,7 @@ exports.insertPlaceCustomOne = function (test) {
             t.post({
               uri: '/find/actions?' + adminCred,
               body: {
-                query: { _entity:testPlaceCustomOne._id, event:'insert_entity_place_custom'}
+                query: { _entity:testPlaceCustomPublic._id, event:'insert_entity_place_custom'}
               }
             }, function(err, res, body) {
               t.assert(body.count === 1)
@@ -771,11 +773,11 @@ exports.insertPlaceCustomLockedWithNoLinks = function (test) {
   })
 }
 
-exports.insertPlaceCustom2 = function (test) {
+exports.insertPlaceCustomPrivate = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCredBob,
     body: {
-      entity: testPlaceCustomTwo,
+      entity: testPlaceCustomPrivate,
       beacons: [testBeacon],
       primaryBeaconId: testBeacon._id,
       returnMessages: true,
@@ -803,7 +805,7 @@ exports.insertPlaceCustom2 = function (test) {
     t.post({
       uri: '/find/places',
       body: {
-        query:{ _id:testPlaceCustomTwo._id }
+        query:{ _id:testPlaceCustomPrivate._id }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -824,7 +826,7 @@ exports.insertPlaceCustom2 = function (test) {
 
 /*
  * ----------------------------------------------------------------------------
- * Like and unlike, watch
+ * Like and unlike, watch, request/approve
  * ----------------------------------------------------------------------------
  */
 
@@ -832,7 +834,7 @@ exports.likeEntity = function(test) {
   t.post({
     uri: '/do/insertLink?' + userCredBob,
     body: {
-      toId: testPlaceCustomOne._id,
+      toId: testPlaceCustomPublic._id,
       fromId: testUserBob._id,
       type: util.statics.typeLike,
       actionEvent: 'like'
@@ -845,7 +847,7 @@ exports.likeEntity = function(test) {
       uri: '/find/links',
       body: {
         query: {
-          _to:testPlaceCustomOne._id,
+          _to:testPlaceCustomPublic._id,
           _from:testUserBob._id,
           type: util.statics.typeLike
         }
@@ -857,7 +859,7 @@ exports.likeEntity = function(test) {
       t.post({
         uri: '/find/actions?' + adminCred,
         body: {
-          query:{ _entity:testPlaceCustomOne._id, event:'like'}
+          query:{ _entity:testPlaceCustomPublic._id, event:'like'}
         }
       }, function(err, res, body) {
         t.assert(body.count === 1)
@@ -871,7 +873,7 @@ exports.unlikeEntity = function(test) {
   t.post({
     uri: '/do/deleteLink?' + userCredBob,
     body: {
-      toId: testPlaceCustomOne._id,
+      toId: testPlaceCustomPublic._id,
       fromId: testUserBob._id,
       type: util.statics.typeLike,
       actionEvent: 'unlike'
@@ -884,7 +886,7 @@ exports.unlikeEntity = function(test) {
       uri: '/find/links',
       body: {
         query:{
-          _to:testPlaceCustomOne._id,
+          _to:testPlaceCustomPublic._id,
           _from:testUserBob._id,
           type:util.statics.typeLike
         }
@@ -896,11 +898,11 @@ exports.unlikeEntity = function(test) {
   })
 }
 
-exports.watchPlace = function(test) {
+exports.watchPublicPlace = function(test) {
   t.post({
     uri: '/do/insertLink?' + userCredAlice,  // owned by tom
     body: {
-      toId: testPlaceCustomOne._id,
+      toId: testPlaceCustomPublic._id,
       fromId: testUserAlice._id,
       status: 'requested',
       type: util.statics.typeWatch,
@@ -914,7 +916,7 @@ exports.watchPlace = function(test) {
       uri: '/find/links',
       body: {
         query: {
-          _to: testPlaceCustomOne._id,
+          _to: testPlaceCustomPublic._id,
           _from: testUserAlice._id,
           type: util.statics.typeWatch
         }
@@ -928,9 +930,99 @@ exports.watchPlace = function(test) {
         uri: '/find/actions?' + adminCred,
         body: {
           query:{
-            _entity:testPlaceCustomOne._id,
+            _entity:testPlaceCustomPublic._id,
             event:'watch',
             _user: testUserAlice._id,
+          }
+        }
+      }, function(err, res, body) {
+        t.assert(body.count === 1)
+        test.done()
+      })
+    })
+  })
+}
+
+exports.watchPrivatePlaceRequest = function(test) {
+  t.post({
+    uri: '/do/insertLink?' + userCredAlice,  // owned by bob
+    body: {
+      toId: testPlaceCustomPrivate._id,
+      fromId: testUserAlice._id,
+      type: util.statics.typeWatch,
+      status: 'requested',
+      actionEvent: 'watch_requested'
+    }
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
+
+    /* Check watch entity link to entity 2 */
+    t.post({
+      uri: '/find/links',
+      body: {
+        query: {
+          _to: testPlaceCustomPrivate._id,
+          _from: testUserAlice._id,
+          type: util.statics.typeWatch
+        }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+      t.assert(body.data[0].status === 'requested')
+
+      /* Check link entity log action */
+      t.post({
+        uri: '/find/actions?' + adminCred,
+        body: {
+          query:{
+            _entity:testPlaceCustomPrivate._id,
+            event:'watch_requested',
+            _user: testUserAlice._id,
+          }
+        }
+      }, function(err, res, body) {
+        t.assert(body.count === 1)
+        test.done()
+      })
+    })
+  })
+}
+
+exports.watchPrivatePlaceApprove = function(test) {
+  t.post({
+    uri: '/do/updateStatus?' + userCredBob,  // owned by bob
+    body: {
+      toId: testPlaceCustomPrivate._id,
+      fromId: testUserAlice._id,
+      type: util.statics.typeWatch,
+      status: 'approved',
+      actionEvent: 'watch_approved'
+    }
+  }, 200, function(err, res, body) {
+    t.assert(body.count === 1)
+
+    /* Check watch entity link to entity 2 */
+    t.post({
+      uri: '/find/links',
+      body: {
+        query: {
+          _to: testPlaceCustomPrivate._id,
+          _from: testUserAlice._id,
+          type: util.statics.typeWatch
+        }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+      t.assert(body.data[0].status === 'approved')
+
+      /* Check link entity log action */
+      t.post({
+        uri: '/find/actions?' + adminCred,
+        body: {
+          query:{
+            _entity:testPlaceCustomPrivate._id,
+            event:'watch_approved',
+            _user: userCredBob._id,
           }
         }
       }, function(err, res, body) {
@@ -1181,7 +1273,7 @@ exports.insertPost = function (test) {
     body: {
       entity: testPost,
       links: [{
-        _to: testPlaceCustomOne._id,
+        _to: testPlaceCustomPublic._id,
         type: util.statics.typeContent,
       }],
       returnMessages: true,
@@ -1196,7 +1288,7 @@ exports.insertPost = function (test) {
     t.assert(body.messages.length == 2)
     body.messages.forEach(function(message) {
       t.assert(message.action.user && message.action.entity)
-      t.assert(message.action.toEntity && message.action.toEntity.id == testPlaceCustomOne._id)
+      t.assert(message.action.toEntity && message.action.toEntity.id == testPlaceCustomPublic._id)
       t.assert(message.trigger == 'own_to' || message.trigger == 'watch_to')
     })
 
@@ -1216,7 +1308,7 @@ exports.insertPost = function (test) {
         body: {
           query:{
             _from: testPost._id,
-            _to: testPlaceCustomOne._id,
+            _to: testPlaceCustomPublic._id,
             type: 'content',
           }
         }
