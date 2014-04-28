@@ -48,7 +48,7 @@ module.exports = {
     hammers: 10,                        // default 10
     processes: 1,                       // default 1
     tests: [
-      'basic/70_hammer.js',
+      'basic/34_hammer.js',
     ]
   },
 }
