@@ -321,11 +321,14 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
   }, function(err, res, body) {
     var places = body.data
     var ksthai = null
+    var cKsthai = 0
     var cYelp = 0
     var cGoogle = 0
     var cFoursquare = 0
     t.assert(50 === places.length)
+
     places.forEach(function(place) {
+      if (place.name.match(/^Kaos/)) cKsthai++  // Look for dupes on name
       t.assert(place.location)
       t.assert(place.provider)
       if (place.provider.yelp) cYelp++
@@ -333,11 +336,11 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
       if (place.provider.foursquare) cFoursquare++
       if (ksthaiId === place.provider.foursquare) {
         ksthai = place
-        // if (cYelp) t.assert(place.provider.yelp) // proves we merged them
         if (cGoogle) t.assert(place.provider.google) // proves we merged them
       }
     })
     t.assert(ksthai)
+    t.assert(1 === cKsthai)
 
     // Insert ksthai as an entity
     t.post({
@@ -535,6 +538,8 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
 exports.refreshPlace = function(test) {
   if (disconnected) return skip(test)
 
+  var refreshWindow = 60 * 1000
+
   var placeId = savedRoxy._id
   var placeModifiedDate
   t.get('/data/places/' + placeId, function(err, res, body) {
@@ -548,7 +553,7 @@ exports.refreshPlace = function(test) {
       body.data.links.from.applinks.forEach(function(link) {
         t.assert(link.modifiedDate > placeModifiedDate)
         t.assert(link.document)
-        t.assert(link.document.modifiedDate > placeModifiedDate)
+        t.assert((link.document.modifiedDate + refreshWindow) > placeModifiedDate, link)
       })
       test.done()
     })
