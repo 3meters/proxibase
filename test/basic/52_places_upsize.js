@@ -105,7 +105,7 @@ exports.googlePlaceDedupesWhenRefChanges = function(test) {
       applinksTimeout: 10000,
       log: true,
     }
-  }, 403, function(err, res, body) {
+  }, 201, function(err, res, body) {
     var place = body.data
     t.assert(place)
     t.assert(place._id === seventyfourth._id)
@@ -123,11 +123,10 @@ exports.insertPlaceGoogleSaveApplinks = function(test) {
     uri: '/places/near',
     body: {
       location: seventyfourthLoc,
-      provider: 'google',
-      includeRaw: true,
+      includeRaw: false,
       radius: 100,
       limit: 50,
-      log: true
+      log: false,
     }
   }
   t.post(post, function(err, res, body) {
@@ -143,19 +142,16 @@ exports.insertPlaceGoogleSaveApplinks = function(test) {
         entity: herkimer,
         insertApplinks: true,
         applinksTimeout: 15000,
-        includeRaw: true,
-        log: true,
+        includeRaw: false,
+        log: false,
       }
     }
     t.post(post, 201, function(err, res, body) {
       var place = body.data
       t.assert(place && place._id)
       t.assert(place.provider.foursquare)
-      log('skiping testing place.provider.factual')
-      // t.assert(place.provider.factual)
       t.assert(place.provider.google)
       t.assert(place.photo)
-      t.assert('google' === place.photo.source)
       t.assert(place.photo.prefix)
       // TODO: call google and verify the URL
       // remember, must append maxwidth=<1..1600> to the url to get a picture back
@@ -166,11 +162,11 @@ exports.insertPlaceGoogleSaveApplinks = function(test) {
         }
         else applinkMap[link.shortcut.app]++
       })
-      t.assert(applinkMap.website === 1)
-      t.assert(applinkMap.facebook === 1)
-      t.assert(applinkMap.googleplus === 1)
-      t.assert(applinkMap.foursquare === 1)
-      t.assert(applinkMap.yelp === 1)
+      t.assert(applinkMap.website === 1, applinkMap)
+      t.assert(applinkMap.facebook === 1, applinkMap)
+      t.assert(applinkMap.googleplus === 1, applinkMap)
+      t.assert(applinkMap.foursquare === 1, applinkMap)
+      t.assert(applinkMap.yelp === 1, applinkMap)
       t.assert(applinkMap.urbanspoon === 1)  // proves that factual lookup works
 
       herkimer = place
