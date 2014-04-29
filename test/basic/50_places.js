@@ -281,12 +281,9 @@ exports.insertPlaceEntitySuggestApplinksFromFactual = function(test) {
       t.assert(!links.some(function(link) {   // Invisible due to alcohal
         return (link.shortcut.app === 'facebook')
       }))
-      log('Ballroom website is down')
-      /*
       t.assert(links.some(function(link) {
         return (link.shortcut.app === 'website')
       }))
-      */
       t.assert(links.some(function(link) {
         return (link.shortcut.app === 'twitter')
       }))
@@ -479,10 +476,9 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
                     })
                     t.assert(foundKsthai === 1)
                     t.assert(foundNewEnt === 1)
-                    log('Skipping test due to foursquare radius bug!')
-                    // t.assert(foundNewEnt2 === 0) // outside the radius
+                    t.assert(foundNewEnt2 === 0) // outside the radius
 
-                    // Now run radar with factual as the provider, ensuring the same
+                    // Now run radar again, ensuring the same
                     // results, joining on phone number
                     t.post({
                       uri: '/places/near',

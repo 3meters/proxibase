@@ -80,7 +80,7 @@ exports.insertPlaceFoursquareSaveApplinks = function(test) {
       t.assert(2 >= applinkMap.facebook >= 1, applinkMap)
       t.assert(1 === applinkMap.foursquare, applinkMap)
       t.assert(1 === applinkMap.googleplus, applinkMap)
-      t.assert(1 >= applinkMap.twitter, applinkMap)
+      // t.assert(1 >= applinkMap.twitter, applinkMap)
       seventyfourth = place
       test.done()
     })
@@ -142,7 +142,7 @@ exports.insertPlaceGoogleSaveApplinks = function(test) {
         entity: herkimer,
         insertApplinks: true,
         applinksTimeout: 15000,
-        includeRaw: false,
+        includeRaw: true,
         log: false,
       }
     }
