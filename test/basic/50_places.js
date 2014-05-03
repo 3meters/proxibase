@@ -149,6 +149,7 @@ exports.placesNearExcludeFoursquareId = function(test) {
   }, function(err, res) {
     var places = res.body.data
     places.forEach(function(place) {
+      t.assert(place.provider, place)
       t.assert(place.provider.foursquare !== ballRoom4sId)
       t.assert(place.provider.google !== ballRoomGooId)
       t.assert(place.provider.yelp !== ballRoomYelpId)
@@ -208,7 +209,7 @@ exports.getPlacesNearLocationAgain = function(test) {
     t.assert(places.length === 50)
     var cAircandi = 0
     places.forEach(function(place) {
-      t.assert(place.provider)
+      t.assert(place.provider, place)
       if (place.provider.aircandi) cAircandi++
     })
     t.assert(cAircandi === places.length)
@@ -326,8 +327,8 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
 
     places.forEach(function(place) {
       if (place.name.match(/^Kaos/)) cKsthai++  // Look for dupes on name
-      t.assert(place.location)
-      t.assert(place.provider)
+      t.assert(place.location, place)
+      t.assert(place.provider, place)
       if (place.provider.yelp) cYelp++
       if (place.provider.google) cGoogle++
       if (place.provider.foursquare) cFoursquare++
@@ -463,7 +464,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
                     var foundNewEnt = 0
                     var foundNewEnt2 = 0
                     places.forEach(function(place) {
-                      t.assert(place.provider)
+                      t.assert(place.provider, place)
                       if (place.provider.foursquare === ksthaiId) foundKsthai++
                       if (place._id && place._id === newEnt._id) {
                         foundNewEnt++
@@ -495,7 +496,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
                       places.forEach(function(place) {
                         if (place._id && place._id === newEnt._id) foundNewEnt++
                         if (place._id && place._id === newEnt2._id) foundNewEnt2++
-                        t.assert(place.provider)
+                        t.assert(place.provider, place)
                         if (place.provider.foursquare === ksthaiId) {
                           foundKsthai++
                           t.assert(place.provider.factual) // should have been added to the map
