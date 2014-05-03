@@ -1537,8 +1537,9 @@ exports.deletePost = function (test) {
  * ----------------------------------------------------------------------------
  */
 
-exports.updateEntity = function (test) {
-  testPlaceOne.name = 'Testing super candi'
+exports.updatePlaceOwnedByAdmin= function (test) {
+  testPlaceOne.name = 'This change will fail silently'
+  testPlaceOne.photo = {prefix: 'newPhoto.jpg'}
   t.post({
     uri: '/do/updateEntity?' + userCredTom,
     body: {
@@ -1552,20 +1553,17 @@ exports.updateEntity = function (test) {
     t.get({
       uri: '/data/places/' + testPlaceOne._id
     }, function(err, res, body) {
-      t.assert(body.data && body.data && body.data.name === 'Testing super candi')
+      var place = body.data
+      t.assert(place)
+      t.assert(place.photo && place.photo.prefix === 'newPhoto.jpg')
+      t.assert(testUserTom._id === place._modifier)
+      t.assert(place.name === 'Testing place entity')  // update failed silently 
       test.done()
     })
   })
 }
 
 exports.userCantDeleteEntityTheyDontOwn = function (test) {
-  /*
-  t.post({
-    uri: '/do/deleteEntity?' + userCredTom,
-    body: {
-      entityId:testPlaceOne._id,
-    }
-    */
   t.del({
     uri: '/data/places/' + testPlaceOne._id + '?' + userCredTom
   }, 401, function(err, res, body) {
@@ -1574,14 +1572,6 @@ exports.userCantDeleteEntityTheyDontOwn = function (test) {
 }
 
 exports.deletePlace = function (test) {
-  /*
-  t.post({
-    uri: '/do/deleteEntity?' + adminCred,
-    body: {
-      entityId:testPlaceOne._id,
-      verbose: true,
-    }
-  */
   t.del({
     uri: '/data/places/' + testPlaceOne._id + '?' + adminCred
   }, function(err, res, body) {

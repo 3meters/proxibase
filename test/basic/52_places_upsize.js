@@ -33,13 +33,12 @@ exports.getSessions = function(test) {
   })
 }
 
-exports.insertPlaceFoursquareSaveApplinks = function(test) {
+exports.insertPlaceSaveApplinks = function(test) {
   if (disconnected) return skip(test)
   var post = {
     uri: '/places/near',
     body: {
       location: seventyfourthLoc,
-      provider: 'foursquare',
       includeRaw: false,
       timeout: 20000,
       limit: 50,
