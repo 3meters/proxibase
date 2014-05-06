@@ -188,33 +188,6 @@ var testPost = {
     source:"aircandi",
   },
 }
-var testCandigramBounce = {
-  _id : "ca.111111.11111.111.111111",
-  schema : util.statics.schemaCandigram,
-  type : "bounce",
-  location: {
-    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
-  },
-  name : "Testing candigram entity",
-  photo: {
-    prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
-    source:"aircandi",
-  },
-}
-var testCandigramTour = {
-  _id : "ca.111111.11111.111.222222",
-  schema : util.statics.schemaCandigram,
-  type : "tour",
-  duration: 60000,
-  location: {
-    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
-  },
-  name : "Testing candigram entity",
-  photo: {
-    prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
-    source:"aircandi",
-  },
-}
 var testComment = {
   _id : "co.111111.11111.111.111111",
   schema : util.statics.schemaComment,
@@ -904,7 +877,7 @@ exports.watchPublicPlace = function(test) {
     body: {
       toId: testPlaceCustomPublic._id,
       fromId: testUserAlice._id,
-      status: 'requested',
+      enabled: true,
       type: util.statics.typeWatch,
       actionEvent: 'watch'
     }
@@ -923,7 +896,7 @@ exports.watchPublicPlace = function(test) {
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
-      t.assert(body.data[0].status === 'requested')
+      t.assert(body.data[0].enabled === true)
 
       /* Check link entity log action */
       t.post({
@@ -950,7 +923,7 @@ exports.watchPrivatePlaceRequest = function(test) {
       toId: testPlaceCustomPrivate._id,
       fromId: testUserAlice._id,
       type: util.statics.typeWatch,
-      status: 'requested',
+      enabled: false,
       actionEvent: 'watch_requested'
     }
   }, 201, function(err, res, body) {
@@ -968,7 +941,7 @@ exports.watchPrivatePlaceRequest = function(test) {
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
-      t.assert(body.data[0].status === 'requested')
+      t.assert(body.data[0].enabled === false)
 
       /* Check link entity log action */
       t.post({
@@ -990,12 +963,12 @@ exports.watchPrivatePlaceRequest = function(test) {
 
 exports.watchPrivatePlaceApprove = function(test) {
   t.post({
-    uri: '/do/updateStatus?' + userCredBob,  // owned by bob
+    uri: '/do/enableLink?' + userCredBob,  // owned by bob
     body: {
       toId: testPlaceCustomPrivate._id,
       fromId: testUserAlice._id,
       type: util.statics.typeWatch,
-      status: 'approved',
+      enabled: true,
       actionEvent: 'watch_approved'
     }
   }, 200, function(err, res, body) {
@@ -1013,7 +986,7 @@ exports.watchPrivatePlaceApprove = function(test) {
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
-      t.assert(body.data[0].status === 'approved')
+      t.assert(body.data[0].enabled === true)
 
       /* Check link entity log action */
       t.post({
@@ -1040,6 +1013,7 @@ exports.watchUser = function(test) {
       toId: testUserTom._id,
       fromId: testUserAlice._id,
       type: util.statics.typeWatch,
+      enabled: true,
       actionEvent: 'watch'
     }
   }, 201, function(err, res, body) {
@@ -1557,7 +1531,7 @@ exports.updatePlaceOwnedByAdmin= function (test) {
       t.assert(place)
       t.assert(place.photo && place.photo.prefix === 'newPhoto.jpg')
       t.assert(testUserTom._id === place._modifier)
-      t.assert(place.name === 'Testing place entity')  // update failed silently 
+      t.assert(place.name === 'Testing place entity')  // update failed silently
       test.done()
     })
   })
