@@ -106,7 +106,7 @@ exports.getPlacesNearLocation = function(test) {
       }
       if (place.provider.foursquare === ballRoom4sId) foundBallroom++
       var cat = place.category
-      t.assert(cat)
+      t.assert(cat, place)
       t.assert(cat.id)
       t.assert(cat.name)
       t.assert(cat.photo)
@@ -117,19 +117,19 @@ exports.getPlacesNearLocation = function(test) {
       t.assert(place.location.lng)
       // If we have location accuracy, assert yelp is our only provider
       if (place.location.accuracy) {
-        t.assert(place.provider.yelp)
-        t.assert(!place.provider.google)
-        t.assert(!place.provider.foursquare)
+        t.assert(place.provider.yelp, place)
+        t.assert(!place.provider.google, place)
+        t.assert(!place.provider.foursquare, place)
       }
       // If yelp is our only provider, assert we have location accuracy
       if (place.provider.yelp && !place.provider.google && !place.provider.foursquare) {
-        t.assert(place.location)
-        t.assert(place.location.accuracy)
+        t.assert(place.location, place)
+        t.assert(place.location.accuracy, place)
       }
     })
     t.assert(placeCount.aircandi === 50, placeCount)
     t.assert(placeCount.foursquare > 10, placeCount)
-    t.assert(placeCount.yelp > 10, placeCount)
+    t.assert(placeCount.yelp > 5, placeCount)
     t.assert(placeCount.google > 10, placeCount)
     t.assert(foundBallroom === 1, {foundBallroom: foundBallroom})
     test.done()
@@ -223,6 +223,10 @@ exports.getPlacesNearLocationAgain = function(test) {
 
   // Insert the roxy diner and make sure her applinks come out right
   function insertEnt(roxy) {
+    // added by getEntities
+    delete roxy.creator
+    delete roxy.owner
+    delete roxy.modifier
     t.post({
       uri: '/do/insertEntity?' + userCred,
       body: {

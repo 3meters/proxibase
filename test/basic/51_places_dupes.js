@@ -68,9 +68,9 @@ exports.dupePlaceMaggiano = function(test) {
       uri: '/places/near',
       body: {
         location: locMag,
-        provider: 'google',
         radius: 500,
         includeRaw: false,
+        waitForContent: true,
         limit: 100,
         timeout: 15000,
       }
@@ -159,6 +159,7 @@ exports.getPlacesNearLocation = function(test) {
       provider: 'foursquare',
       radius: 500,
       includeRaw: false,
+      waitForContent: true,
       limit: 50,
     }
   }, function(err, res, body) {
@@ -169,11 +170,16 @@ exports.getPlacesNearLocation = function(test) {
       t.assert(place.provider)
       if (luckyStrikeId === place.provider.foursquare) {
         luckyStrike = place
+        delete luckyStrike.creator
+        delete luckyStrike.owner
+        delete luckyStrike.modifier
         foundLuckyStrike++
+        t.assert(foundLuckyStrike <= 1, place)
       }
       if (powerPlayId === place.provider.foursquare) {
         powerPlay = place
         foundPowerPlay++
+        t.assert(foundPowerPlay <= 1, place)
       }
     })
     t.assert(1 === foundLuckyStrike)
@@ -261,6 +267,7 @@ exports.getPlacesNearLocationWithUpsizedPlace = function(test) {
       radius: 500,
       includeRaw: false,
       limit: 50,
+      waitForContent: true,
     }
   }, function(err, res, body) {
     var foundLuckyStrike = 0
@@ -274,7 +281,7 @@ exports.getPlacesNearLocationWithUpsizedPlace = function(test) {
       }
       if (powerPlayId === place.provider.foursquare) {
         foundPowerPlay++
-        t.assert(place.name === powerPlay.name)
+        t.assert(place.name === powerPlay.name, place)
       }
     })
     t.assert(1 === foundLuckyStrike)
