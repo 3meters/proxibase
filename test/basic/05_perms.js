@@ -267,12 +267,6 @@ exports.ownerAccessCollectionsWork = function(test) {
           t.assert(doc._id && doc._owner)
           t.assert(user1._id === doc._owner)
           t.assert('do.use2DocOwnerAccessTest' !== doc._id)  // can't see user 2's document
-        })
-        t.get('/find/users?' + user1Cred,
-        function(err, res, body) {
-          t.assert(body.data && 1 === body.data.length)
-          t.assert(user1._id === body.data[0]._id)
-          t.assert(user1._id === body.data[0]._owner)
           test.done()
         })
       })
@@ -280,3 +274,19 @@ exports.ownerAccessCollectionsWork = function(test) {
   })
 }
 
+
+exports.userPublicFieldsWork = function(test) {
+  t.get({
+    uri: '/data/users?limit=5&' + user1Cred
+  }, 200, function(err, res, body) {
+    t.assert(body && body.data)
+    var users = body.data
+    t.assert(users.length === 5)
+    users.forEach(function(user) {
+      t.assert(user.name)
+      t.assert(user._id)
+      t.assert(!user.email)
+    })
+    test.done()
+  })
+}
