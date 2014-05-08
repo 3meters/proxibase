@@ -13,13 +13,19 @@ var user1 = {
   name: 'Perm Test User 1',
   type: 'user',
   email: 'permtest1@3meters.com',
-  password: 'foobar'
+  password: 'foobar',
+  photo: {
+    prefix: 'user1.png'
+  },
 }
 var user2 = {
   name: 'Perm Test User 2',
   type: 'user',
   email: 'permtest2@3meters.com',
-  password: 'foobar'
+  password: 'foobar',
+  photo: {
+    prefix: 'user2.png'
+  },
 }
 var doc1 = {
   name: 'Doc1',
@@ -275,7 +281,7 @@ exports.ownerAccessCollectionsWork = function(test) {
 }
 
 
-exports.userPublicFieldsWork = function(test) {
+exports.userPublicFields = function(test) {
   t.get({
     uri: '/data/users?limit=5&' + user1Cred
   }, 200, function(err, res, body) {
@@ -285,8 +291,45 @@ exports.userPublicFieldsWork = function(test) {
     users.forEach(function(user) {
       t.assert(user.name)
       t.assert(user._id)
-      t.assert(!user.email)
+      t.assert(!user.email)  // not a public field
     })
     test.done()
   })
 }
+
+
+exports.userPublicFieldsSeeOwnRecord = function(test) {
+  t.get({
+    uri: '/data/users/' + user1._id + '?' + user1Cred
+  }, 200, function(err, res, body) {
+    t.assert(body && body.data)
+    var user = body.data
+    t.assert(user._id)
+    t.assert(user.name)
+    t.assert(user.photo)
+    t.assert(user.email)  // own email visible to user
+    test.done()
+  })
+}
+
+
+exports.userPublicFieldsProjection= function(test) {
+  t.post({
+    uri: '/find/users/' + user1._id + '?' + user1Cred,
+    body: {
+      fields: 'name,email',
+    }
+  }, 200, function(err, res, body) {
+    t.assert(body && body.data)
+    var user = body.data
+    t.assert(user.name)
+    t.assert(user._id)    // included by default even though not in field list
+    t.assert(user.email)  // own email is visible to user
+    t.assert(!user.photo) // public field not included in the field list
+    test.done()
+  })
+}
+
+
+
+
