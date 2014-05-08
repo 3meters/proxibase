@@ -349,6 +349,7 @@ exports.findWithRefsNestedObject = function(test) {
   })
 }
 
+
 exports.findWithRefsNestedObjectFieldList = function(test) {
   t.get({
     uri: '/data/documents?name=' + testDoc1.name + '&refs=_id,role&' + userCred
@@ -360,6 +361,7 @@ exports.findWithRefsNestedObjectFieldList = function(test) {
     test.done()
   })
 }
+
 
 exports.refOnLinksDontShowDataYouCannotSee = function(test) {
   t.get({
