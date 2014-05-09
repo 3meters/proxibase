@@ -70,9 +70,6 @@ var testPlaceCustom = {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
   address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"4259950004",
-  provider:{
-    aircandi: 'aircandi',
-  },
   category:{
     id:"4bf58dd8d48988d18c941735",
     name : "Baseball Stadium",
@@ -97,9 +94,6 @@ var testPlaceCustomTwo = {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
   address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"4259950004",
-  provider:{
-    aircandi: 'aircandi',
-  },
   category:{
     id:"4bf58dd8d48988d18c941735",
     name : "Baseball Stadium",
