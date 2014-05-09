@@ -145,11 +145,11 @@ exports.doCountLinksToPlacesFromMessages = function(test) {
   t.post({
     uri: '/do/countLinksTo',
     body: {
-      query: {$and: [
-        {'_id.day': {$lt: '130315'}},
-        {'_id.toSchema': 'place'},
-        {'_id.fromSchema': 'message'},
-      ]},
+      query: {
+        '_id.day': {$lt: '130315'},
+        '_id.toSchema': 'place',
+        '_id.fromSchema': 'message',
+      },
     }
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)

@@ -32,16 +32,17 @@ var testEntity = {
 var _exports = {} // for commenting out tests
 
 var ballRoomLoc = {
-  lat: 47.6521,
-  lng: -122.3530,
+  lat: 47.652084,
+  lng: -122.353025,
 }
 
 var savedRoxy  // shared between tests
 
-// Some persisted Ids.  No provider means 4square.  Factuals change periodically.
+// Some persisted Ids. Factuals change periodically.
 // Seattle Ballroom
-var ballRoomId = '4abebc45f964a520a18f20e3'
+var ballRoom4sId = '4abebc45f964a520a18f20e3'
 var ballRoomFacId = '46aef19f-2990-43d5-a9e3-11b78060150c'
+var ballRoomYelpId = 'the-ballroom-seattle'
 var ballRoomGooId = 'f0147a535bedf4bb948f35379873cab0747ba9e2|aGoogleRef'
 
 // Cafe Ladro
@@ -76,123 +77,139 @@ exports.getCategories = function(test) {
   })
 }
 
-exports.getPlacesNearLocationCapsBadLimits = function(test) {
-  if (disconnected) return skip(test)
-  var post = {
-    uri: '/places/near',
-    body: {
-      location: ballRoomLoc,
-      provider: 'foursquare',
-      includeRaw: true,
-      timeout: 15000,
-      log: true,
-      limit: 100,
-    }
-  }
-  t.post(post, function(err, res, body) {
-    t.assert(30 < body.data.length < 50)  // foursquares limit is 50, popularity filter applied after
-    // Google's max limit is 200
-    post.body.provider = 'google'
-    t.post(post, function(err, res, body) {
-      t.assert(90 < body.data.length <= 100)
-      test.done()
-    })
-  })
-}
-
-exports.getPlacesNearLocationFoursquare = function(test) {
+exports.getPlacesNearLocation = function(test) {
   if (disconnected) return skip(test)
   t.post({
     uri: '/places/near',
     body: {
       location: ballRoomLoc,
-      provider: 'foursquare',
       radius: 500,
-      includeRaw: false,
-      limit: 10,
+      includeRaw: true,
+      limit: 50,
+      waitForContent: true,
       timeout: 15000,
     }
   }, function(err, res, body) {
     var foundBallroom = 0
     var places = body.data
-    t.assert(places.length === 10)
-    var lastDistance = 0
+    t.assert(places.length === 50)
+    placeCount = {
+      aircandi: 0,
+      foursquare: 0,
+      google: 0,
+      yelp: 0
+    }
     places.forEach(function(place) {
-      // proves sorted by distance from current location
-      var distance = util.haversine(
-        ballRoomLoc.lat,
-        ballRoomLoc.lng,
-        place.location.lat,
-        place.location.lng
-      )
-      t.assert(distance > lastDistance)
-      lastDistance = distance
       t.assert(place.provider)
-      if (place.provider.foursquare === ballRoomId) foundBallroom++
+      for (var p in place.provider) {
+        placeCount[p]++
+      }
+      if (place.provider.foursquare === ballRoom4sId) foundBallroom++
       var cat = place.category
-      t.assert(cat)
+      t.assert(cat, place)
       t.assert(cat.id)
       t.assert(cat.name)
       t.assert(cat.photo)
       var iconFileName = path.join(util.statics.assetsDir, '/img/categories', cat.photo.prefix + '88' + cat.photo.suffix)
       t.assert(fs.existsSync(iconFileName))
+      t.assert(place.location)
+      t.assert(place.location.lat)
+      t.assert(place.location.lng)
+      // If we have location accuracy, assert yelp is our only provider
+      if (place.location.accuracy) {
+        t.assert(place.provider.yelp, place)
+        t.assert(!place.provider.google, place)
+        t.assert(!place.provider.foursquare, place)
+      }
+      // If yelp is our only provider, assert we have location accuracy
+      if (place.provider.yelp && !place.provider.google && !place.provider.foursquare) {
+        t.assert(place.location, place)
+        t.assert(place.location.accuracy, place)
+      }
     })
-    t.assert(foundBallroom === 1)
+    t.assert(placeCount.aircandi === 0, placeCount)
+    t.assert(placeCount.foursquare > 10, placeCount)
+    t.assert(placeCount.yelp > 5, placeCount)
+    t.assert(placeCount.google > 10, placeCount)
+    t.assert(foundBallroom === 1, {foundBallroom: foundBallroom})
     test.done()
   })
 }
 
-exports.placesNearExcludeWorksFoursquare = function(test) {
+exports.placesNearExcludeFoursquareId = function(test) {
   if (disconnected) return skip(test)
   t.post({
     uri: '/places/near',
     body: {
       location: ballRoomLoc,
-      provider: 'foursquare',
-      excludePlaceIds: [ballRoomId], // The Ballroom's 4sId
+      excludePlaceIds: [ballRoom4sId], // The Ballroom's 4sId
+      waitForContent: true,
       timeout: 15000,
     }
   }, function(err, res) {
     var places = res.body.data
     places.forEach(function(place) {
-      t.assert(place.provider.foursquare !== ballRoomId)
+      t.assert(place.provider, place)
+      t.assert(place.provider.foursquare !== ballRoom4sId)
+      t.assert(place.provider.google !== ballRoomGooId)
+      t.assert(place.provider.yelp !== ballRoomYelpId)
+      t.assert(place.provider.factual !== ballRoomFacId)
     })
     test.done()
   })
 }
 
+exports.placesNearLocationExcludeGoogleId = function(test) {
+  if (disconnected) return skip(test)
 
-exports.getPlacesNearLocationYelp = function(test) {
+  var googleProvided = 0
+  t.post({
+    uri: '/places/near',
+    body: {
+      location: ballRoomLoc,
+      radius: 200,
+      limit: 50,
+      excludePlaceIds: [ballRoomGooId],
+      includeRaw: false,
+      timeout: 20000,
+    }
+  }, function(err, res, body) {
+    var places = body.data
+    t.assert(49 <= places.length <= 50)
+    places.forEach(function(place) {
+      t.assert(place)
+      t.assert(place.provider)
+      if (place.provider.google) {
+        googleProvided++
+        t.assert(2 === place.provider.google.split('|').length)  //  id + '|' + refrence
+        t.assert(ballRoomGooId !== place.provider.google.split('|')[0]) //excluded
+      }
+    })
+    t.assert(googleProvided)
+    test.done()
+  })
+}
+
+
+exports.getPlacesNearLocationAgain = function(test) {
   if (disconnected) return skip(test)
   var foundRoxy = false
   t.post({
     uri: '/places/near',
     body: {
       location: ballRoomLoc,
-      provider: 'yelp',
-      radius: 200,
-      limit: 20,
-      excludePlaceIds: [ballRoomFacId],
-      includeRaw: true,
-      log: true,
+      radius: 500,
+      limit: 50,
+      includeRaw: false,
+      waitForContent: true,
+      log: false,
     }
   }, function(err, res) {
     var places = res.body.data
-    t.assert(places.length >= 8)
-    places.forEach(function(place) {
-      t.assert(place)
-      t.assert(place.provider)
-      t.assert(place.provider.yelp)
-      t.assert(ballRoomFacId !== place.provider.yelp) //excluded
-      var cat = place.category
-      t.assert(cat)
-      t.assert(cat.name)
-      t.assert(cat.photo)
-      var iconFileName = path.join(util.statics.assetsDir, '/img/categories', cat.photo.prefix + '88' + cat.photo.suffix)
-      t.assert(fs.existsSync(iconFileName))
-    })
+    t.assert(places.length === 50)
     var roxys = places.filter(function(place) {
-      return (place.provider.yelp === roxyYelpId) // Roxy's Diner
+      if (!place.provider.google) return false
+      return (place.provider.google.split('|')[0] === roxyGooId.split('|')[0]) // Roxy's Diner
     })
     t.assert(roxys.length === 1)
     insertEnt(roxys[0])
@@ -200,6 +217,10 @@ exports.getPlacesNearLocationYelp = function(test) {
 
   // Insert the roxy diner and make sure her applinks come out right
   function insertEnt(roxy) {
+    // added by getEntities
+    delete roxy.creator
+    delete roxy.owner
+    delete roxy.modifier
     t.post({
       uri: '/do/insertEntity?' + userCred,
       body: {
@@ -238,76 +259,6 @@ exports.getPlacesNearLocationYelp = function(test) {
   }
 }
 
-exports.getPlacesNearLocationGoogle = function(test) {
-  if (disconnected) return skip(test)
-
-  var foundRoxy = 0
-  var googleProvided = 0
-  var yelpProvided = 0
-  t.post({
-    uri: '/places/near',
-    body: {
-      location: ballRoomLoc,
-      provider: 'google',
-      radius: 200,
-      limit: 50,
-      excludePlaceIds: [ballRoomGooId],
-      includeRaw: false,
-      timeout: 20000,
-    }
-  }, function(err, res, body) {
-    var places = body.data
-    t.assert(40 < places.length < 50)
-    var lastDistance = 0
-    places.forEach(function(place) {
-      t.assert(place)
-      t.assert(place.provider)
-      if (place.provider.google) {
-        googleProvided++
-        t.assert(2 === place.provider.google.split('|').length)  //  id + '|' + refrence
-      }
-      if (place.provider.yelp) {
-        yelpProvided++
-      }
-      // proves sorted by distance from current location
-      var distance = util.haversine(
-        ballRoomLoc.lat,
-        ballRoomLoc.lng,
-        place.location.lat,
-        place.location.lng
-      )
-      t.assert(distance >= lastDistance, place)
-      lastDistance = distance
-      // Not all places returned need to have place.provider.google
-      // They can be entities we already have in our system given by
-      // foursquare, factual, or user
-      t.assert(ballRoomId !== place.provider.google) //excluded
-      t.assert(place.location.lat)
-      t.assert(place.location.lng)
-      var cat = place.category
-      t.assert(cat)
-      t.assert(cat.name)
-      t.assert(cat.photo)
-      var iconFileName = path.join(util.statics.assetsDir, '/img/categories', cat.photo.prefix + '88' + cat.photo.suffix)
-      t.assert(fs.existsSync(iconFileName))
-      if (roxyGooId === place.provider.google.split('|')[0]) {
-        foundRoxy++
-        t.assert(place.address)
-        t.assert(place.city)
-        t.assert(place.region)
-        t.assert(place.country)
-        t.assert(place.postalCode)
-        log('Roxys photo comes and goes')
-        // t.assert(place.photo)
-      }
-    })
-    t.assert(1 === foundRoxy)
-    t.assert(googleProvided)
-    t.assert(yelpProvided) // proves dupe merging on phone works
-    test.done()
-  })
-}
-
 
 exports.insertPlaceEntitySuggestApplinksFromFactual = function(test) {
   if (disconnected) return skip(test)
@@ -315,7 +266,7 @@ exports.insertPlaceEntitySuggestApplinksFromFactual = function(test) {
     insertApplinks: true,
     entity: util.clone(testEntity),
   }
-  body.entity.provider = {foursquare: ballRoomId}  // Seattle Ballroom
+  body.entity.provider = {foursquare: ballRoom4sId}  // Seattle Ballroom
   t.post({uri: '/do/insertEntity?' + userCred, body: body}, 201,
     function(err, res) {
       t.assert(res.body.data && res.body.data.linksIn)
@@ -323,7 +274,7 @@ exports.insertPlaceEntitySuggestApplinksFromFactual = function(test) {
       t.assert(links.length > 3)
       t.assert(links.some(function(link) {
         return (link.shortcut.app === 'foursquare'
-            && link.shortcut.appId === ballRoomId
+            && link.shortcut.appId === ballRoom4sId
           )
       }))
       t.assert(!links.some(function(link) {   // Invisible due to alcohal
@@ -360,32 +311,32 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
     uri: '/places/near',
     body: {
       location:  ballRoomLoc,
-      provider: 'foursquare',
       limit: 50,
+      waitForContent: true,
     }
   }, function(err, res, body) {
     var places = body.data
     var ksthai = null
-    var hasYelpProviderId = 0
-    t.assert(40 < places.length < 50)
+    var cKsthai = 0
+    var cYelp = 0
+    var cGoogle = 0
+    var cFoursquare = 0
+    t.assert(50 === places.length)
+
     places.forEach(function(place) {
-      t.assert(place.provider)
-      if (place.provider.yelp) {
-        hasYelpProviderId++
-        t.assert(place.provider.foursquare) // we merged them
-        t.assert(place.location)
-        t.assert(!place.location.accuracy) // proves we upgraded yelp's lame lat/lng
-      }
+      if (place.name.match(/^Kaos/)) cKsthai++  // Look for dupes on name
+      t.assert(place.location, place)
+      t.assert(place.provider, place)
+      if (place.provider.yelp) cYelp++
+      if (place.provider.google) cGoogle++
+      if (place.provider.foursquare) cFoursquare++
       if (ksthaiId === place.provider.foursquare) {
         ksthai = place
+        if (cGoogle) t.assert(place.provider.google) // proves we merged them
       }
     })
     t.assert(ksthai)
-
-    // We added a Roxy entity above, sourced from factual.
-    // This proves we have merged multiple provider ids onto
-    // single entity
-    t.assert(hasYelpProviderId)
+    t.assert(1 === cKsthai)
 
     // Insert ksthai as an entity
     t.post({
@@ -394,7 +345,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
       body: {
         entity: ksthai,
         insertApplinks: true,
-        includeRaw: true
+        includeRaw: false,
       }
     }, 201, function(err, res, body) {
       t.assert(body.data)
@@ -464,7 +415,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
                   entity: {
                     name: 'A user-created Test Place Inside the BallRoom',
                     schema : util.statics.schemaPlace,
-                    provider: { aircandi: true }, // new
+                    provider: { aircandi: 'aircandi' }, // new
                     location: ballRoomLoc,
                     enabled : true,
                     locked : false,
@@ -475,7 +426,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
               }, 201, function(err, res, body) {
                 var newEnt = body.data
                 t.assert(newEnt)
-                t.assert(newEnt.provider.aircandi === newEnt._id)
+                t.assert(newEnt.provider.aircandi === 'aircandi')
                 t.assert(body.raw)
                 t.assert(Object.keys(body.raw).length === 0)  // proves that place seach did not occur, isssue 137
 
@@ -485,7 +436,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
                   body: {entity: {
                     name: 'A user-created Entity At George\'s House',
                     schema : util.statics.schemaPlace,
-                    provider: {aircandi: true},  // new
+                    provider: {aircandi: 'aircandi'},  // new
                     location: {lat: 47.664525, lng: -122.354787},
                     enabled : true,
                     locked : false,
@@ -493,15 +444,14 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
                 }, 201, function(err, res, body) {
                   var newEnt2 = body.data
                   t.assert(newEnt2)
-
                   // Run radar again
                   t.post({
                     uri: '/places/near',
                     body: {
                       location: ballRoomLoc,
-                      provider: 'foursquare',
                       limit: 50,
                       timeout: 15000,
+                      waitForContent: true,
                     }
                   }, function(err, res, body) {
                     // Make sure the real entitiy is in the found places
@@ -510,12 +460,10 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
                     var foundNewEnt = 0
                     var foundNewEnt2 = 0
                     places.forEach(function(place) {
-                      t.assert(place.provider)
+                      t.assert(place.provider, place)
                       if (place.provider.foursquare === ksthaiId) foundKsthai++
                       if (place._id && place._id === newEnt._id) {
                         foundNewEnt++
-                        t.assert(place.provider.aircandi)
-                        t.assert(place.provider.aircandi === place._id)
                       }
                       if (place._id && place._id === newEnt2._id) {
                         foundNewEnt2++
@@ -523,16 +471,15 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
                     })
                     t.assert(foundKsthai === 1)
                     t.assert(foundNewEnt === 1)
-                    log('Skipping test due to foursquare radius bug!')
-                    // t.assert(foundNewEnt2 === 0) // outside the radius
+                    t.assert(foundNewEnt2 === 0) // outside the radius
 
-                    // Now run radar with factual as the provider, ensuring the same
+                    // Now run radar again, ensuring the same
                     // results, joining on phone number
                     t.post({
                       uri: '/places/near',
                       body: {
                         location: ballRoomLoc,
-                        provider: 'factual',
+                        waitForContent: true,
                         limit: 50,
                       }
                     }, function(err, res, body) {
@@ -543,7 +490,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
                       places.forEach(function(place) {
                         if (place._id && place._id === newEnt._id) foundNewEnt++
                         if (place._id && place._id === newEnt2._id) foundNewEnt2++
-                        t.assert(place.provider)
+                        t.assert(place.provider, place)
                         if (place.provider.foursquare === ksthaiId) {
                           foundKsthai++
                           t.assert(place.provider.factual) // should have been added to the map
@@ -558,7 +505,6 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
                         uri: '/places/near',
                         body: {
                           location: ballRoomLoc,
-                          provider: 'foursquare',
                           excludePlaceIds: [newEnt._id],
                         }
                       }, function(err, res, body) {
@@ -583,6 +529,8 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
 exports.refreshPlace = function(test) {
   if (disconnected) return skip(test)
 
+  var refreshWindow = 60 * 1000
+
   var placeId = savedRoxy._id
   var placeModifiedDate
   t.get('/data/places/' + placeId, function(err, res, body) {
@@ -596,7 +544,7 @@ exports.refreshPlace = function(test) {
       body.data.links.from.applinks.forEach(function(link) {
         t.assert(link.modifiedDate > placeModifiedDate)
         t.assert(link.document)
-        t.assert(link.document.modifiedDate > placeModifiedDate)
+        t.assert((link.document.modifiedDate + refreshWindow) > placeModifiedDate, link)
       })
       test.done()
     })
@@ -609,7 +557,7 @@ exports.getPlacePhotos = function(test) {
     uri: '/places/photos',
     body: {
       provider: 'foursquare',
-      id: ballRoomId,
+      id: ballRoom4sId,
     }
   }, function(err, res, body) {
     t.assert(body.data.length > 10)

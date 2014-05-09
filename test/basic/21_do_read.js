@@ -255,8 +255,7 @@ exports.getEntitiesForPlacePostsOnlyLimited = function (test) {
     t.assert(body.more === true)
     t.assert(body.data && body.data[0])
     t.assert(body.data[0].schema === statics.schemaPost)
-    log('Skipping test for sort of getEntitiesForEntity.  Functionality may be broken')
-    // t.assert(body.data[0].name.indexOf('Lisa 2') > 0)
+    t.assert(body.data[0].name.indexOf('Lisa 4') > 0)
     test.done()
   })
 }
@@ -290,7 +289,7 @@ exports.getUserMinimum = function (test) {
    * both a parent and children.
    */
   t.post({
-    uri: '/do/getEntities',
+    uri: '/do/getEntities?' + adminCred,
     body: {
       entityIds: [constants.uid1],
     }

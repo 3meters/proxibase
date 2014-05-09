@@ -68,11 +68,9 @@ var testPlaceCustom = {
 }
 
 var testMessage = {
-  _id : "me.111111.11111.111.111111",
+  _id : "me.111111.11111.111.222222",
   schema : util.statics.schemaMessage,
   type : "root",
-  lifetime: 1000,
-  expired: false,
   description : "Go seahawks!",
   photo: {
     prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
@@ -82,11 +80,11 @@ var testMessage = {
 
 var testReply = {
   _id : "me.111111.11111.111.111112",
-  _root : "me.111111.11111.111.111111",
   schema : util.statics.schemaMessage,
   type : "reply",
-  expired: false,
   description : "Repeat! Repeat!",
+  _root : "me.111111.11111.111.222222",
+  _replyTo: testUserBob._id,
 }
 
 var testBeacon = {
@@ -266,9 +264,6 @@ exports.insertCustomPlaceMessages = function (test) {
 }
 
 exports.insertMessage = function (test) {
-  testMessage.lifetime = 10
-  expirationDate = util.now() + testMessage.lifetime
-  testMessage.expirationDate = expirationDate
 
   t.post({
     uri: '/do/insertEntity?' + userCredBob,
@@ -343,7 +338,6 @@ exports.insertMessage = function (test) {
 }
 
 exports.insertReply = function (test) {
-  testReply.expirationDate = expirationDate
 
   t.post({
     uri: '/do/insertEntity?' + userCredTom,
@@ -351,11 +345,7 @@ exports.insertReply = function (test) {
       entity: testReply,
       links: [
         {
-          _to: testMessage._id,          // Bobs message
-          type: util.statics.typeContent,
-        },
-        {
-          _to: testPlaceCustom._id,          // Bobs message
+          _to: testPlaceCustom._id,          // Toms place, reply to Bobs message
           type: util.statics.typeContent,
         }],
       returnMessages: true,
@@ -365,8 +355,7 @@ exports.insertReply = function (test) {
     t.assert(body.count === 1)
     t.assert(body.data)
     /*
-     * Bob should get a message because he owns the message that Tom
-     * is replying to.
+     * Bob gets a message because he is nearby.
      *
      * If not run stand-alone, Alice create in previous test module
      * gets a message because she is watching tom.
@@ -375,8 +364,8 @@ exports.insertReply = function (test) {
     var bobHit = false
     body.messages.forEach(function(message) {
       t.assert(message.action.user && message.action.entity)
-      t.assert(message.action.toEntity && message.action.toEntity.id == testMessage._id)
-      if (message.registrationIds[0].indexOf('bob') > 0 && message.trigger == 'own_to') bobHit = true
+      t.assert(message.action.toEntity && message.action.toEntity.id == testPlaceCustom._id)
+      if (message.registrationIds[0].indexOf('bob') > 0 && message.trigger == 'nearby') bobHit = true
     })
     t.assert(bobHit)
 
@@ -406,92 +395,12 @@ exports.insertReply = function (test) {
         t.assert(body.data && body.data[0])
         t.assert(body.data[0].activityDate >= activityDate)
 
-        /* Check activityDate for message */
-        t.post({
-          uri: '/find/messages',
-          body: {
-            query:{ _id:testMessage._id }
-          }
-        }, function(err, res, body) {
-          t.assert(body.count === 1)
-          t.assert(body.data && body.data[0])
-          t.assert(body.data[0].activityDate >= activityDate)
-          test.done()
-        })
+        test.done()
       })
     })
   })
 }
 
-exports.expireMessages = function(test) {
-  t.post({
-    uri: '/do/processMessages?' + adminCred,
-    body: {
-      returnMessages: true,
-      skipAction: false,
-    }
-  }, function(err, res, body) {
-    t.assert(body.count === 2)
-    t.assert(body.data && body.data[0])
-
-    /* Check expired on root message */
-    t.post({
-      uri: '/find/messages',
-      body: {
-        query:{ _id:testMessage._id }
-      }
-    }, function(err, res, body) {
-      t.assert(body.count === 1)
-      t.assert(body.data && body.data[0])
-      t.assert(body.data[0].expired == true)
-
-      /* Check expired on reply */
-      t.post({
-        uri: '/find/messages',
-        body: {
-          query:{ _id:testReply._id }
-        }
-      }, function(err, res, body) {
-        t.assert(body.count === 1)
-        t.assert(body.data && body.data[0])
-        t.assert(body.data[0].expired == true)
-
-        /* Check inactive on message link to place */
-        t.post({
-          uri: '/find/links',
-          body: {
-            query: {
-              _to: testPlaceCustom._id,
-              _from: testMessage._id,
-              type: util.statics.typeContent,
-            }
-          }
-        }, function(err, res, body) {
-          t.assert(body.count === 1)
-          t.assert(body.data && body.data[0])
-          t.assert(body.data[0].inactive == true)
-
-          /* Check inactive on reply link to place */
-          t.post({
-            uri: '/find/links',
-            body: {
-              query: {
-                _to: testPlaceCustom._id,
-                _from: testReply._id,
-                type: util.statics.typeContent,
-              }
-            }
-          }, function(err, res, body) {
-            t.assert(body.count === 1)
-            t.assert(body.data && body.data[0])
-            t.assert(body.data[0].inactive == true)
-            test.done()
-          })
-        })
-      })
-    })
-  })
-}
 
 exports.removeMessageFromPlace = function(test) {
   t.post({
@@ -505,7 +414,7 @@ exports.removeMessageFromPlace = function(test) {
   }, function(err, res, body) {
     t.assert(body.info.indexOf('success') > 0)
 
-    /* Check unlike entity */
+    /* Check removed entity */
     t.post({
       uri: '/find/links',
       body: {
@@ -517,19 +426,7 @@ exports.removeMessageFromPlace = function(test) {
       }
     }, function(err, res, body) {
       t.assert(body.count === 0)
-      t.post({
-        uri: '/find/links',
-        body: {
-          query:{
-            _to:testPlaceCustom._id,
-            _from:testReply._id,            // owned by tom
-            type:util.statics.typeContent
-          }
-        }
-      }, function(err, res, body) {
-        t.assert(body.count === 0)
-        test.done()
-      })
+      test.done()
     })
   })
 }

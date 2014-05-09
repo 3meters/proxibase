@@ -27,7 +27,6 @@ var luckyStrike = {}
 var powerPlay = {}
 
 var luckyStrikeIdFactual = '46ba739c-21f7-4d72-a544-5581c1d7a7a1'
-var luckyStrikeFactual = {}
 
 var luckyStrikeSplace = {}
 
@@ -49,8 +48,8 @@ exports.dupePlaceMaggiano = function(test) {
   if (disconnected) return skip(test)
 
   var locMag = {
-    lat : 47.617099145207682,
-    lng : -122.20097064971924,
+    lat : 47.617132,
+    lng : -122.200517,
   }
   t.post({
     uri: '/data/places?' + userCred,
@@ -69,10 +68,10 @@ exports.dupePlaceMaggiano = function(test) {
       uri: '/places/near',
       body: {
         location: locMag,
-        provider: 'google',
         radius: 500,
         includeRaw: false,
-        limit: 100,
+        waitForContent: true,
+        limit: 50,
         timeout: 15000,
       }
     }, function(err, res, body) {
@@ -80,7 +79,7 @@ exports.dupePlaceMaggiano = function(test) {
       body.data.forEach(function(place){
         if (0 === place.name.indexOf('Magg')) cMaggiano++
       })
-      t.assert(1 === cMaggiano)
+      t.assert(1 === cMaggiano, cMaggiano)
       test.done()
     })
   })
@@ -118,12 +117,14 @@ exports.dupePlacesMergeOnProviderId = function(test) {
           phone: '2065454277',
         },
       }
-    }, 403, function(err, res, body) {
+    }, 201, function(err, res, body) {
       t.assert(body.data)
       var place = body.data
       t.assert(placeId === place._id) // proves merged on phone number
-      t.assert('Zoka1' === place.name)
+      t.assert('Zoka1' === place.name) // first name written wins
       t.assert(place.provider.foursquare)
+      t.assert(place.provider.factual)
+      t.assert(!place.provider.aircandi)
       t.post({
         uri: '/do/insertEntity?' + userCred,
         body: {
@@ -135,7 +136,7 @@ exports.dupePlacesMergeOnProviderId = function(test) {
             },
           },
         }
-      }, 403, function(err, res, body) {
+      }, 201, function(err, res, body) {
         t.assert(body.data)
         var place = body.data
         t.assert(placeId === place._id) // proves merged on provider Id
@@ -158,6 +159,7 @@ exports.getPlacesNearLocation = function(test) {
       provider: 'foursquare',
       radius: 500,
       includeRaw: false,
+      waitForContent: true,
       limit: 50,
     }
   }, function(err, res, body) {
@@ -168,43 +170,20 @@ exports.getPlacesNearLocation = function(test) {
       t.assert(place.provider)
       if (luckyStrikeId === place.provider.foursquare) {
         luckyStrike = place
+        delete luckyStrike.creator
+        delete luckyStrike.owner
+        delete luckyStrike.modifier
         foundLuckyStrike++
+        t.assert(foundLuckyStrike <= 1, place)
       }
       if (powerPlayId === place.provider.foursquare) {
         powerPlay = place
         foundPowerPlay++
+        t.assert(foundPowerPlay <= 1, place)
       }
     })
     t.assert(1 === foundLuckyStrike)
     t.assert(1 === foundPowerPlay)
-    test.done()
-  })
-}
-
-
-exports.getPlacesNearLocationFactual = function(test) {
-  if (disconnected) return skip(test)
-  t.post({
-    uri: '/places/near',
-    body: {
-      location: luckyStrikeLoc,
-      provider: 'factual',
-      radius: 500,
-      includeRaw: false,
-      limit: 50,
-    }
-  }, function(err, res, body) {
-    var foundLuckyStrike = 0
-    var foundPowerPlay = 0
-    var places = body.data
-    places.forEach(function(place) {
-      t.assert(place.provider)
-      if (luckyStrikeIdFactual === place.provider.factual) {
-        luckyStrikeFactual = place
-        foundLuckyStrike++
-      }
-    })
-    t.assert(1 === foundLuckyStrike)
     test.done()
   })
 }
@@ -264,7 +243,7 @@ exports.insertPlaceEntityAgain = function(test) {
     insertApplinks: true,
     includeRaw: false,
   }
-  t.post({uri: '/do/insertEntity?' + userCred, body: body}, 403,
+  t.post({uri: '/do/insertEntity?' + userCred, body: body}, 201,
     function(err, res, body) {
       t.assert(body && body.data)
       var newPlace = body.data
@@ -278,24 +257,6 @@ exports.insertPlaceEntityAgain = function(test) {
   )
 }
 
-exports.insertDupePlaceEntityFromFactual = function(test) {
-  if (disconnected) return skip(test)
-  var body = {
-    entity: luckyStrikeFactual,
-    insertApplinks: true,
-  }
-  t.post({uri: '/do/insertEntity?' + userCred, body: body}, 403,
-    function(err, res, body) {
-      t.assert(body && body.data)
-      var splace = body.data
-      t.assert(luckyStrikeSplace._id === splace._id)  // proves merge on phone number + !provider match worked
-      t.assert(splace.provider)
-      t.assert(luckyStrikeId === splace.provider.foursquare)
-      t.assert(luckyStrikeIdFactual === splace.provider.factual)  // proves merged provider.provider
-      test.done()
-    }
-  )
-}
 
 exports.getPlacesNearLocationWithUpsizedPlace = function(test) {
  if (disconnected) return skip(test)
@@ -303,10 +264,10 @@ exports.getPlacesNearLocationWithUpsizedPlace = function(test) {
     uri: '/places/near',
     body: {
       location: luckyStrikeLoc,
-      provider: 'foursquare',
       radius: 500,
       includeRaw: false,
       limit: 50,
+      waitForContent: true,
     }
   }, function(err, res, body) {
     var foundLuckyStrike = 0
@@ -320,7 +281,7 @@ exports.getPlacesNearLocationWithUpsizedPlace = function(test) {
       }
       if (powerPlayId === place.provider.foursquare) {
         foundPowerPlay++
-        t.assert(place.name === powerPlay.name)
+        t.assert(place.name === powerPlay.name, place)
       }
     })
     t.assert(1 === foundLuckyStrike)

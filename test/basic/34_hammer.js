@@ -150,7 +150,7 @@ exports.runHammer = function(test) {
      * both a parent and children.
      */
     t.post({
-      uri: '/do/getEntities?' + userCred,
+      uri: '/do/getEntities?' + adminCred,
       body: {
         entityIds: [constants.uid1],
       }

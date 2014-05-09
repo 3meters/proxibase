@@ -57,10 +57,10 @@ var testUserAlice = {
   enabled: true,
 }
 
-var testPlaceCustomOne = {
+var testPlaceCustom = {
   _id : "pl.111111.11111.111.211114",
   schema : util.statics.schemaPlace,
-  name : "Testing place entity custom one for candigrams",
+  name : "Testing place entity custom one for messages",
   photo: {
     prefix:"1001_20111224_104245.jpg",
     source:"aircandi"
@@ -69,10 +69,10 @@ var testPlaceCustomOne = {
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
-  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"4259950004",
-  provider:{
+  provider: {
     aircandi: 'aircandi',
   },
+  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"4259950004",
   category:{
     id:"4bf58dd8d48988d18c941735",
     name : "Baseball Stadium",
@@ -86,8 +86,8 @@ var testPlaceCustomOne = {
 var testPlaceCustomTwo = {
   _id : "pl.111111.11111.111.211115",
   schema : util.statics.schemaPlace,
-  name : "Testing place entity custom two for candigrams",
-  locked: true,  //
+  name : "Testing place entity custom two",
+  locked: true,
   photo: {
     prefix:"1001_20111224_104245.jpg",
     source:"aircandi"
@@ -97,7 +97,7 @@ var testPlaceCustomTwo = {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
   address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"4259950004",
-  provider:{
+  provider: {
     aircandi: 'aircandi',
   },
   category:{
@@ -110,52 +110,10 @@ var testPlaceCustomTwo = {
   },
 }
 
-var testCandigramBounce = {
-  _id : "ca.111111.11111.111.111111",
-  schema : util.statics.schemaCandigram,
-  type : "bounce",
-  range: -1,      // in meters
-  hopsMax: 50,
-  stopped: false,
-  location: {
-    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
-  },
-  name : "Testing bouncing candigram entity",
-  photo: {
-    prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
-    source:"aircandi",
-  },
-}
-
-var testCandigramTour = {
-  _id : "ca.111111.11111.111.222222",
-  schema : util.statics.schemaCandigram,
-  type : "tour",
-  duration: 3600000,  // one hour in millis
-  range: -1,          // worldwide
-  hopsMax: 100,
-  stopped: false,
-  location: {
-    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
-  },
-  name : "Testing touring candigram entity",
-  photo: {
-    prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
-    source:"aircandi",
-  },
-}
-
-var testCandigramMessage = {
-  _id : "ca.111111.11111.111.333333",
-  schema : util.statics.schemaCandigram,
-  type : "message",
-  lifetime: 86400000, // one day
-  range: -1,      // in meters
-  stopped: false,
-  location: {
-    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
-  },
-  name : "Testing message candigram entity",
+var testMessage = {
+  _id : "me.111111.11111.111.111111",
+  schema : util.statics.schemaMessage,
+  name : "Testing message entity",
   photo: {
     prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
     source:"aircandi",
@@ -210,6 +168,7 @@ var testBeacon = {
     geometry:[testLongitude, testLatitude]
   },
 }
+
 var testBeacon2 = {
   _id : 'be.22:22:22:22:22:22',
   schema : util.statics.schemaBeacon,
@@ -430,15 +389,15 @@ exports.updateBeaconsInstallThree = function (test) {
 
 /*
  * ----------------------------------------------------------------------------
- * Candigrams
+ * Messages
  * ----------------------------------------------------------------------------
  */
 
-exports.insertCustomPlaceOneForCandigram = function (test) {
+exports.insertCustomPlace = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCredTom,
     body: {
-      entity: testPlaceCustomOne,    // custom place
+      entity: testPlaceCustom,    // custom place
       beacons: [testBeacon],
       primaryBeaconId: testBeacon._id,
       returnMessages: true,
@@ -447,9 +406,10 @@ exports.insertCustomPlaceOneForCandigram = function (test) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data._id)
     /*
-     * Bob should get a nearby message since bob is registered
-     * with beacons that intersect the ones for custom place three. Tom should
-     * not get a message because he is the source.
+     * Bob should get a nearby message since he is registered
+     * with beacons that intersect the ones for custom place three.
+     *
+     * Tom should not get a message because he is the source.
      *
      * Alice gets a message because she is watching Tom.
      */
@@ -464,36 +424,38 @@ exports.insertCustomPlaceOneForCandigram = function (test) {
   })
 }
 
-exports.insertCustomPlaceTwoForCandigram = function (test) {
+
+exports.insertCustomPlaceTwo = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCredBob,
     body: {
       entity: testPlaceCustomTwo,    // custom place
-      beacons: [testBeacon],
-      primaryBeaconId: testBeacon._id,
+      beacons: [testBeacon2],
+      primaryBeaconId: testBeacon2._id,
       returnMessages: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data._id)
     /*
-     * Tom should get a nearby message since bob is registered
-     * with beacons that intersect the ones for custom place three. Tom should
-     * not get a message because he is the source.
+     * Alice should get a nearby message since alice is registered
+     * with beacons that intersect the ones for custom place two.
+     *
+     * Bob should not get a message because he is the source.
      */
-    t.assert(body.messages.length == 1)
+    t.assert(body.messages && body.messages.length == 1)
     t.assert(body.messages[0].action.user && body.messages[0].action.entity)
     t.assert(!body.messages[0].action.toEntity)
     t.assert(!body.messages[0].action.fromEntity)
     t.assert(body.messages[0].trigger == 'nearby')
-    t.assert(body.messages[0].registrationIds[0].indexOf('tom') > 0)
+    t.assert(body.messages[0].registrationIds[0].indexOf('alice') > 0)
 
     test.done()
   })
 }
 
 
-exports.cannotUpdateApplinksforPlaceOwnedByAnotherUser = function(test) {
+exports.cannotUpdateApplinksforLockedPlaceOwnedByAnotherUser = function(test) {
   t.post({
     uri: '/do/replaceEntitiesForEntity?' + userCredTom,  // place is owned by Bob
     body: {
@@ -504,9 +466,12 @@ exports.cannotUpdateApplinksforPlaceOwnedByAnotherUser = function(test) {
         util.clone(testApplink)],
       schema: util.statics.schemaApplink,
       activityDateWindow: 0,
+      verbose: true,
     }
   }, 401, function(err, res, body) {
     t.assert(401.6 === body.error.code)
+
+    /* Now have bob unlock it */
     t.post({
       uri: '/data/places/' + testPlaceCustomTwo._id + '?' + userCredBob,
       body: {data: {locked: false}},
@@ -518,30 +483,30 @@ exports.cannotUpdateApplinksforPlaceOwnedByAnotherUser = function(test) {
 }
 
 
-exports.insertCandigramBounce = function (test) {
-  testCandigramBounce.hopLastDate = util.now()
+exports.insertMessage = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCredBob,
     body: {
-      entity: testCandigramBounce,
+      entity: testMessage,
       links: [{
-        _to: testPlaceCustomTwo._id,
+        _to: testPlaceCustom._id,          // Tom's place
         type: util.statics.typeContent
       }],
       returnMessages: true,
+      activityDateWindow: 0,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
     /*
-     * Tom gets a message because he is near the place that the candigram
+     * Tom should get a notification message because he owns the place that the message
      * is being added to.
      */
     t.assert(body.messages.length == 1)
     body.messages.forEach(function(message) {
       t.assert(message.action.user && message.action.entity)
-      t.assert(message.action.toEntity && message.action.toEntity.id == testPlaceCustomTwo._id)
-      t.assert(message.trigger == 'nearby')
+      t.assert(message.action.toEntity && message.action.toEntity.id == testPlaceCustom._id)
+      t.assert(message.trigger == 'own_to')
       t.assert(message.registrationIds[0].indexOf('tom') > 0)
     })
 
@@ -553,9 +518,9 @@ exports.insertCandigramBounce = function (test) {
 
     /* Check insert */
     t.post({
-      uri: '/find/candigrams',
+      uri: '/find/messages',
       body: {
-        query:{ _id:testCandigramBounce._id }
+        query:{ _id:testMessage._id }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -564,7 +529,7 @@ exports.insertCandigramBounce = function (test) {
       t.post({
         uri: '/find/places',
         body: {
-          query:{ _id:testPlaceCustomTwo._id }
+          query:{ _id:testPlaceCustom._id }
         }
       }, function(err, res, body) {
         t.assert(body.count === 1)
@@ -576,349 +541,6 @@ exports.insertCandigramBounce = function (test) {
   })
 }
 
-exports.moveCandigramToPlaceOne = function(test) {
-  t.post({
-    uri: '/do/moveCandigrams?' + userCredTom,
-    body: {
-      entityIds:[testCandigramBounce._id],
-      toId: testPlaceCustomOne._id,           // Moving to toms place
-      verbose: true,
-      activityDateWindow: 0,
-      returnMessages: true,
-    }
-  }, function(err, res, body) {
-    t.assert(body.count === 1)
-    t.assert(body.data && body.data[0])
-    /*
-     * Bob should get a message because he owns the candigram.
-     * Alice should get a message because she is watching Tom.
-     */
-    t.assert(body.messages.length == 2)
-    body.messages.forEach(function(message) {
-      t.assert(message.action.user && message.action.entity)
-      t.assert(message.action.toEntity && message.action.toEntity.id == testPlaceCustomOne._id)
-      t.assert(message.action.fromEntity && message.action.fromEntity.id == testPlaceCustomTwo._id)
-      t.assert(message.trigger == 'own' || message.trigger == 'watch_user')
-      t.assert(message.registrationIds[0].indexOf('bob') > 0 || message.registrationIds[0].indexOf('alice') > 0)
-    })
-
-    var newPlace = body.data[0]
-    placeMovedToId = newPlace._id
-    var activityDate = body.date
-
-    /* Check place link inactive */
-    t.post({
-      uri: '/find/links',
-      body: {
-        query:{
-          _from:testCandigramBounce._id,
-          _to:testPlaceCustomTwo._id,
-          type:util.statics.typeContent,
-        }
-      }
-    }, function(err, res, body) {
-      t.assert(body.count === 1)
-      t.assert(body.data && body.data[0])
-      t.assert(body.data[0].inactive === true)
-
-      /* Check new place link active */
-      t.post({
-        uri: '/find/links',
-        body: {
-          query:{
-            _from: testCandigramBounce._id,
-            type: util.statics.typeContent,
-            inactive: false,
-          }
-        }
-      }, function(err, res, body) {
-        t.assert(body.count === 1)
-        t.assert(body.data && body.data[0])
-
-        /* Check activityDate for old place */
-        t.post({
-          uri: '/find/places',
-          body: {
-            query:{ _id:testPlaceCustomTwo._id }
-          }
-        }, function(err, res, body) {
-          t.assert(body.count === 1)
-          t.assert(body.data && body.data[0])
-          t.assert(body.data[0].activityDate >= activityDate)
-
-          /* Check activityDate for new place */
-          t.post({
-            uri: '/find/places',
-            body: {
-              query:{ _id:newPlace._id }
-            }
-          }, function(err, res, body) {
-            t.assert(body.count === 1)
-            t.assert(body.data && body.data[0])
-            t.assert(body.data[0].activityDate >= activityDate)
-
-            /* Check activityDate for candigram */
-            t.post({
-              uri: '/find/candigrams',
-              body: {
-                query:{ _id: testCandigramBounce._id }
-              }
-            }, function(err, res, body) {
-              t.assert(body.count === 1)
-              t.assert(body.data && body.data[0])
-              t.assert(body.data[0].activityDate >= activityDate)
-              test.done()
-            })
-          })
-        })
-      })
-    })
-  })
-}
-
-exports.moveCandigramAgainWithActivityDateWindow = function(test) {
-  t.post({
-    uri: '/do/moveCandigrams?' + userCredTom,
-    body: {
-      entityIds:[testCandigramBounce._id],
-      toId: testPlaceCustomTwo._id,           // Moving back to bobs place
-      verbose: true,
-      activityDateWindow: 2000,
-      returnMessages: true,
-    }
-  }, function(err, res, body) {
-    t.assert(body.count === 1)
-    t.assert(body.data && body.data[0])
-    /*
-     * Bob should get a message because he owns the candigram.
-     * Alice should get a message because she is watching Tom.
-     */
-    t.assert(body.messages.length == 2)
-    body.messages.forEach(function(message) {
-      t.assert(message.action.user && message.action.entity)
-      t.assert(message.action.toEntity && message.action.toEntity.id == testPlaceCustomTwo._id)
-      t.assert(message.action.fromEntity && message.action.fromEntity.id == testPlaceCustomOne._id)
-      t.assert(message.trigger == 'own' || message.trigger == 'watch_user')
-      t.assert(message.registrationIds[0].indexOf('bob') > 0 || message.registrationIds[0].indexOf('alice') > 0)
-    })
-
-    var newPlace = body.data[0]
-    placeMovedToId = newPlace._id
-    var activityDate = body.date
-
-    /* Check new place link active */
-    t.post({
-      uri: '/find/links',
-      body: {
-        query:{
-          _from: testCandigramBounce._id,
-          type: util.statics.typeContent,
-          inactive: false,
-        }
-      }
-    }, function(err, res, body) {
-      t.assert(body.count === 1)
-      t.assert(body.data && body.data[0])
-
-      /* Check activityDate for old place */
-      t.post({
-        uri: '/find/places',
-        body: {
-          query:{ _id:testPlaceCustomTwo._id }
-        }
-      }, function(err, res, body) {
-        t.assert(body.count === 1)
-        t.assert(body.data && body.data[0])
-        // was already inactive on previous test, should not be reactivated
-        t.assert(body.data[0].activityDate <= activityDate)
-
-        /* Check activityDate for new place */
-        t.post({
-          uri: '/find/places',
-          body: {
-            query:{ _id:newPlace._id }
-          }
-        }, function(err, res, body) {
-          t.assert(body.count === 1)
-          t.assert(body.data && body.data[0])
-          t.assert(body.data[0].activityDate <= activityDate)  // should not be reactivated, within default window
-
-          /* Check activityDate for candigram */
-          t.post({
-            uri: '/find/candigrams',
-            body: {
-              query:{ _id: testCandigramBounce._id }
-            }
-          }, function(err, res, body) {
-            t.assert(body.count === 1)
-            t.assert(body.data && body.data[0])
-            t.assert(body.data[0].activityDate >= activityDate) // should update regardless of window
-            test.done()
-          })
-        })
-      })
-    })
-  })
-}
-
-
-exports.insertCandigramMessage = function (test) {
-  t.post({
-    uri: '/do/insertEntity?' + userCredTom,
-    body: {
-      entity: testCandigramMessage,
-      links: [{
-        _to: testPlaceCustomTwo._id,          // Bobs place
-        type: util.statics.typeContent
-      }],
-      returnMessages: true,
-      activityDateWindow: 0,
-    }
-  }, 201, function(err, res, body) {
-    t.assert(body.count === 1)
-    t.assert(body.data)
-    /*
-     * Bob should get a message because he owns the place that the candigram
-     * is being added to.
-     *
-     * Alice should get a message because she is watching Tom.
-     */
-    t.assert(body.messages.length == 2)
-    body.messages.forEach(function(message) {
-      t.assert(message.action.user && message.action.entity)
-      t.assert(message.action.toEntity && message.action.toEntity.id == testPlaceCustomTwo._id)
-      t.assert(message.trigger == 'own_to' || message.trigger == 'watch_user')
-      t.assert(message.registrationIds[0].indexOf('bob') > 0 || message.registrationIds[0].indexOf('alice') > 0)
-    })
-
-    var savedEnt = body.data
-    t.assert(savedEnt._owner === testUserTom._id)
-    t.assert(savedEnt._creator === testUserTom._id)
-    t.assert(savedEnt._modifier === testUserTom._id)
-    var activityDate = body.date
-
-    /* Check insert */
-    t.post({
-      uri: '/find/candigrams',
-      body: {
-        query:{ _id:testCandigramMessage._id }
-      }
-    }, function(err, res, body) {
-      t.assert(body.count === 1)
-
-      /* Check activityDate for place */
-      t.post({
-        uri: '/find/places',
-        body: {
-          query:{ _id:testPlaceCustomTwo._id }
-        }
-      }, function(err, res, body) {
-        t.assert(body.count === 1)
-        t.assert(body.data && body.data[0])
-        t.assert(body.data[0].activityDate >= activityDate)
-        test.done()
-      })
-    })
-  })
-}
-
-exports.forwardCandigramToPlaceOne = function(test) {
-  t.post({
-    uri: '/do/moveCandigrams?' + userCredBob,
-    body: {
-      entityIds:[testCandigramMessage._id],
-      toId: testPlaceCustomOne._id,           // Moving to toms place
-      verbose: true,
-      forward: true,
-      returnMessages: true,
-      activityDateWindow: 0,
-    }
-  }, function(err, res, body) {
-    t.assert(body.count === 1)
-    t.assert(body.data && body.data[0])
-    /*
-     * Tom should get a message because he owns the candigram.
-     */
-    t.assert(body.messages.length == 1)
-    body.messages.forEach(function(message) {
-      t.assert(message.action.user && message.action.entity)
-      t.assert(message.action.toEntity && message.action.toEntity.id == testPlaceCustomOne._id)
-      t.assert(message.trigger == 'own')
-      t.assert(message.registrationIds[0].indexOf('tom') > 0)
-    })
-
-    var newPlace = body.data[0]
-    var activityDate = body.date
-
-    /* Check first place link still active */
-    t.post({
-      uri: '/find/links',
-      body: {
-        query:{
-          _from:testCandigramMessage._id,
-          _to:testPlaceCustomTwo._id,
-          type:util.statics.typeContent,
-        }
-      }
-    }, function(err, res, body) {
-      t.assert(body.count === 1)
-      t.assert(body.data && body.data[0])
-      t.assert(body.data[0].inactive === false)
-
-      /* Check both place links are active */
-      t.post({
-        uri: '/find/links',
-        body: {
-          query:{
-            _from: testCandigramMessage._id,
-            type: util.statics.typeContent,
-            inactive: false,
-          }
-        }
-      }, function(err, res, body) {
-        t.assert(body.count === 2)
-        t.assert(body.data && body.data[0])
-
-        /* Check that activityDate for old place was *not* updated */
-        t.post({
-          uri: '/find/places',
-          body: {
-            query:{ _id:testPlaceCustomTwo._id }
-          }
-        }, function(err, res, body) {
-          t.assert(body.count === 1)
-          t.assert(body.data && body.data[0])
-          t.assert(body.data[0].activityDate <= activityDate)
-
-          /* Check activityDate for new place */
-          t.post({
-            uri: '/find/places',
-            body: {
-              query:{ _id:newPlace._id }
-            }
-          }, function(err, res, body) {
-            t.assert(body.count === 1)
-            t.assert(body.data && body.data[0])
-            t.assert(body.data[0].activityDate >= activityDate)
-
-            /* Check activityDate for candigram */
-            t.post({
-              uri: '/find/candigrams',
-              body: {
-                query:{ _id: testCandigramMessage._id }
-              }
-            }, function(err, res, body) {
-              t.assert(body.count === 1)
-              t.assert(body.data && body.data[0])
-              t.assert(body.data[0].activityDate >= activityDate)
-              test.done()
-            })
-          })
-        })
-      })
-    })
-  })
-}
 
 /*
  * ----------------------------------------------------------------------------
@@ -930,7 +552,7 @@ exports.addEntitySet = function (test) {
   t.post({
     uri: '/do/replaceEntitiesForEntity?' + userCredTom,
     body: {
-      entityId: testPlaceCustomTwo._id,
+      entityId: testPlaceCustom._id,
       entities: [
         util.clone(testApplink),
         util.clone(testApplink),
@@ -946,7 +568,7 @@ exports.addEntitySet = function (test) {
     t.post({
       uri: '/find/links',
       body: {
-        query: { _to: testPlaceCustomTwo._id, type: util.statics.typeContent, fromSchema: util.statics.schemaApplink }
+        query: { _to: testPlaceCustom._id, type: util.statics.typeContent, fromSchema: util.statics.schemaApplink }
       }
     }, function(err, res, body) {
       t.assert(body.count === 3)
@@ -964,7 +586,7 @@ exports.addEntitySet = function (test) {
         t.post({
           uri: '/find/places',
           body: {
-            query:{ _id: testPlaceCustomTwo._id }
+            query:{ _id: testPlaceCustom._id }
           }
         }, function(err, res, body) {
           t.assert(body.count === 1)
@@ -982,7 +604,7 @@ exports.replaceEntitySet = function (test) {
   t.post({
     uri: '/do/replaceEntitiesForEntity?' + userCredTom,
     body: {
-      entityId: testPlaceCustomTwo._id,
+      entityId: testPlaceCustom._id,
       entities: [
         util.clone(testApplink2),
         util.clone(testApplink2),
@@ -999,7 +621,7 @@ exports.replaceEntitySet = function (test) {
     t.post({
       uri: '/find/links',
       body: {
-        query: { _to: testPlaceCustomTwo._id, type: util.statics.typeContent, fromSchema: util.statics.schemaApplink }
+        query: { _to: testPlaceCustom._id, type: util.statics.typeContent, fromSchema: util.statics.schemaApplink }
       }
     }, function(err, res, body) {
       t.assert(body.count === 3)
@@ -1026,7 +648,7 @@ exports.replaceEntitySet = function (test) {
           t.post({
             uri: '/find/places',
             body: {
-              query:{ _id: testPlaceCustomTwo._id }
+              query:{ _id: testPlaceCustom._id }
             }
           }, function(err, res, body) {
             t.assert(body.count === 1)
@@ -1052,7 +674,7 @@ exports.insertComment = function (test) {
     body: {
       entity: testComment,
       links: [{
-        _to: testCandigramBounce._id,
+        _to: testMessage._id,
         type: util.statics.typeContent,
       }],
       returnMessages: true,
@@ -1062,13 +684,13 @@ exports.insertComment = function (test) {
     t.assert(body.count === 1)
     t.assert(body.data)
     /*
-     * Bob should get a message because he owns the candigram
-     * Alice should get a message because she is watching Tom.
+     * Bob should get a notification message because he owns the message
+     * Alice should get a notification message because she is watching Tom.
      */
     t.assert(body.messages.length == 2)
     body.messages.forEach(function(message) {
       t.assert(message.action.user && message.action.entity)
-      t.assert(message.action.toEntity && message.action.toEntity.id == testCandigramBounce._id)
+      t.assert(message.action.toEntity && message.action.toEntity.id == testMessage._id)
       t.assert(message.trigger == 'own_to' || message.trigger == 'watch_user')
       t.assert(message.registrationIds[0].indexOf('bob') > 0 || message.registrationIds[0].indexOf('alice') > 0)
     })
@@ -1090,18 +712,18 @@ exports.insertComment = function (test) {
       t.post({
         uri: '/find/places',
         body: {
-          query:{ _id:placeMovedToId }
+          query:{ _id:testPlaceCustom._id }
         }
       }, function(err, res, body) {
         t.assert(body.count === 1)
         t.assert(body.data && body.data[0])
         t.assert(body.data[0].activityDate >= activityDate)
 
-        /* Check activityDate for candigram */
+        /* Check activityDate for message */
         t.post({
-          uri: '/find/candigrams',
+          uri: '/find/messages',
           body: {
-            query:{ _id: testCandigramBounce._id }
+            query:{ _id: testMessage._id }
           }
         }, function(err, res, body) {
           t.assert(body.count === 1)
@@ -1141,18 +763,18 @@ exports.updateEntity = function (test) {
       t.post({
         uri: '/find/places',
         body: {
-          query:{ _id:placeMovedToId }
+          query:{ _id:testPlaceCustom._id }
         }
       }, function(err, res, body) {
         t.assert(body.count === 1)
         t.assert(body.data && body.data[0])
         t.assert(body.data[0].activityDate >= activityDate)
 
-        /* Check activityDate for candigram */
+        /* Check activityDate for message */
         t.post({
-          uri: '/find/candigrams',
+          uri: '/find/messages',
           body: {
-            query:{ _id: testCandigramBounce._id }
+            query:{ _id: testMessage._id }
           }
         }, function(err, res, body) {
           t.assert(body.count === 1)
@@ -1188,18 +810,18 @@ exports.deleteEntity = function (test) {
       t.post({
         uri: '/find/places',
         body: {
-          query:{ _id:placeMovedToId }
+          query:{ _id:testPlaceCustom._id }
         }
       }, function(err, res, body) {
         t.assert(body.count === 1)
         t.assert(body.data && body.data[0])
         t.assert(body.data[0].activityDate >= activityDate)
 
-        /* Check activityDate for candigram */
+        /* Check activityDate for message */
         t.post({
-          uri: '/find/candigrams',
+          uri: '/find/messages',
           body: {
-            query:{ _id: testCandigramBounce._id }
+            query:{ _id: testMessage._id }
           }
         }, function(err, res, body) {
           t.assert(body.count === 1)

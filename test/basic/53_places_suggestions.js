@@ -44,13 +44,15 @@ exports.suggestPlacesFoursquare = function(test) {
   if (disconnected) return skip(test)
 
   t.post({
-    uri: '/do/suggestPlaces?' + userCred,
+    uri: '/places/suggest?' + userCred,
     body: {
       provider: 'foursquare',
       location: luckyStrikeLoc,
       input: 'lucky',
       timeout: 15000,
       limit: 10,
+      radius: 50000,
+      includeRaw: true,
     }
   }, 200, function(err, res, body) {
     var places = body.data
@@ -69,16 +71,17 @@ exports.suggestPlacesGoogle = function(test) {
   if (disconnected) return skip(test)
 
   t.post({
-    uri: '/do/suggestPlaces?' + userCred,
+    uri: '/places/suggest?' + userCred,
     body: {
       provider: 'google',
       location: luckyStrikeLoc,
       input: 'lucky',
+      radius: 50000,
       limit: 10,
     }
   }, 200, function(err, res, body) {
     var places = body.data
-    t.assert(places && places.length >= 4) // 4 if lucky is in db and 5 otherwise
+    t.assert(places && places.length <= 5) // 4 if lucky is in db and 5 otherwise
     var hitCount = 0
     places.forEach(function(place){
       if (0 === place.name.indexOf('Lucky Strike')) hitCount++
