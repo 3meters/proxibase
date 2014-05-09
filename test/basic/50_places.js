@@ -127,7 +127,7 @@ exports.getPlacesNearLocation = function(test) {
         t.assert(place.location.accuracy, place)
       }
     })
-    t.assert(placeCount.aircandi === 50, placeCount)
+    t.assert(placeCount.aircandi === 0, placeCount)
     t.assert(placeCount.foursquare > 10, placeCount)
     t.assert(placeCount.yelp > 5, placeCount)
     t.assert(placeCount.google > 10, placeCount)
@@ -207,12 +207,6 @@ exports.getPlacesNearLocationAgain = function(test) {
   }, function(err, res) {
     var places = res.body.data
     t.assert(places.length === 50)
-    var cAircandi = 0
-    places.forEach(function(place) {
-      t.assert(place.provider, place)
-      if (place.provider.aircandi) cAircandi++
-    })
-    t.assert(cAircandi === places.length)
     var roxys = places.filter(function(place) {
       if (!place.provider.google) return false
       return (place.provider.google.split('|')[0] === roxyGooId.split('|')[0]) // Roxy's Diner
@@ -421,7 +415,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
                   entity: {
                     name: 'A user-created Test Place Inside the BallRoom',
                     schema : util.statics.schemaPlace,
-                    provider: { aircandi: true }, // new
+                    provider: { aircandi: 'aircandi' }, // new
                     location: ballRoomLoc,
                     enabled : true,
                     locked : false,
@@ -432,7 +426,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
               }, 201, function(err, res, body) {
                 var newEnt = body.data
                 t.assert(newEnt)
-                t.assert(newEnt.provider.aircandi === newEnt._id)
+                t.assert(newEnt.provider.aircandi === 'aircandi')
                 t.assert(body.raw)
                 t.assert(Object.keys(body.raw).length === 0)  // proves that place seach did not occur, isssue 137
 
@@ -442,7 +436,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
                   body: {entity: {
                     name: 'A user-created Entity At George\'s House',
                     schema : util.statics.schemaPlace,
-                    provider: {aircandi: true},  // new
+                    provider: {aircandi: 'aircandi'},  // new
                     location: {lat: 47.664525, lng: -122.354787},
                     enabled : true,
                     locked : false,
@@ -470,8 +464,6 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
                       if (place.provider.foursquare === ksthaiId) foundKsthai++
                       if (place._id && place._id === newEnt._id) {
                         foundNewEnt++
-                        t.assert(place.provider.aircandi)
-                        t.assert(place.provider.aircandi === place._id)
                       }
                       if (place._id && place._id === newEnt2._id) {
                         foundNewEnt2++

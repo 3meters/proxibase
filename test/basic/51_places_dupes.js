@@ -124,7 +124,7 @@ exports.dupePlacesMergeOnProviderId = function(test) {
       t.assert('Zoka1' === place.name) // first name written wins
       t.assert(place.provider.foursquare)
       t.assert(place.provider.factual)
-      t.assert(place.provider.aircandi)
+      t.assert(!place.provider.aircandi)
       t.post({
         uri: '/do/insertEntity?' + userCred,
         body: {

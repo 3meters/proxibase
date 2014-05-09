@@ -38,7 +38,6 @@
     "later": "*",
     "jade": "*",
     "durable-json-lint": "*",
-    "fuzzy-filter": "*",
     "fuzzy": "*"
   },
 
