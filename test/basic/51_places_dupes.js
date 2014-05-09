@@ -48,8 +48,8 @@ exports.dupePlaceMaggiano = function(test) {
   if (disconnected) return skip(test)
 
   var locMag = {
-    lat : 47.617099145207682,
-    lng : -122.20097064971924,
+    lat : 47.617132,
+    lng : -122.200517,
   }
   t.post({
     uri: '/data/places?' + userCred,
@@ -71,7 +71,7 @@ exports.dupePlaceMaggiano = function(test) {
         radius: 500,
         includeRaw: false,
         waitForContent: true,
-        limit: 100,
+        limit: 50,
         timeout: 15000,
       }
     }, function(err, res, body) {
@@ -79,7 +79,7 @@ exports.dupePlaceMaggiano = function(test) {
       body.data.forEach(function(place){
         if (0 === place.name.indexOf('Magg')) cMaggiano++
       })
-      t.assert(1 === cMaggiano)
+      t.assert(1 === cMaggiano, cMaggiano)
       test.done()
     })
   })

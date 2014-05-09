@@ -32,8 +32,8 @@ var testEntity = {
 var _exports = {} // for commenting out tests
 
 var ballRoomLoc = {
-  lat: 47.6521,
-  lng: -122.3530,
+  lat: 47.652084,
+  lng: -122.353025,
 }
 
 var savedRoxy  // shared between tests
@@ -450,13 +450,11 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
                 }, 201, function(err, res, body) {
                   var newEnt2 = body.data
                   t.assert(newEnt2)
-
                   // Run radar again
                   t.post({
                     uri: '/places/near',
                     body: {
                       location: ballRoomLoc,
-                      provider: 'foursquare',
                       limit: 50,
                       timeout: 15000,
                       waitForContent: true,

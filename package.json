@@ -37,7 +37,9 @@
     "moment": "*",
     "later": "*",
     "jade": "*",
-    "durable-json-lint": "*"
+    "durable-json-lint": "*",
+    "fuzzy-filter": "*",
+    "fuzzy": "*"
   },
 
   "repository": "git://github.com:3meters/proxibase",
