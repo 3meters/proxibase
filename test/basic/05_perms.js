@@ -13,13 +13,19 @@ var user1 = {
   name: 'Perm Test User 1',
   type: 'user',
   email: 'permtest1@3meters.com',
-  password: 'foobar'
+  password: 'foobar',
+  photo: {
+    prefix: 'user1.png'
+  },
 }
 var user2 = {
   name: 'Perm Test User 2',
   type: 'user',
   email: 'permtest2@3meters.com',
-  password: 'foobar'
+  password: 'foobar',
+  photo: {
+    prefix: 'user2.png'
+  },
 }
 var doc1 = {
   name: 'Doc1',
@@ -267,16 +273,66 @@ exports.ownerAccessCollectionsWork = function(test) {
           t.assert(doc._id && doc._owner)
           t.assert(user1._id === doc._owner)
           t.assert('do.use2DocOwnerAccessTest' !== doc._id)  // can't see user 2's document
-        })
-        t.get('/find/users?' + user1Cred,
-        function(err, res, body) {
-          t.assert(body.data && 1 === body.data.length)
-          t.assert(user1._id === body.data[0]._id)
-          t.assert(user1._id === body.data[0]._owner)
           test.done()
         })
       })
     })
   })
 }
+
+
+exports.userPublicFields = function(test) {
+  t.get({
+    uri: '/data/users?limit=5&' + user1Cred
+  }, 200, function(err, res, body) {
+    t.assert(body && body.data)
+    var users = body.data
+    t.assert(users.length === 5)
+    users.forEach(function(user) {
+      t.assert(user._id)
+      t.assert(util.adminId !== user._id)
+      t.assert(util.anonId !== user._id)
+      t.assert(user.name)
+      t.assert(user.photo)
+      t.assert(!user.email)  // not a public field
+    })
+    test.done()
+  })
+}
+
+
+exports.userPublicFieldsSeeOwnRecord = function(test) {
+  t.get({
+    uri: '/data/users/' + user1._id + '?' + user1Cred
+  }, 200, function(err, res, body) {
+    t.assert(body && body.data)
+    var user = body.data
+    t.assert(user._id)
+    t.assert(user.name)
+    t.assert(user.photo)
+    t.assert(user.email)  // own email visible to user
+    test.done()
+  })
+}
+
+
+exports.userPublicFieldsProjection= function(test) {
+  t.post({
+    uri: '/find/users/' + user1._id + '?' + user1Cred,
+    body: {
+      fields: 'name,email',
+    }
+  }, 200, function(err, res, body) {
+    t.assert(body && body.data)
+    var user = body.data
+    t.assert(user.name)
+    t.assert(user._id)    // included by default even though not in field list
+    t.assert(user.email)  // own email is visible to user
+    t.assert(!user.photo) // public field not included in the field list
+    test.done()
+  })
+}
+
+
+
 
