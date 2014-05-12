@@ -289,8 +289,11 @@ exports.userPublicFields = function(test) {
     var users = body.data
     t.assert(users.length === 5)
     users.forEach(function(user) {
-      t.assert(user.name)
       t.assert(user._id)
+      t.assert(util.adminId !== user._id)
+      t.assert(util.anonId !== user._id)
+      t.assert(user.name)
+      t.assert(user.photo)
       t.assert(!user.email)  // not a public field
     })
     test.done()
