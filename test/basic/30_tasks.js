@@ -6,6 +6,7 @@ var util = require('proxutils')
 var log = util.log
 var testUtil = require('../util')
 var t = testUtil.treq
+var skip = testUtil.skip
 var constants = require('../constants')
 var userId
 var adminId
@@ -180,4 +181,35 @@ exports.restInsertDisabledTestDoesNotStartIt = function(test) {
   })
 }
 
+exports.insertRebuildStatsTask = function(test) {
+
+  log('There appears to be a problem with disabling tasks not disabling')
+  return skip(test)
+  t.post({
+    uri: '/data/tasks?' + adminCred,
+    body: { data: {
+      name:     'rebuildStats',
+      schedule: later.parse.cron('*/5 * * * * *', true), // every 5 seconds
+      module:   'utils',
+      method:   'calcStats',
+      enabled:  true,
+      args:     [{rebuild: true}],
+    }}
+  }, 201, function(err, res, body) {
+    debug('task body', body)
+    var taskId = body.data._id
+    t.assert(taskId)
+    setTimeout(stopStatRebuildTask, 2000)
+    function stopStatRebuildTask() {
+      t.post({
+        uri: '/data/tasks/' + taskId + '?' + adminCred,
+        body: {data: {enabled: false}},
+      }, function(err, res, body) {
+        test.done()
+        // manually inspect the log output after the test
+        // has finished to confirm that cron called rebuild stats only once
+      })
+    }
+  })
+}
 
