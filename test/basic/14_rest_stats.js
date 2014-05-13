@@ -214,3 +214,22 @@ exports.doCountPlacesByTunings = function(test) {
     test.done()
   })
 }
+
+exports.adminCanRebuildTos = function(test) {
+  t.get({
+    uri: '/data/tos?rebuild=true&' + adminCred
+  }, function(err, res, body){
+    t.assert(body.data.length)
+    test.done()
+  })
+}
+
+exports.adminCanRebuildfroms = function(test) {
+  t.get({
+    uri: '/data/froms?rebuild=true&' + adminCred
+  }, function(err, res, body){
+    t.assert(body.data.length)
+    test.done()
+  })
+}
+
