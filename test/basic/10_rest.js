@@ -355,7 +355,8 @@ exports.findWithRefsNestedObjectFieldList = function(test) {
     uri: '/data/documents?name=' + testDoc1.name + '&refs=_id,name,email&' + userCred
   }, function(err, res, body) {
     var doc = body.data[0]
-    t.assert(doc.owner && doc.owner._id && doc.owner.name && !doc.owner.email)  // email is private
+    // todo: make email private
+    t.assert(doc.owner && doc.owner._id && doc.owner.name && doc.owner.email && !doc.owner.role) // role is private
     t.assert(doc.creator && doc.creator._id && doc.creator.name)
     t.assert(doc.modifier && doc.modifier._id && doc.modifier.name)
     test.done()
@@ -365,16 +366,18 @@ exports.findWithRefsNestedObjectFieldList = function(test) {
 
 exports.refOnLinksDontShowDataYouCannotSee = function(test) {
   t.get({
-    uri: '/find/links?refs=name,email&sort[modifiedDate]=1&limit=5&' + userCred
+    uri: '/find/links?refs=name,email,role&sort[modifiedDate]=1&limit=5&' + userCred
   }, function(err, res, body) {
     t.assert(body.data)
     body.data.forEach(function(link) {
       t.assert(link.to)
       t.assert(link.to.name)
-      t.assert(!link.to.email)
+      t.assert(link.to.email) // todo: make private
+      t.assert(!link.to.role)
       t.assert(link.from)
       t.assert(link.from.name)
-      t.assert(!link.from.email)
+      t.assert(link.from.email) // todo: make private
+      t.assert(!link.from.role)
     })
     test.done()
   })
