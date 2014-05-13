@@ -6,6 +6,7 @@ var util = require('proxutils')
 var log = util.log
 var testUtil = require('../util')
 var t = testUtil.treq
+var skip = testUtil.skip
 var adminCred
 var user1Cred
 var user2Cred
@@ -292,9 +293,11 @@ exports.userPublicFields = function(test) {
       t.assert(user._id)
       t.assert(util.adminId !== user._id)
       t.assert(util.anonId !== user._id)
+      t.assert(user.schema)
       t.assert(user.name)
       t.assert(user.photo)
-      t.assert(!user.email)  // not a public field
+      t.assert(user.email)  // TODO: make private
+      t.assert(!user.role)  // non-public field
     })
     test.done()
   })
@@ -310,17 +313,35 @@ exports.userPublicFieldsSeeOwnRecord = function(test) {
     t.assert(user._id)
     t.assert(user.name)
     t.assert(user.photo)
-    t.assert(user.email)  // own email visible to user
+    t.assert(user.email)
+    t.assert(user.role)  // own role visible to user
     test.done()
   })
 }
 
-
 exports.userPublicFieldsProjection= function(test) {
+  t.post({
+    uri: '/find/users/' + user2._id + '?' + user1Cred,
+    body: {
+      fields: 'name,email,role',
+    }
+  }, 200, function(err, res, body) {
+    t.assert(body && body.data)
+    var user = body.data
+    t.assert(user.name)
+    t.assert(user._id)    // included by default even though not in field list
+    t.assert(user.email)  // TODO:  make private
+    t.assert(!user.role)  // own role is visible to user
+    t.assert(!user.photo) // public field not included in the field list
+    test.done()
+  })
+}
+
+exports.userPublicFieldsProjectionOwnRecord = function(test) {
   t.post({
     uri: '/find/users/' + user1._id + '?' + user1Cred,
     body: {
-      fields: 'name,email',
+      fields: 'name,email,role',
     }
   }, 200, function(err, res, body) {
     t.assert(body && body.data)
@@ -328,9 +349,15 @@ exports.userPublicFieldsProjection= function(test) {
     t.assert(user.name)
     t.assert(user._id)    // included by default even though not in field list
     t.assert(user.email)  // own email is visible to user
+    t.assert(user.role)  // own role is visible to user
     t.assert(!user.photo) // public field not included in the field list
     test.done()
   })
+}
+
+exports.usersCanBeHidden = function(test) {
+  // TODO: code exists, implement test
+  return skip(test)
 }
 
 
