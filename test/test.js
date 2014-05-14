@@ -65,7 +65,7 @@ config = util.config
 serverUrl = testUtil.serverUrl = config.service.url
 
 
-util.debug('test run config', config)
+util.log('test config', config)
 
 // Make sure the right database exists
 ensureDb(dbProfile, function(err) {
