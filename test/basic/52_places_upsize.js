@@ -96,7 +96,7 @@ exports.googlePlaceDedupesWhenRefChanges = function(test) {
     location: seventyfourthLoc,
   }
   t.post({
-    uri: '/do/insertEntity?' + userCred,
+    uri: '/do/insertEntity?' + adminCred,
     body: {
       entity: dupe,
       insertApplinks: true,

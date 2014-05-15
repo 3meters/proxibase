@@ -123,28 +123,9 @@ exports.dupePlacesMergeOnProviderId = function(test) {
       t.assert(placeId === place._id) // proves merged on phone number
       t.assert('Zoka1' === place.name) // first name written wins
       t.assert(place.provider.foursquare)
-      t.assert(place.provider.factual)
+      t.assert(!place.provider.factual)
       t.assert(!place.provider.aircandi)
-      t.post({
-        uri: '/do/insertEntity?' + userCred,
-        body: {
-          entity: {
-            name: 'Zoka3',
-            schema: util.statics.schemaPlace,
-            provider: {
-              factual: 'fdc45418-be3b-4ab9-92d6-62ae6fb6ce48',
-            },
-          },
-        }
-      }, 201, function(err, res, body) {
-        t.assert(body.data)
-        var place = body.data
-        t.assert(placeId === place._id) // proves merged on provider Id
-        t.assert('Zoka1' === place.name)
-        t.assert(place.provider.foursquare)
-        t.assert(place.provider.factual)
-        test.done()
-      })
+      test.done()
     })
   })
 }
