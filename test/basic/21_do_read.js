@@ -306,6 +306,31 @@ exports.getUserMinimum = function (test) {
   })
 }
 
+exports.getUserViaGetEntitiesForEntity = function (test) {
+  t.post({
+    uri: '/do/getEntitiesForEntity?' + userCred,
+    body: {
+      entityId: constants.placeId,
+      cursor: {direction: 'in',
+        limit: 50,
+        linkTypes: ['watch'],
+        schemas: ['user'],
+        skip: 0,
+        sort: {modifiedDate: -1},
+      },
+      shortcuts: true,
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 2)
+    t.assert(body.data && body.data.length)
+    body.data.forEach(function(record) {
+      t.assert(record.name)
+      t.assert(record.email) // TODO: switch to private
+    })
+    test.done()
+  })
+}
+
 exports.getUsersFromAnon = function (test) {
   /*
    * We don't currently populate the smoke test data with any entities that have
