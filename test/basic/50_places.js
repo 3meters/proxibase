@@ -218,7 +218,7 @@ exports.getPlacesNearLocationAgain = function(test) {
       t.assert(body.data)
       savedRoxy = res.body.data
       t.assert(savedRoxy.photo && savedRoxy.photo.prefix === myRoxy.photo.prefix) // change accepted
-      log('Issue 207, test skipped')
+      log('Old photo properties should be deleted when photo is updated.  Issue 207. Test skipped.')
       // t.assert(Object.keys(savedRoxy.photo).length === 1)  // non-set properties removed
       t.assert(savedRoxy.name === roxy.name)  // change ignored
       t.assert(savedRoxy.provider.yelp === roxy.provider.yelp)
@@ -238,12 +238,12 @@ exports.getPlacesNearLocationAgain = function(test) {
           )
       }))
 
-      log('Missing facebook link, test was commented out')
-      /*
+      // This has failed unreliably due to changing responses from facebook
+      // Comment out if needed
       t.assert(savedRoxy.linksIn.some(function(link) {
         return (link.shortcut.app === 'facebook')
-      }))
-      */
+      }), savedRoxy)
+
       t.post({
         uri: '/places/near',
         body: {

@@ -105,11 +105,12 @@ exports.getPlacesNear = function(test) {
     uri: '/places/near?' + userCred,
     body: {
       location: luckyStrikeLoc,
-      limit: 20,
+      limit: 50,
+      waitForContent: true,
     }
   }, 200, function(err, res, body) {
     var places = body.data
-    t.assert(20 === places.length)
+    t.assert(50 === places.length)
     t.assert(places.some(function(place) {
       luckyStrikeId = place._id
       return place.name.match(/^Lucky Strike/)
