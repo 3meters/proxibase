@@ -52,7 +52,7 @@ exports.dupePlaceMaggiano = function(test) {
     lng : -122.200517,
   }
   t.post({
-    uri: '/data/places?' + userCred,
+    uri: '/data/places?' + adminCred,  // users can only update selected properties
     body: {
       data: {
         name: "Maggiano's Little Italy",
@@ -95,7 +95,7 @@ exports.dupePlacesMergeOnProviderId = function(test) {
     body: {
       entity: {
         name: 'Zoka1',
-        schema: util.statics.schemaPlace,
+        schema: 'place',
         provider: {
           foursquare: '41b3a100f964a520681e1fe3',
         },
@@ -110,7 +110,7 @@ exports.dupePlacesMergeOnProviderId = function(test) {
       body: {
         entity: {
           name: 'Zoka2',
-          schema: util.statics.schemaPlace,
+          schema: 'place',
           provider: {
             factual: 'fdc45418-be3b-4ab9-92d6-62ae6fb6ce48',
           },
@@ -163,8 +163,8 @@ exports.getPlacesNearLocation = function(test) {
         t.assert(foundPowerPlay <= 1, place)
       }
     })
-    t.assert(1 === foundLuckyStrike)
-    t.assert(1 === foundPowerPlay)
+    t.assert(1 === foundLuckyStrike, foundLuckyStrike)
+    t.assert(1 === foundPowerPlay, foundPowerPlay)
     test.done()
   })
 }
