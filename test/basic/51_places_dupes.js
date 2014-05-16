@@ -52,7 +52,7 @@ exports.dupePlaceMaggiano = function(test) {
     lng : -122.200517,
   }
   t.post({
-    uri: '/data/places?' + userCred,
+    uri: '/data/places?' + adminCred,  // users can only update selected properties
     body: {
       data: {
         name: "Maggiano's Little Italy",
@@ -95,7 +95,7 @@ exports.dupePlacesMergeOnProviderId = function(test) {
     body: {
       entity: {
         name: 'Zoka1',
-        schema: util.statics.schemaPlace,
+        schema: 'place',
         provider: {
           foursquare: '41b3a100f964a520681e1fe3',
         },
@@ -110,7 +110,7 @@ exports.dupePlacesMergeOnProviderId = function(test) {
       body: {
         entity: {
           name: 'Zoka2',
-          schema: util.statics.schemaPlace,
+          schema: 'place',
           provider: {
             factual: 'fdc45418-be3b-4ab9-92d6-62ae6fb6ce48',
           },
@@ -123,28 +123,9 @@ exports.dupePlacesMergeOnProviderId = function(test) {
       t.assert(placeId === place._id) // proves merged on phone number
       t.assert('Zoka1' === place.name) // first name written wins
       t.assert(place.provider.foursquare)
-      t.assert(place.provider.factual)
+      t.assert(!place.provider.factual)
       t.assert(!place.provider.aircandi)
-      t.post({
-        uri: '/do/insertEntity?' + userCred,
-        body: {
-          entity: {
-            name: 'Zoka3',
-            schema: util.statics.schemaPlace,
-            provider: {
-              factual: 'fdc45418-be3b-4ab9-92d6-62ae6fb6ce48',
-            },
-          },
-        }
-      }, 201, function(err, res, body) {
-        t.assert(body.data)
-        var place = body.data
-        t.assert(placeId === place._id) // proves merged on provider Id
-        t.assert('Zoka1' === place.name)
-        t.assert(place.provider.foursquare)
-        t.assert(place.provider.factual)
-        test.done()
-      })
+      test.done()
     })
   })
 }
@@ -182,8 +163,8 @@ exports.getPlacesNearLocation = function(test) {
         t.assert(foundPowerPlay <= 1, place)
       }
     })
-    t.assert(1 === foundLuckyStrike)
-    t.assert(1 === foundPowerPlay)
+    t.assert(1 === foundLuckyStrike, foundLuckyStrike)
+    t.assert(1 === foundPowerPlay, foundPowerPlay)
     test.done()
   })
 }
