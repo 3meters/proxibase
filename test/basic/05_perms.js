@@ -296,7 +296,7 @@ exports.userPublicFields = function(test) {
       t.assert(user.schema)
       t.assert(user.name)
       t.assert(user.photo)
-      t.assert(user.email)  // TODO: make private
+      t.assert(!user.email) // non-public field
       t.assert(!user.role)  // non-public field
     })
     test.done()
@@ -330,7 +330,7 @@ exports.userPublicFieldsProjection= function(test) {
     var user = body.data
     t.assert(user.name)
     t.assert(user._id)    // included by default even though not in field list
-    t.assert(user.email)  // TODO:  make private
+    t.assert(!user.email) // private
     t.assert(!user.role)  // own role is visible to user
     t.assert(!user.photo) // public field not included in the field list
     test.done()

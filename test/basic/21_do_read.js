@@ -325,7 +325,7 @@ exports.getUserViaGetEntitiesForEntity = function (test) {
     t.assert(body.data && body.data.length)
     body.data.forEach(function(record) {
       t.assert(record.name)
-      t.assert(record.email) // TODO: switch to private
+      t.assert(!record.email)
     })
     test.done()
   })
