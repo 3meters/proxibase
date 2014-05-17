@@ -331,7 +331,7 @@ exports.appLinkPopularitySortWorks = function(test) {
     })
     t.assert(iTruck)
     t.assert(iPlace)
-    t.assert(iTruck === iPlace + 1)
+    t.assert(iTruck === iPlace + 1)   // sorted by popularity
     test.done()
   })
 }

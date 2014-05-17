@@ -16,6 +16,7 @@ var userCred
 var adminCred
 var _exports = {} // for commenting out tests
 
+var LuckyStrikeId = ''
 var luckyStrikeLoc = {
   lat: 47.616658,
   lng: -122.201373,
@@ -51,7 +52,6 @@ exports.suggestPlacesFoursquare = function(test) {
       input: 'lucky',
       timeout: 15000,
       limit: 10,
-      radius: 50000,
       includeRaw: true,
     }
   }, 200, function(err, res, body) {
@@ -76,7 +76,6 @@ exports.suggestPlacesGoogle = function(test) {
       provider: 'google',
       location: luckyStrikeLoc,
       input: 'lucky',
-      radius: 50000,
       limit: 10,
     }
   }, 200, function(err, res, body) {
@@ -97,3 +96,49 @@ exports.suggestPlacesGoogle = function(test) {
  * - Ensure Lucky is in db so duplicate logic is always exercised.
  * - Verify that all places have a reason and score.
  */
+
+exports.getPlacesNear = function(test) {
+
+  if (disconnected) return skip(test)
+
+  t.post({
+    uri: '/places/near?' + userCred,
+    body: {
+      location: luckyStrikeLoc,
+      limit: 50,
+      waitForContent: true,
+    }
+  }, 200, function(err, res, body) {
+    var places = body.data
+    t.assert(50 === places.length)
+    t.assert(places.some(function(place) {
+      luckyStrikeId = place._id
+      return place.name.match(/^Lucky Strike/)
+    }))
+    test.done()
+  })
+}
+
+exports.suggestPlaceAircandi1 = function(test) {
+
+  if (disconnected) return skip(test)
+
+  t.post({
+    uri: '/places/suggest?' + userCred,
+    body: {
+      location: luckyStrikeLoc,
+      input: 'lucky',
+      limit: 10,
+    }
+  }, 200, function(err, res, body) {
+    var places = body.data
+    t.assert(places && places.length)
+    var hitCount = 0
+    places.forEach(function(place){
+      if (0 === place.name.indexOf('Lucky Strike')) hitCount++
+    })
+    t.assert(hitCount === 1)
+    test.done()
+  })
+}
+
