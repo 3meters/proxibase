@@ -8,7 +8,7 @@ var log = util.log
 var testUtil = require('../util')
 var fs = require('fs')
 var path = require('path')
-var t = testUtil.treq  // newfangled test helper
+var t = testUtil.treq  // test helper
 var disconnected = testUtil.disconnected
 var skip = testUtil.skip
 var user
@@ -271,4 +271,10 @@ exports.getPlacesNearLocationWithUpsizedPlace = function(test) {
   })
 }
 
-
+exports.getDups = function(test) {
+  if (disconnected) return skip(test)
+  t.get('/find/dupes/count?' + adminCred, function(err, res, body) {
+    t.assert(body.data.count)
+    test.done()
+  })
+}
