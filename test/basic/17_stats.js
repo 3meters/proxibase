@@ -140,10 +140,9 @@ exports.statRefsDoNotPopulateForAnonUsers = function(test) {
   })
 }
 
-// This depends on generated test data added in version 0.9.35
 exports.doCountLinksToPlacesFromMessages = function(test) {
   t.post({
-    uri: '/do/countLinksTo',
+    uri: '/stats/to',
     body: {
       query: {
         '_id.day': {$lt: '130315'},
@@ -168,7 +167,7 @@ exports.doCountLinksToPlacesFromMessages = function(test) {
 
 exports.doCountLinksToPlacesTypeWatch = function(test) {
   t.get({
-    uri: '/do/countLinksTo?query[_id.toSchema]=place&query[_id.type]=like',
+    uri: '/stats/to?query[_id.toSchema]=place&query[_id.type]=like',
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)
     body.data.forEach(function(doc) {
@@ -185,7 +184,7 @@ exports.doCountLinksToPlacesTypeWatch = function(test) {
 
 exports.doCountCreatedLinksFromUsers = function(test) {
   t.get({
-    uri: '/do/countLinksFrom?query[_id.fromSchema]=user&query[_id.type]=create',
+    uri: '/stats/from?query[_id.fromSchema]=user&query[_id.type]=create',
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)
     body.data.forEach(function(doc) {
@@ -201,7 +200,7 @@ exports.doCountCreatedLinksFromUsers = function(test) {
 
 exports.doCountPlacesByTunings = function(test) {
   t.get({
-    uri: '/do/countLinksFrom?query[_id.fromSchema]=place&query[_id.type]=proximity',
+    uri: '/stats/from?query[_id.fromSchema]=place&query[_id.type]=proximity',
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)
     body.data.forEach(function(doc) {
