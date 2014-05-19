@@ -85,6 +85,7 @@ exports.staticsUpdateOnRefresh = function(test) {
       }
     }
   }, 201, function(err, res, body) {
+
     t.assert(body.count === 1)
     t.get({
       uri: '/data/tos?query[_id._to]=' + testUserId + '&refresh=true&' + adminCred
