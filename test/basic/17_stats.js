@@ -46,7 +46,6 @@ exports.adminCanRefreshTos = function(test) {
     t.assert(body.data)
     t.assert(body.data.cmd)
     t.assert(body.data.results)
-    debug('body', body)
     test.done()
   })
 }
@@ -112,7 +111,6 @@ exports.staticsUpdateOnRefresh = function(test) {
     t.get('/stats/to/refresh?' + adminCred, function(err, res, body) {
       t.assert(body.data.cmd)
       t.assert(body.data.results)
-      debug('body', body)
       t.get({
         uri: '/find/tos?query[_id._to]=' + testUserId + '&' + userCred
       }, function(err, res2, body) {
@@ -156,7 +154,7 @@ exports.statRefsDoNotPopulateForAnonUsers = function(test) {
   })
 }
 
-exports.doCountLinksToPlacesFromMessages = function(test) {
+exports.statsCountToPlacesFromMessages = function(test) {
   t.post({
     uri: '/stats/to',
     body: {
@@ -181,7 +179,7 @@ exports.doCountLinksToPlacesFromMessages = function(test) {
   })
 }
 
-exports.doCountLinksToPlacesTypeWatch = function(test) {
+exports.statsCountToPlacesTypeWatch = function(test) {
   t.get({
     uri: '/stats/to?query[_id.toSchema]=place&query[_id.type]=like',
   }, function(err, res, body) {
@@ -198,7 +196,7 @@ exports.doCountLinksToPlacesTypeWatch = function(test) {
   })
 }
 
-exports.doCountCreatedLinksFromUsers = function(test) {
+exports.statsCountCreatedLinksFromUsers = function(test) {
   t.get({
     uri: '/stats/from?query[_id.fromSchema]=user&query[_id.type]=create',
   }, function(err, res, body) {
@@ -214,7 +212,7 @@ exports.doCountCreatedLinksFromUsers = function(test) {
   })
 }
 
-exports.doCountPlacesByTunings = function(test) {
+exports.statsCountPlacesByTunings = function(test) {
   t.get({
     uri: '/stats/from?query[_id.fromSchema]=place&query[_id.type]=proximity',
   }, function(err, res, body) {
