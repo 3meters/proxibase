@@ -33,7 +33,7 @@ exports.getUserSession = function(test) {
 
 exports.cannotCreateStatsAsUser = function(test) {
   t.get({
-    uri: '/data/tos?refresh=true&' + userCred
+    uri: '/stats/to/refresh?' + userCred
   }, 403, function(err, res, body){
     test.done()
   })
@@ -41,25 +41,47 @@ exports.cannotCreateStatsAsUser = function(test) {
 
 exports.adminCanRefreshTos = function(test) {
   t.get({
-    uri: '/data/tos?refresh=true&' + adminCred
+    uri: '/stats/to/refresh?' + adminCred
   }, function(err, res, body){
-    t.assert(body.data.length)
+    t.assert(body.data)
+    t.assert(body.data.cmd)
+    t.assert(body.data.results)
     test.done()
   })
 }
 
-exports.adminCanRefreshfroms = function(test) {
+exports.adminCanRefreshFroms = function(test) {
   t.get({
-    uri: '/data/froms?refresh=true&' + adminCred
+    uri: '/stats/from/refresh?' + adminCred
   }, function(err, res, body){
-    t.assert(body.data.length)
+    t.assert(body.data)
+    t.assert(body.data.cmd)
+    t.assert(body.data.results)
     test.done()
   })
 }
 
+exports.adminCanRefreshAll = function(test) {
+  t.get({
+    uri: '/stats/refresh?' + adminCred
+  }, function(err, res, body){
+    t.assert(body.data)
+    t.assert(body.data.to)
+    t.assert(body.data.to.cmd)
+    t.assert(body.data.to.results)
+    t.assert(body.data.from)
+    t.assert(body.data.from.cmd)
+    t.assert(body.data.from.results)
+    test.done()
+  })
+}
+
+
+// These test the underlying computed collections that live in 
+// mongodb mapReduce format, not the nicer format provided by stats
 exports.statFilterWorks = function(test) {
   t.get({
-    uri: '/data/tos?query[_id._to]=' + testUserId + '&' + userCred
+    uri: '/find/tos?query[_id._to]=' + testUserId
   }, function(err, res, body) {
     t.assert(body.data)
     oldLinkCount = 0
@@ -73,7 +95,7 @@ exports.statFilterWorks = function(test) {
 
 // Manually add a new link from the test user to the same user liking
 // himself, then update the statistics and ensure that his new link
-// appears in the stats
+// appears in the persisted stats collection
 exports.staticsUpdateOnRefresh = function(test) {
   t.post({
     uri: '/data/links?' + userCred,
@@ -86,28 +108,32 @@ exports.staticsUpdateOnRefresh = function(test) {
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
-    t.get({
-      uri: '/data/tos?query[_id._to]=' + testUserId + '&refresh=true&' + adminCred
-    }, function(err, res2, body){
-      t.assert(body.data.length)
-      var newLinkCount = 0
-      body.data.forEach(function(stat) {
-        newLinkCount += stat.value
+    t.get('/stats/to/refresh?' + adminCred, function(err, res, body) {
+      t.assert(body.data.cmd)
+      t.assert(body.data.results)
+      t.get({
+        uri: '/find/tos?query[_id._to]=' + testUserId + '&' + userCred
+      }, function(err, res2, body) {
+        t.assert(body.data.length)
+        var newLinkCount = 0
+        body.data.forEach(function(stat) {
+          newLinkCount += stat.value
+        })
+        t.assert(newLinkCount === oldLinkCount + 1)
+        t.assert(body.data.some(function(stat) {
+          return testUserId === stat._id._to
+            && 'user' === stat._id.toSchema
+            && 'like' === stat._id.type
+        }))
+        test.done()
       })
-      t.assert(newLinkCount === oldLinkCount + 1)
-      t.assert(body.data.some(function(stat) {
-        return testUserId === stat._id._to
-          && 'user' === stat._id.toSchema
-          && 'like' === stat._id.type
-      }))
-      test.done()
     })
   })
 }
 
 exports.statsPassThroughQueryCriteria = function(test) {
   t.get({
-    uri: '/data/tos?query[_id._to]=' + testUserId + '&query[_id.type]=like'
+    uri: '/find/tos?query[_id._to]=' + testUserId + '&query[_id.type]=like'
   }, function(err, res, body) {
     t.assert(body.data.length)
     body.data.forEach(function(doc) {
@@ -117,22 +143,10 @@ exports.statsPassThroughQueryCriteria = function(test) {
   })
 }
 
-_exports.statRefsWork = function(test) {
-  t.get({
-    uri: '/data/tos?query[_id._to]=' + testUserId + '&refs=true&' + userCred
-  }, function(err, res, body) {
-    t.assert(body.data[0]._id)
-    t.assert(body.data[0]._id._to)
-    t.assert(body.data[0]._id.to)
-    t.assert(body.data[0]._id.to._id)
-    t.assert(body.data[0]._id.to.name)
-    test.done()
-  })
-}
 
 exports.statRefsDoNotPopulateForAnonUsers = function(test) {
   t.get({
-    uri: '/data/tos?query[_id._to]=' + testUserId + '&refs=true'
+    uri: '/find/tos?query[_id._to]=' + testUserId + '&refs=true'
   }, function(err, res, body) {
     t.assert(body.data[0]._id._to)
     t.assert(!body.data[0]._id.to)
@@ -140,10 +154,9 @@ exports.statRefsDoNotPopulateForAnonUsers = function(test) {
   })
 }
 
-// This depends on generated test data added in version 0.9.35
-exports.doCountLinksToPlacesFromMessages = function(test) {
+exports.statsCountToPlacesFromMessages = function(test) {
   t.post({
-    uri: '/do/countLinksTo',
+    uri: '/stats/to',
     body: {
       query: {
         '_id.day': {$lt: '130315'},
@@ -166,9 +179,9 @@ exports.doCountLinksToPlacesFromMessages = function(test) {
   })
 }
 
-exports.doCountLinksToPlacesTypeWatch = function(test) {
+exports.statsCountToPlacesTypeWatch = function(test) {
   t.get({
-    uri: '/do/countLinksTo?query[_id.toSchema]=place&query[_id.type]=like',
+    uri: '/stats/to?query[_id.toSchema]=place&query[_id.type]=like',
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)
     body.data.forEach(function(doc) {
@@ -183,9 +196,9 @@ exports.doCountLinksToPlacesTypeWatch = function(test) {
   })
 }
 
-exports.doCountCreatedLinksFromUsers = function(test) {
+exports.statsCountCreatedLinksFromUsers = function(test) {
   t.get({
-    uri: '/do/countLinksFrom?query[_id.fromSchema]=user&query[_id.type]=create',
+    uri: '/stats/from?query[_id.fromSchema]=user&query[_id.type]=create',
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)
     body.data.forEach(function(doc) {
@@ -199,9 +212,9 @@ exports.doCountCreatedLinksFromUsers = function(test) {
   })
 }
 
-exports.doCountPlacesByTunings = function(test) {
+exports.statsCountPlacesByTunings = function(test) {
   t.get({
-    uri: '/do/countLinksFrom?query[_id.fromSchema]=place&query[_id.type]=proximity',
+    uri: '/stats/from?query[_id.fromSchema]=place&query[_id.type]=proximity',
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)
     body.data.forEach(function(doc) {
@@ -217,19 +230,37 @@ exports.doCountPlacesByTunings = function(test) {
 
 exports.adminCanRebuildTos = function(test) {
   t.get({
-    uri: '/data/tos?rebuild=true&' + adminCred
-  }, function(err, res, body){
-    t.assert(body.data.length)
+    uri: '/stats/to/rebuild?' + adminCred
+  }, function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.data.cmd)
+    t.assert(body.data.results)
     test.done()
   })
 }
 
-exports.adminCanRebuildfroms = function(test) {
+exports.adminCanRebuildFroms = function(test) {
   t.get({
-    uri: '/data/froms?rebuild=true&' + adminCred
-  }, function(err, res, body){
-    t.assert(body.data.length)
+    uri: '/stats/from/rebuild?' + adminCred
+  }, function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.data.cmd)
+    t.assert(body.data.results)
     test.done()
   })
 }
 
+exports.adminCanRebuildAll = function(test) {
+  t.get({
+    uri: '/stats/rebuild?' + adminCred
+  }, function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.data.to)
+    t.assert(body.data.to.cmd)
+    t.assert(body.data.to.results)
+    t.assert(body.data.from)
+    t.assert(body.data.from.cmd)
+    t.assert(body.data.from.results)
+    test.done()
+  })
+}
