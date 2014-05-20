@@ -26,6 +26,17 @@ exports.getDataPage = function(test) {
   })
 }
 
+// Make sure tests can connect to the db directly
+exports.directDbConnection = function(test) {
+  var db = testUtil.db
+  // don't user t.assert for testing db commands
+  assert(db.collection('users'))
+  db.collection('users').find().count(function(err, count) {
+    assert(count)
+    test.done()
+  })
+}
+
 // Check schema info page
 exports.getSchemaPage = function(test) {
   t.get('/schema', function(err, res, body) {
