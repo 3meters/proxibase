@@ -77,6 +77,8 @@ exports.suggestPlacesGoogle = function(test) {
       location: luckyStrikeLoc,
       input: 'lucky',
       limit: 10,
+      log: true,
+      includeRaw: true,
     }
   }, 200, function(err, res, body) {
     var places = body.data
