@@ -149,7 +149,7 @@ exports.canStopInsertTask = function(test) {
             t.assert(body.data && docCount === body.data.length)  // make sure we have no new records
             test.done()
           })
-        }, 1500)
+        }, 2500)
       })
     })
   })
@@ -183,8 +183,6 @@ exports.restInsertDisabledTestDoesNotStartIt = function(test) {
 
 exports.insertRebuildStatsTask = function(test) {
 
-  log('There appears to be a problem with disabling tasks not disabling')
-  return skip(test)
   t.post({
     uri: '/data/tasks?' + adminCred,
     body: { data: {
@@ -196,7 +194,6 @@ exports.insertRebuildStatsTask = function(test) {
       args:     [{rebuild: true}],
     }}
   }, 201, function(err, res, body) {
-    debug('task body', body)
     var taskId = body.data._id
     t.assert(taskId)
     setTimeout(stopStatRebuildTask, 2000)
@@ -213,3 +210,6 @@ exports.insertRebuildStatsTask = function(test) {
   })
 }
 
+exports.wait = function(test) {
+
+}
