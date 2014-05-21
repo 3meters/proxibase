@@ -61,7 +61,7 @@ exports.insertPlaceEntitySuggestApplinksFromFactual = function(test) {
             && link.shortcut.appId === ballRoom4sId
           )
       }))
-      t.assert(!links.some(function(link) {   // Invisible due to alcohal
+      t.assert(links.some(function(link) {   // Invisible due to alcohal (changed 5/21/14)
         return (link.shortcut.app === 'facebook')
       }))
       t.assert(links.some(function(link) {
