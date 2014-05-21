@@ -716,6 +716,14 @@ exports.sortAltFormat2Works = function(test) {
   })
 }
 
+exports.countWorks = function(test) {
+  t.get('/data/places/count',
+  function(err, res, body) {
+    t.assert(body.count)
+    test.done()
+  })
+}
+
 exports.formatDatesWorks = function(test) {
   t.get('/data/places?datesToUTC=1',
   function(err, res, body) {
