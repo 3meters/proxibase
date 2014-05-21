@@ -76,6 +76,7 @@ exports.suggestPlacesGoogle = function(test) {
       provider: 'google',
       location: luckyStrikeLoc,
       input: 'lucky',
+      sensor: true,
       limit: 10,
       log: true,
     }
@@ -86,7 +87,6 @@ exports.suggestPlacesGoogle = function(test) {
     places.forEach(function(place){
       if (0 === place.name.indexOf('Lucky Strike')) hitCount++
     })
-    // log('Alert:  Google is returning places from colorado instead of here. No clue why.  Skipping test')
     t.assert(1 === hitCount)
     test.done()
   })
