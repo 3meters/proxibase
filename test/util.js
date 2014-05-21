@@ -26,7 +26,8 @@ function makeReq(options) {
   }
   _.extend(req, options)
 
-  if (options.uri) req.uri = exports.serverUrl + options.uri
+  var versionPath = '/v1'
+  if (options.uri) req.uri = exports.serverUrl + versionPath + options.uri
   else req.uri = exports.serverUrl
 
   req.method = options.method || 'get'

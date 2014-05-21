@@ -1,4 +1,4 @@
-// Insert the place scrubber task into a running server
+// Insert common tasks into the server
 
 var later = require('later')
 var util = require('proxutils')
@@ -29,7 +29,7 @@ function run() {
     },
     {
       name: 'calcStats',
-      schedule: {schedules: [{s: [37], m: [7,37]}]},
+      schedule: {schedules: [{s: [37], m: [7,17,27,37,47,57]}]},
       module: 'utils',
       method: 'calcStats',
       enabled: true,
