@@ -15,6 +15,7 @@ var cli = require('commander')
 var reporter = require('nodeunit').reporters.default
 var req = require('request')
 var mongo = require('mongodb')
+var db
 var adminDb
 var genData = require(__dirname + '/../tools/pump/genData')
 var constants = require('./constants')
@@ -22,7 +23,7 @@ var dbProfile = constants.dbProfile.smokeTest
 var testUtil = require('./util')
 var configFile = 'configtest.js'
 var tests = ['basic']
-var allTests = ['basic', 'oauth', 'admin', 'perf']
+var allTests = ['basic', 'oauth', 'perf']
 var logFile = 'testServer.log'
 var logStream
 var cwd = process.cwd()
@@ -65,7 +66,7 @@ config = util.config
 serverUrl = testUtil.serverUrl = config.service.url
 
 
-util.debug('test run config', config)
+util.log('test config', config)
 
 // Make sure the right database exists
 ensureDb(dbProfile, function(err) {
@@ -111,7 +112,7 @@ function ensureDb(ops, cb) {
   var dbName = ops.database
   var templateName = dbName + 'Template'
 
-  var db = new mongo.Db(dbName, new mongo.Server(host, port), dbOps)
+  db = new mongo.Db(dbName, new mongo.Server(host, port), dbOps)
   db.open(function(err, db) {
 
     // Drop template database if directed to by command line flag then run again
@@ -173,11 +174,17 @@ function ensureDb(ops, cb) {
             var dbtimer = util.timer()
             adminDb.command({copydb:1, fromdb:templateName, todb:dbName}, function(err, result) {
               if (err) throw err
+              log('Database copied in ' + dbtimer.read() + ' seconds')
+              // make the database connection available directly to tests
+              testUtil.db = db
+              return cb()    // Finished
+              /*
               db.close(function(err) {
                 if (err) throw err
                 log('Database copied in ' + dbtimer.read() + ' seconds')
                 return cb()    // Finished
               })
+              */ 
            })
           }
         })
@@ -206,6 +213,12 @@ function ensureServer(cb) {
       log('Starting test server ' + serverUrl + ' using config ' + configFile)
       log('Test server log: ' + logFile)
       testServer = child_process.spawn('node', [__dirname + '/../prox', '--config', configFile])
+
+      // Fires immediately if the server does not compile
+      testServer.on('close', function(code) {
+        log('\nTest server closed')
+        process.exit()
+      })
     }
     // Test server is already running
     else return cb()
@@ -327,6 +340,7 @@ process.on('uncaughtException', function(err) {
 
 
 function finish(err) {
+  db.close()
   process.chdir(cwd)
   if (err) console.error(err.stack || err)
   log('Tests finished in ' + timer.read() + ' seconds')

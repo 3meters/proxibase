@@ -289,7 +289,7 @@ exports.getUserMinimum = function (test) {
    * both a parent and children.
    */
   t.post({
-    uri: '/do/getEntities?' + adminCred,
+    uri: '/do/getEntities?' + userCred,
     body: {
       entityIds: [constants.uid1],
     }
@@ -300,6 +300,79 @@ exports.getUserMinimum = function (test) {
     t.assert(!record.linksIn && !record.linksOut)
     t.assert(!record.linkInCounts && !record.linkOutCounts)
     t.assert(!record.entities && !record.users)
+    t.assert(record.name)
+    t.assert(!record.role)  // non-public field
+    test.done()
+  })
+}
+
+exports.getUserViaGetEntitiesForEntity = function (test) {
+  t.post({
+    uri: '/do/getEntitiesForEntity?' + userCred,
+    body: {
+      entityId: constants.placeId,
+      cursor: {direction: 'in',
+        limit: 50,
+        linkTypes: ['watch'],
+        schemas: ['user'],
+        skip: 0,
+        sort: {modifiedDate: -1},
+      },
+      shortcuts: true,
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 2)
+    t.assert(body.data && body.data.length)
+    body.data.forEach(function(record) {
+      t.assert(record.name)
+      t.assert(!record.email)
+    })
+    test.done()
+  })
+}
+
+exports.getUsersFromAnon = function (test) {
+  /*
+   * We don't currently populate the smoke test data with any entities that have
+   * both a parent and children.
+   */
+  t.post({
+    uri: '/do/getEntities',
+    body: {
+      entityIds: [constants.uid1],
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data[0])
+    var record = body.data[0]
+    t.assert(!record.linksIn && !record.linksOut)
+    t.assert(!record.linkInCounts && !record.linkOutCounts)
+    t.assert(!record.entities && !record.users)
+    t.assert(record.name)
+    t.assert(!record.role)  // non-public field
+    test.done()
+  })
+}
+
+exports.getUsersFromOwnUserGetsPrivateFields = function (test) {
+  /*
+   * We don't currently populate the smoke test data with any entities that have
+   * both a parent and children.
+   */
+  t.post({
+    uri: '/do/getEntities?' + userCred,
+    body: {
+      entityIds: [testUser._id],
+    },
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data[0])
+    var record = body.data[0]
+    t.assert(!record.linksIn && !record.linksOut)
+    t.assert(!record.linkInCounts && !record.linkOutCounts)
+    t.assert(!record.entities && !record.users)
+    t.assert(record.name)
+    t.assert(record.role)  // non-public field
     test.done()
   })
 }

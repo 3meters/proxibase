@@ -349,32 +349,42 @@ exports.findWithRefsNestedObject = function(test) {
   })
 }
 
+
 exports.findWithRefsNestedObjectFieldList = function(test) {
   t.get({
-    uri: '/data/documents?name=' + testDoc1.name + '&refs=_id,role&' + userCred
+    uri: '/data/documents?name=' + testDoc1.name + '&refs=_id,name,email&' + userCred
   }, function(err, res, body) {
     var doc = body.data[0]
-    t.assert(doc.owner && doc.owner._id && doc.owner.role && !doc.owner.name)
-    t.assert(doc.creator && doc.creator._id && !doc.creator.name)
-    t.assert(doc.modifier && doc.modifier._id && !doc.modifier.name)
+    t.assert(doc.owner && doc.owner._id && doc.owner.name)
+    t.assert(doc.owner.email)
+    t.assert(!doc.owner.role)
+    t.assert(doc.creator && doc.creator._id && doc.creator.name)
+    t.assert(doc.modifier && doc.modifier._id && doc.modifier.name)
     test.done()
   })
 }
 
+
 exports.refOnLinksDontShowDataYouCannotSee = function(test) {
   t.get({
-    uri: '/find/links?refs=name&sort[modifiedDate]=1&limit=5&' + userCred
+    uri: '/find/links?refs=name,email,role&sort[modifiedDate]=1&limit=5&' + userCred
   }, function(err, res, body) {
     t.assert(body.data)
     body.data.forEach(function(link) {
-      t.assert(!link.to)
-      t.assert(!link.from)
+      t.assert(link.to)
+      t.assert(link.to.name)
+      t.assert(!link.to.email)
+      t.assert(!link.to.role)
+      t.assert(link.from)
+      t.assert(link.from.name)
+      t.assert(!link.from.email)
+      t.assert(!link.from.role)
     })
     test.done()
   })
 }
 
-exports.refOnLinksWork = function(test) {
+exports.refOnLinksWorkSingleFieldSyntax = function(test) {
   t.get({
     uri: '/find/links?refs=name&sort[modifiedDate]=1&limit=5&' + adminCred
   }, function(err, res, body) {
@@ -386,6 +396,7 @@ exports.refOnLinksWork = function(test) {
     test.done()
   })
 }
+
 exports.updateDoc = function(test) {
   t.post({
     uri: '/data/documents/' + testDoc1._id + '?' + userCred,
@@ -701,6 +712,14 @@ exports.sortAltFormat2Works = function(test) {
         namelc = place.namelc
       }
     })
+    test.done()
+  })
+}
+
+exports.countWorks = function(test) {
+  t.get('/data/places/count',
+  function(err, res, body) {
+    t.assert(body.count)
     test.done()
   })
 }

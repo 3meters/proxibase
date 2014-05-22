@@ -1,4 +1,4 @@
-// Insert the place scrubber task into a running server
+// Insert common tasks into the server
 
 var later = require('later')
 var util = require('proxutils')
@@ -7,7 +7,7 @@ var log = util.log
 
 var host = 'https://api.aircandi.com'
 // var host = 'https://localhost:6643'
-var adminpw = ''
+var adminpw = 'doodah'
 
 // accept unsigned certs from test or dev boxes
 // process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0
@@ -19,6 +19,7 @@ function run() {
   var schedule = later.parse.cron('15 */15 * * * *', true)
 
   var tasks = [
+    /*
     {
       name: 'refreshPlace',
       schedule: {schedules: [{s: [15], m: [2,17,32,47]}]},
@@ -27,9 +28,10 @@ function run() {
       enabled: true,
       args: [],
     },
+    */
     {
       name: 'calcStats',
-      schedule: {schedules: [{s: [37], m: [7,37]}]},
+      schedule: {schedules: [{s: [37], m: [7,27,47]}]},
       module: 'utils',
       method: 'calcStats',
       enabled: true,
