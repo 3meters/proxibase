@@ -15,6 +15,11 @@ var adminSession
 var adminCred
 var _exports = {}  // For commenting out tests
 
+// From sample data in base test database
+var user1Id = 'us.010101.00000.555.000001'
+var user2Id = 'us.010101.00000.555.000002'
+var user3Id = 'us.010101.00000.555.000003'
+
 
 exports.getUserSession = function(test) {
   testUtil.getUserSession(function(session) {
@@ -66,7 +71,7 @@ exports.addLinkedData = function(test) {
 
 exports.findLinksFailProperlyOnBadInputs = function(test) {
   var query = {
-    uri: '/find/users/' + userId + '?' + userCred,
+    uri: '/find/users/' + user1Id + '?' + adminCred,
     body: {links: {to: {fakeCollection: 1}}},
   }
   t.post(query, 400, function(err, res, body) {
@@ -77,20 +82,21 @@ exports.findLinksFailProperlyOnBadInputs = function(test) {
 
 exports.findLinksWorks = function(test) {
   var query = {
-    uri: '/find/users/' + userId + '?' + userCred,
-    body: {links: {to: {documents: 1}}},
+    uri: '/find/users/' + user1Id + '?' + adminCred,
+    body: {links: {to: {places: 1}}},
   }
   t.post(query, function(err, res, body) {
     t.assert(body.data.links)
     var links = body.data.links
     t.assert(links.to)
-    t.assert(links.to.documents)
-    t.assert(2 === links.to.documents.length)
-    links.to.documents.forEach(function(link) {
+    t.assert(links.to.places)
+    // t.assert(2 === links.to.places.length)
+    links.to.places.forEach(function(link) {
       t.assert(link._id)
-      t.assert(link.document)
-      t.assert(link.document._id)
+      t.assert(link.place)
+      t.assert(link.place._id)
     })
+    t.assert(false)
     test.done()
   })
 }
