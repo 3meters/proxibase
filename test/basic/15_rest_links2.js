@@ -60,7 +60,7 @@ exports.placesWithMessages = function(test) {
 }
 
 
-exports.usersWatched = function(test) {
+_exports.usersWatched = function(test) {
   t.post({
     uri: '/find/users?' + adminCred,
     body: {
@@ -79,7 +79,7 @@ exports.usersWatched = function(test) {
   })
 }
 
-exports.usersWatchedOuter = function(test) {
+_exports.usersWatchedOuter = function(test) {
   t.post({
     uri: '/find/users?' + adminCred,
     body: {

@@ -236,7 +236,7 @@ exports.findLinksSortWorks = function(test) {
   })
 }
 
-exports.findLinksPagingWorks = function(test) {
+_exports.findLinksPagingWorks = function(test) {
   var query = {
     uri: '/find/users/' + user1Id + '?' + userCred,
     body: {links: {to: {places: 1}, limit: 5, sort: '-_id'}}
@@ -259,7 +259,7 @@ exports.findLinksPagingWorks = function(test) {
   })
 }
 
-exports.findLinksPagingWorksWithFilter = function(test) {
+_exports.findLinksPagingWorksWithFilter = function(test) {
   var query = {
     uri: '/find/users/' + user1Id + '?' + userCred,
     body: {links: {to: {places: 1}, limit: 5, sort: '-_id'}}
@@ -320,7 +320,7 @@ exports.findLinksAcceptsArrays = function(test) {
 }
 
 
-exports.findLinksFromWorksWithGetSyntax = function(test) {
+_exports.findLinksFromWorksWithGetSyntax = function(test) {
   var query = {
     uri: '/find/documents?links[from][users]=1&' + userCred,
   }
