@@ -60,6 +60,8 @@ if (cli.perf) {
   dbProfile = constants.dbProfile.perfTest
 }
 
+testUtil.dbProfile = dbProfile
+
 // Load the config file
 util.setConfig(cli.config || configFile)
 config = util.config
@@ -178,13 +180,6 @@ function ensureDb(ops, cb) {
               // make the database connection available directly to tests
               testUtil.db = db
               return cb()    // Finished
-              /*
-              db.close(function(err) {
-                if (err) throw err
-                log('Database copied in ' + dbtimer.read() + ' seconds')
-                return cb()    // Finished
-              })
-              */ 
            })
           }
         })
@@ -313,7 +308,6 @@ function runPerf() {
     var time = timer.read() - start
     processes.forEach(function(ps) { ps.kill() })
     var logFile = fs.readFileSync('./testServer.log', 'utf8')
-    // util.debug('logFile', logFile)
     var cRes = 0, position = 0, resTag = 'Res: '
     while(true) {
       position = logFile.indexOf(resTag, position)

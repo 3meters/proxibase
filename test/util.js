@@ -304,3 +304,4 @@ exports.check = check
 exports.request = request
 exports.skip = skip
 exports.db = 1   // set by test.js after connection
+exports.config = util.config

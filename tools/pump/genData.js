@@ -204,6 +204,7 @@ function genEntityRecords(parentIds, count, entitySchema, linkType) {
           _creator:  newEnt._creator,
         })
 
+        /*
         if (entitySchema === 'place') {
 
           // Like
@@ -228,6 +229,7 @@ function genEntityRecords(parentIds, count, entitySchema, linkType) {
             })
           }
         }
+        */ 
       }
 
       switch (entitySchema) {
@@ -238,10 +240,43 @@ function genEntityRecords(parentIds, count, entitySchema, linkType) {
         case 'message': messageIds.push(newEnt._id);    break
         case 'comment': commentIds.push(newEnt._id);  break
       }
+    }
+  }
 
+  // Now create place Like and Watch Links in oposite order to test sorting
+  if (entitySchema === 'place') {
+
+    // Create Likes in ascending order of places
+    for (var i = 0; i < entDocs.length; i++) {
+      var ent = entDocs[i]
+      for (var u = 0; u < options.users && u < options.likes; u++) {
+        links.push({
+          _id:      testUtil.genId('link', links.length),
+          _from:    testUtil.genId('user', u),
+          _to:      ent._id,
+          type:     'like',
+          _creator: testUtil.genId('user', u),
+        })
+      }
+    }
+
+    // Create Watches in descending order of places
+    for (i = entDocs.length; i--;) {
+      var ent = entDocs[i]
+      for (var u = 0; u < options.users && u < options.likes; u++) {
+        links.push({
+          _id:      testUtil.genId('link', links.length),
+          _from:    testUtil.genId('user', u),
+          _to:      ent._id,
+          type:     'watch',
+          _creator: testUtil.genId('user', u),
+        })
+      }
     }
   }
 }
+
+
 
 function saveAll(callback) {
   var collectionNames = []

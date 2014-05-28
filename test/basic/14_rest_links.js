@@ -6,6 +6,7 @@ var util = require('proxutils')
 var log = util.log
 var tipe = util.tipe
 var testUtil = require('../util')
+var constants = require('../constants')
 var skip = testUtil.skip
 var t = testUtil.treq
 var userSession
@@ -16,10 +17,11 @@ var adminCred
 var _exports = {}  // For commenting out tests
 
 // From sample data in base test database
+var dbProfile = testUtil.dbProfile
 var user1Id = 'us.010101.00000.555.000001'
 var user2Id = 'us.010101.00000.555.000002'
 var user3Id = 'us.010101.00000.555.000003'
-
+var cPlaces = dbProfile.beacons * dbProfile.epb
 
 exports.getUserSession = function(test) {
   testUtil.getUserSession(function(session) {
@@ -90,29 +92,37 @@ exports.findLinksWorks = function(test) {
     var links = body.data.links
     t.assert(links.to)
     t.assert(links.to.places)
-    // t.assert(2 === links.to.places.length)
+    var cLike = cWatch = cCreate = 0
     links.to.places.forEach(function(link) {
       t.assert(link._id)
-      t.assert(link.place)
-      t.assert(link.place._id)
+      t.assert(link.document)
+      t.assert(link.document._id)
+      t.assert(link.document.schema === 'place')
+      switch (link.type) {
+        case 'like': cLike++; break
+        case 'watch': cWatch++; break
+        case 'create': cCreate++; break
+      }
     })
-    t.assert(false)
+    t.assert(cLike === cPlaces, cLike)
+    t.assert(cWatch === cPlaces, cWatch)
+    t.assert(cCreate === 1)
     test.done()
   })
 }
 
 exports.findLinksNoDocumentsWorks = function(test) {
   var query = {
-    uri: '/find/users/' + userId + '?' + userCred,
-    body: {links: {to: {documents: 1}, noDocuments: true}},
+    uri: '/find/users/' + user1Id + '?' + userCred,
+    body: {links: {to: {places: 1}, noDocuments: true}},
   }
   t.post(query, function(err, res, body) {
     t.assert(body.data.links)
     var links = body.data.links
     t.assert(links.to)
-    t.assert(links.to.documents)
-    t.assert(2 === links.to.documents.length)
-    links.to.documents.forEach(function(link) {
+    t.assert(links.to.places)
+    t.assert(links.to.places.length === ((cPlaces * 2) + 1))  // same as above
+    links.to.places.forEach(function(link) {
       t.assert(!link.document)
     })
     test.done()
@@ -121,16 +131,16 @@ exports.findLinksNoDocumentsWorks = function(test) {
 
 exports.findLinksFieldProjectionWorks = function(test) {
   var query = {
-    uri: '/find/users/' + userId + '?' + userCred,
-    body: {links: {to: {documents: 1}, fields: {name: 1}, linkFields: {type: 1}}}
+    uri: '/find/users/' + user1Id + '?' + userCred,
+    body: {links: {to: {places: 1}, fields: {name: 1}, linkFields: {type: 1}}}
   }
   t.post(query, function(err, res, body) {
     t.assert(body.data.links)
     var links = body.data.links
     t.assert(links.to)
-    t.assert(links.to.documents)
-    t.assert(2 === links.to.documents.length)
-    links.to.documents.forEach(function(doc) {
+    t.assert(links.to.places)
+    t.assert(links.to.places.length)
+    links.to.places.forEach(function(doc) {
       t.assert(doc._id)
       t.assert(doc.type)
       t.assert(!doc.modifiedDate)
@@ -143,71 +153,135 @@ exports.findLinksFieldProjectionWorks = function(test) {
   })
 }
 
-exports.findLinksFilterWorks = function(test) {
+exports.findLinksLinkFilterWorks = function(test) {
   var query = {
-    uri: '/find/users/' + userId + '?' + userCred,
-    body: {links: {to: {documents: 1}, linkFilter: {type: 'watch'}}}
+    uri: '/find/users/' + user1Id + '?' + userCred,
+    body: {links: {to: {places: 1}, linkFilter: {type: 'watch'}}}
   }
   t.post(query, function(err, res, body) {
     t.assert(body.data.links)
     var links = body.data.links
     t.assert(links.to)
-    t.assert(links.to.documents)
-    t.assert(1 === links.to.documents.length)
+    t.assert(links.to.places)
+    t.assert(cPlaces === links.to.places.length)
+    test.done()
+  })
+}
+
+_exports.findLinksLinkDocFilterWorks = function(test) {
+  var query = {
+    uri: '/find/users/' + user1Id + '?' + userCred,
+    body: {links: {to: {places: 1}, filter: {namelc: 'museum of modern art 3'}}}
+  }
+  t.post(query, function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.data.links)
+    var links = body.data.links
+    t.assert(links.to)
+    t.assert(links.to.places)
+    t.assert(2 === links.to.places.length)
     test.done()
   })
 }
 
 
-exports.findLinksSortsDescendingByDefault = function(test) {
+exports.findLinksSortsDescendingByLinkIdByDefault = function(test) {
   var query = {
-    uri: '/find/users/' + userId + '?' + userCred,
-    body: {links: {to: {documents: 1}}}
+    uri: '/find/users/' + user1Id + '?' + userCred,
+    body: {links: {to: {places: 1}}}
   }
   t.post(query, function(err, res, body) {
-    var toDocs = body.data.links.to.documents
-    t.assert(toDocs[0]._id > toDocs[1]._id)
+    var placeLinks = body.data.links.to.places
+    var lastId = 'zzzzzzzz'
+    placeLinks.forEach(function(link) {
+      t.assert(link._id < lastId, {current: link._id, previous: lastId})
+      lastId = link._id
+    })
     test.done()
   })
 }
 
 exports.findLinksSortWorks = function(test) {
   var query = {
-    uri: '/find/users/' + userId + '?' + userCred,
-    body: {links: {to: {documents: 1}, sort: [{_id: 1}]}}
+    uri: '/find/users/' + user1Id + '?' + userCred,
+    body: {links: {to: {places: 1}, linkFilter: {type: 'like'}, sort: [{_id: 1}]}}
   }
   t.post(query, function(err, res, body) {
-    var toDocs = body.data.links.to.documents
-    t.assert(toDocs[0]._id < toDocs[1]._id)
-    test.done()
+    var placeLinks = body.data.links.to.places
+    var lastLinkId = lastDocId = ''
+    placeLinks.forEach(function(link) {
+      t.assert(link._id > lastLinkId, {current: link, previous: lastLinkId})
+      t.assert(link.document._id > lastDocId, {current: link, previous: lastLinkId})
+      lastLinkId = link._id
+      lastDocId = link.document._id
+    })
+    // Watches were created in the oposite order of likes. See /tools/pump/genData.
+    // This test proves we are sorting on the link, not a property of the underlying document
+    var query = {
+      uri: '/find/users/' + user1Id + '?' + userCred,
+      body: {links: {to: {places: 1}, linkFilter: {type: 'watch'}, sort: [{_id: 1}]}}  // watch not like
+    }
+    t.post(query, function(err, res, body) {
+      var placeLinks = body.data.links.to.places
+      var lastLinkId = ''
+      var lastDocId = 'zzzzzzzz'
+      placeLinks.forEach(function(link) {
+        t.assert(link._id > lastLinkId, {current: link, previous: lastLinkId})
+        t.assert(link.document._id < lastDocId, {current: link, previous: lastLinkId}) // < not >
+        lastLinkId = link._id
+        lastDocId = link.document._id
+      })
+      test.done()
+    })
   })
 }
 
-exports.findLinksLimitsWork = function(test) {
+exports.findLinksPagingWorks = function(test) {
   var query = {
-    uri: '/find/users/' + userId + '?' + userCred,
-    body: {links: {to: {documents: 1}, limit: 1}}
+    uri: '/find/users/' + user1Id + '?' + userCred,
+    body: {links: {to: {places: 1}, limit: 5, sort: '-_id'}}
   }
   t.post(query, function(err, res, body) {
-    var toDocs = body.data.links.to.documents
-    t.assert(1 === toDocs.length)
-    t.assert('do.linkdoc2' === toDocs[0]._to)
-    test.done()
+    var placeLinks = body.data.links.to.places
+    t.assert(5 === placeLinks.length)
+    var lastLinkId = placeLinks[4]._id
+    var lastPlaceId = placeLinks[4].document._id
+    var query = {
+      uri: '/find/users/' + user1Id + '?' + userCred,
+      body: {links: {to: {places: 1}, limit: 5, skip: 5, sort: '-_id'}}
+    }
+    t.post(query, function(err, res, body) {
+      var placeLinks = body.data.links.to.places
+      t.assert(5 === placeLinks.length)
+      t.assert(lastLinkId > placeLinks[0]._id)
+      test.done()
+    })
   })
 }
 
-exports.findLinksSkipWorks = function(test) {
+exports.findLinksPagingWorksWithFilter = function(test) {
   var query = {
-    uri: '/find/users/' + userId + '?' + userCred,
-    body: {links: {to: {documents: 1}, limit: 1, skip: 1}}
+    uri: '/find/users/' + user1Id + '?' + userCred,
+    body: {links: {to: {places: 1}, limit: 5, sort: '-_id'}}
   }
   t.post(query, function(err, res, body) {
-    var toDocs = body.data.links.to.documents
-    t.assert(1 === toDocs.length)
-    t.assert('do.linkdoc1' === toDocs[0]._to)
-    test.done()
+    var placeLinks = body.data.links.to.places
+    t.assert(5 === placeLinks.length)
+    var lastLinkId = placeLinks[4]._id
+    var lastPlaceId = placeLinks[4].document._id
+    var query = {
+      uri: '/find/users/' + user1Id + '?' + userCred,
+      body: {links: {to: {places: 1}, limit: 5, skip: 5, sort: '-_id'}}
+    }
+    t.post(query, function(err, res, body) {
+      var placeLinks = body.data.links.to.places
+      t.assert(5 === placeLinks.length)
+      t.assert(lastLinkId > placeLinks[0]._id)
+      test.done()
+    })
   })
 }
+
 
 exports.findLinksCountWorks = function(test) {
   var query = {
