@@ -246,7 +246,7 @@ exports.getEntitiesForPlacePostsOnlyLimited = function (test) {
       cursor: { 
         linkTypes: [statics.typeContent], 
         schemas: [statics.schemaPost],
-        sort: { name: -1 },
+        sort: { modifiedDate: -1 },
         limit: 3,
       },
     }
@@ -264,21 +264,21 @@ exports.getEntitiesForPlacePostsOnlyLimitedAndSkip = function (test) {
   t.post({
     uri: '/do/getEntitiesForEntity',
     body: {
-      entityId: constants.placeId, 
-      cursor: { 
-        linkTypes: [statics.typeContent], 
+      entityId: constants.placeId,
+      cursor: {
+        linkTypes: [statics.typeContent],
         schemas: [statics.schemaPost],
-        sort: { name: 1 },
-        limit: 3,
+        sort: { modifiedDate: -1 },
+        limit: 2,
         skip: 2
       },
     }
   }, function(err, res, body) {
-    t.assert(body.count === 3)
-    t.assert(body.more === false)
+    t.assert(body.count === 2)
+    t.assert(body.more === true)
     t.assert(body.data && body.data[0])
     t.assert(body.data[0].schema === util.statics.schemaPost)
-    t.assert(body.data[0].name.indexOf('Lisa 2') > 0)
+    t.assert(body.data[0].name.indexOf('Lisa 2') > 0)  // skipped 4 and 3
     test.done()
   })
 }

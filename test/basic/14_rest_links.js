@@ -24,6 +24,7 @@ var user3Id = 'us.010101.00000.555.000003'
 var cPlaces = dbProfile.beacons * dbProfile.epb
 var cUsers = dbProfile.users
 
+
 exports.getUserSession = function(test) {
   testUtil.getUserSession(function(session) {
     userSession = session
@@ -204,7 +205,6 @@ exports.findLinksSortWorks = function(test) {
 }
 
 exports.findLinksPagingWorks = function(test) {
-  return skip(test)
   var query = {
     uri: '/find/users/' + user1Id + '?' + userCred,
     body: {links: {to: {places: 1}, limit: 5, sort: '-_id'}}
@@ -228,7 +228,6 @@ exports.findLinksPagingWorks = function(test) {
 }
 
 exports.findLinksPagingWorksWithFilter = function(test) {
-  return skip(test)
   var query = {
     uri: '/find/users/' + user1Id + '?' + userCred,
     body: {links: {to: {places: 1}, limit: 5, sort: '-_id'}}
@@ -286,12 +285,14 @@ exports.findLinksAcceptsArrays = function(test) {
 
 
 exports.findLinksFromWorksWithGetSyntax = function(test) {
-  return skip(test)
   var query = {
-    uri: '/find/users/' + user1Id + '?links[from][users]=1&links[from][users][linkFilter][type]=watch&' + userCred,
+    uri: '/find/users/' + user1Id + '?links[from][users]=1&links[linkFilter][type]=watch&' + userCred,
   }
   t.get(query, function(err, res, body) {
-    t.assert(body.data.links.length === (cUsers - 1)) // everybody watches user1 except user1
+    t.assert(body.data.links.from.users.length === (cUsers - 1)) // everybody watches user1 except user1
+    body.data.links.from.users.forEach(function(link) {
+      t.assert(link.type === 'watch')
+    })
     test.done()
   })
 }
