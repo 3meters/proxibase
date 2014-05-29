@@ -149,7 +149,7 @@ function getAdminSession(user, cb) {
 }
 
 function skip(test, msg) {
-  var out = 'Warning: the following test did not pass, it was skipped: '
+  var out = '      WARNING! The following test did not pass, it was skipped: '
   out += msg ? msg : ''
   log(out)
   test.done()
@@ -304,3 +304,4 @@ exports.check = check
 exports.request = request
 exports.skip = skip
 exports.db = 1   // set by test.js after connection
+exports.config = util.config

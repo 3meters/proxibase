@@ -69,7 +69,7 @@ exports.getPlacesInsertEntityGetPlaces = function(test) {
       location:  ballRoomLoc,
       radius: 500,
       limit: 50,
-      waitForContent: false,
+      waitForContent: true,
     }
   }, function(err, res, body) {
     var places = body.data

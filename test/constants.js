@@ -176,7 +176,7 @@ module.exports = {
   timeStamp: timeStamp,
   timeStampMs: timeStampMs,
   limit: limit,
-  dbProfile: util._.clone(dbProfile)
+  dbProfile: util.clone(dbProfile)
 }
 
 module.exports.getDefaultDoc = function(schema) {

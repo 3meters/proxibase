@@ -40,6 +40,7 @@ exports.insertPlaceSaveApplinks = function(test) {
     body: {
       location: seventyfourthLoc,
       includeRaw: false,
+      waitForContent: true,
       timeout: 20000,
       limit: 50,
     }
