@@ -83,12 +83,11 @@ exports.getPlacesNearLocation = function(test) {
     uri: '/places/near',
     body: {
       location: ballRoomLoc,
-      radius: 200,
       includeRaw: false,
       limit: 20,
       waitForContent: true,
       log: false,
-      timeout: 10000,
+      timeout: 15000,
     }
   }, function(err, res, body) {
     var foundBallroom = 0
@@ -101,7 +100,14 @@ exports.getPlacesNearLocation = function(test) {
       google: 0,
       yelp: 0
     }
+    var lastDistance = 0
     places.forEach(function(place) {
+      t.assert(place.location)
+      // places should be sorted by distance from original location, close enough is ok
+      var distance = util.haversine(ballRoomLoc.lat, ballRoomLoc.lng, place.location.lat, place.location.lng)
+      t.assert((distance >= lastDistance || ((distance - lastDistance) < lastDistance / 2)),
+          {distance: distance, lastDistance: lastDistance, place: place})
+      lastDistance = distance
       t.assert(place.provider)
       var adminId = util.adminId
       t.assert(adminId = place._owner)
