@@ -355,11 +355,3 @@ exports.userPublicFieldsProjectionOwnRecord = function(test) {
   })
 }
 
-exports.usersCanBeHidden = function(test) {
-  // TODO: code exists, implement test
-  return skip(test)
-}
-
-
-
-

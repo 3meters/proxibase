@@ -425,9 +425,6 @@ _exports.newUserEmailValidateUrlWorksSlowly = function(test) {
   })
 }
 
-exports.userCannotSeeNewUser = function(test) {
-  return testUtil.skip(test)
-}
 
 exports.newUserEmailValidateUrlWorksFaster = function(test) {
   if (testUtil.disconnected) return testUtil.skip(test)
