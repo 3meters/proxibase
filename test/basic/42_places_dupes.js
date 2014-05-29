@@ -212,6 +212,7 @@ exports.insertPlaceEntityAgain = function(test) {
 }
 
 exports.cleanup = function(test) {
+  if (disconnected) return skip(test)
   t.delete({ uri: '/data/places/' + luckyStrike._id + '?' + adminCred},
   function(err, res, body) {
     t.assert(body.count === 1)

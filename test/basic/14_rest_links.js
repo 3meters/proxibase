@@ -37,40 +37,6 @@ exports.getUserSession = function(test) {
 }
 
 
-exports.addLinkedData = function(test) {
-  t.post({
-    uri: '/data/documents?' + userCred,
-    body: {data: {_id: 'do.linkdoc1', name: 'LinkDoc1'}}
-  }, 201, function(err, res, body) {
-    t.post({
-      uri: '/data/documents?' + userCred,
-      body: {data: {_id: 'do.linkdoc2', name: 'LinkDoc2', data: {foo: 'bar'}}}
-    }, 201, function(err, res, body) {
-      t.post({
-        uri: '/data/documents?' + userCred,
-        body: {data: {_id: 'do.linkdoc3', name: 'LinkDoc3'}}
-      }, 201, function(err, res, body) {
-        t.post({
-          uri: '/data/links?' + userCred,
-          body: {data: {_to: 'do.linkdoc1', _from: userId, type: 'like'}}
-        }, 201, function(err, res, body) {
-          t.post({
-            uri: '/data/links?' + userCred,
-            body: {data: {_to: 'do.linkdoc2', _from: userId, type: 'watch'}}
-          }, 201, function(err, res, body) {
-            t.post({
-              uri: '/data/links?' + userCred,
-              body: {data: {_to: userId, _from: 'do.linkdoc3', type: 'content'}}
-            }, 201, function(err, res, body) {
-              test.done()
-            })
-          })
-        })
-      })
-    })
-  })
-}
-
 exports.findLinksFailProperlyOnBadInputs = function(test) {
   var query = {
     uri: '/find/users/' + user1Id + '?' + adminCred,
@@ -168,7 +134,7 @@ exports.findLinksLinkFilterWorks = function(test) {
   })
 }
 
-_exports.findLinksLinkDocFilterWorks = function(test) {
+exports.findLinksLinkDocFilterWorks = function(test) {
   var query = {
     uri: '/find/users/' + user1Id + '?' + userCred,
     body: {links: {to: {places: 1}, filter: {namelc: 'museum of modern art 3'}}}
@@ -347,44 +313,6 @@ _exports.findLinksFromWorksWithGetSyntax = function(test) {
           break
       }
     })
-    test.done()
-  })
-}
-
-_exports.findAllLinksWorks = function(test) {
-  var query = {
-    uri: '/find/documents?links[to]=1&links[from]=1&' + userCred,
-  }
-  t.get(query, function(err, res, body) {
-    t.assert(body.data.length >= 3)
-    var cLinks = 0
-    body.data.forEach(function(doc) {
-      t.assert(doc.links)
-      t.assert(doc.links.to)
-      t.assert(doc.links.from)
-      if (doc._id === 'do.linkdoc1') {
-        cLinks++
-        t.assert(doc.links.from.users)
-        t.assert(doc.links.from.users.length === 1)
-        t.assert(doc.links.from.users[0].type === 'like')
-        t.assert(doc.links.from.users[0].document)
-      }
-      if (doc._id === 'do.linkdoc2') {
-        cLinks++
-        t.assert(doc.links.from.users)
-        t.assert(doc.links.from.users.length === 1)
-        t.assert(doc.links.from.users[0].type === 'watch')
-        t.assert(doc.links.from.users[0].document)
-      }
-      if (doc._id === 'do.linkdoc3') {
-        cLinks++
-        t.assert(doc.links.to.users)
-        t.assert(doc.links.to.users.length === 1)
-        t.assert(doc.links.to.users[0].type === 'content')
-        t.assert(doc.links.to.users[0].document)
-      }
-    })
-    t.assert(3 === cLinks)
     test.done()
   })
 }
