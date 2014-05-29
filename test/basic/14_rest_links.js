@@ -14,7 +14,7 @@ var userCred
 var userId
 var adminSession
 var adminCred
-var _exports = {}  // For commenting out tests
+
 
 // From sample data in base test database
 var dbProfile = testUtil.dbProfile
@@ -22,6 +22,7 @@ var user1Id = 'us.010101.00000.555.000001'
 var user2Id = 'us.010101.00000.555.000002'
 var user3Id = 'us.010101.00000.555.000003'
 var cPlaces = dbProfile.beacons * dbProfile.epb
+var cUsers = dbProfile.users
 
 exports.getUserSession = function(test) {
   testUtil.getUserSession(function(session) {
@@ -202,7 +203,8 @@ exports.findLinksSortWorks = function(test) {
   })
 }
 
-_exports.findLinksPagingWorks = function(test) {
+exports.findLinksPagingWorks = function(test) {
+  return skip(test)
   var query = {
     uri: '/find/users/' + user1Id + '?' + userCred,
     body: {links: {to: {places: 1}, limit: 5, sort: '-_id'}}
@@ -225,7 +227,8 @@ _exports.findLinksPagingWorks = function(test) {
   })
 }
 
-_exports.findLinksPagingWorksWithFilter = function(test) {
+exports.findLinksPagingWorksWithFilter = function(test) {
+  return skip(test)
   var query = {
     uri: '/find/users/' + user1Id + '?' + userCred,
     body: {links: {to: {places: 1}, limit: 5, sort: '-_id'}}
@@ -251,68 +254,44 @@ _exports.findLinksPagingWorksWithFilter = function(test) {
 
 exports.findLinksCountWorks = function(test) {
   var query = {
-    uri: '/find/users/' + userId + '?' + userCred,
-    body: {links: {to: {documents: 1}, from: {documents: 1}, count: true}}
+    uri: '/find/users/' + user1Id + '?' + userCred,
+    body: {links: {to: {places: 1}, from: {users: 1}, count: true}}
   }
   t.post(query, function(err, res, body) {
-    t.assert(1 === body.data.links.from.documents)
-    t.assert(2 === body.data.links.to.documents)
+    t.assert(body.data.links.to.places === ((2 * cPlaces) + 1))  // everybody likes and watches and one creates
+    t.assert(body.data.links.from.users === ((cUsers * 2) - 2))  // everybody but user1 likes and watches her
     test.done()
   })
 }
 
 exports.findLinksAcceptsArrays = function(test) {
   var query = {
-    uri: '/find/users/' + userId + '?' + userCred,
-    body: {links: [{to: {documents: 1}}, {from: {documents: 1}}]}
+    uri: '/find/users/' + user1Id + '?' + userCred,
+    body: {links: [{to: {places: 1}}, {from: {users: 1}}]}
   }
   t.post(query, function(err, res, body) {
     t.assert(body.data.links)
     t.assert(body.data.links.length === 2)  // nested in an array
     t.assert(body.data.links[0].to)
-    t.assert(body.data.links[0].to.documents)
-    var toDocs = body.data.links[0].to.documents
-    t.assert(2 === toDocs.length)
-    t.assert(toDocs[0]._id > toDocs[1]._id)
-    t.assert(toDocs[0].document)
-    t.assert(toDocs[1].document)
-    t.assert(toDocs[0]._id > toDocs[1]._id)
-    t.assert('LinkDoc2' === toDocs[0].document.name)
-    t.assert('LinkDoc1' === toDocs[1].document.name)
-    t.assert(body.data.links[1].from.documents)
-    t.assert(body.data.links[1].from.documents.length)
+    t.assert(body.data.links[0].to.places)
+    t.assert(body.data.links[1].from.users.length)
+    t.assert(!body.data.links[0].to.users)
+    t.assert(body.data.links[1].from)
+    t.assert(body.data.links[1].from.users)
+    t.assert(body.data.links[1].from.users.length)
+    t.assert(!body.data.links[1].from.places)
     test.done()
   })
 }
 
 
-_exports.findLinksFromWorksWithGetSyntax = function(test) {
+exports.findLinksFromWorksWithGetSyntax = function(test) {
+  return skip(test)
   var query = {
-    uri: '/find/documents?links[from][users]=1&' + userCred,
+    uri: '/find/users/' + user1Id + '?links[from][users]=1&links[from][users][linkFilter][type]=watch&' + userCred,
   }
   t.get(query, function(err, res, body) {
-    t.assert(body.data.length === 2)
-    body.data.forEach(function(doc) {
-      t.assert(doc.links)
-      t.assert(doc.links.from)              // not nested in an array
-      t.assert(doc.links.from.users)
-      var fromUsers = doc.links.from.users
-      switch (doc._id) {
-        case 'do.linkdoc1':
-          t.assert(1 === fromUsers.length)
-          t.assert('like' === fromUsers[0].type)
-          t.assert(fromUsers[0].document)
-          break
-        case 'do.linkdoc2':
-          t.assert(1 === fromUsers.length)
-          t.assert('watch' === fromUsers[0].type)
-          t.assert(fromUsers[0].document)
-          break
-        default:
-          t.assert(0 === fromUsers.length)
-          break
-      }
-    })
+    t.assert(body.data.links.length === (cUsers - 1)) // everybody watches user1 except user1
     test.done()
   })
 }
