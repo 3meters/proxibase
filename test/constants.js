@@ -140,6 +140,7 @@ defaultDoc.post = {
 
 defaultDoc.message = {
   _id: messageId,
+  name: 'Message',
   description: 'Hey, check out my cool message to everyone here',
   photo: {prefix:"https://s3.amazonaws.com/3meters_images/test_preview.jpg"},
   _creator: uid1,
