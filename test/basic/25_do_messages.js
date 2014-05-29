@@ -20,6 +20,16 @@ var installId1 = '5905d547-8321-4612-abe1-00001'
 var installId2 = '5905d547-8321-4612-abe1-00002'
 var expirationDate
 
+
+// From sample data in base test database
+var dbProfile = testUtil.dbProfile
+var user1Id = 'us.010101.00000.555.000001'
+var user2Id = 'us.010101.00000.555.000002'
+var user3Id = 'us.010101.00000.555.000003'
+var place1Id = 'pl.010101.00000.555.000001'
+var messagesPerPlace = dbProfile.mpp
+
+
 var testUserTom = {
   _id :  "us.111111.11111.000.111111",
   name : "Tom",
@@ -397,6 +407,40 @@ exports.insertReply = function (test) {
 
         test.done()
       })
+    })
+  })
+}
+
+// Relies on sample data from genData
+exports.messagePagingRest = function(test) {
+  t.get('/find/messages?limit=10&sort=_id&' + adminCred,
+  function(err, res, body) {
+    t.assert(body.data.length === 10)
+    t.assert('Message 0' === body.data[0].name)
+    t.get('/find/messages?limit=10&sort=_id&skip=10&' + adminCred,
+    function(err, res, body) {
+      t.assert(body.data.length === 10)
+      t.assert('Message 10' === body.data[0].name)
+      test.done()
+    })
+  })
+}
+
+exports.messagePagingRestLinks = function(test) {
+  t.get('/find/places/' + place1Id + '?links[from][messages]=1',
+  function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.data.links)
+    t.assert(body.data.links.length = messagesPerPlace)
+    t.get('/find/places/' + place1Id + '?links[from][messages]=1&links[limit]=2&links[skip]=2&links[sort]=_id',
+    function(err, res, body) {
+      t.assert(body.data)
+      t.assert(body.data.links)
+      t.assert(body.data.links.from)
+      t.assert(body.data.links.from.messages)
+      t.assert(body.data.links.from.messages.length === 2)
+      t.assert(body.data.links.from.messages[0].document.name === 'Message 2')  // skipped messages 0 and 1
+      test.done()
     })
   })
 }
