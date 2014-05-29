@@ -24,6 +24,7 @@ var user3Id = 'us.010101.00000.555.000003'
 var cPlaces = dbProfile.beacons * dbProfile.epb
 var cUsers = dbProfile.users
 
+
 exports.getUserSession = function(test) {
   testUtil.getUserSession(function(session) {
     userSession = session
