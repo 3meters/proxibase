@@ -87,6 +87,22 @@ exports.addSomeTestData = function(test) {
     toSchema: 'user',
   }
 
+  var orphanMessage1 = {
+    _id: 'me.gctest.orphanMessage1',
+  }
+
+  var orphanPost1 = {
+    _id: 'po.gctest.orphanPost1',
+  }
+
+  var orphanComment1 = {
+    _id: 'co.gctest.orphanComment1',
+  }
+
+  var orphanApplink1 = {
+    _id: 'ap.gctest.orphanApplink1',
+  }
+
   var links = [goodLink, badLink1, badLink2, badLink3, badLink4]
 
   db.collection('users').insert([user1, user2], function(err) {
@@ -94,20 +110,51 @@ exports.addSomeTestData = function(test) {
     db.collection('links').insert(links, function(err, result) {
       assert(!err, err)
       assert(result && result.length === 5, result)
-      test.done()
+      db.collection('comments').insert(orphanComment1, function(err, result) {
+        assert(!err, err)
+        db.collection('messages').insert(orphanMessage1, function(err, result) {
+          assert(!err, err)
+          db.collection('posts').insert(orphanPost1, function(err, result) {
+            assert(!err, err)
+            db.collection('applinks').insert(orphanApplink1, function(err, result) {
+              assert(!err, err)
+              test.done()
+            })
+          })
+        })
+      })
     })
   })
 }
 
-exports.collectGarbage = function(test) {
-  t.get('/admin/gc?' + adminCred, function(err, res, body) {
+exports.collectGarbageLinks = function(test) {
+  t.get('/admin/gclinks?' + adminCred, function(err, res, body) {
     t.assert(body.removed)
     t.assert(body.removed.length === 4)
     db.collection('links').find({_id: /^li.gctest/}).count(function(err, count) {
       t.assert(!err, err)
       t.assert(count === 1)
+      db.collection('trash').find({fromSchema: 'link'}).toArray(function(err, docs) {
+        t.assert(!err, err)
+        t.assert(docs)
+        t.assert(docs.length === 4)
+        docs.forEach(function(doc) {
+          t.assert(doc.data._id.match(/^li\./))  // starts with li.
+        })
+      })
       test.done()
     })
+  })
+}
+
+exports.collectGarbageEnts = function(test) {
+  t.get('/admin/gcentities?' + adminCred, function(err, res, body) {
+    t.assert(body.orphans)
+    t.assert(body.orphans.comments.length = 1)
+    t.assert(body.orphans.messages.length = 1)
+    t.assert(body.orphans.posts.length = 1)
+    t.assert(body.orphans.applinks.length = 1)
+    test.done()
   })
 }
 
