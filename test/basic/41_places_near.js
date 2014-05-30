@@ -86,6 +86,7 @@ exports.getPlacesNearLocation = function(test) {
       includeRaw: false,
       limit: 20,
       waitForContent: true,
+      sort: 'distance',
       log: false,
       timeout: 15000,
     }
