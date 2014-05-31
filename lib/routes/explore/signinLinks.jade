@@ -1,8 +1,8 @@
 if user
   | Welcome #{user.role} #{user.name}
   = ' '
-  a(href='/explore/signout') Sign out
+  a(href='/v1/explore/signout') Sign out
 else
-  a(href='/explore/newaccount') Sign up
+  a(href='/v1/explore/newaccount') Sign up
   = ' '
-  a(href='/explore/signin') Sign in
+  a(href='/v1/explore/signin') Sign in
