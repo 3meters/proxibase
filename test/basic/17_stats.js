@@ -54,13 +54,30 @@ exports.cannotCreateStatsAsUser = function(test) {
   })
 }
 
+exports.cannotCreateStatsAsUser = function(test) {
+  t.get({
+    uri: '/stats/rebuild?' + userCred
+  }, 403, function(err, res, body){
+    test.done()
+  })
+}
+
+exports.welcome = function(test) {
+  t.get({
+    uri: '/stats',
+  }, function(err, res, body){
+    t.assert(body.info)
+    test.done()
+  })
+}
+
 exports.adminCanRefreshTos = function(test) {
   t.get({
     uri: '/stats/to/refresh?' + adminCred
   }, function(err, res, body){
-    t.assert(body.data)
-    t.assert(body.data.cmd)
-    t.assert(body.data.results)
+    t.assert(body)
+    t.assert(body.cmd)
+    t.assert(body.results)
     test.done()
   })
 }
@@ -69,9 +86,8 @@ exports.adminCanRefreshFroms = function(test) {
   t.get({
     uri: '/stats/from/refresh?' + adminCred
   }, function(err, res, body){
-    t.assert(body.data)
-    t.assert(body.data.cmd)
-    t.assert(body.data.results)
+    t.assert(body.cmd)
+    t.assert(body.results)
     test.done()
   })
 }
@@ -80,28 +96,24 @@ exports.adminCanRefreshAll = function(test) {
   t.get({
     uri: '/stats/refresh?' + adminCred
   }, function(err, res, body){
-    t.assert(body.data)
-    t.assert(body.data.to)
-    t.assert(body.data.to.cmd)
-    t.assert(body.data.to.results)
-    t.assert(body.data.from)
-    t.assert(body.data.from.cmd)
-    t.assert(body.data.from.results)
+    t.assert(body)
+    t.assert(body.to)
+    t.assert(body.to.cmd)
+    t.assert(body.to.results)
+    t.assert(body.from)
+    t.assert(body.from.cmd)
+    t.assert(body.from.results)
     test.done()
   })
 }
 
 
-_exports.statsCountMessagesToPlaces = function(test) {
+exports.statsCountContentMessagesToPlacesViaPost = function(test) {
   t.post({
-    uri: '/stats/to',
+    uri: '/stats/to/places/from/messages',
     body: {
-      query: {
-        '_id.toSchema': 'place',
-        '_id.fromSchema': 'message',
-        '_id.type': 'content'
-      },
-    }
+      type: 'content'
+    },
   }, function(err, res, body) {
     var count = (body.data && body.data.length)
     t.assert(count)
@@ -123,50 +135,43 @@ _exports.statsCountMessagesToPlaces = function(test) {
 }
 
 exports.addSomeTestData = function(test) {
-  var newMsgs = [
-    {
-      _id: 'me.statTest.1',
-      name: 'StatTest Message1',
-      _owner: user1Id,
-    },
-    {
-      _id: 'me.statTest.2',
-      name: 'StatTest Message2',
-      _owner: user1Id,
-    },
-    {
-      _id: 'me.statTest.3',
-      name: 'StatTest Message3',
-      _owner: user1Id,
-    },
-  ]
 
-  var newLinks = [
-  {
+  var newMsgs = [{
+    _id: 'me.statTest.1',
+    name: 'StatTest Message1',
+    _owner: user1Id,
+  }, {
+    _id: 'me.statTest.2',
+    name: 'StatTest Message2',
+    _owner: user1Id,
+  }, {
+    _id: 'me.statTest.3',
+    name: 'StatTest Message3',
+    _owner: user1Id,
+  }, ]
+
+  var newLinks = [{
     _id: 'li.140101.statTest.1',
     _to: place1Id,
     _from: 'me.statTest.1',
     fromSchema: 'message',
     toSchema: 'place',
     type: 'content',
-  },
-  {
+  }, {
     _id: 'li.140101.statTest.2',
     _to: place1Id,
     _from: 'me.statTest.2',
     fromSchema: 'message',
     toSchema: 'place',
     type: 'content',
-  },
-  {
+  }, {
     _id: 'li.140101.statTest.3',
     _to: place1Id,
     _from: 'me.statTest.3',
     fromSchema: 'message',
     toSchema: 'place',
     type: 'content',
-  },
-  ]
+  }]
 
   db.collection('messages').insert(newMsgs, function(err, savedMsgs) {
     assert(!err, err)
@@ -181,9 +186,9 @@ exports.refreshTosWorks = function(test) {
   t.get({
     uri: '/stats/to/refresh?' + adminCred
   }, function(err, res, body){
-    t.assert(body.data)
-    t.assert(body.data.cmd)
-    t.assert(body.data.results)
+    t.assert(body)
+    t.assert(body.cmd)
+    t.assert(body.results)
     t.get({
       uri: '/find/tos?query[_id.fromSchema]=message&sort=-value'
     }, function(err, res, body) {
@@ -200,50 +205,43 @@ exports.refreshTosWorks = function(test) {
 }
 
 exports.addSomeMoreTestData = function(test) {
-var newMsgs = [
-    {
-      _id: 'me.statTest.4',
-      name: 'StatTest Message4',
-      _owner: user1Id,
-    },
-    {
-      _id: 'me.statTest.5',
-      name: 'StatTest Message5',
-      _owner: user1Id,
-    },
-    {
-      _id: 'me.statTest.6',
-      name: 'StatTest Message6',
-      _owner: user1Id,
-    },
-  ]
 
-  var newLinks = [
-  {
+  var newMsgs = [{
+    _id: 'me.statTest.4',
+    name: 'StatTest Message4',
+    _owner: user1Id,
+  }, {
+    _id: 'me.statTest.5',
+    name: 'StatTest Message5',
+    _owner: user1Id,
+  }, {
+    _id: 'me.statTest.6',
+    name: 'StatTest Message6',
+    _owner: user1Id,
+  }]
+
+  var newLinks = [{
     _id: 'li.140101.statTest.4',
     _to: place1Id,
     _from: 'me.statTest.4',
     fromSchema: 'message',
     toSchema: 'place',
     type: 'content',
-  },
-  {
+  }, {
     _id: 'li.140101.statTest.5',
     _to: place1Id,
     _from: 'me.statTest.5',
     fromSchema: 'message',
     toSchema: 'place',
     type: 'content',
-  },
-  {
+  }, {
     _id: 'li.140101.statTest.6',
     _to: place1Id,
     _from: 'me.statTest.6',
     fromSchema: 'message',
     toSchema: 'place',
     type: 'content',
-  },
-  ]
+  }]
 
   db.collection('messages').insert(newMsgs, function(err, savedMsgs) {
     assert(!err, err)
@@ -258,11 +256,11 @@ exports.refreshTosWorksWithIncrementalReduce = function(test) {
   t.get({
     uri: '/stats/to/refresh?' + adminCred
   }, function(err, res, body){
-    t.assert(body.data)
-    t.assert(body.data.cmd)
-    t.assert(body.data.results)
+    t.assert(body)
+    t.assert(body.cmd)
+    t.assert(body.results)
     t.get({
-      uri: '/find/tos?query[_id.fromSchema]=message&sort=-value,-day'
+      uri: '/find/tos?query[_id.fromSchema]=message&sort=-value,-_id.day'
     }, function(err, res, body) {
       t.assert(body.data.length)
       // refresh picked up our new links and created a summary record for them.
@@ -311,8 +309,8 @@ exports.staticsUpdateOnRefresh = function(test) {
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.get('/stats/to/refresh?' + adminCred, function(err, res, body) {
-      t.assert(body.data.cmd)
-      t.assert(body.data.results)
+      t.assert(body.cmd)
+      t.assert(body.results)
       t.get({
         uri: '/find/tos?query[_id._to]=' + testUserId + '&' + userCred
       }, function(err, res2, body) {
@@ -349,8 +347,8 @@ exports.staticsUpdateOnIncrementalRefresh = function(test) {
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.get('/stats/to/refresh?' + adminCred, function(err, res, body) {
-      t.assert(body.data.cmd)
-      t.assert(body.data.results)
+      t.assert(body.cmd)
+      t.assert(body.results)
       t.get({
         uri: '/find/tos?query[_id._to]=' + testUserId + '&' + userCred
       }, function(err, res2, body) {
@@ -392,7 +390,7 @@ exports.statRefsDoNotPopulateForAnonUsers = function(test) {
 
 exports.statsCountToPlacesTypeWatch = function(test) {
   t.get({
-    uri: '/stats/to?query[_id.toSchema]=place&query[_id.type]=like',
+    uri: '/stats/to/places?type=like&log=1',
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)
     body.data.forEach(function(doc) {
@@ -403,13 +401,14 @@ exports.statsCountToPlacesTypeWatch = function(test) {
       t.assert(doc.count)
       t.assert(doc.rank)
     })
+    t.assert(body.query['tos.aggregate'])  // output of the log param is the mongdb agregation query
     test.done()
   })
 }
 
 exports.statsCountCreatedLinksFromUsers = function(test) {
   t.get({
-    uri: '/stats/from?query[_id.fromSchema]=user&query[_id.type]=create',
+    uri: '/stats/from/users?type=create',
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)
     body.data.forEach(function(doc) {
@@ -425,7 +424,7 @@ exports.statsCountCreatedLinksFromUsers = function(test) {
 
 exports.statsCountPlacesByTunings = function(test) {
   t.get({
-    uri: '/stats/from?query[_id.fromSchema]=place&query[_id.type]=proximity',
+    uri: '/stats/from/places?type=proximity',
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)
     body.data.forEach(function(doc) {
@@ -443,9 +442,9 @@ exports.adminCanRebuildTos = function(test) {
   t.get({
     uri: '/stats/to/rebuild?' + adminCred
   }, function(err, res, body) {
-    t.assert(body.data)
-    t.assert(body.data.cmd)
-    t.assert(body.data.results)
+    t.assert(body)
+    t.assert(body.cmd)
+    t.assert(body.results)
     test.done()
   })
 }
@@ -454,9 +453,9 @@ exports.adminCanRebuildFroms = function(test) {
   t.get({
     uri: '/stats/from/rebuild?' + adminCred
   }, function(err, res, body) {
-    t.assert(body.data)
-    t.assert(body.data.cmd)
-    t.assert(body.data.results)
+    t.assert(body)
+    t.assert(body.cmd)
+    t.assert(body.results)
     test.done()
   })
 }
@@ -465,13 +464,35 @@ exports.adminCanRebuildAll = function(test) {
   t.get({
     uri: '/stats/rebuild?' + adminCred
   }, function(err, res, body) {
-    t.assert(body.data)
-    t.assert(body.data.to)
-    t.assert(body.data.to.cmd)
-    t.assert(body.data.to.results)
-    t.assert(body.data.from)
-    t.assert(body.data.from.cmd)
-    t.assert(body.data.from.results)
+    t.assert(body)
+    t.assert(body.to)
+    t.assert(body.to.cmd)
+    t.assert(body.to.results)
+    t.assert(body.from)
+    t.assert(body.from.cmd)
+    t.assert(body.from.results)
     test.done()
   })
 }
+
+exports.depreciatedAPIsStillWork = function(test) {
+  log('   TODO: Remove this test when Jay has migrated the client to the new API')
+  t.post({
+    uri: '/do/countLinksTo',
+    body: {
+      query: {'_id.fromSchema': 'message', '_id.type': 'content'}
+    },
+  }, function(err, res, body) {
+    t.assert(body.data.length)
+    t.post({
+      uri: '/do/countLinksFrom',
+      body: {
+        query: {'_id.toSchema': 'user', '_id.type': 'watch'}
+      },
+    }, function(err, res, body) {
+      t.assert(body.data.length)
+      test.done()
+    })
+  })
+}
+
