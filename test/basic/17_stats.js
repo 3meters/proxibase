@@ -364,14 +364,12 @@ exports.staticsUpdateOnIncrementalRefresh = function(test) {
   })
 }
 
-exports.statsPassThroughQueryCriteria = function(test) {
+exports.statsPassThroughQueryCriteriaToUnderlyingReducedCollections = function(test) {
   t.get({
-    uri: '/find/tos?query[_id._to]=' + testUserId + '&query[_id.type]=like'
+    uri: '/stats/to?query[_id._to]=' + testUserId + '&query[_id.type]=like'
   }, function(err, res, body) {
-    t.assert(body.data.length)
-    body.data.forEach(function(doc) {
-      t.assert('like' === doc._id.type)
-    })
+    t.assert(body.data.length === 1)
+    t.assert(body.data[0].count === 2)
     test.done()
   })
 }
@@ -402,6 +400,28 @@ exports.statsCountToPlacesTypeWatch = function(test) {
       t.assert(doc.rank)
     })
     t.assert(body.query['tos.aggregate'])  // output of the log param is the mongdb agregation query
+    test.done()
+  })
+}
+
+exports.statsFilterOnCategory = function(test) {
+  t.get({
+    uri: '/stats/to/places?_category=4bf58dd8d48988d18c941735&log=1'
+  }, function(err, res, body) {
+    t.assert(body.data && body.data.length)
+    body.data.forEach(function(doc) {
+      t.assert(doc.category)
+      t.assert(doc.category.id === '4bf58dd8d48988d18c941735')
+    })
+    test.done()
+  })
+}
+
+exports.statsFilterOnName = function(test) {
+  t.get({
+    uri: '/stats/to/places?name=art'
+  }, function(err, res, body) {
+    t.assert(body.data && body.data.length)
     test.done()
   })
 }
