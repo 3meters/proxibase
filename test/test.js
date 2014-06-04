@@ -15,6 +15,7 @@ var cli = require('commander')
 var reporter = require('nodeunit').reporters.default
 var req = require('request')
 var mongo = require('mongodb')
+var async = require('async')
 var db
 var adminDb
 var genData = require(__dirname + '/../tools/pump/genData')
@@ -47,6 +48,7 @@ cli
   .option('-l, --log <file>', 'Test server log file [' + logFile + ']')
   .option('-d, --disconnected', 'skip tests that require internet connectivity')
   .option('-p, --perf', 'Run perf tests. Requires configperf.js')
+  .option('-m, --multi <instances>', 'Run mulitiple instances of the tests concurrently')
   .parse(process.argv)
 
 
@@ -254,7 +256,33 @@ function runTests() {
   log('\nTesting: ' + serverUrl)
   log('Tests: ' + tests)
   if (cli.perf) runPerf()
+  else if (cli.multi) runMulti()
   else reporter.run(tests, false, finish)
+}
+
+
+function runMulti() {
+  log('Multi called:', cli.multi)
+  var instances = []
+  for (var i = 0; i < cli.multi; i++) {
+    instances.push(i)
+  }
+  async.each(instances, runInstance, finish)
+  function runInstance(i, next) {
+    // start instances 250 miliseconds apart
+    setTimeout(function () {
+      log('starting instance ' + i)
+      reporter.run(tests, false, function(err) {
+        log('Instance ' + i + ' finished.')
+        next(err)
+      })
+    }, i * 250)
+  }
+}
+
+
+function finishInstance(err) {
+  log('Instance finished')
 }
 
 function runPerf() {

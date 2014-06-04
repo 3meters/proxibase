@@ -13,10 +13,11 @@ var userOldCred
 var session = {}
 var adminSession = {}
 var _exports = {}                    // for commenting out tests
+var seed = String(Math.floor(Math.random() * 1000000))
 var testUser = {
   name: 'AuthTestUser',
   type: 'user',
-  email: 'authtest@3meters.com',
+  email: 'authtest' + seed + '@3meters.com',
   password: 'foobar',
   photo: {prefix: 'authTestUser.jpg'},
 }
