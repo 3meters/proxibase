@@ -6,6 +6,7 @@
 var util = require('proxutils')
 var log = util.log
 var testUtil = require('../util')
+var db = testUtil.db
 var fs = require('fs')
 var path = require('path')
 var t = testUtil.treq  // test helper
@@ -15,6 +16,7 @@ var user
 var userCred
 var adminCred
 var _exports = {} // for commenting out tests
+
 
 
 // Get user and admin sessions and store the credentials in module globals
@@ -29,7 +31,24 @@ exports.getSessions = function(test) {
   })
 }
 
-exports.dupePlaceMaggiano = function(test) {
+
+exports.findNearRepeatedlyDoesNotDupe = function(test) {
+
+  var ll = '47.6016363,-122.331157'  // Pioneer Square
+
+  if (disconnected) return skip(test)
+  t.get('/places/near?ll=47.6016363,-122.331157&waitForContent=1&limit=50',
+  function(err, res, body) {
+    t.assert(body.data.length === 50)
+    t.get('/places/near?ll=47.6016363,-122.331157&&waitForContent=1&limit=50',
+    function(err, res, body) {
+      t.assert(body.data.length === 50)
+      test.done()
+    })
+  })
+}
+
+_exports.dupePlaceMaggiano = function(test) {
 
   if (disconnected) return skip(test)
 
@@ -70,14 +89,14 @@ exports.dupePlaceMaggiano = function(test) {
   })
 }
 
-exports.dupeZokaMergesOnPhoneNumber = function(test) {
+_exports.dupeZokaMergesOnPhoneNumber = function(test) {
+
+  if (disconnected) return skip(test)
 
   var zokaLoc = {
     lat: 47.668781,
     lng: -122.332883,
   }
-
-  if (disconnected) return skip(test)
 
   t.post({
     uri: '/do/insertEntity?' + userCred,
@@ -136,7 +155,7 @@ exports.dupeZokaMergesOnPhoneNumber = function(test) {
 }
 
 
-exports.dupePlaceLuckyStrike = function(test) {
+_exports.dupePlaceLuckyStrike = function(test) {
 
   if (disconnected) return skip(test)
 
@@ -210,7 +229,7 @@ _exports.cleanup = function(test) {
 }
 
 
-exports.getDups = function(test) {
+_exports.getDups = function(test) {
   if (disconnected) return skip(test)
   t.get('/find/dupes/count?' + adminCred, function(err, res, body) {
     t.assert(body.count)
