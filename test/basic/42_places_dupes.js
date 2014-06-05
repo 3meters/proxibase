@@ -16,17 +16,6 @@ var userCred
 var adminCred
 var _exports = {} // for commenting out tests
 
-var luckyStrikeLoc = {
-  lat: 47.616658,
-  lng: -122.201373,
-}
-
-var luckyStrikeId = '4a0df0d8f964a520b1751fe3'
-var powerPlayId = '4bc0ffe974a9a5934423d1f6'
-var luckyStrike = {}
-var powerPlay = {}
-var luckyStrikeSplace = {}
-
 
 // Get user and admin sessions and store the credentials in module globals
 exports.getSessions = function(test) {
@@ -65,7 +54,6 @@ exports.dupePlaceMaggiano = function(test) {
       uri: '/places/near',
       body: {
         location: locMag,
-        radius: 500,
         includeRaw: false,
         waitForContent: true,
         limit: 50,
@@ -82,7 +70,7 @@ exports.dupePlaceMaggiano = function(test) {
   })
 }
 
-exports.dupePlacesMergeOnPhoneNumberIfProvidersAreDifferent = function(test) {
+exports.dupeZokaMergesOnPhoneNumber = function(test) {
 
   var zokaLoc = {
     lat: 47.668781,
@@ -91,7 +79,6 @@ exports.dupePlacesMergeOnPhoneNumberIfProvidersAreDifferent = function(test) {
 
   if (disconnected) return skip(test)
 
-  placeId = ''
   t.post({
     uri: '/do/insertEntity?' + userCred,
     body: {
@@ -108,7 +95,7 @@ exports.dupePlacesMergeOnPhoneNumberIfProvidersAreDifferent = function(test) {
     }
   }, 201, function(err, res, body) {
     t.assert(body.data)
-    placeId = body.data._id
+    var zoka1 = body.data
     t.post({
       uri: '/do/insertEntity?' + adminCred,
       body: {
@@ -125,19 +112,23 @@ exports.dupePlacesMergeOnPhoneNumberIfProvidersAreDifferent = function(test) {
       }
     }, 201, function(err, res, body) {
       t.assert(body.data)
-      var place = body.data
-      t.assert(placeId === place._id) // proves merged on phone number
-      t.assert(place.provider.foursquare === '41b3a100f964a520681e1fe3' )
-      t.assert(place.provider.yelp === 'zoka-coffee-roaster-and-tea-company-seattle-2')
-      t.assert('Zoka1' === place.name) // prefer name from foursquare
-      t.assert('yelpAddress' === place.address) // address last writer wins
+      var zoka2 = body.data
+      t.assert(zoka1._id === zoka2._id, {zoka1: zoka1, zoka2: zoka2}) // proves merged on phone number
+      t.assert(zoka2.provider.foursquare === '41b3a100f964a520681e1fe3' )
+      t.assert(zoka2.provider.yelp === 'zoka-coffee-roaster-and-tea-company-seattle-2')
+      t.assert('Zoka1' === zoka2.name) // prefer name from foursquare
+      t.assert('yelpAddress' === zoka2.address) // address last writer wins
       t.get('/places/near?location[lat]=47.668781&location[lng]=-122.332883&waitForContent=1',
       function (err, res, body) {
         t.assert(body.data.length)
         var zokas = body.data.filter(function(place) {
           return place.name.match(/Zoka/i)
         })
-        t.assert(zokas.length === 1)
+        t.assert(zokas.length === 1, zokas)
+        var nearZoka = zokas[0]
+        t.assert(nearZoka.provider.foursquare, nearZoka)
+        t.assert(nearZoka.provider.yelp, nearZoka)
+        t.assert(nearZoka.provider.google, nearZoka)
         test.done()
       })
     })
@@ -145,17 +136,27 @@ exports.dupePlacesMergeOnPhoneNumberIfProvidersAreDifferent = function(test) {
 }
 
 
-exports.getPlacesNearLocation = function(test) {
+exports.dupePlaceLuckyStrike = function(test) {
+
   if (disconnected) return skip(test)
+
+  var luckyStrikeLoc = {
+    lat: 47.616658,
+    lng: -122.201373,
+  }
+
+  var luckyStrikeFoursquareId = '4a0df0d8f964a520b1751fe3'
+  var powerPlayFoursquareId = '4bc0ffe974a9a5934423d1f6'
+  var luckyStrike = {}
+  var powerPlay = {}
+
   t.post({
     uri: '/places/near',
     body: {
       location: luckyStrikeLoc,
-      provider: 'foursquare',
-      radius: 500,
       includeRaw: false,
       waitForContent: true,
-      limit: 40,
+      limit: 50,
     }
   }, function(err, res, body) {
     var foundLuckyStrike = 0
@@ -163,7 +164,7 @@ exports.getPlacesNearLocation = function(test) {
     var places = body.data
     places.forEach(function(place) {
       t.assert(place.provider)
-      if (luckyStrikeId === place.provider.foursquare) {
+      if (luckyStrikeFoursquareId === place.provider.foursquare) {
         luckyStrike = place
         delete luckyStrike.creator
         delete luckyStrike.owner
@@ -171,7 +172,7 @@ exports.getPlacesNearLocation = function(test) {
         foundLuckyStrike++
         t.assert(foundLuckyStrike <= 1, place)
       }
-      if (powerPlayId === place.provider.foursquare) {
+      if (powerPlayFoursquareId === place.provider.foursquare) {
         powerPlay = place
         foundPowerPlay++
         t.assert(foundPowerPlay <= 1, place)
@@ -179,39 +180,23 @@ exports.getPlacesNearLocation = function(test) {
     })
     t.assert(1 === foundLuckyStrike, foundLuckyStrike)
     t.assert(1 === foundPowerPlay, foundPowerPlay)
-    test.done()
+
+    var body = {
+      entity: luckyStrike,
+    }
+
+    t.post({uri: '/do/insertEntity?' + userCred, body: body}, 201,
+    function(err, res, body) {
+      t.assert(body && body.data)
+      var newPlace = body.data
+      t.assert(luckyStrike._id === newPlace._id)  // proves insertEntity upserted
+      test.done()
+    })
   })
 }
 
 
-exports.insertPlaceEntity = function(test) {
-  if (disconnected) return skip(test)
-  var body = {
-    entity: luckyStrike,
-  }
-  t.post({uri: '/do/insertEntity?' + userCred, body: body}, 201,
-  function(err, res, body) {
-    t.assert(body && body.data)
-    luckyStrikeSplace = body.data
-    test.done()
-  })
-}
-
-exports.insertPlaceEntityAgain = function(test) {
-  if (disconnected) return skip(test)
-  var body = {
-    entity: luckyStrike,
-  }
-  t.post({uri: '/do/insertEntity?' + userCred, body: body}, 201,
-  function(err, res, body) {
-    t.assert(body && body.data)
-    var newPlace = body.data
-    t.assert(luckyStrikeSplace._id === newPlace._id)  // proves merge on provider.provider worked
-    test.done()
-  })
-}
-
-exports.cleanup = function(test) {
+_exports.cleanup = function(test) {
   if (disconnected) return skip(test)
   t.delete({ uri: '/data/places/' + luckyStrike._id + '?' + adminCred},
   function(err, res, body) {
@@ -223,6 +208,7 @@ exports.cleanup = function(test) {
     })
   })
 }
+
 
 exports.getDups = function(test) {
   if (disconnected) return skip(test)

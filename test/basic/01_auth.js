@@ -75,7 +75,7 @@ exports.adminCannotAddUserWithoutEmail = function(test) {
 exports.adminCannotAddUserWithoutPassword = function(test) {
   t.post({
     uri: '/data/users?' + adminCred,
-    body: {data: {email: 'foo@bar.com'}}
+    body: {data: {email: seed + 'foo@bar.com'}}
   }, 400, function(err, res, body) {
     t.assert(body.error.code === 400.1)
     test.done()

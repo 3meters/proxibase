@@ -215,8 +215,7 @@ exports.getPlacesNearLocationAgain = function(test) {
       t.assert(body.data)
       savedRoxy = res.body.data
       t.assert(savedRoxy.photo && savedRoxy.photo.prefix === myRoxy.photo.prefix) // change accepted
-      log('Old photo properties should be deleted when photo is updated.  Issue 207. Test skipped.')
-      // t.assert(Object.keys(savedRoxy.photo).length === 1)  // non-set properties removed
+      t.assert(Object.keys(savedRoxy.photo).length === 2)  // non-set properties removed
       t.assert(savedRoxy.name === roxy.name)  // change ignored
       t.assert(savedRoxy.provider.yelp === roxy.provider.yelp)
 
