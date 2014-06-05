@@ -49,6 +49,7 @@ cli
   .option('-d, --disconnected', 'skip tests that require internet connectivity')
   .option('-p, --perf', 'Run perf tests. Requires configperf.js')
   .option('-m, --multi <instances>', 'Run mulitiple instances of the tests concurrently')
+  .option('-i, --interval <interval>', 'Milliseconds to wait between starting multiple instances')
   .parse(process.argv)
 
 
@@ -261,22 +262,35 @@ function runTests() {
 }
 
 
+//
+// Run multiple instances of the test concurently.  These will fail
+// if the tests rely on any state being modified in global variables,
+// which most of our tests do. However, it is certainly possible to
+// write tests that don't, so this is most useful in combination with
+// the -t flag to concurrently run multiple instances of a single
+// stateless test.
+//
 function runMulti() {
-  log('Multi called:', cli.multi)
+
+  var interval = cli.interval || 100
+  log('Multi called: ' + cli.multi + ' with interval ' + interval)
+
   var instances = []
   for (var i = 0; i < cli.multi; i++) {
     instances.push(i)
   }
+
   async.each(instances, runInstance, finish)
+
+  // Start instances <interval> miliseconds apart
   function runInstance(i, next) {
-    // start instances 250 miliseconds apart
-    setTimeout(function () {
-      log('starting instance ' + i)
+    setTimeout(function() {
+      log('Starting instance ' + i)
       reporter.run(tests, false, function(err) {
-        log('Instance ' + i + ' finished.')
+        log('Instance ' + i + ' finished')
         next(err)
       })
-    }, i * 250)
+    }, i * interval)
   }
 }
 
