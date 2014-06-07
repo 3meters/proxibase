@@ -200,15 +200,21 @@ exports.dupePlaceLuckyStrike = function(test) {
     })
     t.assert(foundLuckyStrike + foundPowerPlay === 1)
 
+    var entToUpsize = null
+    if (foundLuckyStrike) entToUpsize = luckyStrike
+    else entToUpsize = powerPlay
+
+    t.assert(entToUpsize.name.match(/^Lucky/), entToUpsize)
+
     var body = {
-      entity: luckyStrike,
+      entity: entToUpsize
     }
 
     t.post({uri: '/do/insertEntity?' + userCred, body: body}, 201,
     function(err, res, body) {
       t.assert(body && body.data)
       var newPlace = body.data
-      t.assert(luckyStrike._id === newPlace._id)  // proves insertEntity upserted
+      t.assert(entToUpsize._id === newPlace._id)  // proves insertEntity upserted
       test.done()
     })
   })
