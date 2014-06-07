@@ -49,6 +49,7 @@ exports.dupePlaceDuos = function(test) {
     body: {
       location: westSeattle,
       waitForContent: true,
+      refresh: true,
       limit: 50,
       timeout: 15000,
     }
@@ -64,7 +65,7 @@ exports.dupePlaceDuos = function(test) {
   })
 }
 
-_exports.dupePlacesMergeOnPhoneNumberIfProvidersAreDifferent = function(test) {
+exports.dupePlacesMergeOnPhoneNumberIfProvidersAreDifferent = function(test) {
 
   var zokaLoc = {
     lat: 47.668781,
@@ -113,7 +114,7 @@ _exports.dupePlacesMergeOnPhoneNumberIfProvidersAreDifferent = function(test) {
       t.assert(place.provider.yelp === 'zoka-coffee-roaster-and-tea-company-seattle-2')
       t.assert('Zoka1' === place.name) // prefer name from foursquare
       t.assert('yelpAddress' === place.address) // address last writer wins
-      t.get('/places/near?location[lat]=47.668781&location[lng]=-122.332883&waitForContent=1',
+      t.get('/places/near?location[lat]=47.668781&location[lng]=-122.332883&waitForContent=1&refresh=1',
       function (err, res, body) {
         t.assert(body.data.length)
         var zokas = body.data.filter(function(place) {
@@ -127,16 +128,22 @@ _exports.dupePlacesMergeOnPhoneNumberIfProvidersAreDifferent = function(test) {
 }
 
 
-_exports.getPlacesNearLocation = function(test) {
+exports.getPlacesNearLocation = function(test) {
   if (disconnected) return skip(test)
+
+  var luckyStrikeLoc = {
+    lat: 47.616658,
+    lng: -122.201373,
+  }
+
   t.post({
     uri: '/places/near',
     body: {
       location: luckyStrikeLoc,
-      provider: 'foursquare',
       radius: 500,
       includeRaw: false,
       waitForContent: true,
+      refresh: true,
       limit: 40,
     }
   }, function(err, res, body) {
@@ -166,7 +173,7 @@ _exports.getPlacesNearLocation = function(test) {
 }
 
 
-_exports.insertPlaceEntity = function(test) {
+exports.insertPlaceEntity = function(test) {
   if (disconnected) return skip(test)
   var body = {
     entity: luckyStrike,
@@ -179,7 +186,7 @@ _exports.insertPlaceEntity = function(test) {
   })
 }
 
-_exports.insertPlaceEntityAgain = function(test) {
+exports.insertPlaceEntityAgain = function(test) {
   if (disconnected) return skip(test)
   var body = {
     entity: luckyStrike,
@@ -193,7 +200,7 @@ _exports.insertPlaceEntityAgain = function(test) {
   })
 }
 
-_exports.cleanup = function(test) {
+exports.cleanup = function(test) {
   if (disconnected) return skip(test)
   t.delete({ uri: '/data/places/' + luckyStrike._id + '?' + adminCred},
   function(err, res, body) {
@@ -206,7 +213,7 @@ _exports.cleanup = function(test) {
   })
 }
 
-_exports.getDups = function(test) {
+exports.getDups = function(test) {
   if (disconnected) return skip(test)
   t.get('/find/dupes/count?' + adminCred, function(err, res, body) {
     t.assert(body.count)

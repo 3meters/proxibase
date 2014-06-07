@@ -48,7 +48,7 @@ exports.findNearRepeatedlyDoesNotDupe = function(test) {
   })
 }
 
-_exports.dupePlaceMaggiano = function(test) {
+exports.dupePlaceMaggiano = function(test) {
 
   if (disconnected) return skip(test)
 
@@ -89,7 +89,7 @@ _exports.dupePlaceMaggiano = function(test) {
   })
 }
 
-_exports.dupeZokaMergesOnPhoneNumber = function(test) {
+exports.dupeZokaMergesOnPhoneNumber = function(test) {
 
   if (disconnected) return skip(test)
 
@@ -135,9 +135,9 @@ _exports.dupeZokaMergesOnPhoneNumber = function(test) {
       t.assert(zoka1._id === zoka2._id, {zoka1: zoka1, zoka2: zoka2}) // proves merged on phone number
       t.assert(zoka2.provider.foursquare === '41b3a100f964a520681e1fe3' )
       t.assert(zoka2.provider.yelp === 'zoka-coffee-roaster-and-tea-company-seattle-2')
-      t.assert('Zoka1' === zoka2.name) // prefer name from foursquare
+      t.assert('Zoka2' === zoka2.name) // name last writer wins foursquare
       t.assert('yelpAddress' === zoka2.address) // address last writer wins
-      t.get('/places/near?location[lat]=47.668781&location[lng]=-122.332883&waitForContent=1',
+      t.get('/places/near?location[lat]=47.668781&location[lng]=-122.332883&waitForContent=1&refresh=1',
       function (err, res, body) {
         t.assert(body.data.length)
         var zokas = body.data.filter(function(place) {
@@ -155,7 +155,7 @@ _exports.dupeZokaMergesOnPhoneNumber = function(test) {
 }
 
 
-_exports.dupePlaceLuckyStrike = function(test) {
+exports.dupePlaceLuckyStrike = function(test) {
 
   if (disconnected) return skip(test)
 
@@ -175,6 +175,7 @@ _exports.dupePlaceLuckyStrike = function(test) {
       location: luckyStrikeLoc,
       includeRaw: false,
       waitForContent: true,
+      refresh: true,
       limit: 50,
     }
   }, function(err, res, body) {
@@ -198,7 +199,8 @@ _exports.dupePlaceLuckyStrike = function(test) {
       }
     })
     t.assert(1 === foundLuckyStrike, foundLuckyStrike)
-    t.assert(1 === foundPowerPlay, foundPowerPlay)
+    // We no longer allow multiple foursquare places for a single yelp/google place
+    t.assert(0 === foundPowerPlay, foundPowerPlay)
 
     var body = {
       entity: luckyStrike,
