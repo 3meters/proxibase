@@ -198,9 +198,7 @@ exports.dupePlaceLuckyStrike = function(test) {
         t.assert(foundPowerPlay <= 1, place)
       }
     })
-    t.assert(1 === foundLuckyStrike, foundLuckyStrike)
-    // We no longer allow multiple foursquare places for a single yelp/google place
-    t.assert(0 === foundPowerPlay, foundPowerPlay)
+    t.assert(foundLuckyStrike + foundPowerPlay === 1)
 
     var body = {
       entity: luckyStrike,
