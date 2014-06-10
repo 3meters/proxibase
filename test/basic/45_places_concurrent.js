@@ -40,21 +40,24 @@ exports.findNearPioneerSquareRepeatedlyDoesNotAddToDupes = function(test) {
 
   if (disconnected) return skip(test)
 
-  var ll = '47.6016363,-122.331157'  // Pioneer Square
+  var lat = 47.6016363
+  var lng = -122.331157  // Pioneer Square
+  var ll = String(lat) + ',' + String(lng)
+
   var dupeCount
 
   t.get('/find/dupes/count', function(err, res, body) {
     dupeCount = body.count
-    t.get('/places/near?ll=47.6016363,-122.3311571&limit=50',
+    t.get('/places/near?ll=' + ll + '&limit=50',
     function(err, res, body) {
       t.assert(body.data.length === 50)
       body.data.forEach(function(place) {
         t.assert(!place.name.match(/^Museum of Modern/))  // ignored sample data is in New York
       })
-      t.get('/places/near?ll=47.6016363,-122.3311571&limit=50',
+      t.get('/places/near?location[lat]=' + String(lat) + '&location[lng]=' + String(lng) + '&limit=50',
       function(err, res, body) {
         t.assert(body.data.length === 50)
-        t.get('/places/near?ll=47.6016363,-122.331157&limit=50',
+        t.get('/places/near?ll=' + ll + '&limit=50',
         function(err, res, body) {
           t.get('/find/dupes/count', function(err, res, body) {
             t.assert(body.count === dupeCount) // same as first time
