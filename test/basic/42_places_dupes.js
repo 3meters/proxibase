@@ -31,23 +31,6 @@ exports.getSessions = function(test) {
   })
 }
 
-
-exports.findNearRepeatedlyDoesNotDupe = function(test) {
-
-  var ll = '47.6016363,-122.331157'  // Pioneer Square
-
-  if (disconnected) return skip(test)
-  t.get('/places/near?ll=47.6016363,-122.331157&waitForContent=1&limit=50',
-  function(err, res, body) {
-    t.assert(body.data.length === 50)
-    t.get('/places/near?ll=47.6016363,-122.331157&&waitForContent=1&limit=50',
-    function(err, res, body) {
-      t.assert(body.data.length === 50)
-      test.done()
-    })
-  })
-}
-
 exports.dupePlaceMaggiano = function(test) {
 
   if (disconnected) return skip(test)
@@ -74,7 +57,7 @@ exports.dupePlaceMaggiano = function(test) {
       body: {
         location: locMag,
         includeRaw: false,
-        waitForContent: true,
+        refresh: true,
         limit: 50,
         timeout: 15000,
       }
@@ -137,7 +120,7 @@ exports.dupeZokaMergesOnPhoneNumber = function(test) {
       t.assert(zoka2.provider.yelp === 'zoka-coffee-roaster-and-tea-company-seattle-2')
       t.assert('Zoka2' === zoka2.name) // name last writer wins foursquare
       t.assert('yelpAddress' === zoka2.address) // address last writer wins
-      t.get('/places/near?location[lat]=47.668781&location[lng]=-122.332883&waitForContent=1&refresh=1',
+      t.get('/places/near?location[lat]=47.668781&location[lng]=-122.332883&refresh=1',
       function (err, res, body) {
         t.assert(body.data.length)
         var zokas = body.data.filter(function(place) {
@@ -174,7 +157,6 @@ exports.dupePlaceLuckyStrike = function(test) {
     body: {
       location: luckyStrikeLoc,
       includeRaw: false,
-      waitForContent: true,
       refresh: true,
       limit: 50,
     }
@@ -198,7 +180,7 @@ exports.dupePlaceLuckyStrike = function(test) {
         t.assert(foundPowerPlay <= 1, place)
       }
     })
-    t.assert(foundLuckyStrike + foundPowerPlay === 1)
+    t.assert(foundLuckyStrike + foundPowerPlay === 1, {luckyStrike: luckyStrike, powerPlay: powerPlay})
 
     var entToUpsize = null
     if (foundLuckyStrike) entToUpsize = luckyStrike

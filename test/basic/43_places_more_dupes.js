@@ -42,7 +42,6 @@ exports.dupePlaceDuos = function(test) {
     uri: '/places/near',
     body: {
       location: westSeattle,
-      waitForContent: true,
       refresh: true,
       limit: 50,
       timeout: 15000,
@@ -108,7 +107,7 @@ exports.dupeManuallyMergesPlacesOnPhoneNumberWithDifferentProviders = function(t
       t.assert(place.provider.yelp === 'zoka-coffee-roaster-and-tea-company-seattle-2')
       t.assert('ZokaYelp' === place.name) // prefer name from yelp
       t.assert('foursquareAddress' === place.address) // address last writer wins
-      t.get('/places/near?location[lat]=47.668781&location[lng]=-122.332883&waitForContent=1&refresh=1',
+      t.get('/places/near?location[lat]=47.668781&location[lng]=-122.332883&refresh=1',
       function (err, res, body) {
         t.assert(body.data.length)
         var zokas = body.data.filter(function(place) {
@@ -143,7 +142,6 @@ exports.nearLinconSquare = function(test) {
       radius: 500,
       includeRaw: false,
       refresh: true,
-      waitForContent: true,
       limit: 50,
     }
   }, function(err, res, body) {
@@ -174,7 +172,7 @@ exports.nearLinconSquare = function(test) {
 exports.getDups = function(test) {
   if (disconnected) return skip(test)
   t.get('/find/dupes/count?' + adminCred, function(err, res, body) {
-    t.assert(body.count)
+    t.assert(body.count === 0)
     test.done()
   })
 }

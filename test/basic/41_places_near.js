@@ -85,8 +85,8 @@ exports.getPlacesNearLocation = function(test) {
       location: ballRoomLoc,
       includeRaw: false,
       limit: 20,
-      waitForContent: true,
-      sort: 'distance',
+      refresh: true,
+      sort: 'distance',  // not used by client, off by default, but works
       log: false,
       timeout: 15000,
     }
@@ -169,7 +169,7 @@ exports.getPlacesNearLocationAgain = function(test) {
       radius: 200,
       limit: 20,
       includeRaw: false,
-      waitForContent: true,
+      refresh: true,
       log: false,
     }
   }, function(err, res) {
@@ -227,7 +227,7 @@ exports.getPlacesNearLocationAgain = function(test) {
           radius: 200,
           limit: 20,
           includeRaw: false,
-          waitForContent: true,
+          refresh: true,
           log: false,
         }
       }, function(err, res) {
