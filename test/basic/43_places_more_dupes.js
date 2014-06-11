@@ -105,7 +105,6 @@ exports.dupeManuallyMergesPlacesOnPhoneNumberWithDifferentProviders = function(t
       t.assert(placeId === place._id) // proves merged on phone number
       t.assert(place.provider.foursquare === '41b3a100f964a520681e1fe3' )
       t.assert(place.provider.yelp === 'zoka-coffee-roaster-and-tea-company-seattle-2')
-      t.assert('ZokaYelp' === place.name) // prefer name from yelp
       t.assert('foursquareAddress' === place.address) // address last writer wins
       t.get('/places/near?location[lat]=47.668781&location[lng]=-122.332883&refresh=1',
       function (err, res, body) {

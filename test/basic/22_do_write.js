@@ -113,7 +113,7 @@ var testPlaceCustomPublic = {
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
-  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065550004",
+  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065550003",
   provider: {
     aircandi: 'aircandi',
   },
@@ -139,7 +139,7 @@ var testPlaceCustomPrivate = {
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
-  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065550003",
+  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065550004",
   provider: {
     aircandi: 'aircandi',
   },
@@ -168,7 +168,7 @@ var testPlaceCustomLocked = {
   provider: {
     aircandi: 'aircandi',
   },
-  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065550003",
+  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065550005",
   category:{
     id:"4bf58dd8d48988d18c941735",
     name : "Baseball Stadium",
