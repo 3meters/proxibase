@@ -72,7 +72,7 @@ exports.dupePlaceMaggiano = function(test) {
   })
 }
 
-exports.dupeZokaMergesOnPhoneNumber = function(test) {
+_exports.dupeZokaMergesOnPhoneNumber = function(test) {
 
   if (disconnected) return skip(test)
 
