@@ -42,8 +42,7 @@ var savedRoxy  // shared between tests
 var ballRoomId = ''
 var ballRoom4sId = '4abebc45f964a520a18f20e3'
 var ballRoomYelpId = 'the-ballroom-seattle'
-var ballRoomGoogleId = 'f0147a535bedf4bb948f35379873cab0747ba9e2|aGoogleRef'
-
+var ballRoomGoogleId = 'f0147a535bedf4bb948f35379873cab0747ba9e2'
 // Cafe Ladro
 var ladroId = '45d62041f964a520d2421fe3'
 
@@ -84,7 +83,7 @@ exports.getPlacesNearLocation = function(test) {
     body: {
       location: ballRoomLoc,
       includeRaw: false,
-      limit: 20,
+      limit: 40,
       refresh: true,
       sort: 'distance',  // not used by client, off by default, but works
       log: false,
@@ -94,7 +93,7 @@ exports.getPlacesNearLocation = function(test) {
     var foundBallroom = 0
     var foundRoxy = 0
     var places = body.data
-    t.assert(places.length === 20)
+    t.assert(places.length === 40)
     placeCount = {
       aircandi: 0,
       foursquare: 0,
