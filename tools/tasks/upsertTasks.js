@@ -31,7 +31,7 @@ function run() {
     */
     {
       name: 'calcStats',
-      schedule: {schedules: [{s: [37], m: [7,27,47]}]},
+      schedule: {schedules: [{s: [37]}]},  // every minute on the 37th second
       module: 'utils',
       method: 'calcStats',
       enabled: true,

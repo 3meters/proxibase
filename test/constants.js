@@ -19,8 +19,8 @@ var
   messageId = _schemas.message.id + '.' + timeStamp + '.000001',
   documentId = _schemas.document.id + '.' + timeStamp + '.000001',
   linkId = _schemas.link.id + '.'  + timeStamp + '.000001',
-  latitude = 47,                                              // Nearby
-  longitude = -122,
+  latitude = 40.761449,                                              // Manhatten
+  longitude = -73.977341
   password = 'password',
   limit = 1000,
   defaultDoc = {},

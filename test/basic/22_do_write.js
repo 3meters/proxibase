@@ -1437,7 +1437,7 @@ exports.deletePost = function (test) {
       }, function(err, res, body) {
         t.assert(body.count === 0)
 
-        /* Check delete linked comment */
+        /* Check delete comment link*/
         t.post({
           uri: '/find/links',
           body: {
@@ -1448,7 +1448,7 @@ exports.deletePost = function (test) {
         }, function(err, res, body) {
           t.assert(body.count === 0)
 
-          /* Check delete all links to/from comment */
+          /* Check delete all content links to/from comment */
           t.post({
             uri: '/find/links',
             body: {
@@ -1460,7 +1460,9 @@ exports.deletePost = function (test) {
               }
             }
           }, function(err, res, body) {
-            t.assert(body.count === 0)
+            t.assert(body.count === 1)
+            t.assert(body.data[0].fromSchema === 'user')
+            t.assert(body.data[0].type === 'create')
 
             /* Check delete post entity log actions */
             t.post({
@@ -1480,7 +1482,7 @@ exports.deletePost = function (test) {
             }, function(err, res, body) {
               t.assert(body.count === 0)
 
-              /* Check delete comment log actions */
+              /* Check that comment log actions were not deleted */
               t.post({
                 uri: '/find/actions?' + adminCred,
                 body: {
@@ -1493,8 +1495,7 @@ exports.deletePost = function (test) {
                   }
                 }
               }, function(err, res, body) {
-                t.assert(body.count === 1)
-                t.assert(0 === body.data[0].event.indexOf('delete_entity'))
+                t.assert(body.count === 0)
                 test.done()
               })
             })
