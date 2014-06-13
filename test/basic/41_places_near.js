@@ -258,3 +258,40 @@ exports.getPlacePhotos = function(test) {
   })
 }
 
+exports.findAndMergeDupes = function(test) {
+  if (disconnected) return skip(test)
+  t.get('/find/dupes?' + adminCred, function(err, res, body) {
+    log('Dupe count:', body.count)
+    t.assert(body.count)
+    var revel, quoin
+    body.data.forEach(function(dupeLog) {
+      if (dupeLog.namelc === 'quoin' || dupeLog.namelc === 'revel') {
+        if (dupeLog.data && dupeLog.data.dupes)
+        dupeLog.data.dupes.forEach(function(dupe) {
+          if (dupe.namelc === 'quoin') quoin = dupe
+          if (dupe.namelc === 'revel') revel = dupe
+        })
+      }
+    })
+    t.assert(revel)
+    t.assert(quoin)
+    t.get('/places/' + revel._id + '/merge/' + quoin._id + '?' + adminCred,
+    function(err, res, body) {
+      t.assert(body._place1Id)
+      t.assert(body._place2Id)
+      t.assert(body.place1Merged)
+      t.assert(body.finished)
+      t.get('/places/' + quoin._id,
+        function(err, res, body) {
+          t.assert(body.count === 0)
+          t.assert(body.data === null)
+          // TODO: test link fixup
+          // all links from quoin should be removed
+          // all strong links to quoin should now point be attached to revel
+          // all weak links to quoin should be removed
+          test.done()
+        }
+      )
+    })
+  })
+}
