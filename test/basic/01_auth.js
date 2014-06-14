@@ -13,10 +13,11 @@ var userOldCred
 var session = {}
 var adminSession = {}
 var _exports = {}                    // for commenting out tests
+var seed = String(Math.floor(Math.random() * 1000000))
 var testUser = {
   name: 'AuthTestUser',
   type: 'user',
-  email: 'authtest@3meters.com',
+  email: 'authtest' + seed + '@3meters.com',
   password: 'foobar',
   photo: {prefix: 'authTestUser.jpg'},
 }
@@ -74,7 +75,7 @@ exports.adminCannotAddUserWithoutEmail = function(test) {
 exports.adminCannotAddUserWithoutPassword = function(test) {
   t.post({
     uri: '/data/users?' + adminCred,
-    body: {data: {email: 'foo@bar.com'}}
+    body: {data: {email: seed + 'foo@bar.com'}}
   }, 400, function(err, res, body) {
     t.assert(body.error.code === 400.1)
     test.done()

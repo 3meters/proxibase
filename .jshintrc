@@ -17,6 +17,7 @@
     "scrub": false,
     "log": false,
     "logErr": false,
+    "logError": false,
     "_": false
   }
 }

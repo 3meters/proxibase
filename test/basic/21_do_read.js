@@ -255,7 +255,7 @@ exports.getEntitiesForPlacePostsOnlyLimited = function (test) {
     t.assert(body.more === true)
     t.assert(body.data && body.data[0])
     t.assert(body.data[0].schema === statics.schemaPost)
-    t.assert(body.data[0].name.indexOf('Lisa 4') > 0)
+    t.assert(body.data[0].name.indexOf('Lisa 4') > 0, body.data[0])
     test.done()
   })
 }
