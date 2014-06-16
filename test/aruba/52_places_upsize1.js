@@ -50,10 +50,8 @@ exports.getPlacesNearLocation = function(test) {
     uri: '/places/near',
     body: {
       location: luckyStrikeLoc,
-      provider: 'foursquare',
-      radius: 500,
       includeRaw: false,
-      waitForContent: true,
+      waitForContent: false,  // let the cache work
       limit: 50,
     }
   }, function(err, res, body) {
@@ -76,8 +74,8 @@ exports.getPlacesNearLocation = function(test) {
         t.assert(foundPowerPlay <= 1, place)
       }
     })
-    t.assert(1 === foundLuckyStrike, foundLuckyStrike)
-    t.assert(1 === foundPowerPlay, foundPowerPlay)
+    t.assert(1 === foundLuckyStrike + foundPowerPlay)
+    luckyStrike = foundLuckyStrike ? luckyStrike : powerPlay
     test.done()
   })
 }
@@ -121,8 +119,8 @@ exports.insertPlaceEntity = function(test) {
         })
         t.assert(applinks.length === links.length)
         t.assert(!applinkMap.twitter || (applinkMap.twitter === 1), applinkMap)
-        log('skipping website -- flaky today')
-        // t.assert(applinkMap.website >= 1, applinkMap)
+        // log('skipping website -- flaky today')
+        t.assert(applinkMap.website >= 1, applinkMap)
         t.assert(applinkMap.facebook >= 1, applinkMap)
         t.assert(applinkMap.facebook < 5, applinkMap)
         test.done()
@@ -162,7 +160,7 @@ exports.getPlacesNearLocationWithUpsizedPlace = function(test) {
       radius: 500,
       includeRaw: false,
       limit: 50,
-      waitForContent: true,
+      waitForContent: false,
     }
   }, function(err, res, body) {
     var foundLuckyStrike = 0
@@ -179,8 +177,7 @@ exports.getPlacesNearLocationWithUpsizedPlace = function(test) {
         t.assert(place.name === powerPlay.name, place)
       }
     })
-    t.assert(1 === foundLuckyStrike)
-    t.assert(1 === foundPowerPlay)
+    t.assert(1 === foundLuckyStrike + foundPowerPlay)
     test.done()
   })
 }
