@@ -275,23 +275,62 @@ exports.findAndMergeDupes = function(test) {
     })
     t.assert(revel)
     t.assert(quoin)
-    t.get('/places/' + revel._id + '/merge/' + quoin._id + '?' + adminCred,
-    function(err, res, body) {
-      t.assert(body._place1Id)
-      t.assert(body._place2Id)
-      t.assert(body.place1Merged)
-      t.assert(body.finished)
-      t.get('/places/' + quoin._id,
+    var rand = String(Math.floor(Math.random() * 1000000))
+    var testMsgId = 'me.testMsg.' + rand
+    t.post({
+      uri: '/do/insertEntity?' + userCred,
+      body:  {
+        entity: {
+          _id: testMsgId,
+          schema : 'message',
+          name : "Test message to Quion",
+          _place: quoin._id,
+        },
+        links: [{
+          _to: quoin._id,
+          type: 'content',
+        }],
+        returnMessages: true,
+        activityDateWindow: 0,
+      }
+    }, 201, function(err, res, body) {
+      t.get('/places/' + revel._id + '/merge/' + quoin._id + '?' + adminCred,
+      function(err, res, body) {
+        t.assert(body._place1Id)
+        t.assert(body._place2Id)
+        t.assert(body.place1Merged)
+        t.assert(body.finished)
+        t.get('/places/' + quoin._id,
         function(err, res, body) {
           t.assert(body.count === 0)
           t.assert(body.data === null)
-          // TODO: test link fixup
-          // all links from quoin should be removed
-          // all strong links to quoin should now point be attached to revel
-          // all weak links to quoin should be removed
-          test.done()
-        }
-      )
+          t.get('/find/links/count?query[_to]=' + quoin._id + '&' + adminCred,
+          function(err, res, body) {
+            // all links to quoin should be removed
+            t.assert(body.count === 0)
+
+            t.get('/find/links?query[_to]=' + revel._id + '&' + adminCred,
+            function(req, res, body) {
+              t.assert(body.data.length)
+              var cCreate = 0
+              var cContent = 0
+              body.data.forEach(function(link) {
+                if (link.type === 'create') cCreate++
+                if (link.type === 'content') cContent++
+              })
+              t.assert(cCreate <= 1)
+              t.assert(cContent === 1)
+              // Make sure the message place was fixed up too
+              t.get('/find/messages/' + testMsgId + '?' + adminCred,
+              function(err, res, body) {
+                t.assert(body.data)
+                t.assert(body.data._place = revel._id)
+                test.done()
+              })
+            })
+          })
+        })
+      })
     })
   })
 }

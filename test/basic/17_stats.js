@@ -495,7 +495,7 @@ exports.adminCanRebuildAll = function(test) {
   })
 }
 
-exports.depreciatedAPIsStillWork = function(test) {
+_exports.depreciatedAPIsStillWork = function(test) {
   log('   TODO: Remove this test when Jay has migrated the client to the new API')
   t.post({
     uri: '/do/countLinksTo',
