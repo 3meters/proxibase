@@ -1,7 +1,7 @@
 {
 
   "name": "proxibase",
-  "version": "0.9.62",
+  "version": "0.9.63",
   "private": true,
   "description": "Proxibase Service",
   "author": {
@@ -31,7 +31,7 @@
     "cheerio": "*",
     "factual-api": "*",
     "yelp": "*",
-    "node-gcm": "0.9.4",
+    "node-gcm": "*",
     "url2png": "*",
     "knox": "*",
     "moment": "*",

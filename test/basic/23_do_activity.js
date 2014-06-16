@@ -833,3 +833,38 @@ exports.deleteEntity = function (test) {
     })
   })
 }
+
+/*
+ * ----------------------------------------------------------------------------
+ * A bit of cleanup so #25 gets the right stuff
+ * ----------------------------------------------------------------------------
+ */
+
+exports.unwatchUser = function(test) {
+  t.post({
+    uri: '/do/deleteLink?' + userCredAlice,
+    body: {
+      toId: testUserTom._id,
+      fromId: testUserAlice._id,
+      type: util.statics.typeWatch,
+      actionEvent: 'unwatch'
+    }
+  }, function(err, res, body) {
+    t.assert(body.info.indexOf('successful') > 0)
+
+    /* Check unwatch entity */
+    t.post({
+      uri: '/find/links',
+      body: {
+        query:{
+          _to:testUserTom._id,
+          _from:testUserBob._id,
+          type:util.statics.typeWatch
+        }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 0)
+      test.done()
+    })
+  })
+}
