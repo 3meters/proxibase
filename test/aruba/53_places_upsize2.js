@@ -163,15 +163,15 @@ exports.insertPlaceGoogleSaveApplinks = function(test) {
         }
         else applinkMap[link.shortcut.app]++
       })
-      log('hermikers website is down')
-      // t.assert(applinkMap.website === 1, applinkMap)
+      // log('hermikers website is down')
+      t.assert(applinkMap.website === 1, applinkMap)
       t.assert(applinkMap.facebook === 1, applinkMap)
       t.assert(applinkMap.googleplus === 1, applinkMap)
       t.assert(applinkMap.foursquare === 1, applinkMap)
       t.assert(applinkMap.yelp === 1, applinkMap)
 
-      log('factual down skipping test')
-      // t.assert(applinkMap.urbanspoon === 1)  // proves that factual lookup works
+      // log('factual down skipping test')
+      t.assert(applinkMap.urbanspoon === 1)  // proves that factual lookup works
 
       herkimer = place
       cleanup(herkimer, function(err) {
