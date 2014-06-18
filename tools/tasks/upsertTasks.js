@@ -7,7 +7,7 @@ var log = util.log
 
 var host = 'https://api.aircandi.com'
 // var host = 'https://localhost:6643'
-var adminpw = 'doodah'
+var adminpw = ''
 
 // accept unsigned certs from test or dev boxes
 // process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0
