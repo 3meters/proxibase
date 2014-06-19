@@ -18,7 +18,7 @@
     "tipe": "*",
     "scrub": "*",
     "qs": "*",
-    "express": "<4.0",
+    "express": "*",
     "serve-static": "*",
     "serve-favicon": "*",
     "compression": "*",
