@@ -1,7 +1,7 @@
 extends layout
 
 block content
-  .form: form#signin(method='post', action='/explore')
+  .form: form#signin(method='post', action='/v1/explore')
     .field: input(name='collection', placeholder='collection')
     .field: input(name='_id', placeholder='id')
     .field: input(name='name', placeholder='name')
