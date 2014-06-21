@@ -121,6 +121,20 @@ exports.findFieldProjectionsGetSyntax = function(test) {
   })
 }
 
+
+exports.findFirstAndLast = function(test) {
+  t.get('/find/places/first', function(err, res, body) {
+    t.assert(body.data)
+    var firstId = body.data._id
+    t.get('/data/places/last', function(err, res, body) {
+      t.assert(body.data)
+      t.assert(body.data._id > firstId)
+      test.done()
+    })
+  })
+}
+
+
 exports.findNext = function(test) {
   t.get('/data/places/next', 401, function(err, res, body) {
     t.get('/data/places/next?' + adminCred, function(err, res, body) {
