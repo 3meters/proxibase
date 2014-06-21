@@ -1,8 +1,0 @@
-#!/bin/sh
-
-# refresh the site statistics
-#   intended to be run by crontab
-
-# get the process Ids of running node processes
-
-curl -k 'https://localhost:643/stats/usersByEntity?refresh=true&user=0000.000000.00000.000.000000&session=ff21c07e2353211c01ec68f45211e0e2bb368791'

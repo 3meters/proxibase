@@ -1,18 +1,18 @@
 #!/bin/sh
 #
-# dispaly the proxibase log
-# 
+# dispaly the proxibase log or error log
+#
 
 if [ ! $PROXLOG ]; then
   PROXLOG='/var/log/prox/prox.log'
 fi
 
-if [ ! $PROXTESTLOG ]; then
-  PROXTESTLOG='/var/log/prox/proxtest.log'
+if [ ! $PROXERRLOG ]; then
+  PROXERRLOG='/var/log/prox/proxerr.log'
 fi
 
-if [ "$1" = "-t" ]; then
-  cat $PROXTESTLOG
+if [ "$1" = "-e" ]; then
+  cat $PROXERRLOG
 else
   cat $PROXLOG
 fi
