@@ -34,12 +34,6 @@ function start() {
     mongo.initDb(config, function(err, proxdb) {
       if (err) throw err
       db = proxdb  // module global
-      util.debug('mongo.Cursor.prototype', mongo.Cursor.prototype)
-      db.places.safeFind({ _id: 'foo' }, {}, function(err, docs) {
-        debug('docs:', docs)
-      })
-      var cursor = db.users.find({}, {batchSize: 10}).batchSize(10)
-      cursor.safeEach(function(user, cb) {}, function(err) {})
       run()
     })
   })
@@ -48,14 +42,9 @@ function start() {
 
 // We have a mongoSafe connection
 function run() {
+  var cDeleted = 0
 
-  var cRemoved = 0
-
-  var cursor = db.places.find({})
-
-  debug('cursor keys', Object.keys(cursor))
-
-  cursor.safeEach(processPlace, finish)
+  db.places.safeEach({}, {asAdmin:true}, processPlace, finish)
 
   function processPlace(place, nextPlace) {
     nextPlace()
