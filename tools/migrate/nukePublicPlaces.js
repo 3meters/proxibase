@@ -7,7 +7,6 @@ var log = util.log
 var logErr = util.logErr
 var mongo = require('proxdb')
 var cli = require('commander')
-var async = require('async')
 
 cli
   .option('-c, --config <file>', 'config file [config.js]')
@@ -19,7 +18,6 @@ cli
 // Get a mongosafe connection
 function start() {
 
-  var db = null
   var dbOps = {asAdmin: true}
 
   if (cli.config) util.setConfig(cli.config)
@@ -30,7 +28,7 @@ function start() {
 
   mongo.initDb(config, function(err, proxDb) {
     if (err) throw err
-    db = proxDb
+    global.db = proxDb
     run()
   })
 
@@ -76,7 +74,7 @@ function start() {
       })
     }
 
-    function finish(err, cWalked) {
+    function finish(err) {
       log()
 
       if (err) {
@@ -91,12 +89,50 @@ function start() {
 
       db.dupes.safeRemove({}, dbOps, function(err, count) {
         if (err) return done(err)
-        log('Dupe documents removed: ', count)
+        log('Dupes removed:', count)
 
         db.near.safeRemove({}, dbOps, function(err, count) {
           if (err) return done(err)
-          log('Near documents remove: ', count)
-          done()
+          log('Nears removed:', count)
+
+          var applinkOps = util.clone(dbOps)
+          applinkOps.limit = 10000
+          applinkOps.fields = '_id'
+          db.applinks.safeFind({origin: 'aircandi'}, applinkOps, function(err, customApplinks) {
+            if (err) return done(err)
+            customApplinkIds = customApplinks.map(function(applink) {
+              return applink._id
+            })
+            log('Preserving applinks:', customApplinks.length)
+
+            db.applinks.safeRemove({origin: {$ne: 'aircandi'}}, dbOps, function(err, count) {
+              if (err) return done(err)
+              log('Applinks removed:', count)
+
+              var linkRemoveQuery = {$and: [
+                {fromSchema: 'applink'},
+                {_from: {$nin: customApplinkIds}}
+              ]}
+
+              log('applink link remove query', linkRemoveQuery)
+
+              db.links.safeRemove(linkRemoveQuery, dbOps, function(err, count) {
+                if (err) return done(err)
+                log('Links applinks removed:', count)
+
+                db.tos.rebuild(dbOps, function(err, count) {
+                  if (err) return done(err)
+                  log('Tos rebuilt:', count)
+
+                  db.froms.rebuild(dbOps, function(err, count) {
+                    if (err) return done(err)
+                    log('Froms rebuilt:', count)
+                    done()
+                  })
+                })
+              })
+            })
+          })
         })
       })
 
