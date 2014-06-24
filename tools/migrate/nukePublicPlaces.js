@@ -8,7 +8,6 @@ var logErr = util.logErr
 var mongo = require('proxdb')
 var cli = require('commander')
 var async = require('async')
-var db
 
 cli
   .option('-c, --config <file>', 'config file [config.js]')
@@ -20,41 +19,93 @@ cli
 // Get a mongosafe connection
 function start() {
 
+  var db = null
+  var dbOps = {asAdmin: true}
+
   if (cli.config) util.setConfig(cli.config)
   var config = util.config
   if (cli.database) config.db.database = cli.database
 
-  var dbUri = 'mongodb://' + config.db.host + ':' +
-      config.db.port +  '/' + config.db.database
+  log('Walking places in database', config.db)
 
-  log('Walking places in database ' + dbUri)
-
-  mongo.connect(dbUri, function(err, database) {
-    if (err) return callback(err)
-    mongo.initDb(config, function(err, proxdb) {
-      if (err) throw err
-      db = proxdb  // module global
-      run()
-    })
+  mongo.initDb(config, function(err, proxDb) {
+    if (err) throw err
+    db = proxDb
+    run()
   })
-}
 
+  // We have a mongoSafe connection
+  function run() {
+    var cProcessed = 0
+    var cSkippedCustom = 0
+    var cSkippedMessages = 0
+    var cRemoved = 0
 
-// We have a mongoSafe connection
-function run() {
-  var cDeleted = 0
+    db.places.safeEach({}, dbOps, processPlace, finish)
 
-  db.places.safeEach({}, {asAdmin:true}, processPlace, finish)
+    function processPlace(place, nextPlace) {
 
-  function processPlace(place, nextPlace) {
-    nextPlace()
+      cProcessed++
+      if (cProcessed % 1000 === 0) process.stdout.write('.')
+
+      // Skip if place is custom
+      if (place.provider && place.provider.aircandi) {
+        cSkippedCustom++
+        return nextPlace()
+      }
+
+      var linkQuery = {_to: place._id, fromSchema: 'message'}
+
+      db.links.safeFind(linkQuery, dbOps, function(err, msgLinks) {
+        if (err) return finish(err)
+
+        // Skip if place has messages
+        if (msgLinks && msgLinks.length) {
+          cSkippedMessages++
+          return nextPlace()
+        }
+
+        if (!cli.execute) return nextPlace()
+
+        db.places.safeRemove({_id: place._id}, dbOps, function(err, count) {
+          if (err) return finish(err)
+
+          cRemoved += count
+          return nextPlace()
+        })
+      })
+    }
+
+    function finish(err, cWalked) {
+      log()
+
+      if (err) {
+        db.close()
+        return logErr(err)
+      }
+
+      log('Processed: ' + cProcessed + '  User-created: ' + cSkippedCustom +
+          '  Have Messages: ' + cSkippedMessages + '  Removed: ' + cRemoved)
+
+      if (!cli.execute) return done()
+
+      db.dupes.safeRemove({}, dbOps, function(err, count) {
+        if (err) return done(err)
+        log('Dupe documents removed: ', count)
+
+        db.near.safeRemove({}, dbOps, function(err, count) {
+          if (err) return done(err)
+          log('Near documents remove: ', count)
+          done()
+        })
+      })
+
+      function done(err) {
+        db.close()
+        if (err) logErr(err)
+      }
+    }
   }
 
-  function finish(err, cWalked) {
-    db.close()
-    if (err) return logErr(err)
-    log('Places walked: ' + cWalked + '. Places deleted: ' + cDeleted)
-  }
 }
-
 start()
