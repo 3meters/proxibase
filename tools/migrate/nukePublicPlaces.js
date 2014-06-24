@@ -100,10 +100,10 @@ function start() {
           applinkOps.fields = '_id'
           db.applinks.safeFind({origin: 'aircandi'}, applinkOps, function(err, customApplinks) {
             if (err) return done(err)
-            customApplinkIds = customApplinks.map(function(applink) {
+            var customApplinkIds = customApplinks.map(function(applink) {
               return applink._id
             })
-            log('Preserving applinks:', customApplinks.length)
+            log('Preserving applinks:', customApplinkIds.length)
 
             db.applinks.safeRemove({origin: {$ne: 'aircandi'}}, dbOps, function(err, count) {
               if (err) return done(err)
