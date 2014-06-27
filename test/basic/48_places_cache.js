@@ -39,18 +39,19 @@ exports.findNearPioneerSquareIsFasterCached = function(test) {
   var ll = '47.6016363,-122.331157'  // Pioneer Square
   var time1, time2, time3
 
-  t.get('/places/near?ll=47.6016363,-122.331157&refresh=1&limit=50',
+  t.get('/places/near?ll=47.6016363,-122.331157&refresh=1&limit=50&log=1',
   function(err, res, body) {
     t.assert(body.data.length === 50)
     time1 = body.time
     t.assert(time1)
-    t.get('/places/near?ll=47.6016363,-122.331157&refresh=1&limit=50',
+    t.get('/places/near?ll=47.6016363,-122.331157&refresh=1&limit=50&log=1',
     function(err, res, body) {
       t.assert(body.data.length === 50)
       time2 = body.time
       t.assert(time2)
       if (time1 !== time2) {
         // No more than 50% faster or slower than first run
+        // Proves that refresh flag works
         t.assert((Math.abs((time1 - time2) / time1) < .5), {time1: time1, time2: time2})
       }
       t.get('/places/near?ll=47.6016363,-122.331157&limit=50',
