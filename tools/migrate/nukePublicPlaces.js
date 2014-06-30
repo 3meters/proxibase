@@ -37,6 +37,7 @@ function start() {
     var cProcessed = 0
     var cSkippedCustom = 0
     var cSkippedMessages = 0
+    var cCandidates = 0
     var cRemoved = 0
 
     db.places.safeEach({}, dbOps, processPlace, finish)
@@ -63,6 +64,8 @@ function start() {
           return nextPlace()
         }
 
+        cCandidates++
+
         if (!cli.execute) return nextPlace()
 
         db.places.safeRemove({_id: place._id}, dbOps, function(err, count) {
@@ -82,8 +85,9 @@ function start() {
         return logErr(err)
       }
 
-      log('Processed: ' + cProcessed + '  User-created: ' + cSkippedCustom +
-          '  Have Messages: ' + cSkippedMessages + '  Removed: ' + cRemoved)
+      log('Processed: ' + cProcessed + ' User-created: ' + cSkippedCustom +
+          ' Have Messages: ' + cSkippedMessages + ' Condemend: ' + cCandidates +
+          ' Removed: ' + cRemoved + '.  Use -x to execute removal of condemed.')
 
       if (!cli.execute) return done()
 
