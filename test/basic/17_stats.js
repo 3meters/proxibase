@@ -458,6 +458,10 @@ exports.statsCountPlacesByTunings = function(test) {
   })
 }
 
+exports.statsRemovePlace = function(test) {
+  return skip(test)
+}
+
 exports.adminCanRebuildTos = function(test) {
   t.get({
     uri: '/stats/to/rebuild?' + adminCred
@@ -494,25 +498,3 @@ exports.adminCanRebuildAll = function(test) {
     test.done()
   })
 }
-
-_exports.depreciatedAPIsStillWork = function(test) {
-  log('   TODO: Remove this test when Jay has migrated the client to the new API')
-  t.post({
-    uri: '/do/countLinksTo',
-    body: {
-      query: {'_id.fromSchema': 'message', '_id.type': 'content'}
-    },
-  }, function(err, res, body) {
-    t.assert(body.data.length)
-    t.post({
-      uri: '/do/countLinksFrom',
-      body: {
-        query: {'_id.toSchema': 'user', '_id.type': 'watch'}
-      },
-    }, function(err, res, body) {
-      t.assert(body.data.length)
-      test.done()
-    })
-  })
-}
-
