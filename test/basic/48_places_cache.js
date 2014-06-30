@@ -61,6 +61,13 @@ exports.findNearPioneerSquareIsFasterCached = function(test) {
         t.assert(time3 !== time2)
         // Returning cached places is at least 80% faster than non-cached
         t.assert((Math.abs((time2 - time3) / time2) > .8), {time2: time2, time3: time3})
+        /*
+        body.data.forEach(function(place) {
+          var google = place.provider.google || ''
+          log(place.name + ' yelp: ' +  place.provider.yelp +
+            ' google: ' + google.slice(0,8) + ' 4s: ' + place.provider.foursquare)
+        })
+        */
         test.done()
       })
     })

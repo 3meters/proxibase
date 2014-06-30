@@ -117,17 +117,18 @@ exports.getPlacesNear = function(test) {
     }
   }, 200, function(err, res, body) {
     var places = body.data
-    // t.assert(50 === places.length)
+    t.assert(50 === places.length)
 
-    log('Found:', places.length)
     var lastDistance = 0
     places.forEach(function(place) {
       t.assert(place.location)
       // places should be sorted by distance from original location, close enough is ok
       var distance = util.haversine(luckyStrikeLoc.lat, luckyStrikeLoc.lng,
         place.location.lat, place.location.lng)
+      /*
       log(distance + ' ' + place.name + ' ' + Object.keys(place.provider).join(' ') +
         ' ' + place.location.lat + ' ' + place.location.lng + ' ' + place.location.accuracy)
+      */
       if (place.location.accuracy < 100) {
         t.assert((distance >= lastDistance || ((distance - lastDistance) < lastDistance / 2)),
             {distance: distance, lastDistance: lastDistance, place: place})

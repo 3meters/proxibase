@@ -85,8 +85,8 @@ exports.getPlacesNearLocation = function(test) {
       includeRaw: false,
       limit: 40,
       refresh: true,
-      sort: 'distance',  // not used by client, off by default, but works
-      log: false,
+      // sort: 'distance',  // not used by client, on by default
+      log: true,
       timeout: 15000,
     }
   }, function(err, res, body) {
@@ -102,6 +102,11 @@ exports.getPlacesNearLocation = function(test) {
     }
     var lastDistance = 0
     places.forEach(function(place) {
+          /*
+          place.provider.google = place.provider.google || ''
+          log(place.name + ' yelp: ' +  place.provider.yelp +
+            ' google: ' + place.provider.google.slice(0,8) + ' 4s: ' + place.provider.foursquare)
+          */
       t.assert(place.location)
       // places should be sorted by distance from original location, close enough is ok
       var distance = util.haversine(ballRoomLoc.lat, ballRoomLoc.lng, place.location.lat, place.location.lng)
@@ -159,7 +164,7 @@ exports.getPlacesNearLocationAgain = function(test) {
       limit: 20,
       includeRaw: false,
       refresh: true,
-      log: false,
+      log: true,
     }
   }, function(err, res) {
     var places = res.body.data
@@ -168,7 +173,11 @@ exports.getPlacesNearLocationAgain = function(test) {
     // Make sure ballroom was excluded
     places.forEach(function(place) {
       t.assert(place.provider, place)
-
+      /*
+      place.provider.google = place.provider.google || ''
+      log(place.name + ' yelp: ' +  place.provider.yelp +
+        ' google: ' + place.provider.google.slice(0,8) + ' 4s: ' + place.provider.foursquare)
+      */
       if (place.provider.google) place.provider.google = place.provider.google.split('|')[0]
       t.assert(place._id !== ballRoom4sId)
       t.assert(place.provider.foursquare !== ballRoom4sId)
