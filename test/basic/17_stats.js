@@ -443,9 +443,8 @@ exports.statsCountCreatedLinksFromUsers = function(test) {
 }
 
 exports.statsCountPlacesByTunings = function(test) {
-  t.get({
-    uri: '/stats/from/places?type=proximity',
-  }, function(err, res, body) {
+  t.get('/stats/from/places?type=proximity',
+  function(err, res, body) {
     t.assert(body.data && body.data.length)
     body.data.forEach(function(doc) {
       t.assert(doc._id)
@@ -458,8 +457,21 @@ exports.statsCountPlacesByTunings = function(test) {
   })
 }
 
-exports.statsRemovePlace = function(test) {
-  return skip(test)
+exports.statsRemovePlaceDropsTos = function(test) {
+  t.get('/stats/to/places?_to=' + place1Id,
+  function(err, res, body) {
+    t.assert(body && body.data && body.data.length)
+    t.del({
+      uri: '/data/places/' + place1Id + '?' + adminCred
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+      t.get('/stats/to/places?_to=' + place1Id,
+      function(err, res, body) {
+        t.assert(body.data && body.data.length === 0)
+        test.done()
+      })
+    })
+  })
 }
 
 exports.adminCanRebuildTos = function(test) {
