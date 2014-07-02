@@ -136,12 +136,11 @@ exports.getPlacesNear = function(test) {
       }
     })
 
-
-    return test.done()
     t.assert(places.some(function(place) {
       luckyStrikeId = place._id
       return place.name.match(/^Lucky Strike/)
     }))
+
     test.done()
   })
 }
