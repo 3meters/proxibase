@@ -117,7 +117,7 @@ exports.dupePlaceLuckyStrike = function(test) {
     t.assert(foundLuckyStrike + foundPowerPlay === 1, {luckyStrike: luckyStrike, powerPlay: powerPlay})
 
     foundPlace = foundLuckyStrike ? luckyStrike : powerPlay
-    t.assert(foundPlace.name.match(/^Lucky/))          // Prefer yelp name, Lucky Strike over Foursquare name
+    if (foundPlace.provider.yelp) t.assert(foundPlace.name.match(/^Lucky/))     // Prefer yelp name, Lucky Strike over Foursquare name
 
     var body = {
       entity: foundPlace
