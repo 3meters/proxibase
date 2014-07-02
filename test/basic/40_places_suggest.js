@@ -136,12 +136,11 @@ exports.getPlacesNear = function(test) {
       }
     })
 
-
-    return test.done()
     t.assert(places.some(function(place) {
       luckyStrikeId = place._id
-      return place.name.match(/^Lucky Strike/)
+      return place.name.match(/^McCormick/)
     }))
+
     test.done()
   })
 }
@@ -154,7 +153,7 @@ exports.suggestPlaceAircandi1 = function(test) {
     uri: '/places/suggest?' + userCred,
     body: {
       location: luckyStrikeLoc,
-      input: 'lucky',
+      input: 'mccormick',
       limit: 10,
     }
   }, 200, function(err, res, body) {
@@ -162,7 +161,7 @@ exports.suggestPlaceAircandi1 = function(test) {
     t.assert(places && places.length)
     var hitCount = 0
     places.forEach(function(place){
-      if (0 === place.name.indexOf('Lucky Strike')) hitCount++
+      if (0 === place.name.indexOf('McCormick')) hitCount++
     })
     t.assert(hitCount === 1)
     test.done()
