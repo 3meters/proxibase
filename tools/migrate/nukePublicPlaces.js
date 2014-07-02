@@ -85,9 +85,12 @@ function start() {
         return logErr(err)
       }
 
-      log('Processed: ' + cProcessed + ' User-created: ' + cSkippedCustom +
-          ' Have Messages: ' + cSkippedMessages + ' Condemend: ' + cCandidates +
-          ' Removed: ' + cRemoved + '.  Use -x to execute removal of condemed.')
+      log('Processed: ' + cProcessed
+        + ', User-created: ' + cSkippedCustom
+        + ', Have Messages: ' + cSkippedMessages
+        + ', Condemned: ' + cCandidates
+        + ', Removed: ' + cRemoved
+        + '.  Use -x to execute removal of condemned.')
 
       if (!cli.execute) return done()
 
