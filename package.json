@@ -1,7 +1,7 @@
 {
 
   "name": "proxibase",
-  "version": "0.9.64",
+  "version": "0.9.68",
   "private": true,
   "description": "Proxibase Service",
   "author": {
@@ -18,7 +18,14 @@
     "tipe": "*",
     "scrub": "*",
     "qs": "*",
-    "express": "<4.0",
+    "express": "*",
+    "serve-static": "*",
+    "serve-favicon": "*",
+    "robots.txt": "*",
+    "compression": "*",
+    "cookie-parser": "*",
+    "cookie-session": "*",
+    "body-parser": "*",
     "mongodb": "*",
     "underscore": "*",
     "commander": "*",

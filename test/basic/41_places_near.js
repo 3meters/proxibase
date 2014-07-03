@@ -85,8 +85,8 @@ exports.getPlacesNearLocation = function(test) {
       includeRaw: false,
       limit: 40,
       refresh: true,
-      sort: 'distance',  // not used by client, off by default, but works
-      log: false,
+      // sort: 'distance',  // not used by client, on by default
+      log: true,
       timeout: 15000,
     }
   }, function(err, res, body) {
@@ -102,6 +102,11 @@ exports.getPlacesNearLocation = function(test) {
     }
     var lastDistance = 0
     places.forEach(function(place) {
+          /*
+          place.provider.google = place.provider.google || ''
+          log(place.name + ' yelp: ' +  place.provider.yelp +
+            ' google: ' + place.provider.google.slice(0,8) + ' 4s: ' + place.provider.foursquare)
+          */
       t.assert(place.location)
       // places should be sorted by distance from original location, close enough is ok
       var distance = util.haversine(ballRoomLoc.lat, ballRoomLoc.lng, place.location.lat, place.location.lng)
@@ -139,17 +144,7 @@ exports.getPlacesNearLocation = function(test) {
       t.assert(place.location)
       t.assert(place.location.lat)
       t.assert(place.location.lng)
-      // If we have location accuracy, assert yelp is our only provider
-      if (place.location.accuracy) {
-        t.assert(place.provider.yelp, place)
-        t.assert(!place.provider.google, place)
-        t.assert(!place.provider.foursquare, place)
-      }
-      // If yelp is our only provider, assert we have location accuracy
-      if (place.provider.yelp && !place.provider.google && !place.provider.foursquare) {
-        t.assert(place.location, place)
-        t.assert(place.location.accuracy, place)
-      }
+      t.assert(place.location.accuracy)
     })
     t.assert(foundBallroom === 1, {foundBallroom: foundBallroom})
     t.assert(foundRoxy === 1, {foundRoxy: foundRoxy})
@@ -169,7 +164,7 @@ exports.getPlacesNearLocationAgain = function(test) {
       limit: 20,
       includeRaw: false,
       refresh: true,
-      log: false,
+      log: true,
     }
   }, function(err, res) {
     var places = res.body.data
@@ -178,7 +173,11 @@ exports.getPlacesNearLocationAgain = function(test) {
     // Make sure ballroom was excluded
     places.forEach(function(place) {
       t.assert(place.provider, place)
-
+      /*
+      place.provider.google = place.provider.google || ''
+      log(place.name + ' yelp: ' +  place.provider.yelp +
+        ' google: ' + place.provider.google.slice(0,8) + ' 4s: ' + place.provider.foursquare)
+      */
       if (place.provider.google) place.provider.google = place.provider.google.split('|')[0]
       t.assert(place._id !== ballRoom4sId)
       t.assert(place.provider.foursquare !== ballRoom4sId)
@@ -275,23 +274,62 @@ exports.findAndMergeDupes = function(test) {
     })
     t.assert(revel)
     t.assert(quoin)
-    t.get('/places/' + revel._id + '/merge/' + quoin._id + '?' + adminCred,
-    function(err, res, body) {
-      t.assert(body._place1Id)
-      t.assert(body._place2Id)
-      t.assert(body.place1Merged)
-      t.assert(body.finished)
-      t.get('/places/' + quoin._id,
+    var rand = String(Math.floor(Math.random() * 1000000))
+    var testMsgId = 'me.testMsg.' + rand
+    t.post({
+      uri: '/do/insertEntity?' + userCred,
+      body:  {
+        entity: {
+          _id: testMsgId,
+          schema : 'message',
+          name : "Test message to Quion",
+          _place: quoin._id,
+        },
+        links: [{
+          _to: quoin._id,
+          type: 'content',
+        }],
+        returnMessages: true,
+        activityDateWindow: 0,
+      }
+    }, 201, function(err, res, body) {
+      t.get('/places/' + revel._id + '/merge/' + quoin._id + '?' + adminCred,
+      function(err, res, body) {
+        t.assert(body._place1Id)
+        t.assert(body._place2Id)
+        t.assert(body.place1Merged)
+        t.assert(body.finished)
+        t.get('/places/' + quoin._id,
         function(err, res, body) {
           t.assert(body.count === 0)
           t.assert(body.data === null)
-          // TODO: test link fixup
-          // all links from quoin should be removed
-          // all strong links to quoin should now point be attached to revel
-          // all weak links to quoin should be removed
-          test.done()
-        }
-      )
+          t.get('/find/links/count?query[_to]=' + quoin._id + '&' + adminCred,
+          function(err, res, body) {
+            // all links to quoin should be removed
+            t.assert(body.count === 0)
+
+            t.get('/find/links?query[_to]=' + revel._id + '&' + adminCred,
+            function(req, res, body) {
+              t.assert(body.data.length)
+              var cCreate = 0
+              var cContent = 0
+              body.data.forEach(function(link) {
+                if (link.type === 'create') cCreate++
+                if (link.type === 'content') cContent++
+              })
+              t.assert(cCreate <= 1)
+              t.assert(cContent === 1)
+              // Make sure the message place was fixed up too
+              t.get('/find/messages/' + testMsgId + '?' + adminCred,
+              function(err, res, body) {
+                t.assert(body.data)
+                t.assert(body.data._place = revel._id)
+                test.done()
+              })
+            })
+          })
+        })
+      })
     })
   })
 }

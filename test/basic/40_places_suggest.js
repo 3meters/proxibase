@@ -99,6 +99,9 @@ exports.suggestPlacesGoogle = function(test) {
  * - Verify that all places have a reason and score.
  */
 
+
+// Populate our db using a near query, then test our built-in suggest provider
+// in following tests
 exports.getPlacesNear = function(test) {
 
   if (disconnected) return skip(test)
@@ -108,15 +111,36 @@ exports.getPlacesNear = function(test) {
     body: {
       location: luckyStrikeLoc,
       limit: 50,
-      waitForContent: true,
+      refresh: true,
+      // radius: 500,
+      // log: true,
     }
   }, 200, function(err, res, body) {
     var places = body.data
     t.assert(50 === places.length)
+
+    var lastDistance = 0
+    places.forEach(function(place) {
+      t.assert(place.location)
+      // places should be sorted by distance from original location, close enough is ok
+      var distance = util.haversine(luckyStrikeLoc.lat, luckyStrikeLoc.lng,
+        place.location.lat, place.location.lng)
+      /*
+      log(distance + ' ' + place.name + ' ' + Object.keys(place.provider).join(' ') +
+        ' ' + place.location.lat + ' ' + place.location.lng + ' ' + place.location.accuracy)
+      */
+      if (place.location.accuracy < 100) {
+        t.assert((distance >= lastDistance || ((distance - lastDistance) < lastDistance / 2)),
+            {distance: distance, lastDistance: lastDistance, place: place})
+        lastDistance = distance
+      }
+    })
+
     t.assert(places.some(function(place) {
       luckyStrikeId = place._id
-      return place.name.match(/^Lucky Strike/)
+      return place.name.match(/^McCormick/)
     }))
+
     test.done()
   })
 }
@@ -129,7 +153,7 @@ exports.suggestPlaceAircandi1 = function(test) {
     uri: '/places/suggest?' + userCred,
     body: {
       location: luckyStrikeLoc,
-      input: 'lucky',
+      input: 'mccormick',
       limit: 10,
     }
   }, 200, function(err, res, body) {
@@ -137,7 +161,7 @@ exports.suggestPlaceAircandi1 = function(test) {
     t.assert(places && places.length)
     var hitCount = 0
     places.forEach(function(place){
-      if (0 === place.name.indexOf('Lucky Strike')) hitCount++
+      if (0 === place.name.indexOf('McCormick')) hitCount++
     })
     t.assert(hitCount === 1)
     test.done()

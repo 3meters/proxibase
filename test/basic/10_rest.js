@@ -7,6 +7,7 @@ var log = util.log
 var tipe = util.tipe
 var testUtil = require('../util')
 var t = testUtil.treq
+var skip = testUtil.skip
 var userSession
 var userCred
 var adminSession
@@ -130,7 +131,7 @@ exports.fieldsParamWorks = function(test) {
   })
 }
 
-exports.canAddDocAsSingleElementArray = function(test) {
+exports.canAddDoc2 = function(test) {
   t.post({
     uri: '/data/documents?' + userCred,
     body: {data: testDoc2}
@@ -143,6 +144,7 @@ exports.canAddDocAsSingleElementArray = function(test) {
 
 
 exports.canUpdateSinglePropertyOfNestedObject = function(test) {
+  return skip(test)
   t.post({
     uri: '/data/documents/' + testDoc2._id + '?' + userCred,
     body: {

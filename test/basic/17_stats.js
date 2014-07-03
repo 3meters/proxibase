@@ -26,7 +26,7 @@ var dbProfile = testUtil.dbProfile
 var user1Id = 'us.010101.00000.555.000001'
 var user2Id = 'us.010101.00000.555.000002'
 var user3Id = 'us.010101.00000.555.000003'
-var place1Id = 'pl.010101.00000.555.000001'
+var place1Id = 'pl.statsTestPlace1'
 var cUsers = dbProfile.users
 var cPlaces = dbProfile.beacons * dbProfile.epb
 var cMessages = cPlaces * dbProfile.mpp
@@ -45,6 +45,7 @@ exports.getUserSession = function(test) {
     })
   })
 }
+
 
 exports.cannotCreateStatsAsUser = function(test) {
   t.get({
@@ -108,6 +109,7 @@ exports.adminCanRefreshAll = function(test) {
 }
 
 
+// Relies on default sample data
 exports.statsCountContentMessagesToPlacesViaPost = function(test) {
   t.post({
     uri: '/stats/to/places/from/messages',
@@ -135,6 +137,12 @@ exports.statsCountContentMessagesToPlacesViaPost = function(test) {
 }
 
 exports.addSomeTestData = function(test) {
+
+  var newPlaces = [{
+    _id: place1Id,
+    name: 'statsTestPlace1',
+    schema: 'place',
+  }]
 
   var newMsgs = [{
     _id: 'me.statTest.1',
@@ -173,11 +181,15 @@ exports.addSomeTestData = function(test) {
     type: 'content',
   }]
 
-  db.collection('messages').insert(newMsgs, function(err, savedMsgs) {
+  // TODO:  this is a bad idea.  figure out how to use the safe methods
+  db.collection('places').insert(newPlaces, function(err, savedPlaces) {
     assert(!err, err)
-    db.collection('links').insert(newLinks, function(err, savedLinks) {
+    db.collection('messages').insert(newMsgs, function(err, savedMsgs) {
       assert(!err, err)
-      test.done()
+      db.collection('links').insert(newLinks, function(err, savedLinks) {
+        assert(!err, err)
+        test.done()
+      })
     })
   })
 }
@@ -196,7 +208,7 @@ exports.refreshTosWorks = function(test) {
       // refresh picked up our new links and created a summary record for them.  
       t.assert(body.data.some(function(stat) {
         return stat._id.day === '140101'
-            && stat._id._to === 'pl.010101.00000.555.000001'
+            && stat._id._to === place1Id
             && stat.value === 3
       }))
       test.done()
@@ -266,7 +278,7 @@ exports.refreshTosWorksWithIncrementalReduce = function(test) {
       // refresh picked up our new links and created a summary record for them.
       t.assert(body.data.some(function(stat) {
         return stat._id.day === '140101'
-            && stat._id._to === 'pl.010101.00000.555.000001'
+            && stat._id._to === place1Id
             && stat.value === 6  // proves messages 4, 5, and 6 were reduced into the same record as 1, 2, and 3
       }))
       if (dbProfile.mpp <= 6) t.assert(body.data[0]._id.day === '140101') // we should sort to the top
@@ -443,9 +455,8 @@ exports.statsCountCreatedLinksFromUsers = function(test) {
 }
 
 exports.statsCountPlacesByTunings = function(test) {
-  t.get({
-    uri: '/stats/from/places?type=proximity',
-  }, function(err, res, body) {
+  t.get('/stats/from/places?type=proximity',
+  function(err, res, body) {
     t.assert(body.data && body.data.length)
     body.data.forEach(function(doc) {
       t.assert(doc._id)
@@ -455,6 +466,37 @@ exports.statsCountPlacesByTunings = function(test) {
       t.assert(doc.rank)
     })
     test.done()
+  })
+}
+
+exports.statsRemovePlaceDropsFromStats= function(test) {
+  t.get('/stats/to/places',
+  function(err, res, body) {
+    t.assert(body && body.data && body.data.length)
+    var cToPlaces = body.data.length
+    t.get('/stats/from/places',
+    function(err, res, body) {
+      t.assert(body && body.data && body.data.length)
+      var cFromPlaces = body.data.length
+      t.del({uri: '/data/places/' + place1Id + '?' + adminCred},
+      function(err, res, body) {
+        t.assert(body.count === 1)
+        t.get('/stats/to/places',
+        function(err, res, body) {
+          t.assert(body.data && body.data.length)
+          t.assert(body.data.length + 1 === cToPlaces)
+          t.get('/stats/from/places',
+          function(err, res, body) {
+            t.assert(body.data && body.data.length)
+            log('  Deleted places properly deletes the places from stats is untested')
+            // TODO:  add a beacon link from this place and then test that removing
+            // the place removes the stats from the froms collection.
+            // t.assert(body.data.length + 1 === cFromPlaces)
+            test.done()
+          })
+        })
+      })
+    })
   })
 }
 
@@ -494,25 +536,3 @@ exports.adminCanRebuildAll = function(test) {
     test.done()
   })
 }
-
-exports.depreciatedAPIsStillWork = function(test) {
-  log('   TODO: Remove this test when Jay has migrated the client to the new API')
-  t.post({
-    uri: '/do/countLinksTo',
-    body: {
-      query: {'_id.fromSchema': 'message', '_id.type': 'content'}
-    },
-  }, function(err, res, body) {
-    t.assert(body.data.length)
-    t.post({
-      uri: '/do/countLinksFrom',
-      body: {
-        query: {'_id.toSchema': 'user', '_id.type': 'watch'}
-      },
-    }, function(err, res, body) {
-      t.assert(body.data.length)
-      test.done()
-    })
-  })
-}
-

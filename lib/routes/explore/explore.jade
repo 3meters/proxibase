@@ -23,7 +23,7 @@ block content
       .row: | count:
       .row: | countBy:
     .col-center.pad
-      form#explore(method='post', action='/explore')
+      form#explore(method='post', action='/v1/explore')
         .row: input#collection.field(name='collection', placeholder='collection', value=collection)
         .row: input#_id.field(name='_id', placeholder='id', value=query._id)
         .row: input#fields.field(name='fields', placeholder='fields', value=JSON.stringify(query.fields))

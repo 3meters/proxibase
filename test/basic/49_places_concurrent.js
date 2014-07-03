@@ -2,8 +2,10 @@
  *  Proxibase concurrent place provider test
  *
  *  Meant to be able to run with the mulitple instance option
+ *  Do not add any module global variables to this test.  All
+ *  variables need to be scoped to individual tests.
  *
- *  test -m <instances> -i <interval (default 100)> -t basic/44*
+ *  test -m <instances> -i <interval (default 100)> -t basic/<this test>
  *
  */
 
@@ -16,24 +18,8 @@ var path = require('path')
 var t = testUtil.treq  // test helper
 var disconnected = testUtil.disconnected
 var skip = testUtil.skip
-var user
-var userCred
-var adminCred
 var _exports = {} // for commenting out tests
 
-
-
-// Get user and admin sessions and store the credentials in module globals
-exports.getSessions = function(test) {
-  testUtil.getUserSession(function(session) {
-    user = {_id: session._owner}
-    userCred = 'user=' + session._owner + '&session=' + session.key
-    testUtil.getAdminSession(function(session) {
-      adminCred = 'user=' + session._owner + '&session=' + session.key
-      test.done()
-    })
-  })
-}
 
 
 exports.findNearPioneerSquareRepeatedlyDoesNotAddToDupes = function(test) {
@@ -59,8 +45,9 @@ exports.findNearPioneerSquareRepeatedlyDoesNotAddToDupes = function(test) {
         t.assert(body.data.length === 50)
         t.get('/places/near?ll=' + ll + '&limit=50',
         function(err, res, body) {
+          t.assert(body.data.length === 50)
           t.get('/find/dupes/count', function(err, res, body) {
-            t.assert(body.count === dupeCount) // same as first time
+            t.assert(body.count === dupeCount, {before: dupeCount, after: body.count}) // same as first time
             test.done()
           })
         })
