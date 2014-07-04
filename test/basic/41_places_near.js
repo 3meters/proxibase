@@ -36,6 +36,11 @@ var ballRoomLoc = {
   lng: -122.353025,
 }
 
+var vashonLoc = {
+  lat: 47.5097,
+  lng: -122.463998,
+}
+
 var savedRoxy  // shared between tests
 
 // Seattle Ballroom
@@ -43,6 +48,7 @@ var ballRoomId = ''
 var ballRoom4sId = '4abebc45f964a520a18f20e3'
 var ballRoomYelpId = 'the-ballroom-seattle'
 var ballRoomGoogleId = 'f0147a535bedf4bb948f35379873cab0747ba9e2'
+
 // Cafe Ladro
 var ladroId = '45d62041f964a520d2421fe3'
 
@@ -54,6 +60,16 @@ var roxyYelpId = 'roxys-diner-seattle'
 
 // Kaosamai Thai
 var ksthaiId = '4a3d9c80f964a52088a21fe3'
+
+// Vashon Ferry Terminal
+var vashonFerryTerminalId = ''
+var vashonFerryTerminalFoursquareId = '4ab6b690f964a520b07820e3'
+
+// La Playa Mexican Restaurant
+var laPlayaId = ''
+var laPlayaFoursquareId = '4ace9457f964a5204bd120e3'
+var laPlayaGoogleId = '0ff514498e53249ed817b88835248f620fd27112'
+var laPlayaYelpId = 'laplaya-mexican-restaurant-vashon'
 
 // Get user and admin sessions and store the credentials in module globals
 exports.getSessions = function(test) {
@@ -76,7 +92,7 @@ exports.getCategories = function(test) {
   })
 }
 
-exports.getPlacesNearLocation = function(test) {
+exports.getPlacesNearLocationUsingLimit = function(test) {
   if (disconnected) return skip(test)
   t.post({
     uri: '/places/near',
@@ -152,7 +168,7 @@ exports.getPlacesNearLocation = function(test) {
   })
 }
 
-exports.getPlacesNearLocationAgain = function(test) {
+exports.getPlacesNearLocationUsingLimitAgain = function(test) {
   if (disconnected) return skip(test)
   var foundRoxy = false
   t.post({
@@ -242,6 +258,144 @@ exports.getPlacesNearLocationAgain = function(test) {
     })
   }
 }
+
+exports.getPlacesNearLocationUsingRadius = function(test) {
+  // Should take less than 5 seconds but using 10 second timeout anyway.
+  if (disconnected) return skip(test)
+  t.post({
+    uri: '/places/near',
+    body: {
+      provider: 'foursquare|google|yelp',
+      location: vashonLoc,
+      radius: 1609,         // one mile
+      includeRaw: false,
+      limit: 50,
+      log: true,
+      timeout: 10000,
+    }
+  }, function(err, res, body) {
+    var foundVashonFerryTerminal = 0
+    var foundLaPlaya = 0
+    t.assert(body.time < 10)       // Should take less than 10 seconds
+    var places = body.data
+    t.assert(places.length === 4)
+    placeCount = {
+      aircandi: 0,
+      foursquare: 0,
+      google: 0,
+      yelp: 0
+    }
+    places.forEach(function(place) {
+      var adminId = util.adminId
+      t.assert(place.location)
+      t.assert(place.provider)
+      t.assert(adminId = place._owner)
+      t.assert(adminId = place._creator)
+      t.assert(adminId = place._modifier)
+      for (var p in place.provider) {
+        placeCount[p]++
+      }
+      if (place.provider.google)
+        place.provider.google = place.provider.google.split('|')[0]
+      // Vashon ferry terminal
+      if (place.provider.foursquare === vashonFerryTerminalFoursquareId) {
+        foundVashonFerryTerminal++
+        vashonFerryTerminalId = place._id
+      }
+      // La Playa
+      if (place.provider.foursquare === laPlayaFoursquareId
+          || place.provider.google === laPlayaGoogleId
+          || place.provider.yelp === laPlayaYelpId) {
+        foundLaPlaya++
+        laPlayaId = place._id
+      }
+      var cat = place.category
+      t.assert(cat, place)
+      t.assert(cat.id)
+      t.assert(cat.name)
+      t.assert(cat.photo)
+      var iconFileName = path.join(util.statics.assetsDir, '/img/categories', cat.photo.prefix + '88' + cat.photo.suffix)
+      t.assert(fs.existsSync(iconFileName))
+      t.assert(place.location)
+      t.assert(place.location.lat)
+      t.assert(place.location.lng)
+      t.assert(place.location.accuracy)
+    })
+    t.assert(foundVashonFerryTerminal === 1, {foundVashonFerryTerminal: foundVashonFerryTerminal})
+    t.assert(foundLaPlaya === 1, {foundLaPlaya: foundLaPlaya})
+    test.done()
+  })
+}
+
+
+exports.getPlacesNearLocationUsingRadiusAgain = function(test) {
+  // Make sure we get the same results and we get them fast (don't query partners again)
+  if (disconnected) return skip(test)
+  t.post({
+    uri: '/places/near',
+    body: {
+      provider: 'foursquare|google|yelp',
+      location: vashonLoc,
+      radius: 1609,         // one mile
+      includeRaw: false,
+      limit: 50,
+      log: true,
+      timeout: 10000,
+    }
+  }, function(err, res, body) {
+    var foundVashonFerryTerminal = 0
+    var foundLaPlaya = 0
+    t.assert(body.time < 1)       // More than 1 second means a partner query
+    var places = body.data
+    t.assert(places.length === 4)
+    placeCount = {
+      aircandi: 0,
+      foursquare: 0,
+      google: 0,
+      yelp: 0
+    }
+    places.forEach(function(place) {
+      var adminId = util.adminId
+      t.assert(place.location)
+      t.assert(place.provider)
+      t.assert(adminId = place._owner)
+      t.assert(adminId = place._creator)
+      t.assert(adminId = place._modifier)
+      for (var p in place.provider) {
+        placeCount[p]++
+      }
+      if (place.provider.google)
+        place.provider.google = place.provider.google.split('|')[0]
+      // Vashon ferry terminal
+      if (place.provider.foursquare === vashonFerryTerminalFoursquareId) {
+        foundVashonFerryTerminal++
+        vashonFerryTerminalId = place._id
+      }
+      // La Playa
+      if (place.provider.foursquare === laPlayaFoursquareId
+          || place.provider.google === laPlayaGoogleId
+          || place.provider.yelp === laPlayaYelpId) {
+        foundLaPlaya++
+        laPlayaId = place._id
+      }
+      var cat = place.category
+      t.assert(cat, place)
+      t.assert(cat.id)
+      t.assert(cat.name)
+      t.assert(cat.photo)
+      var iconFileName = path.join(util.statics.assetsDir, '/img/categories', cat.photo.prefix + '88' + cat.photo.suffix)
+      t.assert(fs.existsSync(iconFileName))
+      t.assert(place.location)
+      t.assert(place.location.lat)
+      t.assert(place.location.lng)
+      t.assert(place.location.accuracy)
+    })
+    t.assert(foundVashonFerryTerminal === 1, {foundVashonFerryTerminal: foundVashonFerryTerminal})
+    t.assert(foundLaPlaya === 1, {foundLaPlaya: foundLaPlaya})
+    test.done()
+  })
+}
+
 
 exports.getPlacePhotos = function(test) {
   if (disconnected) return skip(test)
