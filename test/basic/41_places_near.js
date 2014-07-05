@@ -61,6 +61,10 @@ var roxyYelpId = 'roxys-diner-seattle'
 // Kaosamai Thai
 var ksthaiId = '4a3d9c80f964a52088a21fe3'
 
+// Washington State Ferries
+var washingtonStateFerriesId = ''
+var washingtonStateFerriesGoogleId = '9113ade598b83b25cfb0fa34e8e3c9cd75cd2586'
+
 // Vashon Ferry Terminal
 var vashonFerryTerminalId = ''
 var vashonFerryTerminalFoursquareId = '4ab6b690f964a520b07820e3'
@@ -101,7 +105,6 @@ exports.getPlacesNearLocationUsingLimit = function(test) {
       includeRaw: false,
       limit: 40,
       refresh: true,
-      // sort: 'distance',  // not used by client, on by default
       log: true,
       timeout: 15000,
     }
@@ -118,11 +121,11 @@ exports.getPlacesNearLocationUsingLimit = function(test) {
     }
     var lastDistance = 0
     places.forEach(function(place) {
-          /*
-          place.provider.google = place.provider.google || ''
-          log(place.name + ' yelp: ' +  place.provider.yelp +
-            ' google: ' + place.provider.google.slice(0,8) + ' 4s: ' + place.provider.foursquare)
-          */
+      /*
+      place.provider.google = place.provider.google || ''
+      log(place.name + ' yelp: ' +  place.provider.yelp +
+        ' google: ' + place.provider.google.slice(0,8) + ' 4s: ' + place.provider.foursquare)
+      */
       t.assert(place.location)
       // places should be sorted by distance from original location, close enough is ok
       var distance = util.haversine(ballRoomLoc.lat, ballRoomLoc.lng, place.location.lat, place.location.lng)
@@ -148,6 +151,9 @@ exports.getPlacesNearLocationUsingLimit = function(test) {
           || place.provider.google === roxyGoogleId
           || place.provider.yelp === roxyYelpId) {
         foundRoxy++
+        t.assert(place.provider.yelp, place)
+        // t.assert(place.provider.google, place)
+        t.assert(place.provider.foursquare, place)
         roxyId = place._id
       }
       var cat = place.category
@@ -162,6 +168,9 @@ exports.getPlacesNearLocationUsingLimit = function(test) {
       t.assert(place.location.lng)
       t.assert(place.location.accuracy)
     })
+    t.assert(placeCount.foursquare, placeCount)
+    t.assert(placeCount.yelp, placeCount)
+    t.assert(placeCount.google, placeCount)
     t.assert(foundBallroom === 1, {foundBallroom: foundBallroom})
     t.assert(foundRoxy === 1, {foundRoxy: foundRoxy})
     test.done()
@@ -207,8 +216,7 @@ exports.getPlacesNearLocationUsingLimitAgain = function(test) {
     })
     t.assert(roxys.length === 1)
     t.assert(roxys[0].name)
-    log('Roxy photo comes and goes')
-    // t.assert(roxys[0].photo)
+    t.assert(roxys[0].photo)
     insertEnt(roxys[0])
   })
 
@@ -229,8 +237,7 @@ exports.getPlacesNearLocationUsingLimitAgain = function(test) {
       t.assert(body.data)
       savedRoxy = res.body.data
       t.assert(savedRoxy.photo && savedRoxy.photo.prefix === myRoxy.photo.prefix) // change accepted
-      log('photo properties not being nulled')
-      // t.assert(Object.keys(savedRoxy.photo).length === 2)  // non-set properties removed
+      t.assert(Object.keys(savedRoxy.photo).length === 2)  // non-set properties removed
       t.assert(savedRoxy.name === roxy.name)  // change ignored
       t.assert(savedRoxy.provider.yelp === roxy.provider.yelp)
 
@@ -268,39 +275,25 @@ exports.getPlacesNearLocationUsingRadius = function(test) {
       provider: 'foursquare|google|yelp',
       location: vashonLoc,
       radius: 1609,         // one mile
-      includeRaw: false,
+      includeRaw: true,
       limit: 50,
       log: true,
       timeout: 10000,
     }
   }, function(err, res, body) {
-    var foundVashonFerryTerminal = 0
+    var foundWashingtonStateFerries = 0
     var foundLaPlaya = 0
-    t.assert(body.time < 10)       // Should take less than 10 seconds
+    t.assert(body.time > 1)       // Should take more than 1 second
+    t.assert(body.time < 10)      // Should take less than 10 seconds
     var places = body.data
-    t.assert(places.length === 4)
-    placeCount = {
-      aircandi: 0,
-      foursquare: 0,
-      google: 0,
-      yelp: 0
-    }
+    t.assert(places.length === 2)
     places.forEach(function(place) {
-      var adminId = util.adminId
-      t.assert(place.location)
-      t.assert(place.provider)
-      t.assert(adminId = place._owner)
-      t.assert(adminId = place._creator)
-      t.assert(adminId = place._modifier)
-      for (var p in place.provider) {
-        placeCount[p]++
-      }
       if (place.provider.google)
         place.provider.google = place.provider.google.split('|')[0]
       // Vashon ferry terminal
-      if (place.provider.foursquare === vashonFerryTerminalFoursquareId) {
-        foundVashonFerryTerminal++
-        vashonFerryTerminalId = place._id
+      if (place.provider.google === washingtonStateFerriesGoogleId) {
+        foundWashingtonStateFerries++
+        washingtonStateFerriesId = place._id
       }
       // La Playa
       if (place.provider.foursquare === laPlayaFoursquareId
@@ -309,19 +302,8 @@ exports.getPlacesNearLocationUsingRadius = function(test) {
         foundLaPlaya++
         laPlayaId = place._id
       }
-      var cat = place.category
-      t.assert(cat, place)
-      t.assert(cat.id)
-      t.assert(cat.name)
-      t.assert(cat.photo)
-      var iconFileName = path.join(util.statics.assetsDir, '/img/categories', cat.photo.prefix + '88' + cat.photo.suffix)
-      t.assert(fs.existsSync(iconFileName))
-      t.assert(place.location)
-      t.assert(place.location.lat)
-      t.assert(place.location.lng)
-      t.assert(place.location.accuracy)
     })
-    t.assert(foundVashonFerryTerminal === 1, {foundVashonFerryTerminal: foundVashonFerryTerminal})
+    t.assert(foundWashingtonStateFerries === 1, {foundWashingtonStateFerries: foundWashingtonStateFerries})
     t.assert(foundLaPlaya === 1, {foundLaPlaya: foundLaPlaya})
     test.done()
   })
@@ -343,11 +325,11 @@ exports.getPlacesNearLocationUsingRadiusAgain = function(test) {
       timeout: 10000,
     }
   }, function(err, res, body) {
-    var foundVashonFerryTerminal = 0
+    var foundWashingtonStateFerries = 0
     var foundLaPlaya = 0
     t.assert(body.time < 1)       // More than 1 second means a partner query
     var places = body.data
-    t.assert(places.length === 4)
+    t.assert(places.length === 2)
     placeCount = {
       aircandi: 0,
       foursquare: 0,
@@ -364,12 +346,10 @@ exports.getPlacesNearLocationUsingRadiusAgain = function(test) {
       for (var p in place.provider) {
         placeCount[p]++
       }
-      if (place.provider.google)
-        place.provider.google = place.provider.google.split('|')[0]
       // Vashon ferry terminal
-      if (place.provider.foursquare === vashonFerryTerminalFoursquareId) {
-        foundVashonFerryTerminal++
-        vashonFerryTerminalId = place._id
+      if (place.provider.google1 === washingtonStateFerriesGoogleId) {
+        foundWashingtonStateFerries++
+        washingtonStateFerriesId = place._id
       }
       // La Playa
       if (place.provider.foursquare === laPlayaFoursquareId
@@ -390,7 +370,7 @@ exports.getPlacesNearLocationUsingRadiusAgain = function(test) {
       t.assert(place.location.lng)
       t.assert(place.location.accuracy)
     })
-    t.assert(foundVashonFerryTerminal === 1, {foundVashonFerryTerminal: foundVashonFerryTerminal})
+    t.assert(foundWashingtonStateFerries === 1, {foundWashingtonStateFerries: foundWashingtonStateFerries})
     t.assert(foundLaPlaya === 1, {foundLaPlaya: foundLaPlaya})
     test.done()
   })
