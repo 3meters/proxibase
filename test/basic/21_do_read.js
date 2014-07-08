@@ -202,6 +202,94 @@ exports.getEntitiesCreatedByUser = function (test) {
   })
 }
 
+exports.getEntitiesCreatedByUserSortSkipLimit = function (test) {
+  t.post({
+    uri: '/do/getEntitiesForEntity',
+    body: {
+      entityId: constants.uid1,
+      cursor: { 
+        linkTypes: [statics.typeCreate], 
+        direction: 'out',
+        sort: {modifiedDate: -1}
+      },
+    }
+  }, function(err, res, body) {
+    t.assert(body.count > 0 && body.count <= statics.db.limits.default)
+    var cUnlimited = body.count
+    var lastModified = Infinity
+    var ent3 = null
+    body.data.forEach(function(ent, i) {
+      t.assert(ent.modifiedDate <= lastModified)
+      lastModified = ent.modifiedDate
+      if (i === 3) ent3 = ent
+    })
+    t.post({
+      uri: '/do/getEntitiesForEntity',
+      body: {
+        entityId: constants.uid1,
+        cursor: {
+          linkTypes: [statics.typeCreate],
+          direction: 'out',
+          sort: {modifiedDate: -1},
+          skip: 3,
+          limit: 3,
+        },
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 3) // limit works
+      t.assert(body.data[0]._id === ent3._id)  // skip works
+      test.done()
+    })
+  })
+}
+
+
+exports.getEntitesLinksLimitSortSkip = function (test) {
+  t.post({
+    uri: '/do/getEntitiesForEntity',
+    body: {
+      cursor : { direction : 'out',
+        limit : 30,
+        linkTypes : [ 'create' ],
+        schemas : [ 'place' ],
+        skip : 0,
+        sort : { modifiedDate : -1 }
+      },
+      entityId : 'us.000000.00000.000.000001',
+      links : { 
+        active : [ 
+          { count : true,
+            direction : 'both',
+            limit : 10,
+            links : true,
+            schema : 'beacon',
+            type : 'proximity',
+          },
+          { count : true,
+            direction : 'both',
+            limit : 5,
+            links : true,
+            schema : 'message',
+            type : 'content',
+          },
+          { count : true,
+            direction : 'both',
+            limit : 1,
+            links : true,
+            schema : 'user',
+            type : 'watch',
+            where : { _from : 'us.000000.00000.000.000001' }
+          }
+        ],
+        shortcuts : true
+      }
+    }
+  }, function(req, res, body) {
+    test.done()
+  })
+}
+
+
 exports.getEntitiesCreatedByUserPostsOnly = function (test) {
   t.post({
     uri: '/do/getEntitiesForEntity',
