@@ -304,6 +304,25 @@ exports.userCannotChangeRoles = function(test) {
   })
 }
 
+exports.userCannotBecomeDeveloper = function(test) {
+  t.post({
+    uri: '/data/users/' + testUser._id + '?' + userCred,
+    body: {data: {developer: true}}
+  }, 401, function(err, res, body) {
+    test.done()
+  })
+}
+
+exports.adminCanMakeUserDeveloper = function(test) {
+  t.post({
+    uri: '/data/users/' + testUser._id + '?' + adminCred,
+    body: {data: {developer: true}}
+  }, function(err, res, body) {
+    t.assert(body.data.developer)
+    test.done()
+  })
+}
+
 exports.userCanChangeOwnEmailViaRest = function(test) {
   t.post({
     uri: '/data/users/' + testUser._id + '?' + userCred,
