@@ -248,43 +248,28 @@ exports.getEntitesLinksLimitSortSkip = function (test) {
   t.post({
     uri: '/do/getEntitiesForEntity',
     body: {
-      cursor : { direction : 'out',
-        limit : 30,
-        linkTypes : [ 'create' ],
-        schemas : [ 'place' ],
-        skip : 0,
-        sort : { modifiedDate : -1 }
+      entityId: constants.uid1,
+      cursor: {
+        direction: 'out',
+        linkTypes: ['create'],
+        schemas: ['comment'],
+        sort: {modifiedDate: 1}
       },
-      entityId : 'us.000000.00000.000.000001',
-      links : { 
-        active : [ 
+      links : {
+        active : [
           { count : true,
-            direction : 'both',
-            limit : 10,
+            direction : 'out',
+            limit : 20,
             links : true,
-            schema : 'beacon',
-            type : 'proximity',
-          },
-          { count : true,
-            direction : 'both',
-            limit : 5,
-            links : true,
-            schema : 'message',
             type : 'content',
+            schema : 'comment',
           },
-          { count : true,
-            direction : 'both',
-            limit : 1,
-            links : true,
-            schema : 'user',
-            type : 'watch',
-            where : { _from : 'us.000000.00000.000.000001' }
-          }
         ],
-        shortcuts : true
+        shortcuts : false
       }
     }
   }, function(req, res, body) {
+    t.assert(false)
     test.done()
   })
 }
