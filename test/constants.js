@@ -30,9 +30,9 @@ var
       beacons: 10,
       epb: 1,       // place entities per beacon
       spe: 5,       // post entities per place entity
-      mpp: 25,      // messages per place entity
+      mpp: 10,      // messages per place entity
       ape: 5,       // applinks per place
-      cpe: 1,       // comment entities per place and post entity
+      cpe: 2,       // comment entities per place and post entity
       likes: 2,
       watch: 2,
       database: 'smokeData',

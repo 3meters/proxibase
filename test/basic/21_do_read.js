@@ -71,12 +71,13 @@ exports.getEntitiesMaximum = function (test) {
       entityIds: [constants.placeId], 
       links: {
         active: [
-          { type:statics.typeProximity, schema:statics.schemaBeacon, links: true, count: true, direction: 'both' }, 
-          { type:statics.typeContent, schema:statics.schemaApplink, links: true, count: true, direction: 'both' }, 
-          { type:statics.typeContent, schema:statics.schemaComment, links: true, count: true, direction: 'both' }, 
-          { type:statics.typeContent, schema:statics.schemaPost, links: true, count: true, direction: 'both' }, 
-          { type:statics.typeWatch, schema:statics.schemaUser, links: true, count: true, direction: 'both' }, 
-          { type:statics.typeLike, schema:statics.schemaUser, links: true, count: true, direction: 'both' }, 
+          { type:statics.typeProximity, schema:statics.schemaBeacon, links: true, count: true, direction: 'both' },
+          { type:statics.typeContent, schema:statics.schemaApplink, links: true, count: true, direction: 'both' },
+          { type:statics.typeContent, schema:statics.schemaComment, links: true, count: true, direction: 'both' },
+          { type:statics.typeContent, schema:statics.schemaPost, links: true, count: true, direction: 'both' },
+          { type:statics.typeContent, schema:statics.schemaMessage, links: true, count: true, direction: 'both' },
+          { type:statics.typeWatch, schema:statics.schemaUser, links: true, count: true, direction: 'both' },
+          { type:statics.typeLike, schema:statics.schemaUser, links: true, count: true, direction: 'both' },
         ]},
     }
   }, function(err, res, body) {
@@ -84,9 +85,9 @@ exports.getEntitiesMaximum = function (test) {
     t.assert(body.data && body.data[0])
     var record = body.data[0]
     t.assert(record.linksIn && record.linksIn.length)
-    t.assert(record.linksIn && record.linksIn.length === dbProfile.spe + dbProfile.cpe + dbProfile.ape + dbProfile.likes + dbProfile.watch)
+    t.assert(record.linksIn && record.linksIn.length === dbProfile.spe + dbProfile.cpe + dbProfile.ape + dbProfile.mpp + dbProfile.likes + dbProfile.watch)
     t.assert(record.linksOut && record.linksOut.length === 1)
-    t.assert(record.linksInCounts && record.linksInCounts.length === 5)
+    t.assert(record.linksInCounts && record.linksInCounts.length === 6)
     t.assert(record.linksOutCounts && record.linksOutCounts.length === 1)
     test.done()
   })
@@ -208,9 +209,10 @@ exports.getEntitiesCreatedByUserSortSkipLimit = function (test) {
     body: {
       entityId: constants.uid1,
       cursor: { 
-        linkTypes: [statics.typeCreate], 
+        linkTypes: ['create'],
         direction: 'out',
-        sort: {modifiedDate: -1}
+        sort: {modifiedDate: -1},
+        schemas: ['message']
       },
     }
   }, function(err, res, body) {
@@ -230,13 +232,14 @@ exports.getEntitiesCreatedByUserSortSkipLimit = function (test) {
         cursor: {
           linkTypes: [statics.typeCreate],
           direction: 'out',
+          schemas: ['message'],
           sort: {modifiedDate: -1},
           skip: 3,
-          limit: 3,
+          limit: 5,
         },
       }
     }, function(err, res, body) {
-      t.assert(body.count === 3) // limit works
+      t.assert(body.count === 5) // limit works
       t.assert(body.data[0]._id === ent3._id)  // skip works
       test.done()
     })
@@ -252,25 +255,94 @@ exports.getEntitesLinksLimitSortSkip = function (test) {
       cursor: {
         direction: 'out',
         linkTypes: ['create'],
-        schemas: ['comment'],
-        sort: {modifiedDate: 1}
+        schemas: ['place'],
       },
       links : {
         active : [
           { count : true,
-            direction : 'out',
-            limit : 20,
+            direction : 'in',
             links : true,
             type : 'content',
-            schema : 'comment',
+            schema : 'message',
           },
         ],
-        shortcuts : false
+        shortcuts : true
       }
     }
   }, function(req, res, body) {
-    t.assert(false)
-    test.done()
+    t.assert(body.data && body.data.length)
+    var links = body.data[0].linksIn
+    var link3 = null
+    t.assert(links)
+    t.assert(links.length === dbProfile.mpp)
+    var lastSortDate = Infinity
+    // getEntities hard-codes sort to modifiedDate: -1
+    links.forEach(function(link, i) {
+      t.assert(link.sortDate <= lastSortDate)
+      lastSortDate = link.sortDate
+      if (2 === i) link3 = link
+    })
+
+    t.post({
+      uri: '/do/getEntitiesForEntity',
+      body: {
+        entityId: constants.uid1,
+        cursor: {
+          direction: 'out',
+          linkTypes: ['create'],
+          schemas: ['place'],
+        },
+        links : {
+          active : [
+            { count : true,
+              direction : 'in',
+              skip : 2,
+              limit : 5,
+              links : true,
+              type : 'content',
+              schema : 'message',
+            },
+          ],
+          shortcuts : true
+        }
+      }
+    }, function(req, res, body) {
+      t.assert(body.data && body.data.length)
+      var links = body.data[0].linksIn
+      t.assert(links)
+      t.assert(links.length === 5)            // limit works
+      t.assert(links[0].shortcut.id === link3.shortcut.id, link3)   // skip works, note id, not _id
+
+      t.post({
+        uri: '/do/getEntitiesForEntity',
+        body: {
+          entityId: constants.uid1,
+          cursor: {
+            direction: 'out',
+            linkTypes: ['create'],
+            schemas: ['place'],
+          },
+          links : {
+            active : [
+              { count : true,
+                direction : 'in',
+                limit : 50,   // Issue 241
+                links : true,
+                type : 'content',
+                schema : 'message',
+              },
+            ],
+            shortcuts : true
+          }
+        }
+      }, function(req, res, body) {
+        t.assert(body.data && body.data.length)
+        var links = body.data[0].linksIn
+        t.assert(links)
+        t.assert(links.length === dbProfile.mpp)   // Issue 241 fixed
+        test.done()
+      })
+    })
   })
 }
 
