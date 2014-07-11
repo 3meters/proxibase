@@ -123,7 +123,7 @@ exports.commuterComforts = function(test) {
       t.assert(appMap.facebook === 1)
       t.assert(appMap.foursquare === 1)
       t.assert(appMap.yelp === 1)
-      t.assert(appMap.citygrid === 1)
+      // t.assert(appMap.citygrid === 1)
       t.assert(appMap.urbanspoon === 1)
 
       cleanup(place, applinks, function(err) {
