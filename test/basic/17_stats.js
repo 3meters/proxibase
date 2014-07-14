@@ -469,6 +469,33 @@ exports.statsCountPlacesByTunings = function(test) {
   })
 }
 
+
+exports.statsRemoveMessageDecrementsPlaceStats = function(test) {
+  t.get('/stats/to/places/' + place1Id,
+  function(err, res, body) {
+    t.assert(body && body.data && !body.data.length)  // document, not array
+    var cToPlace = body.data.count
+    t.get('/stats/from/places/' + place1Id,
+    function(err, res, body) {
+      t.assert(body && body.data === null)  // because we have added no beacon links from this place
+      t.del({uri: '/data/messages/me.statTest.1?' + adminCred},
+      function(err, res, body) {
+        t.assert(body.count === 1)
+        t.get('/stats/to/places/' + place1Id,
+        function(err, res, body) {
+          t.assert(body.data)
+          t.assert(cToPlace === body.data.count + 1)  // proves stat decrement worked
+          log('  Deleted beacon properly decrements the places link stats from place is untested')
+          // TODO:  remove a link from place1 to a beacon, and then test that removing
+          // the place from stats properly decrements
+          // t.assert(body.data.length + 1 === cFromPlaces)
+          test.done()
+        })
+      })
+    })
+  })
+}
+
 exports.statsRemovePlaceDropsFromStats= function(test) {
   t.get('/stats/to/places',
   function(err, res, body) {
