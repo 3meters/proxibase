@@ -427,6 +427,7 @@ exports.newUserCanSignIn = function(test) {
   })
 }
 
+// Off for now pending fix for #254
 _exports.newUserEmailValidateUrlWorksSlowly = function(test) {
   t.get('/data/users/' + newUserId, function(err, res, body) {
     t.assert(body.data.validationNotifyDate)
