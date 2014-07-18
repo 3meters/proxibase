@@ -34,7 +34,11 @@ exports.getSessions = function(test) {
 var northGateLoc = '47.706295,-122.325751'
 
 exports.testProviderSpecificNear = function(test) {
-  t.get('/places/near?ll=' + northGateLoc + '&limit=20&radius=250&provider=foursquare|yelp&refresh=true&log=true',
+
+  if (disconnected) return skip(test)
+
+  t.get('/places/near?ll=' + northGateLoc +
+      '&limit=20&radius=250&provider=foursquare|yelp&refresh=true&log=true',
   function(err, res, body) {
     t.assert(body.data && body.data.length)
     body.data.forEach(function(place) {

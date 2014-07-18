@@ -41,7 +41,7 @@ exports.getUserSession = function(test) {
     testUtil.getAdminSession(function(session) {
       adminSession = session
       adminCred = 'user=' + session._owner + '&session=' + session.key
-    test.done()
+      test.done()
     })
   })
 }
@@ -560,12 +560,6 @@ exports.canDeleteLink = function(test) {
   })
 }
 
-exports.userCannotDeleteUsingWildcard = function(test) {
-  t.del({uri: '/data/documents/*?' + userCred }, 403,
-  function(err, res, body) {
-    test.done()
-  })
-}
 
 exports.userCanDeleteSingleDoc = function(test) {
   t.del({
@@ -731,17 +725,6 @@ exports.formatDatesWorks = function(test) {
   function(err, res, body) {
     t.assert(tipe.isString(body.data[1].createdDate))
     t.assert(tipe.isString(body.data[1].modifiedDate))
-    test.done()
-  })
-}
-
-// This has to be the last test because all subsequent logins will fail
-// since it deletes all the sessions
-_exports.adminCanDeleteAllUsingWildcard = function(test) {
-  t.del({
-    uri: '/data/sessions/*?' + adminCred
-  }, function(err, res, body) {
-    t.assert(body.count >= 1)
     test.done()
   })
 }
