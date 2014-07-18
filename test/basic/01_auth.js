@@ -454,7 +454,7 @@ exports.newUserEmailValidateUrlWorksFaster = function(test) {
     t.assert(!body.data.validationDate)
 
     // Fire without waiting for the callback
-    t.get(newUserEmailValidateUrl.slice(testUtil.serverUrl.length))
+    t.get(newUserEmailValidateUrl.slice(testUtil.serverUrl.length + 3)) //  for /v1 path prefix
 
     // Give time for the update to finish, but don't wait for the
     // call to redirect the user to http://aircandi.com
