@@ -45,14 +45,14 @@ exports.suggestPlacesFoursquare = function(test) {
   if (disconnected) return skip(test)
 
   t.post({
-    uri: '/places/suggest?' + userCred,
+    uri: '/suggest/places?' + userCred,
     body: {
       provider: 'foursquare',
       location: luckyStrikeLoc,
       input: 'lucky',
       timeout: 15000,
       limit: 10,
-      includeRaw: true,
+      log: true,
     }
   }, 200, function(err, res, body) {
     var places = body.data
@@ -137,7 +137,6 @@ exports.getPlacesNear = function(test) {
     })
 
     t.assert(places.some(function(place) {
-      luckyStrikeId = place._id
       return place.name.match(/^McCormick/)
     }))
 
