@@ -7,8 +7,8 @@ var statics = util.statics
 var log = util.log
 var testUtil = require('../util')
 var t = testUtil.treq
+var dbProfile = testUtil.dbProfile
 var constants = require('../constants')
-var dbProfile = constants.dbProfile.smokeTest
 var userCred
 var user2Cred
 var adminCred

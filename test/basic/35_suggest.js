@@ -1,16 +1,14 @@
 /**
- *  Proxibase duplicate place provider tests
- *
+ *  Suggest tests
  */
 
 var util = require('proxutils')
 var log = util.log
 var testUtil = require('../util')
-var fs = require('fs')
-var path = require('path')
+var dbProfile = testUtil.dbProfile
+var skip = testUtil.skip
 var t = testUtil.treq  // newfangled test helper
 var disconnected = testUtil.disconnected
-var skip = testUtil.skip
 var user
 var userCred
 var adminCred
@@ -34,12 +32,7 @@ exports.getSessions = function(test) {
   })
 }
 
-/*
- * These tests confirm the core code path that returns places. If previous
- * tests in the path have upsized Lucky Strike Lanes into the db, then these
- * tests also assert that the duplicate from the suggest service has been
- * excluded.
- */
+
 exports.suggestPlacesFoursquare = function(test) {
 
   if (disconnected) return skip(test)
@@ -71,7 +64,7 @@ exports.suggestPlacesGoogle = function(test) {
   if (disconnected) return skip(test)
 
   t.post({
-    uri: '/places/suggest?' + userCred,
+    uri: '/suggest/places?' + userCred,
     body: {
       provider: 'google',
       location: luckyStrikeLoc,
@@ -85,19 +78,13 @@ exports.suggestPlacesGoogle = function(test) {
     t.assert(places && places.length <= 5) // 4 if lucky is in db and 5 otherwise
     var hitCount = 0
     places.forEach(function(place){
+      t.assert(place.score)
       if (0 === place.name.indexOf('Lucky Strike')) hitCount++
     })
     t.assert(1 === hitCount)
     test.done()
   })
 }
-
-/*
- * Additional test candidates:
- * - Verify that watched items are flagged and scored correctly if user is provided.
- * - Ensure Lucky is in db so duplicate logic is always exercised.
- * - Verify that all places have a reason and score.
- */
 
 
 // Populate our db using a near query, then test our built-in suggest provider
@@ -144,26 +131,115 @@ exports.getPlacesNear = function(test) {
   })
 }
 
-exports.suggestPlaceAircandi1 = function(test) {
+exports.suggestPlaceRegex = function(test) {
 
   if (disconnected) return skip(test)
 
   t.post({
-    uri: '/places/suggest?' + userCred,
+    uri: '/suggest/places?' + userCred,
     body: {
       location: luckyStrikeLoc,
-      input: 'mccormick',
+      input: 'schmi',                         // initial exact match of third word in name
+      fts: false,                             // turn off full text search
       limit: 10,
     }
   }, 200, function(err, res, body) {
-    var places = body.data
-    t.assert(places && places.length)
-    var hitCount = 0
-    places.forEach(function(place){
-      if (0 === place.name.indexOf('McCormick')) hitCount++
-    })
-    t.assert(hitCount === 1)
+    t.assert(body.data.length === 1)
+    t.assert(body.data[0].name.indexOf('McCormick') === 0)
     test.done()
   })
 }
 
+exports.suggestPlacesFts = function(test) {
+
+  if (disconnected) return skip(test)
+
+  t.get('/suggest/places?input=lucky&ll=47.616658,-122.201373&regex=0',  // turn off regex search
+  function(err, res, body) {
+    t.assert(body.data.length === 1)
+    t.assert(body.data[0].name.indexOf('Lucky') === 0)
+    test.done()
+  })
+}
+
+exports.suggestUsersRegex = function(test) {
+
+  t.get('/suggest/users?input=use&fts=0',  // exact beginning match of second word in name
+  function(err, res, body) {
+    t.assert(body.data.length >= dbProfile.users)
+    body.data.forEach(function(user) {
+      t.assert(user.score >= 1)
+      t.assert(user.score <= 20)
+      t.assert(user.name.indexOf('Test User' === 0))
+    })
+    test.done()
+  })
+}
+
+exports.suggestUsersFts = function(test) {
+
+  t.get('/suggest/users?input=testville&regex=0',  // testville is in user.area of default users
+  function(err, res, body) {
+    t.assert(body.data.length >= dbProfile.users)
+    body.data.forEach(function(user) {
+      t.assert(user.score >= 1)
+      t.assert(user.score <= 20)
+      t.assert(user.name.indexOf('Test User' === 0))
+      t.assert(user.area.indexOf('Testville') === 0)
+    })
+    test.done()
+  })
+}
+
+
+exports.suggestCombined = function(test) {
+
+  if (disconnected) return skip(test)
+
+  t.get('/suggest?input=t&limit=50',
+  function(err, res, body) {
+    t.assert(body.data.length)
+    var cUsers = 0
+    var cPlaces = 0
+    var lastScore = Infinity
+    body.data.forEach(function(ent) {
+      t.assert(ent.score >= 1)
+      t.assert(ent.score <= 20)
+      t.assert(lastScore >= ent.score)
+      lastScore = ent.score
+      if ('user' === ent.schema) cUsers++
+      if ('place' === ent.schema) cPlaces++
+    })
+    t.assert(cUsers)
+    t.assert(cPlaces)
+    t.assert(cUsers + cPlaces === body.data.length)
+    test.done()
+  })
+}
+
+
+exports.suggestWatchedEntitiesSortFirst = function(test) {
+  // Find default test user 3 and watch him
+  t.get('/data/users?query[name]=Test User 3',
+  function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.data.length === 1)
+    var user3Id = body.data[0]._id
+    t.post({
+      uri: '/data/links?' + userCred,
+      body: {data: {
+        _to: user3Id,
+        _from: user._id,
+        type: 'watch',
+      }},
+    }, 201, function(err, res, body) {
+      t.get('/suggest/users?input=test&' + userCred,
+      function(err, res, body) {
+        t.assert(body.data.length >= dbProfile.users)
+        t.assert(body.data[0]._id === user3Id)
+        t.assert(body.data[0].score > 10)
+        test.done()
+      })
+    })
+  })
+}
