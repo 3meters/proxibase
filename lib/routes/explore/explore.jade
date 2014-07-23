@@ -57,7 +57,7 @@ block content
       .row: | field1, field2
   .content.pad
     if findUrl
-      - var uri = config.service.uri + findUrl
+      - var uri = config.service.uri + '/v1' + findUrl
       br
       a(href=uri) #{uri}
       br
