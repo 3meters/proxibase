@@ -59,7 +59,7 @@ exports.postWithBadJsonInBody = function(test) {
   // We have to do this one with raw requst since our
   // treq util will trap bad json before the request is sent
   var req = {
-    uri: testUtil.serverUrl + '/data/users',
+    uri: testUtil.serverUri + '/v1/data/users',
     method: 'post',
     body: '{data: "This is not JSON"}',
     headers: {'Content-type': 'application/json'},

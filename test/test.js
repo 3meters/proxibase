@@ -30,7 +30,7 @@ var logStream
 var cwd = process.cwd()
 var testServer = null
 var testServerStarted = false
-var serverUrl
+var serverUri
 var config
 
 
@@ -68,7 +68,7 @@ testUtil.dbProfile = dbProfile
 // Load the config file
 util.setConfig(cli.config || configFile)
 config = util.config
-serverUrl = testUtil.serverUrl = config.service.url
+serverUri = testUtil.serverUri = config.service.uri
 
 
 util.log('test config', config)
@@ -195,10 +195,10 @@ function ensureDb(ops, cb) {
 // Ensure the test server is running.  If not start one and pipe its log to a file
 function ensureServer(cb) {
 
-  log('Checking for test server ' + serverUrl)
+  log('Checking for test server ' + serverUri)
 
   // Make sure the test server is running
-  req.get(serverUrl, function(err, res) {
+  req.get(serverUri, function(err, res) {
 
     if (err) { // Start the test server
 
@@ -208,7 +208,7 @@ function ensureServer(cb) {
       logStream = fs.createWriteStream(logFile)
       logStream.write('\nTest Server Log\n')
 
-      log('Starting test server ' + serverUrl + ' using config ' + configFile)
+      log('Starting test server ' + serverUri + ' using config ' + configFile)
       log('Test server log: ' + logFile)
       testServer = child_process.spawn('node', [__dirname + '/../prox', '--config', configFile])
 
@@ -254,7 +254,7 @@ function ensureServer(cb) {
 
 function runTests() {
   if (cli.none) return finish()
-  log('\nTesting: ' + serverUrl)
+  log('\nTesting: ' + serverUri)
   log('Tests: ' + tests)
   if (cli.perf) runPerf()
   else if (cli.multi) runMulti()

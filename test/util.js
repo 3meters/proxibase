@@ -14,7 +14,7 @@ assert(tipe.isTruthy, 'The proxibase utils are not loaded properly, bailing')
 util.setConfig('configtest.js')
 
 // Base Uri all test requests call, can be overridden by callers
-exports.serverUrl = util.config.service.url
+exports.serverUri = util.config.service.uri
 
 
 // set some default test request options
@@ -27,8 +27,8 @@ function makeReq(options) {
   _.extend(req, options)
 
   var versionPath = '/v1'
-  if (options.uri) req.uri = exports.serverUrl + versionPath + options.uri
-  else req.uri = exports.serverUrl
+  if (options.uri) req.uri = exports.serverUri + versionPath + options.uri
+  else req.uri = exports.serverUri
 
   req.method = options.method || 'get'
   req.json = tipe.isBoolean(options.json) ? options.json : true

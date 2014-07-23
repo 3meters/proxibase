@@ -28,7 +28,7 @@ var adminCred = ''
 var testOauthId = {
   twitter: 'twitter:606624261'
 }
-var baseUri = testUtil.serverUrl
+var baseUri = testUtil.serverUri
 var strictSSL = (util.config.service.mode === 'test') ? false : true
 var _exports = {}  // for commenting out tests
 
