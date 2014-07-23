@@ -44,20 +44,20 @@ block content
     .col-right.pad
       .row: | 
       .row: | 
-      .row: | {name: 1, _id: -1}
+      .row: | name,address,-_id
       .row: | starts-with
       .row: | {city: {$in: ['Seattle', 'Spokane']}}
-      .row: | [{_owner: 1}, {modifiedDate: -1}]
+      .row: | _owner,-modifiedDate
       .row: | include linked documents, boolean or fieldlist
       .row: | {from: {applinks: 1}, to: true}
       .row: | 
       .row: | 
       .row: | 
       .row: | 
-      .row: | field1, field2
+      .row: | field1,field2
   .content.pad
     if findUrl
-      - var uri = config.service.uri + '/v1' + findUrl
+      - var uri = config.service.uri + findUrl
       br
       a(href=uri) #{uri}
       br
