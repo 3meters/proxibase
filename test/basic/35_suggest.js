@@ -164,7 +164,8 @@ exports.suggestPlacesFts = function(test) {
 
 exports.suggestUsersRegex = function(test) {
 
-  t.get('/suggest/users?input=use&fts=0',  // exact beginning match of second word in name
+  // add a bogus ll param that should be ignored, fix issue 259
+  t.get('/suggest/users?input=use&fts=0&ll=47-122',  // match beginning of second word in name
   function(err, res, body) {
     t.assert(body.data.length >= dbProfile.users)
     body.data.forEach(function(user) {
