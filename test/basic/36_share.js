@@ -154,10 +154,10 @@ exports.shareMessage = function(test) {
   })
 }
 
-exports.cannotSeeSharesToMeViaRest = function(test) {
+exports.canSeeSharesToMeViaRest = function(test) {
   t.get('/find/shares?query[_to]=us.shareTestCheetah&' + cheetahCred,
   function(err, res, body) {
-    t.assert(body.data.length === 0)
+    t.assert(body.data.length === 2)
     test.done()
   })
 }
@@ -171,7 +171,15 @@ exports.canSeeSharesToMeViaAPI = function(test) {
   })
 }
 
-exports.sharesToMeFiltersOurSharesFromUserIHaveIgnored = function(test) {
+exports.cannotSeeSharesToOthers = function(test) {
+  t.get('/find/shares?query[_to]=us.shareTestJane&' + cheetahCred,
+  function(err, res, body) {
+    t.assert(body.data.length === 0)
+    test.done()
+  })
+}
+
+exports.sharesToMeFiltersOurSharesFromUsersIHaveIgnored = function(test) {
 
   t.get('/shares/from/me?query[_to]=us.shareTestJane&' + tarzanCred,
   function(err, res, body) {
@@ -185,10 +193,46 @@ exports.sharesToMeFiltersOurSharesFromUserIHaveIgnored = function(test) {
         t.assert(body.count === 1)
         t.get('/shares/to/me?' + janeCred,
         function(err, res, body) {
-          t.assert(body.data.length === 2)  // now she shes his invites
+          t.assert(body.data.length === 2)  // now she sees tarzan's invites
           test.done()
         })
       })
     })
+  })
+}
+
+
+exports.sharedLinksWereCreated = function(test) {
+  t.get('/data/links?query[_owner]=us.shareTestTarzan&query[toSchema]=share&' + tarzanCred,
+  function(err, res, body) {
+    t.assert(body.data.length === 4)
+    body.data.forEach(function(link) {
+      t.assert(link.toSchema === 'share')
+      t.assert(link.fromSchema === 'user')
+      t.assert(link.type === 'create')
+    })
+    t.get('/data/links?query[_owner]=us.shareTestCheetah&query[toSchema]=user&' + cheetahCred,
+    function(err, res, body) {
+      t.assert(body.data.length === 2)
+      body.data.forEach(function(link) {
+        t.assert(link.toSchema === 'user')
+        t.assert(link.fromSchema === 'share')
+        t.assert(link.type === 'content')
+      })
+      test.done()
+    })
+  })
+}
+
+exports.actionsWereCreated = function(test) {
+  t.get('/data/actions?query[_user]=us.shareTestTarzan&' + adminCred,
+  function(err, res, body) {
+    t.assert(body.data.length === 4)
+    body.data.forEach(function(action) {
+      t.assert(action._entity)
+      var schemaName = util.parseId(action._entity).schemaName
+      t.assert(action.event === 'insert_entity_share')
+    })
+    test.done()
   })
 }

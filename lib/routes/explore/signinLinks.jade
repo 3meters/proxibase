@@ -1,6 +1,6 @@
 if user
-  | Welcome #{user.role} #{user.name}
-  = ' '
+  | Welcome #{user.name}
+  = ': '
   a(href='/v1/explore/signout') Sign out
 else
   a(href='/v1/explore/newaccount') Sign up
