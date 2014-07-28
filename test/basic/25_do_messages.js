@@ -117,6 +117,7 @@ var testMessage = {
     prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
     source:"aircandi",
   },
+  _place: testPlaceCustom._id,  // Usually set by client
 }
 
 var testReply = {
@@ -660,6 +661,7 @@ exports.insertMessage = function (test) {
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
+      t.assert(body.data[0]._place === testPlaceCustom._id)
 
       /* Check link */
       t.post({
@@ -811,6 +813,91 @@ exports.insertReply = function (test) {
     })
   })
 }
+
+
+exports.userWatchesPlaceViaRestWatchParam = function(test) {
+  t.get('/find/places/' + testPlaceCustom._id + '?watch=true&' + userCredAlice,
+  function(err, res, body) {
+    t.assert(body.data._id === testPlaceCustom._id)
+    t.post({
+      uri: '/find/links?' + userCredAlice,
+      body: {
+        query: {
+          _to: testPlaceCustom._id,
+          _from: testUserAlice._id,
+          type: 'watch',
+        }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+      var watchLink = body.data[0]
+
+      // Now do it again
+      t.get('/find/places/' + testPlaceCustom._id + '?watch=true&' + userCredAlice,
+      function(err, res, body) {
+        t.assert(body.data._id === testPlaceCustom._id)
+        t.post({
+          uri: '/find/links?' + userCredAlice,
+          body: {
+            query: {
+              _to: testPlaceCustom._id,
+              _from: testUserAlice._id,
+              type: 'watch',
+            }
+          }
+        }, function(err, res, body) {
+          t.assert(body.count === 1)
+          t.assert(watchLink._id === body.data[0]._id)
+          t.assert(watchLink.modifiedDate === body.data[0].modifiedDate)  // no change
+          test.done()
+        })
+      })
+    })
+  })
+}
+
+
+exports.userWatchPlaceViaRestWatchParamOnMessage = function(test) {
+  t.get('/find/messages/' + testMessage._id + '?watch=true&' + userCredBecky,
+  function(err, res, body) {
+    t.assert(body.data._id === testMessage._id)
+    t.post({
+      uri: '/find/links?' + userCredBecky,
+      body: {
+        query: {
+          _to: testPlaceCustom._id,  // watch link is to the message's parent place, not the message itself
+          _from: testUserBecky._id,
+          type: 'watch',
+        }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+      var watchLink = body.data[0]
+
+      // Now do it again
+      t.get('/find/messages/' + testMessage._id + '?watch=true&' + userCredBecky,
+      function(err, res, body) {
+        t.assert(body.data._id === testMessage._id)
+        t.post({
+          uri: '/find/links?' + userCredBecky,
+          body: {
+            query: {
+              _to: testPlaceCustom._id,
+              _from: testUserBecky._id,
+              type: 'watch',
+            }
+          }
+        }, function(err, res, body) {
+          t.assert(body.count === 1)
+          t.assert(watchLink._id === body.data[0]._id)
+          t.assert(watchLink.modifiedDate === body.data[0].modifiedDate)  // no change
+          test.done()
+        })
+      })
+    })
+  })
+}
+
 
 
 // Relies on sample data from genData
