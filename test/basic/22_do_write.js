@@ -1474,7 +1474,6 @@ exports.deletePost = function (test) {
                     { $or: [
                       { _entity: testPost._id },
                       { _toEntity: testPost._id },
-                      { _fromEntity: testPost._id },
                     ]},
                   ]
                 }
@@ -1490,7 +1489,6 @@ exports.deletePost = function (test) {
                     $or: [
                       { _entity: testComment._id },
                       { _toEntity: testComment._id },
-                      { _fromEntity: testComment._id },
                     ]
                   }
                 }
@@ -1588,7 +1586,6 @@ exports.deletePlace = function (test) {
                 { $or: [
                   { _entity: testPlaceOne._id },
                   { _toEntity: testPlaceOne._id },
-                  { _fromEntity: testPlaceOne._id },
                 ]},
               ]
             }
