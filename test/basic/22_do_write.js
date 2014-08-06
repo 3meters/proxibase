@@ -604,7 +604,7 @@ exports.insertPlaceOne = function (test) {
         t.post({
           uri: '/find/actions?' + adminCred,
           body: {
-            query: { _entity:testPlaceOne._id, event:'insert_entity_place_linked'}
+            query: { _entity:testPlaceOne._id, event:'insert_entity_place'}
           }
         }, function(err, res, body) {
           t.assert(body.count === 1)
@@ -694,7 +694,7 @@ exports.insertPlaceCustomPublic = function (test) {
             t.post({
               uri: '/find/actions?' + adminCred,
               body: {
-                query: { _entity:testPlaceCustomPublic._id, event:'insert_entity_place_custom'}
+                query: { _entity:testPlaceCustomPublic._id, event:'insert_entity_place'}
               }
             }, function(err, res, body) {
               t.assert(body.count === 1)
@@ -1493,7 +1493,7 @@ exports.deletePost = function (test) {
                   }
                 }
               }, function(err, res, body) {
-                t.assert(body.count === 0)
+                t.assert(body.count !== 0)
                 test.done()
               })
             })
