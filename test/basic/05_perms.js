@@ -295,7 +295,6 @@ exports.userPublicFields = function(test) {
       t.assert(util.anonId !== user._id)
       t.assert(user.schema)
       t.assert(user.name)
-      t.assert(user.photo)
       t.assert(!user.email) // non-public field
       t.assert(!user.role)  // non-public field
     })

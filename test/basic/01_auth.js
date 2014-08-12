@@ -552,6 +552,67 @@ exports.userCanInviteNewUser = function(test) {
     })
   })
 }
+
+exports.autoWatchWorks = function(test) {
+  t.post({
+    uri: '/data/places?' + adminCred,
+    body: {
+      data: {
+        _id: util.statics.autowatch[0],
+        name: 'test autowatch place',
+      }
+    }
+  }, 201, function(err, res, body) {
+    var seed = String(Math.floor(Math.random() * 1000000))
+    t.assert(body.count === 1)
+    t.post({
+      uri: '/user/create',
+      body: {
+        data: {
+          name: 'TestAutoWatchUser',
+          email: 'test' + seed + '@3meters.com',
+          password: 'foobar'
+        },
+        secret: 'larissa',
+        installId: '123456',
+      }
+    }, function(err, res, body) {
+      var awUser = body.user
+      t.assert(awUser && awUser._id)
+      t.assert(body.session && body.session.key)
+      var awCred = 'user=' + awUser._id + '&session=' + body.session.key
+      t.post({
+        uri: '/find/links?' + awCred,
+        body: {
+          query: {
+            _from: awUser._id,
+            _to: util.statics.autowatch[0],
+            type: 'watch',
+          }
+        }
+      }, function(err, res, body) {
+        var watchLinks = body.data
+        t.assert(watchLinks && watchLinks.length === 1)
+        link = watchLinks[0]
+        t.assert(link._owner === awUser._id)
+        t.del({
+          uri: '/data/links/' + link._id + '?' + awCred,
+        }, function(err, res, body) {
+          t.assert(body.count === 1)  // proves user can unwatch
+          // cleanup
+          t.del({
+            uri: '/data/places/' + util.statics.autowatch[0] + '?' + adminCred
+          }, function(err, res, body) {
+            t.assert(body.count === 1)
+            test.done()
+          })
+        })
+      })
+    })
+  })
+}
+
+
 exports.userCanSignOut = function(test) {
   t.get('/auth/signout?' + userCred,
   function(err, res, body) {
