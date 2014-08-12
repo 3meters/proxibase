@@ -136,6 +136,23 @@ exports.statsCountContentMessagesToPlacesViaPost = function(test) {
   })
 }
 
+
+exports.statsCountPlacesByTunings = function(test) {
+  t.get('/stats/from/places?type=proximity',
+  function(err, res, body) {
+    t.assert(body.data && body.data.length)
+    body.data.forEach(function(doc) {
+      t.assert(doc._id)
+      t.assert(doc.name)
+      t.assert(doc.photo)
+      t.assert(doc.count)
+      t.assert(doc.rank)
+    })
+    test.done()
+  })
+}
+
+
 exports.addSomeTestData = function(test) {
 
   var newPlaces = [{
@@ -212,24 +229,36 @@ exports.addSomeTestData = function(test) {
   })
 }
 
-exports.refreshTosWorks = function(test) {
-  t.get({
-    uri: '/stats/to/refresh?' + adminCred
-  }, function(err, res, body){
+exports.refreshWorks = function(test) {
+  t.get('/stats/refresh?' + adminCred,
+  function(err, res, body){
     t.assert(body)
-    t.assert(body.cmd)
-    t.assert(body.results)
-    t.get({
-      uri: '/find/tos?query[_id.fromSchema]=message&sort=-value'
-    }, function(err, res, body) {
+    t.assert(body.to)
+    t.assert(body.to.cmd)
+    t.assert(body.to.results)
+    t.assert(body.from)
+    t.assert(body.from.cmd)
+    t.assert(body.from.results)
+    t.get('/find/tos?query[_id.fromSchema]=message&sort=-value',
+    function(err, res, body) {
       t.assert(body.data.length)
-      // refresh picked up our new links and created a summary record for them.  
+      // refresh picked up our new links and created a summary record for them.
       t.assert(body.data.some(function(stat) {
         return stat._id.day === '140101'
             && stat._id._to === place1Id
             && stat.value === 3
       }))
-      test.done()
+      t.get('/find/froms?query[_id.fromSchema]=place&query[_id.toSchema]=beacon',
+      function(err, res, body) {
+        t.assert(body.data.length)
+        // refresh picked up our new links and created a summary record for them.
+        t.assert(body.data.some(function(stat) {
+          return stat._id.day === '140101'
+              && stat._id._from === place1Id
+              && stat.value === 1
+        }))
+        test.done()
+      })
     })
   })
 }
@@ -472,22 +501,6 @@ exports.statsCountCreatedLinksFromUsers = function(test) {
   })
 }
 
-exports.statsCountPlacesByTunings = function(test) {
-  t.get('/stats/from/places?type=proximity',
-  function(err, res, body) {
-    t.assert(body.data && body.data.length)
-    body.data.forEach(function(doc) {
-      t.assert(doc._id)
-      t.assert(doc.name)
-      t.assert(doc.photo)
-      t.assert(doc.count)
-      t.assert(doc.rank)
-    })
-    test.done()
-  })
-}
-
-
 exports.statsRemoveMessageDecrementsPlaceStats = function(test) {
   t.get('/stats/to/places/' + place1Id,
   function(err, res, body) {
@@ -503,10 +516,6 @@ exports.statsRemoveMessageDecrementsPlaceStats = function(test) {
         function(err, res, body) {
           t.assert(body.data)
           t.assert(cToPlace === body.data.count + 1)  // proves stat decrement worked
-          log('  Deleted beacon properly decrements the places link stats from place is untested')
-          // TODO:  remove a link from place1 to a beacon, and then test that removing
-          // the place from stats properly decrements
-          // t.assert(body.data.length + 1 === cFromPlaces)
           test.done()
         })
       })
@@ -533,10 +542,7 @@ exports.statsRemovePlaceDropsFromStats= function(test) {
           t.get('/stats/from/places',
           function(err, res, body) {
             t.assert(body.data && body.data.length)
-            log('  Deleted places properly deletes the places from stats is untested')
-            // TODO:  add a beacon link from this place and then test that removing
-            // the place removes the stats from the froms collection.
-            // t.assert(body.data.length + 1 === cFromPlaces)
+            t.assert(body.data.length === (cFromPlaces - 1))
             test.done()
           })
         })
