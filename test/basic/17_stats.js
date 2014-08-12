@@ -158,6 +158,14 @@ exports.addSomeTestData = function(test) {
     _owner: user1Id,
   }, ]
 
+  var newBeacons = [{
+    _id: 'be.statTestBeacon1',
+    name: 'StatTest Beacon1',
+    _owner: util.adminId,
+    schema: 'beacon',
+    bssid: 'statTestBeacon1',
+  }]
+
   var newLinks = [{
     _id: 'li.140101.statTest.1',
     _to: place1Id,
@@ -179,16 +187,26 @@ exports.addSomeTestData = function(test) {
     fromSchema: 'message',
     toSchema: 'place',
     type: 'content',
+  }, {
+    _id: 'li.140101.statTest.4',
+    _to: 'be.statTest1',
+    _from: place1Id,
+    toSchema: 'beacon',
+    fromSchema: 'place',
+    type: 'proximity',
   }]
 
-  // TODO:  this is a bad idea.  figure out how to use the safe methods
+  // TODO:  this is a probably a bad idea.  figure out how to use the safe methods
   db.collection('places').insert(newPlaces, function(err, savedPlaces) {
     assert(!err, err)
     db.collection('messages').insert(newMsgs, function(err, savedMsgs) {
       assert(!err, err)
-      db.collection('links').insert(newLinks, function(err, savedLinks) {
+      db.collection('beacons').insert(newBeacons, function(err, savedBeacons) {
         assert(!err, err)
-        test.done()
+        db.collection('links').insert(newLinks, function(err, savedLinks) {
+          assert(!err, err)
+          test.done()
+        })
       })
     })
   })
@@ -233,13 +251,6 @@ exports.addSomeMoreTestData = function(test) {
   }]
 
   var newLinks = [{
-    _id: 'li.140101.statTest.4',
-    _to: place1Id,
-    _from: 'me.statTest.4',
-    fromSchema: 'message',
-    toSchema: 'place',
-    type: 'content',
-  }, {
     _id: 'li.140101.statTest.5',
     _to: place1Id,
     _from: 'me.statTest.5',
@@ -250,6 +261,13 @@ exports.addSomeMoreTestData = function(test) {
     _id: 'li.140101.statTest.6',
     _to: place1Id,
     _from: 'me.statTest.6',
+    fromSchema: 'message',
+    toSchema: 'place',
+    type: 'content',
+  }, {
+    _id: 'li.140101.statTest.7',
+    _to: place1Id,
+    _from: 'me.statTest.7',
     fromSchema: 'message',
     toSchema: 'place',
     type: 'content',
@@ -477,7 +495,7 @@ exports.statsRemoveMessageDecrementsPlaceStats = function(test) {
     var cToPlace = body.data.count
     t.get('/stats/from/places/' + place1Id,
     function(err, res, body) {
-      t.assert(body && body.data === null)  // because we have added no beacon links from this place
+      t.assert(body && body.data)
       t.del({uri: '/data/messages/me.statTest.1?' + adminCred},
       function(err, res, body) {
         t.assert(body.count === 1)
