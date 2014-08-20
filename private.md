@@ -63,9 +63,22 @@ If Jane accepts Tarzans invitation the client will create a watch link from Jane
 Quit watching a private or secret place
 Jane needs to be able to delete her Treehouse watch link, even though Tarzan owns it.
 
-Visbility of messages (and potentially other child entities)
-==========
 
-Ideas:
+Visibility of private places
+============================
+Private places are visible in all the ordinary queries, including near and suggest.
+
+
+Visbility of secret places
+==========================
+Secret places are invisible to near and suggest queries. This is enforced by a read trigger on places that adds a new filter : $or: {{visibility: {$ne: 'secret'}}, {
+  _owner: _user}}
+
+For singleton safeFinds access is granted by passing in a new option to the safeFind query:  'watchId'.  WatchId is the _id of the watch link between the user and the secret place.  This token must be passed in by the client as part of the call to getEntitiesForEntity.  A read trigger on places looks up the watchId from the links table and confirms that it exists, has the correct fields, and is owned by the owner of the place.  If all these conditions are met the non-secret filter is removed and the place is returned.
+
+
+Visbility of child entities of private and secret places
 ==========
-Convert messages to an ownerAccess collection.  Modify either getEntitiesforEntity or getEntities or both to run subQueries asAdmin once users have been identified as having permissions.
+Messages will become an ownerAccess collection.  getEntitiesforEntity will be modified to accept the watchId parmeter from the client.  For entities of schema place, it will first look up the entity itself using safeFind with the watchId semantics above.  For entities of other shemas, it will validate the watchId not against the entity itself, but against the _place field of the entity.  This means that if the _place field is not correctly set for messages to private and secret places, we will not be able see them in the UI.
+
+If either the place is visiblity 'public', or the user has a valid watchId for the entity, getEntitiesforEntity will in turn call getEntities with asAdmin permissions to override the ownerAccess flag.
