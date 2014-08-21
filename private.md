@@ -1,12 +1,11 @@
-# Priate and Secret Places Tech Spec
+# Private and Hidden Places Tech Spec
 
 ## User Model
-Places (aka patches) can have three scopes of visibility: public, private, or hidden.  Public is what we have now and is the default.  Private means that a patch (or some subset of its fields) is generally visible in all lists that display places, but that that all content entities linked to that patch are invisible, unless the owner of a patch has specifically granted access to that user.  Secret places are not visible any any of the standard public lists, particlaryly nearby.  Nor may content posted to that place be seen by non-invited users.
+Places (aka patches) can have three scopes of visibility: public, private, or hidden.  Public is what we have now and is the default.  Private means that a patch (or some subset of its fields) is generally visible in all lists that display places, but that that all content entities linked to that patch are invisible, unless the owner of a patch has specifically granted access to that user.  Secret (hidden?) places are not visible any any of the standard public lists, particlaryly nearby.  Nor may content posted to that place be seen by non-invited users.
 
 This spec discusses various technical options for implemeting private and secret places.
 
-Tools
-=====
+## Tools
   * systemCollection  (_base.js, set on action, install, session, task)
   * ownerAccess (implemented in _base, set on user, document, session)
   * before read trigger:  Perform preselects, edit the query before it is executed
@@ -16,25 +15,21 @@ Tools
   * Triggers on reads and writes of links
   * fields:  currently all entities have a _place field which is set by convention by the client, and could be use to quickly check permissions.
 
-Current Link Permissions
-========================
+## Current Link Permissions
 In link.js we have couple of rules coded now.  1) You cannot create a link from an entity that you do not own.  Once a user creates a link, we set its owner to the owner of the _to entity for links of type content, or to the owner of the _from entity for non-conent links.  Only the owner can remove (this is currently enfoced before any of the code in link.js has had a chance to run -- exceptions would go into _base.js)
 
 
-Invitations:
-================
-Currently when Tarzan invites Jane to watch his treehouse, we create one message entity with the invitation, then two links of type 'share'.  The first is to Jane from the message; the second is from the message to the treehouse.   In the client, if Jane follows the share link to the message ('accept' in the client ui), the client creates a watch link from Jane to the treehouse.
-
-Proposed Link Rule changes:
-===========================
+## Proposed Link Permission Changes:
 1) When links are created, we will always set the link owner to the owner of the _to entity, regardless of link type.
 
 2) Owners of the _from entity can remove a link, but they cannot otherwise edit it.
 
-3) We need be careful about the notifcations, since there are some events that we might need to broadcast in order for the client UI to update, but we do not want to send messages about rejections.  I am not very familiar with the nuances of this code.
 
-Scenarios:
-==========
+## Invitations:
+Currently when Tarzan invites Jane to watch his treehouse, we create one message entity with the invitation, then two links of type 'share'.  The first is to Jane from the message; the second is from the message to the treehouse.   In the client, if Jane follows the share link to the message ('accept' in the client ui), the client creates a watch link from Jane to the treehouse.
+
+
+## Scenarios:
 Requesting to join a private place:
 Tarzan notices that Janes manssion is nearby, but is private.  His UI says "request to watch" or something like that.  The client creates a watch link from Tarzan to treehouse.   A service side link trigger notices that the mansion is private, and enforces that the link property enabled is set to false.  Jane is notified that Tazan wants to watch her mansion.  The link is owned by Jane, since she owns the mansion.
 
@@ -64,25 +59,27 @@ Quit watching a private or secret place
 Jane needs to be able to delete her Treehouse watch link, even though Tarzan owns it.
 
 
-Visibility of private places
-============================
+## Visibility of private places
 Private places are visible in all the ordinary queries, including near and suggest.
 
 
-Visbility of secret places
-==========================
-Secret places are invisible to near and suggest queries. This is enforced by a read trigger on places that adds a new filter : {visibility: {$ne: 'secret'}}.  Issue:  should secret places appear in the nearby or search results of people who have access to them?
+## Visbility of secret places
+Secret places are invisible to near and suggest queries. This is enforced by a read trigger on places that adds a new filter : {visibility: {$ne: 'secret'}}.
 
 For singleton safeFinds access is granted by passing in a new option to the safeFind query:  'watchId'.  WatchId is the _id of the watch link between the user and the secret place.  This token must be passed in by the client as part of the call to getEntitiesForEntity.  A read trigger on places looks up the watchId from the links table and confirms that it exists, has the correct fields, and is owned by the owner of the place.  If all these conditions are met the non-secret filter is removed and the place is returned.
 
+### Issue: Secret place visibly to members?
+Should secret places appear in the nearby or search results of people who have access to them?
 
-Visbility of child entities of private and secret places
-==========
+## Visbility of child entities of private and secret places
 Messages will become an ownerAccess collection.  getEntitiesforEntity will be modified to accept the watchId parmeter from the client.  For entities of schema place, it will first look up the entity itself using safeFind with the watchId semantics above.  For entities of other shemas, it will validate the watchId not against the entity itself, but against the _place field of the entity.  This means that if the _place field is not correctly set for messages to private and secret places, users will not be able see them in the UI.
 
 If either the place is visiblity 'public', or the user has a valid watchId for the entity, getEntitiesforEntity will in turn call getEntities with asAdmin permissions to override the ownerAccess flag.
 
 
-Issue: Watch vs. Join
-=====================
+## Issue: Watch vs. Join
 Currently we are using watch to signify membership in private and hidden places, and to trigger increased notifications.  This is probably right in general, but you can conceive of wanting to maintain your membership in a secret place but cut down on the notification chatter.  We will ignore this for now and stick with watch.
+
+## Issue:  Rejection notifications
+We need be careful about the notifcations, since there are some events that we might need to broadcast in order for the client UI to update, but we do not want to send messages about rejections.  I am not very familiar with the nuances of this code.
+
