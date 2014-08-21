@@ -31,7 +31,7 @@ Proposed Link Rule changes:
 
 2) Owners of the _from entity can remove a link, but they cannot otherwise edit it.
 
-3) We need be careful about the notifcations, since there are some events that we might need to broadcast in order for the client UI to update, but we do not want to send messages about rejections.
+3) We need be careful about the notifcations, since there are some events that we might need to broadcast in order for the client UI to update, but we do not want to send messages about rejections.  I am not very familiar with the nuances of this code.
 
 Scenarios:
 ==========
@@ -48,16 +48,16 @@ Kicking a user out of a private or secret place:
 Jane removes the watch link from tarzan to mansion.  Tarzan should not be notified.
 
 Leaving a private or secret place.
-Tarzan should be able to delete the watch link, even though he does not own it.
+Tarzan should be able to delete the watch link, before or after Jane acts on it, even though he does not own it.
 
 Inviting a user to join a private or secret place:
-Tarzan creates a message entity inviting Jane to watch his secret Treehouse.  He also creates two links of type 'share', one from the message to Jane, and one from the message to the treehouse.
+Tarzan creates a message entity inviting Jane to watch his secret Treehouse.  He also creates two links of type 'share', one from the message to Jane, and one from the message to the treehouse.  This works the same for all types of places, public, private, and secret.
 
 Declining an invitation to join a private or secret place:
 In the client UI Jane declines Tarzans invitation.  The client simply deletes the share link From Treehouse to Jane.  This is allowed automatically because Jane, as the ower of the _to entity (her own user record) owns the link.
 
 Accepting an invitation to join a pivate or secret place:
-If Jane accepts Tarzans invitation the client will create a watch link from Jane to Treehouse.  Normally this would be set to disabled, since the Treehouse is secret.  However, the service will query for an outstanding share link between the treehouse and messages, and between any of those messages and Jane.  (Two hops, yuck)  If it finds Jane among the invited list it will enable the watch link automatically. 
+If Jane accepts Tarzans invitation the client will create a watch link from Jane to Treehouse.  Normally this would be set to disabled, since the Treehouse is secret.  However, the service will query for an outstanding share link between the treehouse and messages, and between any of those messages and Jane.  (Two hops, yuck)  If it finds Jane among the invited list it will enable Janes watch link automatically in one step.
 
 
 Quit watching a private or secret place
@@ -71,14 +71,18 @@ Private places are visible in all the ordinary queries, including near and sugge
 
 Visbility of secret places
 ==========================
-Secret places are invisible to near and suggest queries. This is enforced by a read trigger on places that adds a new filter : $or: {{visibility: {$ne: 'secret'}}, {
-  _owner: _user}}
+Secret places are invisible to near and suggest queries. This is enforced by a read trigger on places that adds a new filter : {visibility: {$ne: 'secret'}}.  Issue:  should secret places appear in the nearby or search results of people who have access to them?
 
 For singleton safeFinds access is granted by passing in a new option to the safeFind query:  'watchId'.  WatchId is the _id of the watch link between the user and the secret place.  This token must be passed in by the client as part of the call to getEntitiesForEntity.  A read trigger on places looks up the watchId from the links table and confirms that it exists, has the correct fields, and is owned by the owner of the place.  If all these conditions are met the non-secret filter is removed and the place is returned.
 
 
 Visbility of child entities of private and secret places
 ==========
-Messages will become an ownerAccess collection.  getEntitiesforEntity will be modified to accept the watchId parmeter from the client.  For entities of schema place, it will first look up the entity itself using safeFind with the watchId semantics above.  For entities of other shemas, it will validate the watchId not against the entity itself, but against the _place field of the entity.  This means that if the _place field is not correctly set for messages to private and secret places, we will not be able see them in the UI.
+Messages will become an ownerAccess collection.  getEntitiesforEntity will be modified to accept the watchId parmeter from the client.  For entities of schema place, it will first look up the entity itself using safeFind with the watchId semantics above.  For entities of other shemas, it will validate the watchId not against the entity itself, but against the _place field of the entity.  This means that if the _place field is not correctly set for messages to private and secret places, users will not be able see them in the UI.
 
 If either the place is visiblity 'public', or the user has a valid watchId for the entity, getEntitiesforEntity will in turn call getEntities with asAdmin permissions to override the ownerAccess flag.
+
+
+Issue: Watch vs. Join
+=====================
+Currently we are using watch to signify membership in private and hidden places, and to trigger increased notifications.  This is probably right in general, but you can conceive of wanting to maintain your membership in a secret place but cut down on the notification chatter.  We will ignore this for now and stick with watch.

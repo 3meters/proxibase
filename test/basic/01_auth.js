@@ -594,7 +594,8 @@ exports.autoWatchWorks = function(test) {
         var watchLinks = body.data
         t.assert(watchLinks && watchLinks.length === 1)
         link = watchLinks[0]
-        t.assert(link._owner === awUser._id)
+        // OLD: t.assert(link._owner === awUser._id)
+        t.assert(link._owner === util.adminId) // changed 8/21/04
         t.del({
           uri: '/data/links/' + link._id + '?' + awCred,
         }, function(err, res, body) {
