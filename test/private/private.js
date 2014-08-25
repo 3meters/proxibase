@@ -152,8 +152,20 @@ exports.createPlaces = function(test) {
   })
 }
 
+exports.tarzanWatchesRiver = function(test) {
+  t.post({
+    uri: '/data/links?' + tarzan.cred,
+    body: {data: {
+      _to: river._id,
+      _from: tarzan._id,
+      type: 'watch',
+    }},
+  }, 201, function(err, res, body) {
+    test.done()
+  })
+}
 
-exports.tarzanSendsMessageToPublicPlaceRiver = function(test) {
+exports.tarzanSendsMessageToRiver = function(test) {
   t.post({
     uri: '/do/insertEntity?' + tarzan.cred,
     body: {
@@ -189,7 +201,28 @@ exports.messagesAreOwnerAccess = function(test) {
   })
 }
 
-exports.getEntitiesForEntsReadsMessagesToPulicPlaces = function(test) {
+
+exports.getEntsForEntsDoesNotExposePrivateFieldsOfWatchers = function(test) {
+  t.post({
+    uri: '/do/getEntitiesForEntity',
+    body: {
+      entityId: 'pl.river' + seed,
+      cursor: {
+        linkTypes: ['watch'],
+        direction: 'in',
+      },
+    },
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data.length === 1)
+    t.assert(body.data[0]._id === tarzan._id)
+    t.assert(!body.data.email)
+    test.done()
+  })
+}
+
+
+exports.getEntitiesForEntsReadsMessagesToPublicPlaces = function(test) {
   t.post({
     uri: '/do/getEntitiesForEntity',
     body: {
@@ -204,7 +237,6 @@ exports.getEntitiesForEntsReadsMessagesToPulicPlaces = function(test) {
     test.done()
   })
 }
-
 
 exports.tarzanInvitesJaneToTreehouse = function(test) {
   t.post({
