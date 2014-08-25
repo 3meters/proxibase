@@ -19,18 +19,21 @@ var adminCred
 var _exports = {}  // For commenting out tests
 
 var tarzan = {
+  _id: 'us.tarzan' + seed,
   name: 'tarzan' + seed,
   email: 'tarzan' + seed + '@3meters.com',
   password: 'foobar',
 }
 
 var jane = {
+  _id: 'us.jane' + seed,
   name: 'jane' + seed,
   email: 'jane' + seed + '@3meters.com',
   password: 'foobar',
 }
 
 var mary = {
+  _id: 'us.mary' + seed,
   name: 'mary' + seed,
   email: 'mary' + seed + '@3meters.com',
   password: 'foobar',
@@ -84,7 +87,6 @@ exports.createUsers = function(test) {
     }
   }, function(err, res, body) {
     t.assert(body.user && body.user._id)
-    tarzan._id = body.user._id
     tarzan.role = body.user.role
     t.assert(body.session && body.session.key)
     tarzan.cred = 'user=' + tarzan._id + '&session=' + body.session.key
@@ -97,7 +99,6 @@ exports.createUsers = function(test) {
       }
     }, function(err, res, body) {
       t.assert(body.user && body.user._id)
-      jane._id = body.user._id
       jane.role = body.user.role
       t.assert(body.session && body.session.key)
       jane.cred = 'user=' + jane._id + '&session=' + body.session.key
@@ -110,7 +111,6 @@ exports.createUsers = function(test) {
         }
       }, function(err, res, body) {
         t.assert(body.user && body.user._id)
-        mary._id = body.user._id
         mary.role = body.user.role
         t.assert(body.session && body.session.key)
         mary.cred = 'user=' + mary._id + '&session=' + body.session.key
@@ -173,14 +173,69 @@ exports.tarzanSendsMessageToPublicPlaceRiver = function(test) {
 }
 
 
-exports.readMessage = function(test) {
+exports.messagesAreOwnerAccess = function(test) {
   t.get('/find/messages/me.tarzanToRiver' + seed,
   function(err, res, body) {
     t.assert(body.count === 0)
     t.get('/find/messages/me.tarzanToRiver' + seed + '?' + tarzan.cred,
     function(err, res, body) {
       t.assert(body.count === 1)
-      test.done()
+      t.get('/find/messages/me.tarzanToRiver' + seed + '?' + jane.cred,
+      function(err, res, body) {
+        t.assert(body.count === 0)
+        test.done()
+      })
+    })
+  })
+}
+
+exports.getEntitiesForEntsReadsMessagesToPulicPlaces = function(test) {
+  t.post({
+    uri: '/do/getEntitiesForEntity',
+    body: {
+      entityId: 'pl.river' + seed,
+      cursor: {
+        linkTypes: ['content'],
+        direction: 'in',
+      },
+    },
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    test.done()
+  })
+}
+
+
+exports.tarzanInvitesJaneToTreehouse = function(test) {
+  t.post({
+    uri: '/data/messages?' + tarzan.cred,
+    body: {data: {
+      _id: 'me.tarzanInvite' + seed,
+      description: 'Check out my treehouse'
+    }},
+  }, 201, function(err, res, body) {
+    t.post({
+      uri: '/data/links?' + tarzan.cred,
+      body: {data: {
+        _id: 'li.toJaneFromTarzanInvite' + seed,
+        _to: jane._id,
+        _from: 'me.tarzanInvite' + seed,
+        type: 'share',
+      }}
+    }, 201, function(err, res, body) {
+      t.assert(body.data._owner === jane._id)
+      t.post({
+        uri: '/data/links?' + tarzan.cred,
+        body: {data: {
+          _id: 'li.toTreehouseFromTarzanInvite' + seed,
+          _to: treehouse._id,
+          _from: 'me.tarzanInvite' + seed,
+          type: 'share',
+        }}
+      }, 201, function(err, res, body) {
+        t.assert(body.data._owner === tarzan._id)
+        test.done()
+      })
     })
   })
 }
