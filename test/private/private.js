@@ -72,7 +72,7 @@ exports.getUserSession = function(test) {
       adminSession = session
       adminCred = 'user=' + session._owner + '&session=' + session.key
       adminUserId = session._owner
-    test.done()
+      test.done()
     })
   })
 }
@@ -185,6 +185,67 @@ exports.tarzanSendsMessageToRiver = function(test) {
 }
 
 
+exports.tarzanSendsMessageToTreehouse = function(test) {
+  t.post({
+    uri: '/do/insertEntity?' + tarzan.cred,
+    body: {
+      entity: {
+        schema: 'message',
+        _id: 'me.tarzanToTreehouse' + seed,
+        description: 'Check out my hammock',
+      },
+      links: [{
+        _to: treehouse._id,
+        type: 'content',
+      }]
+    },
+  }, 201, function(err, body, data) {
+    test.done()
+  })
+}
+
+
+exports.janeSendsMessageToJanehouse = function(test) {
+  t.post({
+    uri: '/do/insertEntity?' + jane.cred,
+    body: {
+      entity: {
+        schema: 'message',
+        _id: 'me.janeToJanehouse' + seed,
+        description: 'Checkout my bed',
+      },
+      links: [{
+        _to: janehouse._id,
+        type: 'content',
+      }]
+    },
+  }, 201, function(err, body, data) {
+    test.done()
+  })
+}
+
+
+exports.tarzanSendsMessageToJanehouseAndFails = function(test) {
+  t.post({
+    uri: '/do/insertEntity?' + tarzan.cred,
+    body: {
+      entity: {
+        schema: 'message',
+        _id: 'me.tarzanToJanehouse' + seed,
+        description: 'What is bed?',
+      },
+      links: [{
+        _to: janehouse._id,
+        type: 'content',
+      }]
+    },
+  }, 401, function(err, body, data) {
+    test.done()
+  })
+}
+
+
+
 exports.messagesAreOwnerAccess = function(test) {
   t.get('/find/messages/me.tarzanToRiver' + seed,
   function(err, res, body) {
@@ -234,6 +295,7 @@ exports.getEntitiesForEntsReadsMessagesToPublicPlaces = function(test) {
     },
   }, function(err, res, body) {
     t.assert(body.count === 1)
+    t.assert(body.data[0].description === 'Good water, bad crocs')
     test.done()
   })
 }
@@ -269,5 +331,20 @@ exports.tarzanInvitesJaneToTreehouse = function(test) {
         test.done()
       })
     })
+  })
+}
+
+exports.tarzanRequestsToWatchJanesHouse = function(test) {
+  t.post({
+    uri: '/data/links?' + tarzan.cred,
+    body: {data: {
+      _from: tarzan._id,
+      _to: janehouse._id,
+      type: 'watch',
+    }}
+  }, 201, function(err, res, body) {
+    t.assert(body.data)
+    t.assert(jane._id === body.data._owner)
+    t.assert(body.data.enabled === false)
   })
 }
