@@ -346,5 +346,6 @@ exports.tarzanRequestsToWatchJanesHouse = function(test) {
     t.assert(body.data)
     t.assert(jane._id === body.data._owner)
     t.assert(body.data.enabled === false)
+    test.done()
   })
 }

@@ -60,6 +60,26 @@ exports.getEntitiesMinimum = function (test) {
   })
 }
 
+exports.getEntitiesMessages = function (test) {
+  t.post({
+    uri: '/do/getEntities',
+    body: {
+      entityIds: [constants.placeId], 
+      links: {
+        active: [
+          { type:statics.typeContent, schema:statics.schemaMessage, links: true, count: true, direction: 'both' },
+        ]},
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data[0])
+    var record = body.data[0]
+    t.assert(record.linksIn && record.linksIn.length === dbProfile.mpp)
+    test.done()
+  })
+}
+
+
 exports.getEntitiesMaximum = function (test) {
   /*
    * We don't currently populate the smoke test data with any entities that have
@@ -85,6 +105,8 @@ exports.getEntitiesMaximum = function (test) {
     t.assert(body.data && body.data[0])
     var record = body.data[0]
     t.assert(record.linksIn && record.linksIn.length)
+    debug('dbProfile', dbProfile)
+    debug('linksIn.length', record.linksIn.length)
     t.assert(record.linksIn && record.linksIn.length === dbProfile.spe + dbProfile.cpe + dbProfile.ape + dbProfile.mpp + dbProfile.likes + dbProfile.watch)
     t.assert(record.linksOut && record.linksOut.length === 1)
     t.assert(record.linksInCounts && record.linksInCounts.length === 6)
