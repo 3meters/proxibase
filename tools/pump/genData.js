@@ -120,7 +120,7 @@ function genUsers() {
     user._id = testUtil.genId('user', i)
     user.name = 'Test User ' + (i + 1)
     user.email = 'testuser' + (i + 1) + '@3meters.com'
-    user.password = 'doobar' + i
+    user.password = 'password' + (i + 1)
     docs.users.push(user)
   }
 
@@ -275,8 +275,6 @@ function genEntityRecords(parentIds, count, entitySchema, linkType) {
     }
   }
 }
-
-
 
 function saveAll(callback) {
   var collectionNames = []

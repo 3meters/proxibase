@@ -518,7 +518,7 @@ exports.insertMessage = function (test) {
 
     /* Check insert */
     t.post({
-      uri: '/find/messages',
+      uri: '/find/messages?' + userCredBob,
       body: {
         query:{ _id:testMessage._id }
       }
@@ -721,7 +721,7 @@ exports.insertComment = function (test) {
 
         /* Check activityDate for message */
         t.post({
-          uri: '/find/messages',
+          uri: '/find/messages?' + userCredBob,  // bob's comment
           body: {
             query:{ _id: testMessage._id }
           }
@@ -768,11 +768,12 @@ exports.updateEntity = function (test) {
       }, function(err, res, body) {
         t.assert(body.count === 1)
         t.assert(body.data && body.data[0])
+        log('skipping test')
         t.assert(body.data[0].activityDate >= activityDate)
 
         /* Check activityDate for message */
         t.post({
-          uri: '/find/messages',
+          uri: '/find/messages?' + adminCred,
           body: {
             query:{ _id: testMessage._id }
           }
@@ -819,7 +820,7 @@ exports.deleteEntity = function (test) {
 
         /* Check activityDate for message */
         t.post({
-          uri: '/find/messages',
+          uri: '/find/messages?' + adminCred,
           body: {
             query:{ _id: testMessage._id }
           }
