@@ -374,32 +374,32 @@ exports.tarzanCanNowReadMessagesToJanehouse = function(test) {
 
 exports.tarzanInvitesJaneToTreehouse = function(test) {
   t.post({
-    uri: '/data/messages?' + tarzan.cred,
-    body: {data: {
-      _id: 'me.tarzanInvite' + seed,
-      description: 'Check out my treehouse'
-    }},
-  }, 201, function(err, res, body) {
-    t.post({
-      uri: '/data/links?' + tarzan.cred,
-      body: {data: {
+    uri: '/do/insertEntity?' + tarzan.cred,
+    body: {
+      entity: {
+        _id: 'me.tarzanInvite' + seed,
+        schema: 'message',
+        description: 'Check out my treehouse',
+      },
+      links: [{
         _id: 'li.toJaneFromTarzanInvite' + seed,
         _to: jane._id,
-        _from: 'me.tarzanInvite' + seed,
         type: 'share',
-      }}
-    }, 201, function(err, res, body) {
-      t.assert(body.data._owner === jane._id)
-      t.post({
-        uri: '/data/links?' + tarzan.cred,
-        body: {data: {
-          _id: 'li.toTreehouseFromTarzanInvite' + seed,
-          _to: treehouse._id,
-          _from: 'me.tarzanInvite' + seed,
-          type: 'share',
-        }}
-      }, 201, function(err, res, body) {
-        t.assert(body.data._owner === tarzan._id)
+      }, {
+        _id: 'li.toTreehouseFromTarzanInvite' + seed,
+        _to: treehouse._id,
+        type: 'share',
+      }],
+    },
+  }, 201, function(err, res, body) {
+    t.get('/data/links/li.toJaneFromTarzanInvite' + seed,
+    function(err, res, body) {
+      t.assert(body.data)
+      t.assert(jane._id === body.data._owner)
+      t.get('/data/links/li.toTreehouseFromTarzanInvite' + seed,
+      function(err, res, body) {
+        t.assert(body.data)
+        t.assert(tarzan._id === body.data._owner)
         test.done()
       })
     })
