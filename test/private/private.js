@@ -300,6 +300,78 @@ exports.getEntitiesForEntsReadsMessagesToPublicPlaces = function(test) {
   })
 }
 
+var tarzanWatchesJanehouse = {
+  _from: tarzan._id,
+  _to: janehouse._id,
+  type: 'watch',
+}
+
+exports.tarzanRequestsToWatchJanehouse = function(test) {
+  t.post({
+    uri: '/data/links?' + tarzan.cred,
+    body: {data: tarzanWatchesJanehouse},
+  }, 201, function(err, res, body) {
+    t.assert(body.data)
+    tarzanWatchesJanehouse = body.data
+    t.assert(jane._id === tarzanWatchesJanehouse._owner)
+    t.assert(tarzanWatchesJanehouse.enabled === false)
+    test.done()
+  })
+}
+
+
+exports.tarzanCannotReadJanesMessagesYet = function(test) {
+  t.post({
+    uri: '/do/getEntitiesForEntity?' + tarzan.cred,
+    body: {
+      entityId: janehouse._id,
+      cursor: {
+        linkTypes: ['content'],
+        direction: 'in',
+      },
+    },
+  }, function(err, res, body) {
+    t.assert(body.data.length === 0)
+    test.done()
+  })
+}
+
+
+exports.tarzanCannonAcceptHisOwnRequestOnJanesBehalf = function(test) {
+  t.post({
+    uri: '/data/links/' + tarzanWatchesJanehouse._id + '?' + tarzan.cred,
+    body: {data: {enabled: true}},
+  }, 401, function(err, res, body) {
+    test.done()
+  })
+}
+
+
+exports.janeAcceptsTarzansRequest = function(test) {
+  t.post({
+    uri: '/data/links/' + tarzanWatchesJanehouse._id + '?' + jane.cred,
+    body: {data: {enabled: true}},
+  }, function(err, res, body) {
+    test.done()
+  })
+}
+
+exports.tarzanCanNowReadMessagesToJanehouse = function(test) {
+  t.post({
+    uri: '/do/getEntitiesForEntity?' + tarzan.cred,
+    body: {
+      entityId: janehouse._id,
+      cursor: {
+        linkTypes: ['content'],
+        direction: 'in',
+      },
+    },
+  }, function(err, res, body) {
+    t.assert(body.data.length === 1)
+    test.done()
+  })
+}
+
 exports.tarzanInvitesJaneToTreehouse = function(test) {
   t.post({
     uri: '/data/messages?' + tarzan.cred,
@@ -334,18 +406,3 @@ exports.tarzanInvitesJaneToTreehouse = function(test) {
   })
 }
 
-exports.tarzanRequestsToWatchJanesHouse = function(test) {
-  t.post({
-    uri: '/data/links?' + tarzan.cred,
-    body: {data: {
-      _from: tarzan._id,
-      _to: janehouse._id,
-      type: 'watch',
-    }}
-  }, 201, function(err, res, body) {
-    t.assert(body.data)
-    t.assert(jane._id === body.data._owner)
-    t.assert(body.data.enabled === false)
-    test.done()
-  })
-}
