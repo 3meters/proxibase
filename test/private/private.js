@@ -381,13 +381,15 @@ exports.tarzanInvitesJaneToTreehouse = function(test) {
         schema: 'message',
         description: 'Check out my treehouse',
       },
+      // insertEntity will set the _from side of the following links
+      // to the entity._id
       links: [{
-        _id: 'li.toJaneFromTarzanInvite' + seed,
-        _to: jane._id,
-        type: 'share',
-      }, {
         _id: 'li.toTreehouseFromTarzanInvite' + seed,
         _to: treehouse._id,
+        type: 'share',
+      }, {
+        _id: 'li.toJaneFromTarzanInvite' + seed,
+        _to: jane._id,
         type: 'share',
       }],
     },
