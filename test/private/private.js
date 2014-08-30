@@ -426,3 +426,38 @@ exports.janeAcceptsTarzanInvite = function(test) {
   })
 }
 
+exports.janeCanCommentOnTarzansTreehouseMessage = function(test) {
+  var janeCommentOnMsg = {
+    entity: {
+      schema: 'comment',
+      _id: 'co.janeCommentOnTarzanMsg' + seed,
+      description: 'Trust me, you will like bed',
+    },
+    links: [{
+      _to: 'me.tarzanToTreehouse' + seed,
+      type: 'content',
+    }],
+  }
+  t.post({
+    uri: '/do/insertEntity?' + jane.cred,
+    body: janeCommentOnMsg,
+  }, 400, function(err, res, body) {  // fails because _place is not set on msg
+    // now set the _place field of the message
+    t.post({
+      uri: '/data/messages/me.tarzanToTreehouse' + seed + '?' + tarzan.cred,
+      body: {data: {_place: treehouse._id}},
+    }, 200, function(err, res, body) {
+      // jane's comment record is now in the database, but 
+      // the link creation failed.  Hopefully this won't be 
+      // too common in real life.  
+      // Add a second comment with a different Id for the test
+      janeCommentOnMsg.entity._id = 'co.janeCommentOnTarzanMsg2' + seed,
+      t.post({
+        uri: '/do/insertEntity?' + jane.cred,
+        body: janeCommentOnMsg,
+      }, 200, function(err, res, body) {
+        test.done()
+      })
+    })
+  })
+}
