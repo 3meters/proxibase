@@ -26,7 +26,7 @@ In link.js we have couple of rules coded now.  1) You cannot create a link from 
 
 
 ## Invitations:
-Currently when Tarzan invites Jane to watch his treehouse, we create one message entity with the invitation, then two links of type 'share'.  The first is to Jane from the message; the second is from the message to the treehouse.   In the client, if Jane follows the share link to the message ('accept' in the client ui), the client creates a watch link from Jane to the treehouse.
+Currently when Tarzan invites Jane to watch his treehouse, we create one message entity with the invitation, then two links of type 'share'.  The first is from the message to the Treehouse; the second is from the message to Jane, and possibly others.   In the client, if Jane follows the share link to the message ('accept' in the client ui), the client creates a watch link from Jane to the treehouse.
 
 
 ## Scenarios:
