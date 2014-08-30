@@ -406,3 +406,21 @@ exports.tarzanInvitesJaneToTreehouse = function(test) {
   })
 }
 
+exports.janeAcceptsTarzanInvite = function(test) {
+  t.post({
+    uri: '/data/links?' + jane.cred,
+    body: {
+      data: {
+        _to: treehouse._id,
+        _from: jane._id,
+        type: 'watch',
+      }
+    }
+  }, 201, function(err, res, body) {
+    t.assert(body.data)
+    // enabled because we recognized outstanding invitation
+    t.assert(body.data.enabled === true)
+    test.done()
+  })
+}
+
