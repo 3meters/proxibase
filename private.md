@@ -72,10 +72,12 @@ For singleton safeFinds access is granted by passing in a new option to the safe
 Should secret places appear in the nearby or search results of people who have access to them?
 
 ## Visbility of child entities of private and secret places
-Messages will become an ownerAccess collection.  getEntitiesforEntity will be modified to accept the watchId parmeter from the client.  For entities of schema place, it will first look up the entity itself using safeFind with the watchId semantics above.  For entities of other shemas, it will validate the watchId not against the entity itself, but against the _place field of the entity.  This means that if the _place field is not correctly set for messages to private and secret places, users will not be able see them in the UI.
+Messages will become an ownerAccess collection. We will introduce a new option to safeFind, asReader.  This functions like asAdmin, but is more restrictive.  First, it only affects reads, not writes, and second, it does not change the scope of the private fields on the users table.  getEntitiesForEntity and getEntities.   For entities of schema place, it will first look up the entity and check if 1) it is public, 2) the user has a watch link to the entity itself, or 3) if the user has a watch link to the _place field of the target entity.  If any of these is true, 
 
-If either the place is visiblity 'public', or the user has a valid watchId for the entity, getEntitiesforEntity will in turn call getEntities with asAdmin permissions to override the ownerAccess flag.
+getEntitiesforEntity will in turn call getEntities with asReader permissions to override the ownerAccess flag.
 
+## Issue: safeFind links
+Arguably safeFind should respect the asReader option for sublinked documents.  We're going to put this off for now since the android client doesn't use the feature.
 
 ## Issue: Watch vs. Join
 Currently we are using watch to signify membership in private and hidden places, and to trigger increased notifications.  This is probably right in general, but you can conceive of wanting to maintain your membership in a secret place but cut down on the notification chatter.  We will ignore this for now and stick with watch.
