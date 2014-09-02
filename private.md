@@ -97,3 +97,5 @@ Currently we are using watch to signify membership in private and hidden places,
 ## Issue:  Rejection notifications
 We need be careful about the notifcations, since there are some events that we might need to broadcast in order for the client UI to update, but we do not want to send messages about rejections.  I am not very familiar with the nuances of this code.
 
+**Jay**: The client currently notifies/refreshes on entity inserts but not updates or deletes.
+
