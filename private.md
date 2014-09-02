@@ -55,6 +55,14 @@ Accepting an invitation to join a pivate or secret place:
 If Jane accepts Tarzans invitation the client will create a watch link from Jane to Treehouse.  Normally this would be set to disabled, since the Treehouse is secret.  However, the service will query for an outstanding share link between the treehouse and messages, and between any of those messages and Jane.  (Two hops, yuck)  If it finds Jane among the invited list it will enable Janes watch link automatically in one step.
 
 
+Jay: We need to make sure the invitation came from someone with authority to approve a watch request. We are using the share linking essentially as pre-approval right?
+Jay: A future feature is a patch owner can let patch members add new members. Facebook groups has this.
+Jay: Who can share an invite to a private place or secret place? My thoughts:
+- If you can see it you can share it.
+- If share comes from patch owner, share links are pre-approval for a watch request.
+- If share comes from non-owner, share links are not pre-approval. User still needs to go through watch request/approval workflow.
+
+
 Quit watching a private or secret place
 Jane needs to be able to delete her Treehouse watch link, even though Tarzan owns it.
 
