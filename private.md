@@ -56,7 +56,9 @@ If Jane accepts Tarzans invitation the client will create a watch link from Jane
 
 
 Jay: We need to make sure the invitation came from someone with authority to approve a watch request. We are using the share linking essentially as pre-approval right?
+
 Jay: A future feature is a patch owner can let patch members add new members. Facebook groups has this.
+
 Jay: Who can share an invite to a private place or secret place? My thoughts:
 - If you can see it you can share it.
 - If share comes from patch owner, share links are pre-approval for a watch request.
@@ -78,6 +80,8 @@ For singleton safeFinds access is granted by passing in a new option to the safe
 
 ### Issue: Secret place visibly to members?
 Should secret places appear in the nearby or search results of people who have access to them?
+
+Jay: If possible, I think members should see secret places in lists. We might want to follow the facebook visibility rules where possible: https://www.facebook.com/help/220336891328465.
 
 ## Visbility of child entities of private and secret places
 Messages will become an ownerAccess collection. We will introduce a new option to safeFind, asReader.  This functions like asAdmin, but is more restrictive.  First, it only affects reads, not writes, and second, it does not change the scope of the private fields on the users table.  getEntitiesForEntity and getEntities.   For entities of schema place, it will first look up the entity and check if 1) it is public, 2) the user has a watch link to the entity itself, or 3) if the user has a watch link to the _place field of the target entity.  If any of these is true, 
