@@ -83,7 +83,7 @@ Should secret places appear in the nearby or search results of people who have a
 
 **Jay**: If possible, I think members should see secret places in lists. We might want to follow the facebook visibility rules where possible: https://www.facebook.com/help/220336891328465.
 
-## Visbility of child entities of private and secret places
+## Visibility of child entities of private and secret places
 Messages will become an ownerAccess collection. We will introduce a new option to safeFind, asReader.  This functions like asAdmin, but is more restrictive.  First, it only affects reads, not writes, and second, it does not change the scope of the private fields on the users table.  getEntitiesForEntity and getEntities.   For entities of schema place, it will first look up the entity and check if 1) it is public, 2) the user has a watch link to the entity itself, or 3) if the user has a watch link to the _place field of the target entity.  If any of these is true, 
 
 getEntitiesforEntity will in turn call getEntities with asReader permissions to override the ownerAccess flag.
@@ -97,5 +97,16 @@ Currently we are using watch to signify membership in private and hidden places,
 ## Issue:  Rejection notifications
 We need be careful about the notifcations, since there are some events that we might need to broadcast in order for the client UI to update, but we do not want to send messages about rejections.  I am not very familiar with the nuances of this code.
 
+We need be careful about the notifcations, since there are some events that we might need to broadcast in order for the 
 **Jay**: The client currently notifies/refreshes on entity inserts but not updates or deletes.
+
+## Issue:  Changing the privacy setting
+We have a visibility property on places that can be set to public, private, or secret. What happens or is allowed when changing the privacy setting? Facebook: if group has fewer than 250 members then group admin can change to any privacy option and all members of the group will receive a notification that the privacy setting has changed. If 250 or more then you can change from public to closed|secret or closed to secret and then you can't change the privacy setting again after that. Basically, for large groups you can never change to a less restrictive privacy setting. 
+
+There seem to be a fair number facebook groups that have been hacked/stolen, then converted to secret and once back in the hands of the rightful owners, the rules prevent them from returning to a more permissive setting. They are predictably not happy but hard to tell just how common this problem is. Also some just get switched by accident because the admin didn't realize what would happen.
+
+My thought is that we should leave any existing watch links when the privacy setting changes and notify the members of the change. For now, I wouldn't have the size rule.
+
+
+
 
