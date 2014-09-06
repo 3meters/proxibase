@@ -106,6 +106,10 @@ There seem to be a fair number facebook groups that have been hacked/stolen, the
 
 My thought is that we should leave any existing watch links when the privacy setting changes and notify the members of the change. For now, I wouldn't have the size rule.
 
+## Issue:  Nearby notifictions
+We need to make sure that nearby notifications are not sent when secret patches are created.
+
+
 
 
 
