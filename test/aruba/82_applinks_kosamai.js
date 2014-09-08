@@ -102,7 +102,7 @@ exports.refreshKaosamai = function(test) {
         var bogusApplinkId = body.data._id
         t.assert(bogusApplinkId)
         t.post({
-          uri: '/data/links?' + userCred,
+          uri: '/data/links?' + adminCred,
           body: {
             data: {
               _to: place._id,

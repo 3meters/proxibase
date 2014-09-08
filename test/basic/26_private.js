@@ -455,7 +455,7 @@ exports.janeCanCommentOnTarzansTreehouseMessage = function(test) {
       t.post({
         uri: '/do/insertEntity?' + jane.cred,
         body: janeCommentOnMsg,
-      }, 200, function(err, res, body) {
+      }, 201, function(err, res, body) {
         test.done()
       })
     })
