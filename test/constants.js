@@ -113,6 +113,7 @@ defaultDoc.place = {
     },
   },
   _creator: uid1,
+  _owner: util.adminId,
 }
 
 defaultDoc.applink = {
