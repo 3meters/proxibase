@@ -34,7 +34,9 @@ exports.countByDeliversSomeResults = function(test) {
   }, function(err, res, body) {
     // These are based on data in template test database
     t.assert(body.count >= profile.users)
+    t.assert(body.data)
     body.data.forEach(function(agg) {
+      t.assert(agg._owner)
       if (0 === agg._owner.indexOf(testUserIdPrefix)) {
         t.assert(agg.countBy)  // Testing the expected value is hard
       }

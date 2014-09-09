@@ -114,6 +114,7 @@ var testMessage = {
   _id : "me.111111.11111.111.111111",
   schema : util.statics.schemaMessage,
   name : "Testing message entity",
+  _place: testPlaceCustom._id,  // added 9/8/14 to work with private places
   photo: {
     prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
     source:"aircandi",
@@ -518,7 +519,7 @@ exports.insertMessage = function (test) {
 
     /* Check insert */
     t.post({
-      uri: '/find/messages',
+      uri: '/find/messages?' + userCredBob,
       body: {
         query:{ _id:testMessage._id }
       }
@@ -721,7 +722,7 @@ exports.insertComment = function (test) {
 
         /* Check activityDate for message */
         t.post({
-          uri: '/find/messages',
+          uri: '/find/messages?' + userCredBob,  // bob's comment
           body: {
             query:{ _id: testMessage._id }
           }
@@ -757,6 +758,7 @@ exports.updateEntity = function (test) {
     }, function(err, res, body) {
       t.assert(body.count === 1)
       t.assert(body.data && body.data[0])
+      log('activityDate', activityDate)
       t.assert(body.data[0].activityDate != activityDate)
 
       /* Check activityDate for place */
@@ -772,7 +774,7 @@ exports.updateEntity = function (test) {
 
         /* Check activityDate for message */
         t.post({
-          uri: '/find/messages',
+          uri: '/find/messages?' + adminCred,
           body: {
             query:{ _id: testMessage._id }
           }
@@ -819,7 +821,7 @@ exports.deleteEntity = function (test) {
 
         /* Check activityDate for message */
         t.post({
-          uri: '/find/messages',
+          uri: '/find/messages?' + adminCred,
           body: {
             query:{ _id: testMessage._id }
           }

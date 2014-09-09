@@ -655,7 +655,7 @@ exports.insertMessage = function (test) {
 
     /* Check insert */
     t.post({
-      uri: '/find/messages',
+      uri: '/find/messages?' + userCredBecky,
       body: {
         query:{ _id:testMessage._id }
       }
@@ -759,7 +759,7 @@ exports.insertReply = function (test) {
 
     /* Check insert */
     t.post({
-      uri: '/find/messages',
+      uri: '/find/messages?' + userCredAlice,
       body: {
         query:{ _id:testReply._id }
       }
@@ -916,12 +916,12 @@ exports.messagePagingRest = function(test) {
 }
 
 exports.messagePagingRestLinks = function(test) {
-  t.get('/find/places/' + place1Id + '?links[from][messages]=1',
+  t.get('/find/places/' + place1Id + '?links[from][messages]=1&' + adminCred,
   function(err, res, body) {
     t.assert(body.data)
     t.assert(body.data.links)
     t.assert(body.data.links.length = messagesPerPlace)
-    t.get('/find/places/' + place1Id + '?links[from][messages]=1&links[limit]=2&links[skip]=2&links[sort]=_id',
+    t.get('/find/places/' + place1Id + '?links[from][messages]=1&links[limit]=2&links[skip]=2&links[sort]=_id&' + adminCred,
     function(err, res, body) {
       t.assert(body.data)
       t.assert(body.data.links)

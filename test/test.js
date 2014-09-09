@@ -6,6 +6,7 @@
  */
 
 var util = require('proxutils') // load proxibase extensions
+var proxdb = require('proxdb')  // for mongosafe operations
 var timer = util.timer()
 var log = util.log
 var fs = require('fs')
@@ -180,9 +181,15 @@ function ensureDb(ops, cb) {
             adminDb.command({copydb:1, fromdb:templateName, todb:dbName}, function(err, result) {
               if (err) throw err
               log('Database copied in ' + dbtimer.read() + ' seconds')
-              // make the database connection available directly to tests
+              // make the raw mongodb database connection available directly to tests
               testUtil.db = db
-              return cb()    // Finished
+              // Run the mongosafe init command so that the mongosafe methods are
+              // available directly to the tests
+              proxdb.initDb(config, function(err, safeDb) {
+                if (err) throw err
+                testUtil.safeDb = safeDb
+                cb()
+              })
            })
           }
         })
@@ -210,6 +217,7 @@ function ensureServer(cb) {
 
       log('Starting test server ' + serverUri + ' using config ' + configFile)
       log('Test server log: ' + logFile)
+      log('Starting test server...')
       testServer = child_process.spawn('node', [__dirname + '/../prox', '--config', configFile])
 
       // Fires immediately if the server does not compile

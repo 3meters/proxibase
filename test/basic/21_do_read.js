@@ -26,6 +26,16 @@ var testUser = {
   developer : false,
   enabled: true,
 }
+
+var seed = util.seed(5)
+
+// From the sample data
+var testUser1 = {
+  email: 'testuser1@3meters.com',
+  password: 'password1',
+  installId: seed,
+}
+
 var _exports = {} // for commenting out tests
 
 // Get user and admin sessions and store the credentials in module globals
@@ -36,6 +46,21 @@ exports.getSessions = function (test) {
       adminCred = 'user=' + session._owner + '&session=' + session.key
       test.done()
     })
+  })
+}
+
+// Login as the first sample user in the sample db
+exports.getSampleUserCred = function(test) {
+  t.post({
+    uri: '/auth/signin',
+    body: testUser1,
+  }, function(err, res, body) {
+    t.assert(body.user)
+    t.assert(body.session)
+    // These credentials will be useds in subsequent tests
+    testUser1 = body.user
+    testUser1.cred = 'user=' + body.user._id + '&session=' + body.session.key
+    test.done()
   })
 }
 
@@ -59,6 +84,26 @@ exports.getEntitiesMinimum = function (test) {
     test.done()
   })
 }
+
+exports.getEntitiesMessages = function (test) {
+  t.post({
+    uri: '/do/getEntities',
+    body: {
+      entityIds: [constants.placeId], 
+      links: {
+        active: [
+          { type:statics.typeContent, schema:statics.schemaMessage, links: true, count: true, direction: 'both' },
+        ]},
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data[0])
+    var record = body.data[0]
+    t.assert(record.linksIn && record.linksIn.length === dbProfile.mpp)
+    test.done()
+  })
+}
+
 
 exports.getEntitiesMaximum = function (test) {
   /*
@@ -143,6 +188,7 @@ exports.getEntitiesAndLinkedEntitiesByUser = function (test) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data[0])
     var record = body.data[0]
+    // TODO:  isn't there something that should be tested here? (george 8.29.14)
     test.done()
   })
 }
@@ -189,7 +235,7 @@ exports.getEntitiesForLocationLimited = function (test) {
 
 exports.getEntitiesCreatedByUser = function (test) {
   t.post({
-    uri: '/do/getEntitiesForEntity',
+    uri: '/do/getEntitiesForEntity?' + testUser1.cred,
     body: {
       entityId: constants.uid1,
       cursor: { 
@@ -199,13 +245,14 @@ exports.getEntitiesCreatedByUser = function (test) {
     }
   }, function(err, res, body) {
     t.assert(body.count > 0 && body.count <= statics.db.limits.default)
+    // TODO: tests?  body.count is for the entity itself, not the links
     test.done()
   })
 }
 
 exports.getEntitiesCreatedByUserSortSkipLimit = function (test) {
   t.post({
-    uri: '/do/getEntitiesForEntity',
+    uri: '/do/getEntitiesForEntity?' + testUser1.cred,
     body: {
       entityId: constants.uid1,
       cursor: { 
@@ -226,7 +273,7 @@ exports.getEntitiesCreatedByUserSortSkipLimit = function (test) {
       if (i === 3) ent3 = ent
     })
     t.post({
-      uri: '/do/getEntitiesForEntity',
+      uri: '/do/getEntitiesForEntity?' + testUser1.cred,
       body: {
         entityId: constants.uid1,
         cursor: {
@@ -284,7 +331,7 @@ exports.getEntitesLinksLimitSortSkip = function (test) {
     })
 
     t.post({
-      uri: '/do/getEntitiesForEntity',
+      uri: '/do/getEntitiesForEntity?' + testUser1.cred,
       body: {
         entityId: constants.uid1,
         cursor: {
@@ -314,7 +361,7 @@ exports.getEntitesLinksLimitSortSkip = function (test) {
       t.assert(links[0].shortcut.id === link3.shortcut.id, link3)   // skip works, note id, not _id
 
       t.post({
-        uri: '/do/getEntitiesForEntity',
+        uri: '/do/getEntitiesForEntity?' + testUser1.cred,
         body: {
           entityId: constants.uid1,
           cursor: {
