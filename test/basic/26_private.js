@@ -300,6 +300,33 @@ exports.getEntitiesForEntsReadsMessagesToPublicPlaces = function(test) {
   })
 }
 
+
+exports.tarzanCannotInviteHimselfToJanehouse = function(test) {
+  t.post({
+    uri: '/do/insertEntity?' + tarzan.cred,
+    body: {
+      entity: {
+        _id: 'me.tarzanInvitesHimselfOver' + seed,
+        schema: 'message',
+        description: 'I would like to see Janehouse',
+      },
+      // insertEntity will set the _from side of the following links
+      // to the entity._id of the message
+      links: [{
+        _id: 'li.toJanehouseFromTarzanSelfInvite' + seed,
+        _to: janehouse._id,
+        type: 'share',
+      }, {
+        _id: 'li.toJaneFromTarzanSelfInvite' + seed,
+        _to: jane._id,
+        type: 'share',
+      }],
+    },
+  }, 401, function(err, res, body) {
+    test.done()
+  })
+}
+
 var tarzanWatchesJanehouse = {
   _from: tarzan._id,
   _to: janehouse._id,
