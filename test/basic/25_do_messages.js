@@ -814,6 +814,70 @@ exports.insertReply = function (test) {
   })
 }
 
+/*
+ * ----------------------------------------------------------------------------
+ * Message list
+ * ----------------------------------------------------------------------------
+ */
+
+exports.getMessagesForTom = function (test) {
+  t.post({
+    uri: '/do/getMessages?' + userCredTom,
+    body: {
+      entityId: testUserTom._id,
+      cursor: {
+        limit: 50,
+        linkTypes: ['create', 'watch'],
+        schemas: ['place', 'user'],
+        skip: 0,
+        sort: { modifiedDate: -1 },
+      },
+      links : {
+        shortcuts: true,
+        active:
+        [ { schema: 'place',
+            limit: 1,
+            links: true,
+            type: 'content',
+            count: true,
+            direction: 'out' },
+          { schema: 'message',
+            limit: 1,
+            links: true,
+            type: 'content',
+            count: true,
+            direction: 'both' },
+          { schema: 'place',
+            limit: 1,
+            links: true,
+            type: 'share',
+            count: true,
+            direction: 'out' },
+          { schema: 'message',
+            limit: 1,
+            links: true,
+            type: 'share',
+            count: true,
+            direction: 'out' },
+          { schema: 'user',
+            limit: 5,
+            links: true,
+            type: 'share',
+            count: true,
+            direction: 'out' } ]
+      }
+    }
+  },
+
+  function(err, res, body) {
+    // Should see bobs message and alices reply
+    t.assert(body.data)
+    t.assert(body.count === 2)
+    log('result', body)
+    test.done()
+  })
+}
+
 
 exports.userWatchesPlaceViaRestWatchParam = function(test) {
   t.get('/find/places/' + testPlaceCustom._id + '?watch=true&' + userCredAlice,
