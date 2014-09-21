@@ -70,7 +70,8 @@ module.exports = function(profile, callback) {
     db = database
     db.dropDatabase(function(err) {
       if (err) throw err
-      mongo.initDb(config, function(err, proxdb) {
+      var schemaPath = path.join(__dirname, '../../lib/schemas')  // fragile
+      mongo.initDb(config.db, function(err, proxdb) {
         if (err) throw err
         db.close()
         db = proxdb
