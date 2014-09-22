@@ -14,7 +14,7 @@ module.exports = {
       keyFilePath: './keys/dev/dev.pem',
       certFilePath: './keys/dev/dev.crt',
       caFilePath: null,
-    }.
+    },
     dkim: {                             // for digitally signing mail, see http://dkimcore.org/
       domainName: 'aircandi.com',           // default aircanid.com, matches our dkim public key at godadday
       keyFilePath: null,
@@ -33,7 +33,7 @@ module.exports = {
     },
   },
   maxWorkers: -1,                       // default -1 means one per cpu core
-  ignoreTasks: false,                   // default false, if true skip autostart of recurring tasks
+  ignoreTasks: true,                   // default false, if true skip autostart of recurring tasks
   doNotRestart: false,                  // default false, if true do not restart dead workers
   sendMail: './testMail.log',           // boolean or filename for logging, default false
   notify: {

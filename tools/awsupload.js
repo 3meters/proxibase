@@ -33,7 +33,7 @@ function uploadToS3(filePath, bucket) {
   var h = date.getHours()
   var n = date.getMinutes()
   var s = date.getSeconds()
-  var tag = '.' + y + '-' + pad(m + 1) + '-' + pad(d) + '.' + pad(h) + ':' + pad(n) + ':' + pad(s)
+  var tag = '.' + y + '-' + pad(m) + '-' + pad(d) + '.' + pad(h) + ':' + pad(n) + ':' + pad(s)
 
   function pad(n) { return (n < 10) ? '0' + n : n }
   var fileExtension = path.extname(filePath)
