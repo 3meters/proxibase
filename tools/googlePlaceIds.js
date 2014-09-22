@@ -47,12 +47,18 @@ function fix(place, cb) {
     return cb()
   }
 
-  place.provider.google = idParts[0]
-  place.provider.googleRef = idParts[1]
+  var upd = {
+    $set: {
+      'provider.google': idParts[0],
+      'provider.googleRef': idParts[1],
+    },
+    $unset: {
+      'provider.google1': '',
+      'provider.google2': '',
+    }
+  }
 
-  if (place.provider.google1) place.provider.google1 = null
-  if (place.provider.google2) place.provider.google2 = null
 
-  db.places.safeUpdate(place, {asAdmin: true}, cb)
+  db.places.update({_id: place._id}, upd, cb)
 
 }

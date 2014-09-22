@@ -9,6 +9,4 @@ cmd="mongodump"
 today=`date`
 $cmd --db prox --out $backupdir/dump
 tar czf $backupdir/proxdump.gz $backupdir/dump
-uuencode $backupdir/proxdump.gz | mailx -s "Proxibase backup $today" $mailto
-
 
