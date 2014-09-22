@@ -140,7 +140,6 @@ exports.getPlacesNearLocationUsingLimit = function(test) {
       for (var p in place.provider) {
         placeCount[p]++
       }
-      if (place.provider.google) place.provider.google = place.provider.google.split('|')[0]
       if (place.provider.foursquare === ballRoom4sId
           || place.provider.google === ballRoomGoogleId
           || place.provider.yelp === ballRoomYelpId) {
@@ -198,17 +197,10 @@ exports.getPlacesNearLocationUsingLimitAgain = function(test) {
     // Make sure ballroom was excluded
     places.forEach(function(place) {
       t.assert(place.provider, place)
-      /*
-      place.provider.google = place.provider.google || ''
-      log(place.name + ' yelp: ' +  place.provider.yelp +
-        ' google: ' + place.provider.google.slice(0,8) + ' 4s: ' + place.provider.foursquare)
-      */
-      if (place.provider.google) place.provider.google = place.provider.google.split('|')[0]
       t.assert(place._id !== ballRoom4sId)
       t.assert(place.provider.foursquare !== ballRoom4sId)
       t.assert(place.provider.google !== ballRoomGoogleId)
       t.assert(place.provider.yelp !== ballRoomYelpId)
-
     })
 
     var roxys = places.filter(function(place) {
@@ -288,8 +280,6 @@ exports.getPlacesNearLocationUsingRadius = function(test) {
     var places = body.data
     t.assert(places.length === 2)
     places.forEach(function(place) {
-      if (place.provider.google)
-        place.provider.google = place.provider.google.split('|')[0]
       // Vashon ferry terminal
       if (place.provider.google === washingtonStateFerriesGoogleId) {
         foundWashingtonStateFerries++
@@ -347,7 +337,7 @@ exports.getPlacesNearLocationUsingRadiusAgain = function(test) {
         placeCount[p]++
       }
       // Vashon ferry terminal
-      if (place.provider.google1 === washingtonStateFerriesGoogleId) {
+      if (place.provider.google === washingtonStateFerriesGoogleId) {
         foundWashingtonStateFerries++
         washingtonStateFerriesId = place._id
       }
