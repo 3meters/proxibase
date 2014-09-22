@@ -6,7 +6,7 @@
  */
 
 var util = require('proxutils') // load proxibase extensions
-var proxdb = require('proxdb')  // for mongosafe operations
+var mongo = require('proxdb')  // for mongosafe operations
 var timer = util.timer()
 var log = util.log
 var fs = require('fs')
@@ -15,7 +15,6 @@ var child_process = require('child_process')
 var cli = require('commander')
 var reporter = require('nodeunit').reporters.default
 var req = require('request')
-var mongo = require('mongodb')
 var async = require('async')
 var db
 var adminDb
@@ -185,7 +184,7 @@ function ensureDb(ops, cb) {
               testUtil.db = db
               // Run the mongosafe init command so that the mongosafe methods are
               // available directly to the tests
-              proxdb.initDb(config, function(err, safeDb) {
+              mongo.initDb(config.db, function(err, safeDb) {
                 if (err) throw err
                 testUtil.safeDb = safeDb
                 cb()
