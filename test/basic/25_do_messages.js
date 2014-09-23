@@ -875,14 +875,13 @@ exports.getMessagesForSelf = function (test) {
     // an earlier test file is creating a message for Tom.
     t.assert(body.data)
     t.assert(body.count === 3)
-    log('result', body)
     test.done()
   })
 }
 
 exports.getMessagesSentByAlice = function (test) {
   t.post({
-    uri: '/do/getEntitiesForEntity',
+    uri: '/do/getEntitiesForEntity?' + userCredAlice,
     body: {
       entityId: testUserAlice._id,
       cursor: {
@@ -934,7 +933,6 @@ exports.getMessagesSentByAlice = function (test) {
     // Should see alices reply message from above
     t.assert(body.data)
     t.assert(body.count === 1)
-    log('result', body)
     test.done()
   })
 }
