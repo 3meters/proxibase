@@ -816,7 +816,7 @@ exports.insertReply = function (test) {
 
 /*
  * ----------------------------------------------------------------------------
- * Message list
+ * Message feed
  * ----------------------------------------------------------------------------
  */
 
@@ -879,7 +879,13 @@ exports.getMessagesForSelf = function (test) {
   })
 }
 
-exports.getMessagesSentByAlice = function (test) {
+/*
+ * ----------------------------------------------------------------------------
+ * Sent messages
+ * ----------------------------------------------------------------------------
+ */
+
+exports.userGetMessagesSentByAlice = function (test) {
   t.post({
     uri: '/do/getEntitiesForEntity?' + userCredTom,
     body: {
@@ -937,6 +943,63 @@ exports.getMessagesSentByAlice = function (test) {
   })
 }
 
+exports.guestGetMessagesSentByAlice = function (test) {
+  t.post({
+    uri: '/do/getEntitiesForEntity',
+    body: {
+      entityId: testUserAlice._id,
+      cursor: {
+        linkTypes: ['create'],
+        schemas: ['message'],
+        direction: 'out',
+        skip: 0,
+        sort: { modifiedDate: -1},
+        limit: 50,
+      },
+      links : {
+        shortcuts: true,
+        active:
+        [ { schema: 'place',
+            limit: 1,
+            links: true,
+            type: 'content',
+            count: true,
+            direction: 'out' },
+          { schema: 'message',
+            limit: 1,
+            links: true,
+            type: 'content',
+            count: true,
+            direction: 'both' },
+          { schema: 'place',
+            limit: 1,
+            links: true,
+            type: 'share',
+            count: true,
+            direction: 'out' },
+          { schema: 'message',
+            limit: 1,
+            links: true,
+            type: 'share',
+            count: true,
+            direction: 'out' },
+          { schema: 'user',
+            limit: 5,
+            links: true,
+            type: 'share',
+            count: true,
+            direction: 'out' } ]
+      }
+    }
+  },
+
+  function(err, res, body) {
+    // Should see alices reply message from above
+    t.assert(body.data)
+    t.assert(body.count === 1)
+    test.done()
+  })
+}
 
 exports.userWatchesPlaceViaRestWatchParam = function(test) {
   t.get('/find/places/' + testPlaceCustom._id + '?watch=true&' + userCredAlice,
