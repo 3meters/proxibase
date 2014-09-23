@@ -872,7 +872,7 @@ exports.getMessagesForTom = function (test) {
   function(err, res, body) {
     // Should see bobs message and alices reply
     t.assert(body.data)
-    t.assert(body.count === 2)
+    t.assert(body.count === 3)
     log('result', body)
     test.done()
   })
