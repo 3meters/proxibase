@@ -881,7 +881,7 @@ exports.getMessagesForSelf = function (test) {
 
 exports.getMessagesSentByAlice = function (test) {
   t.post({
-    uri: '/do/getEntitiesForEntity?' + userCredAlice,
+    uri: '/do/getEntitiesForEntity?' + userCredTom,
     body: {
       entityId: testUserAlice._id,
       cursor: {
