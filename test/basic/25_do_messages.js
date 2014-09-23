@@ -820,7 +820,7 @@ exports.insertReply = function (test) {
  * ----------------------------------------------------------------------------
  */
 
-exports.getMessagesForTom = function (test) {
+exports.getMessagesForSelf = function (test) {
   t.post({
     uri: '/do/getMessages?' + userCredTom,
     body: {
@@ -871,8 +871,69 @@ exports.getMessagesForTom = function (test) {
 
   function(err, res, body) {
     // Should see bobs message and alices reply
+    // Note: this test file does not stand on it's own because
+    // an earlier test file is creating a message for Tom.
     t.assert(body.data)
     t.assert(body.count === 3)
+    log('result', body)
+    test.done()
+  })
+}
+
+exports.getMessagesSentByAlice = function (test) {
+  t.post({
+    uri: '/do/getEntitiesForEntity',
+    body: {
+      entityId: testUserAlice._id,
+      cursor: {
+        linkTypes: ['create'],
+        schemas: ['message'],
+        direction: 'out',
+        skip: 0,
+        sort: { modifiedDate: -1},
+        limit: 50,
+      },
+      links : {
+        shortcuts: true,
+        active:
+        [ { schema: 'place',
+            limit: 1,
+            links: true,
+            type: 'content',
+            count: true,
+            direction: 'out' },
+          { schema: 'message',
+            limit: 1,
+            links: true,
+            type: 'content',
+            count: true,
+            direction: 'both' },
+          { schema: 'place',
+            limit: 1,
+            links: true,
+            type: 'share',
+            count: true,
+            direction: 'out' },
+          { schema: 'message',
+            limit: 1,
+            links: true,
+            type: 'share',
+            count: true,
+            direction: 'out' },
+          { schema: 'user',
+            limit: 5,
+            links: true,
+            type: 'share',
+            count: true,
+            direction: 'out' } ]
+      }
+    }
+  },
+
+  function(err, res, body) {
+    // Should see alices reply message from above
+    t.assert(body.data)
+    t.assert(body.count === 1)
     log('result', body)
     test.done()
   })
