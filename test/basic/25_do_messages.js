@@ -874,7 +874,17 @@ exports.getMessagesForSelf = function (test) {
     // Note: this test file does not stand on it's own because
     // an earlier test file is creating a message for Tom.
     t.assert(body.data)
-    t.assert(body.count === 3)
+    t.assert(body.count === 5)
+    var cWatch = 0
+    var lastModified = Infinity
+    body.data.forEach(function(msg) {
+      t.assert(msg.modifiedDate < lastModified)
+      lastModified = msg.modifiedDate
+      msg.linksOut.forEach(function(link) {
+        if (link.type === 'watch') cWatch++
+      })
+    })
+    t.assert(cWatch === 3, cWatch)  // George: warning: don't know if this number is correct or not
     test.done()
   })
 }
