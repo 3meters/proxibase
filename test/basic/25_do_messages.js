@@ -816,6 +816,37 @@ exports.insertReply = function (test) {
 
 /*
  * ----------------------------------------------------------------------------
+ * Alerts feed
+ * ----------------------------------------------------------------------------
+ */
+
+exports.getAlertsForSelf = function (test) {
+  t.post({
+    uri: '/do/getAlerts?' + userCredTom,
+    body: {
+      entityId: testUserTom._id,
+      cursor: {
+        linkTypes: ['create'],
+        schemas: ['place'],
+        sort: { modifiedDate: -1 },
+        skip: 0,
+        limit: 50,
+      },
+    }
+  },
+
+  function(err, res, body) {
+    // Should see Bob watching Tom's place
+    // Note: this test file does not stand on it's own because
+    // an earlier test file is creating another watch.
+    t.assert(body.data)
+    t.assert(body.count === 2)
+    test.done()
+  })
+}
+
+/*
+ * ----------------------------------------------------------------------------
  * Message feed
  * ----------------------------------------------------------------------------
  */
@@ -874,17 +905,57 @@ exports.getMessagesForSelf = function (test) {
     // Note: this test file does not stand on it's own because
     // an earlier test file is creating a message for Tom.
     t.assert(body.data)
-    t.assert(body.count === 5)
-    var cWatch = 0
-    var lastModified = Infinity
-    body.data.forEach(function(msg) {
-      t.assert(msg.modifiedDate < lastModified)
-      lastModified = msg.modifiedDate
-      msg.linksOut.forEach(function(link) {
-        if (link.type === 'watch') cWatch++
-      })
-    })
-    t.assert(cWatch === 3, cWatch)  // George: warning: don't know if this number is correct or not
+    t.assert(body.count === 3)
+    test.done()
+  })
+}
+
+exports.getMessage = function (test) {
+  t.post({
+    uri: '/do/getEntities?' + userCredTom,
+    body: {
+      entityIds: [testMessage._id],
+      links : {
+        shortcuts: true,
+        active:
+        [ { schema: 'place',
+            limit: 1,
+            links: true,
+            type: 'content',
+            count: true,
+            direction: 'out' },
+          { schema: 'message',
+            limit: 1,
+            links: true,
+            type: 'content',
+            count: true,
+            direction: 'both' },
+          { schema: 'place',
+            limit: 1,
+            links: true,
+            type: 'share',
+            count: true,
+            direction: 'out' },
+          { schema: 'message',
+            limit: 1,
+            links: true,
+            type: 'share',
+            count: true,
+            direction: 'out' },
+          { schema: 'user',
+            limit: 5,
+            links: true,
+            type: 'share',
+            count: true,
+            direction: 'out' } ]
+      }
+    }
+  },
+
+  function(err, res, body) {
+    // Should see Bobs message
+    t.assert(body.data)
+    t.assert(body.count === 1)
     test.done()
   })
 }
