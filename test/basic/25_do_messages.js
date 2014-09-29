@@ -914,6 +914,7 @@ exports.getMessage = function (test) {
   t.post({
     uri: '/do/getEntities?' + userCredTom,
     body: {
+      placeId: testPlaceCustom._id,
       entityIds: [testMessage._id],
       links : {
         shortcuts: true,
