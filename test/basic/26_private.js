@@ -439,6 +439,12 @@ exports.tarzanInvitesJaneToTreehouse = function(test) {
   })
 }
 
+exports.janeCanReadTarzansInvite = function(test) {
+  log('WARNING: NYI')
+  test.done()
+}
+
+
 exports.janeAcceptsTarzanInvite = function(test) {
   t.post({
     uri: '/data/links?' + jane.cred,
