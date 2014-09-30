@@ -440,8 +440,32 @@ exports.tarzanInvitesJaneToTreehouse = function(test) {
 }
 
 exports.janeCanReadTarzansInvite = function(test) {
-  log('WARNING: NYI')
-  test.done()
+  t.post({
+    uri: '/do/getMessages?' + jane.cred,
+    body: {
+      entityId: jane._id,
+      cursor: {
+        limit: 50,
+        linkTypes: ['share'],
+        schemas: ['message'],
+        skip: 0,
+        sort: { modifiedDate: -1 },
+      },
+      links : {
+        shortcuts: true,
+        active:
+        [ { schema: 'message',
+            links: true,
+            type: 'share',
+            count: true,
+            direction: 'in' },
+        ]
+      }
+    }, function(err, res, body) {
+      t.assert(body.count)
+      test.done()
+    }
+  })
 }
 
 
