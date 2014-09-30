@@ -2,6 +2,7 @@
  *  Private places tests
  */
 
+var async = require('async')
 var util = require('proxutils')
 var log = util.log
 var seed = util.seed(4)  // for running tests concurrently
@@ -177,6 +178,7 @@ exports.tarzanSendsMessageToRiver = function(test) {
         schema: 'message',
         _id: 'me.tarzanToRiver' + seed,
         description: 'Good water, bad crocs',
+        _place: river._id,
       },
       links: [{
         _to: river._id,
@@ -197,6 +199,7 @@ exports.tarzanSendsMessageToTreehouse = function(test) {
         schema: 'message',
         _id: 'me.tarzanToTreehouse' + seed,
         description: 'Check out my hammock',
+        _place: treehouse._id,
       },
       links: [{
         _to: treehouse._id,
@@ -217,6 +220,7 @@ exports.janeSendsMessageToJanehouse = function(test) {
         schema: 'message',
         _id: 'me.janeToJanehouse' + seed,
         description: 'Checkout my bed',
+        _place: janehouse._id,
       },
       links: [{
         _to: janehouse._id,
@@ -237,6 +241,7 @@ exports.tarzanSendsMessageToJanehouseAndFails = function(test) {
         schema: 'message',
         _id: 'me.tarzanToJanehouse' + seed,
         description: 'What is bed?',
+        _place: janehouse._id,
       },
       links: [{
         _to: janehouse._id,
@@ -313,21 +318,38 @@ exports.tarzanCannotInviteHimselfToJanehouse = function(test) {
         _id: 'me.tarzanInvitesHimselfOver' + seed,
         schema: 'message',
         description: 'I would like to see Janehouse',
+        _place: janehouse._id,
       },
       // insertEntity will set the _from side of the following links
       // to the entity._id of the message
       links: [{
-        _id: 'li.toJanehouseFromTarzanSelfInvite' + seed,
-        _to: janehouse._id,
-        type: 'share',
-      }, {
         _id: 'li.toJaneFromTarzanSelfInvite' + seed,
         _to: jane._id,
+        type: 'share',
+      }, {
+        _id: 'li.toJanehouseFromTarzanSelfInvite' + seed,
+        _to: janehouse._id,
         type: 'share',
       }],
     },
   }, 401, function(err, res, body) {
-    test.done()
+    t.get('/data/messages/me.tarzanInvitesHimselfOver' + seed + '?' + tarzan.cred,
+    function(err, res, body) {
+      // The message record exists due to partial failure of the previous call
+      // TODO:  it should be 0, since setting the _place field should fail
+      t.assert(body.count === 1)
+      t.get('/data/links/li.toJaneFromTarzanSelfInvite' + seed + '?' + tarzan.cred,
+      function(err, res, body) {
+        // The link to jane from the share message still exists.  Should it?
+        t.assert(body.count === 1)
+        t.get('/data/links/li.toJanehouseFromTarzanSelfInvite' + seed + '?' + tarzan.cred,
+        function(err, res, body) {
+          // This is the link failure that caused the 401 in the top-level call
+          t.assert(body.count === 0)
+          test.done()
+        })
+      })
+    })
   })
 }
 
@@ -410,7 +432,9 @@ exports.tarzanInvitesJaneToTreehouse = function(test) {
       entity: {
         _id: 'me.tarzanInvite' + seed,
         schema: 'message',
+        type: 'root',
         description: 'Check out my treehouse',
+        _place: treehouse._id,
       },
       // insertEntity will set the _from side of the following links
       // to the entity._id of the message
@@ -455,14 +479,27 @@ exports.janeCanReadTarzansInvite = function(test) {
         shortcuts: true,
         active:
         [ { schema: 'message',
-            links: true,
             type: 'share',
-            count: true,
-            direction: 'in' },
+            direction: 'both' },
         ]
       }
-    }, function(err, res, body) {
-      t.assert(body.count)
+    },
+  }, function(err, res, body) {
+    t.assert(body.count === 2)
+
+    async.eachSeries(body.data, getMessage, done)
+
+    function getMessage(msg, next) {
+      t.get('/do/getEntities?entityIds[0]=' + msg._id + '&placeId=' + msg._place + '&' + jane.cred,
+      function(err, res, body) {
+        if (err) return next(err)
+        t.assert(body.count)
+        next()
+      })
+    }
+
+    function done(err) {
+      if (err) t.assert(false, err)
       test.done()
     }
   })
