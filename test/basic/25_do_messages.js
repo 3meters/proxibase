@@ -117,7 +117,7 @@ var testMessage = {
     prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
     source:"aircandi",
   },
-  _place: testPlaceCustom._id,  // Usually set by client
+  _acl: testPlaceCustom._id,  // Usually set by client
 }
 
 var testReply = {
@@ -127,6 +127,7 @@ var testReply = {
   description : "Repeat! Repeat!",
   _root : "me.111111.11111.111.222222",
   _replyTo: testUserBecky._id,
+  _acl: testPlaceCustom._id,  // Usually set by client
 }
 
 var testBeacon = {
@@ -661,7 +662,7 @@ exports.insertMessage = function (test) {
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
-      t.assert(body.data[0]._place === testPlaceCustom._id)
+      t.assert(body.data[0]._acl === testPlaceCustom._id)
 
       /* Check link */
       t.post({
@@ -901,6 +902,7 @@ exports.getMessagesForSelf = function (test) {
   },
 
   function(err, res, body) {
+    debug('toms messages', body.data)
     // Should see bobs message and alices reply
     // Note: this test file does not stand on it's own because
     // an earlier test file is creating a message for Tom.
@@ -914,7 +916,6 @@ exports.getMessage = function (test) {
   t.post({
     uri: '/do/getEntities?' + userCredTom,
     body: {
-      placeId: testPlaceCustom._id,
       entityIds: [testMessage._id],
       links : {
         shortcuts: true,
