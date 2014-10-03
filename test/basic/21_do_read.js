@@ -138,7 +138,7 @@ exports.getEntitiesMaximum = function (test) {
   })
 }
 
-exports.getEntitiesWithoutCommentInfo = function (test) {
+exports.getEntitiesWithLinkStatsOnly = function (test) {
   /*
    * We don't currently populate the smoke test data with any entities that have
    * both a parent and children.
@@ -148,10 +148,11 @@ exports.getEntitiesWithoutCommentInfo = function (test) {
     body: {
       entityIds: [constants.placeId], 
       links: {
-        active: [ 
+        statsOnly: true,
+        active: [
           { type:statics.typeProximity, schema:statics.schemaBeacon }, 
           { type:statics.typeContent, schema:statics.schemaApplink }, 
-          { type:statics.typeContent, schema:statics.schemaComment, links: false, count: false }, 
+          { type:statics.typeContent, schema:statics.schemaComment }, 
           { type:statics.typeContent, schema:statics.schemaPost }, 
           { type:statics.typeWatch, schema:statics.schemaUser }, 
           { type:statics.typeLike, schema:statics.schemaUser }, 
@@ -161,9 +162,10 @@ exports.getEntitiesWithoutCommentInfo = function (test) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data[0])
     var record = body.data[0]
-    t.assert(record.linksInCounts && record.linksInCounts.length === 4)
+    t.assert(record.linksInCounts && record.linksInCounts.length === 5)
     t.assert(record.linksOutCounts && record.linksOutCounts.length === 1)
-    t.assert(!record.linksIn && !record.linksOut)
+    t.assert(!record.linksIn)
+    t.assert(!record.linksOut)
     test.done()
   })
 }

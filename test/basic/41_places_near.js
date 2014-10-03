@@ -407,7 +407,6 @@ exports.findAndMergeDupes = function(test) {
           _id: testMsgId,
           schema : 'message',
           name : "Test message to Quion",
-          _place: quoin._id,
         },
         links: [{
           _to: quoin._id,
@@ -447,7 +446,7 @@ exports.findAndMergeDupes = function(test) {
               t.get('/find/messages/' + testMsgId + '?' + adminCred,
               function(err, res, body) {
                 t.assert(body.data)
-                t.assert(body.data._place = revel._id)
+                t.assert(body.data._acl = revel._id)
                 test.done()
               })
             })

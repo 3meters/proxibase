@@ -150,6 +150,7 @@ exports.user1CanCreateARecord = function(test) {
 exports.user1OwnsRecordsHeCreates = function(test) {
   t.get('/data/documents/' + doc1._id + '?' + user1Cred,
   function(err, res, body) {
+    t.assert(body.data)
     t.assert(body.data._owner = user1._id)
     test.done()
   })

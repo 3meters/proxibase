@@ -112,9 +112,9 @@ var testPlaceCustomTwo = {
 
 var testMessage = {
   _id : "me.111111.11111.111.111111",
+  _acl: testPlaceCustom._id,
   schema : util.statics.schemaMessage,
   name : "Testing message entity",
-  _place: testPlaceCustom._id,  // added 9/8/14 to work with private places
   photo: {
     prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
     source:"aircandi",
