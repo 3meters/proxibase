@@ -537,10 +537,15 @@ exports.watchPublicPlace = function(test) {
       fromId: testUserBob._id,
       enabled: true,
       type: util.statics.typeWatch,
-      actionEvent: 'watch'
+      actionEvent: 'watch',
+      returnMessages: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
+    /*
+     * Tom gets an alert notification because he owns the place.
+     */
+    t.assert(body.messages.length === 1)
 
     /* Check watch entity link to entity 2 */
     t.post({

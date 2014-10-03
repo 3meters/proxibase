@@ -1250,21 +1250,10 @@ exports.insertPost = function (test) {
         _to: testPlaceCustomPublic._id,
         type: util.statics.typeContent,
       }],
-      returnMessages: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
-    /*
-     * Tom should get a message because he owns the custom place
-     * Alice should get a watch_to because she is watching the place
-     */
-    t.assert(body.messages.length == 2)
-    body.messages.forEach(function(message) {
-      t.assert(message.action.user && message.action.entity)
-      t.assert(message.action.toEntity && message.action.toEntity.id == testPlaceCustomPublic._id)
-      t.assert(message.trigger == 'own_to' || message.trigger == 'watch_to')
-    })
 
     /* Check inserted post */
     t.post({
@@ -1319,21 +1308,10 @@ exports.insertComment = function (test) {
         _to: testPost._id,
         type: util.statics.typeContent,
       }],
-      returnMessages: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
-    /*
-     * Bob should get a message because he owns the post.
-     * Alice should get a watch_user because she is watching Tom
-     */
-    t.assert(body.messages.length == 2)
-    body.messages.forEach(function(message) {
-      t.assert(message.action.user && message.action.entity)
-      t.assert(message.action.toEntity && message.action.toEntity.id == testPost._id)
-      t.assert(message.trigger == 'own_to' || message.trigger == 'watch_user')
-    })
 
     /* Check insert */
     t.post({
@@ -1624,20 +1602,10 @@ exports.ownerCanCommentOnLockedRecord = function(test) {
         _to: testPlaceCustomLocked._id,
         type: util.statics.typeContent
       }],
-      returnMessages: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
-    /*
-     * Alice should get a watch_user because she is watching Tom
-     */
-    t.assert(body.messages.length == 1)
-    t.assert(body.messages[0].action.user && body.messages[0].action.entity)
-    t.assert(body.messages[0].action.toEntity)
-    t.assert(!body.messages[0].action.fromEntity)
-    t.assert(body.messages[0].trigger == 'watch_user')
-    t.assert(body.messages[0].registrationIds[0].indexOf('alice') > 0)
 
     /* Check owner inserted comment on locked record */
     t.post({
@@ -1661,20 +1629,10 @@ exports.adminCanCommentOnLockedRecord = function(test) {
         _to: testPlaceCustomLocked._id,
         type: util.statics.typeContent
       }],
-      returnMessages: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
-    /*
-     * Message gets processed and we get the 'own_to' trigger because
-     * the comment is from the admin (not tom who owns the place).
-     */
-    t.assert(body.messages.length == 1)
-    t.assert(body.messages[0].action.entity && body.messages[0].action.user)
-    t.assert(body.messages[0].action.toEntity)
-    t.assert(!body.messages[0].action.fromEntity)
-    t.assert(body.messages[0].trigger == 'own_to')
 
     /* Check admin inserted comment on locked record */
     t.post({

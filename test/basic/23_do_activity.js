@@ -411,16 +411,12 @@ exports.insertCustomPlace = function (test) {
      * with beacons that intersect the ones for custom place three.
      *
      * Tom should not get a message because he is the source.
-     *
-     * Alice gets a message because she is watching Tom.
      */
-    t.assert(body.messages.length == 2)
-    body.messages.forEach(function(message) {
-      t.assert(message.action.user && message.action.entity)
-      t.assert(!message.action.toEntity)
-      t.assert(message.trigger == 'nearby' || message.trigger == 'watch_user')
-      t.assert(message.registrationIds[0].indexOf('bob') > 0 || message.registrationIds[0].indexOf('alice') > 0)
-    })
+    t.assert(body.messages.length == 1)
+    t.assert(body.messages[0].action.user && body.messages[0].action.entity)
+    t.assert(!body.messages[0].action.toEntity)
+    t.assert(body.messages[0].trigger === 'nearby')
+    t.assert(body.messages[0].registrationIds[0].indexOf('bob') > 0)
     test.done()
   })
 }
@@ -447,8 +443,7 @@ exports.insertCustomPlaceTwo = function (test) {
     t.assert(body.messages && body.messages.length == 1)
     t.assert(body.messages[0].action.user && body.messages[0].action.entity)
     t.assert(!body.messages[0].action.toEntity)
-    t.assert(!body.messages[0].action.fromEntity)
-    t.assert(body.messages[0].trigger == 'nearby')
+    t.assert(body.messages[0].trigger === 'nearby')
     t.assert(body.messages[0].registrationIds[0].indexOf('alice') > 0)
 
     test.done()
@@ -678,23 +673,11 @@ exports.insertComment = function (test) {
         _to: testMessage._id,
         type: util.statics.typeContent,
       }],
-      returnMessages: true,
       activityDateWindow: 0,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
-    /*
-     * Bob should get a notification message because he owns the message
-     * Alice should get a notification message because she is watching Tom.
-     */
-    t.assert(body.messages.length == 2)
-    body.messages.forEach(function(message) {
-      t.assert(message.action.user && message.action.entity)
-      t.assert(message.action.toEntity && message.action.toEntity.id == testMessage._id)
-      t.assert(message.trigger == 'own_to' || message.trigger == 'watch_user')
-      t.assert(message.registrationIds[0].indexOf('bob') > 0 || message.registrationIds[0].indexOf('alice') > 0)
-    })
 
     var activityDate = body.date
 
