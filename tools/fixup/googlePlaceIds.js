@@ -18,12 +18,11 @@ var config = {
   },
 }
 
-mongo.initDb(config, function(err, initDb) {
+mongo.initDb(config, function(err, db) {
   if (err) {
     logErr(err)
     process.exit(1)
   }
-  db = initDb
   db.places.count({}, function(err, count) {
     log('Total places: ' + count)
     db.places.safeEach({}, {}, fix, function(err, count) {
