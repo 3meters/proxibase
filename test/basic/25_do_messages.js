@@ -3,7 +3,6 @@
  */
 
 var util = require('proxutils')
-var log = util.log
 var adminId = util.adminUser._id
 var testUtil = require('../util')
 var t = testUtil.treq
@@ -902,7 +901,6 @@ exports.getMessagesForSelf = function (test) {
   },
 
   function(err, res, body) {
-    debug('toms messages', body.data)
     // Should see bobs message and alices reply
     // Note: this test file does not stand on it's own because
     // an earlier test file is creating a message for Tom.
@@ -1022,7 +1020,9 @@ exports.userGetMessagesSentByAlice = function (test) {
   function(err, res, body) {
     // Should not see alices reply message from above
     t.assert(body.data)
-    t.assert(body.count === 0)
+    // George changed.  I think it is ok to see her messages to public places
+    // t.assert(body.count === 0)
+    t.assert(body.count === 1)
     test.done()
   })
 }

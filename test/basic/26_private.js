@@ -4,7 +4,6 @@
 
 var async = require('async')
 var util = require('proxutils')
-var log = util.log
 var seed = util.seed(4)  // for running tests concurrently
 var testUtil = require('../util')
 var skip = testUtil.skip
@@ -178,14 +177,14 @@ exports.tarzanSendsMessageToRiver = function(test) {
         schema: 'message',
         _id: 'me.tarzanToRiver' + seed,
         description: 'Good water, bad crocs',
-        _place: river._id,
       },
       links: [{
         _to: river._id,
         type: 'content',
       }]
     },
-  }, 201, function(err, body, data) {
+  }, 201, function(err, res, body) {
+    t.assert(body.data)
     test.done()
   })
 }
@@ -199,14 +198,15 @@ exports.tarzanSendsMessageToTreehouse = function(test) {
         schema: 'message',
         _id: 'me.tarzanToTreehouse' + seed,
         description: 'Check out my hammock',
-        _place: treehouse._id,
       },
       links: [{
         _to: treehouse._id,
         type: 'content',
       }]
     },
-  }, 201, function(err, body, data) {
+  }, 201, function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.data._acl === treehouse._id)
     test.done()
   })
 }
@@ -220,7 +220,6 @@ exports.janeSendsMessageToJanehouse = function(test) {
         schema: 'message',
         _id: 'me.janeToJanehouse' + seed,
         description: 'Checkout my bed',
-        _place: janehouse._id,
       },
       links: [{
         _to: janehouse._id,
@@ -241,7 +240,6 @@ exports.tarzanSendsMessageToJanehouseAndFails = function(test) {
         schema: 'message',
         _id: 'me.tarzanToJanehouse' + seed,
         description: 'What is bed?',
-        _place: janehouse._id,
       },
       links: [{
         _to: janehouse._id,
@@ -254,7 +252,6 @@ exports.tarzanSendsMessageToJanehouseAndFails = function(test) {
 }
 
 
-
 exports.messagesAreOwnerAccess = function(test) {
   t.get('/find/messages/me.tarzanToRiver' + seed,
   function(err, res, body) {
@@ -264,8 +261,16 @@ exports.messagesAreOwnerAccess = function(test) {
       t.assert(body.count === 1)
       t.get('/find/messages/me.tarzanToRiver' + seed + '?' + jane.cred,
       function(err, res, body) {
-        t.assert(body.count === 0)
-        test.done()
+        t.assert(body.count === 1)  // river is public
+        t.get('/find/messages/me.tarzanToTreehouse' + seed + '?' + tarzan.cred,
+        function(err, res, body) {
+          t.assert(body.count === 1)  // tarzan owns treehouse
+          t.get('/find/messages/me.tarzanToTreehouse' + seed + '?' + jane.cred,
+          function(err, res, body) {
+            t.assert(body.count === 0)  // jane is not watching treehouse
+            test.done()
+          })
+        })
       })
     })
   })
@@ -318,7 +323,6 @@ exports.tarzanCannotInviteHimselfToJanehouse = function(test) {
         _id: 'me.tarzanInvitesHimselfOver' + seed,
         schema: 'message',
         description: 'I would like to see Janehouse',
-        _place: janehouse._id,
       },
       // insertEntity will set the _from side of the following links
       // to the entity._id of the message
@@ -336,7 +340,7 @@ exports.tarzanCannotInviteHimselfToJanehouse = function(test) {
     t.get('/data/messages/me.tarzanInvitesHimselfOver' + seed + '?' + tarzan.cred,
     function(err, res, body) {
       // The message record exists due to partial failure of the previous call
-      // TODO:  it should be 0, since setting the _place field should fail
+      // TODO:  it should be 0, since setting the _acl field should fail
       t.assert(body.count === 1)
       t.get('/data/links/li.toJaneFromTarzanSelfInvite' + seed + '?' + tarzan.cred,
       function(err, res, body) {
@@ -434,7 +438,6 @@ exports.tarzanInvitesJaneToTreehouse = function(test) {
         schema: 'message',
         type: 'root',
         description: 'Check out my treehouse',
-        _place: treehouse._id,
       },
       // insertEntity will set the _from side of the following links
       // to the entity._id of the message
@@ -475,14 +478,15 @@ exports.janeCanReadTarzansInvite = function(test) {
         skip: 0,
         sort: { modifiedDate: -1 },
       },
-      links : {
+      links: {
         shortcuts: true,
-        active:
-        [ { schema: 'message',
-            type: 'share',
-            direction: 'both' },
-        ]
-      }
+        active: [{
+          schema: 'message',
+          type: 'share',
+          direction: 'in',
+        }]
+      },
+      log: true,
     },
   }, function(err, res, body) {
     t.assert(body.count === 2)
@@ -490,7 +494,7 @@ exports.janeCanReadTarzansInvite = function(test) {
     async.eachSeries(body.data, getMessage, done)
 
     function getMessage(msg, next) {
-      t.get('/do/getEntities?entityIds[0]=' + msg._id + '&placeId=' + msg._place + '&' + jane.cred,
+      t.get('/do/getEntities?entityIds[0]=' + msg._id + '&' + jane.cred,
       function(err, res, body) {
         if (err) return next(err)
         t.assert(body.count)
@@ -524,6 +528,25 @@ exports.janeAcceptsTarzanInvite = function(test) {
   })
 }
 
+exports.janeCannotSeeTreehouseMessagesViaFind = function(test) {
+  t.get('/find/messages?' + jane.cred,
+  function(err, res, body) {
+    t.assert(body.count)
+    body.data.forEach(function(msg) {
+      t.assert(msg._owner === jane._id)
+    })
+    test.done()
+  })
+}
+
+exports.janeCanSeeTreehouseMessagesViaFindOne = function(test) {
+  t.get('/find/messages/' + 'me.tarzanToTreehouse' + seed + '?' + jane.cred,
+  function(err, res, body) {
+    t.assert(body.data)
+    test.done()
+  })
+}
+
 exports.janeCanCommentOnTarzansTreehouseMessage = function(test) {
   var janeCommentOnMsg = {
     entity: {
@@ -539,23 +562,9 @@ exports.janeCanCommentOnTarzansTreehouseMessage = function(test) {
   t.post({
     uri: '/do/insertEntity?' + jane.cred,
     body: janeCommentOnMsg,
-  }, 400, function(err, res, body) {  // fails because _place is not set on msg
-    // now set the _place field of the message
-    t.post({
-      uri: '/data/messages/me.tarzanToTreehouse' + seed + '?' + tarzan.cred,
-      body: {data: {_place: treehouse._id}},
-    }, 200, function(err, res, body) {
-      // jane's comment record is now in the database, but 
-      // the link creation failed.  Hopefully this won't be 
-      // too common in real life.  
-      // Add a second comment with a different Id for the test
-      janeCommentOnMsg.entity._id = 'co.janeCommentOnTarzanMsg2' + seed,
-      t.post({
-        uri: '/do/insertEntity?' + jane.cred,
-        body: janeCommentOnMsg,
-      }, 201, function(err, res, body) {
-        test.done()
-      })
-    })
+  }, 201, function(err, res, body) {
+    t.assert(body.count)
+    t.assert(body.data._acl === 'pl.treehouse' + seed)  // checks setAcl in insertEntity
+    test.done()
   })
 }

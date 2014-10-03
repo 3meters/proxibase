@@ -6,12 +6,9 @@
 var fs = require('fs')
 var path = require('path')
 var async = require('async')
-var util = require('proxutils') // load proxibase extentions to node util
-var log = util.log
-var statics = util.statics
+var util = require('proxutils') // load proxibase extentions to node util, adds globals
+var mongo = require('proxdb')       // Proxdb lib, inits schemas
 var _schemas = statics.schemas
-var mongo = require('proxdb')       // Proxdb lib
-var db                                    // Mongodb connection object
 var constants = require('../../test/constants')
 var testUtil = require('../../test/util')
 var docs = {                            // Map of collections to be generated
