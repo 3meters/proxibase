@@ -1141,6 +1141,89 @@ exports.untrackEntityProximity = function(test) {
   })
 }
 
+exports.trackEntityProximityAgain = function(test) {
+  t.post({
+    uri: '/do/trackEntity?' + userCredTom,
+    body: {
+      entityId:testPlaceOne._id,
+      beacons:[testBeacon, testBeacon2, testBeacon3],
+      primaryBeaconId:testBeacon2._id,
+      actionEvent:'proximity',
+    }
+  }, function(err, res, body) {
+    t.assert(body.info.toLowerCase().indexOf('tracked') > 0)
+
+    /* Check track entity proximity links from entity 1 */
+    t.post({
+      uri: '/find/links',
+      body: {
+        query:{
+          _from:testPlaceOne._id,
+          type:util.statics.typeProximity
+        }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 3)
+
+      /* Check track entity proximity link from entity 1 to beacon 2 */
+      t.post({
+        uri: '/find/links',
+        body: {
+          query:{
+            _to:testBeacon2._id,
+            _from:testPlaceOne._id,
+            type:util.statics.typeProximity
+          }
+        }
+      }, function(err, res, body) {
+        trackingLink = body.data[0]
+        t.assert(body.count === 1)
+        t.assert(body.data[0].proximity.primary === true)
+        t.assert(body.data[0].proximity.signal === testBeacon2.signal)
+
+        /* Check track entity log action */
+        t.post({
+          uri: '/find/actions?' + adminCred,
+          body: {
+            query:{
+              _entity:trackingLink._id,
+              event:'link_proximity'
+            }
+          }
+        }, function(err, res, body) {
+          t.assert(body.count === 1)
+          test.done()
+        })
+      })
+    })
+  })
+}
+
+exports.untrackEntityProximityWipeAll = function(test) {
+  t.post({
+    uri: '/do/untrackEntity?' + userCredTom,
+    body: {
+      entityId:testPlaceOne._id,
+    }
+  }, function(err, res, body) {
+    t.assert(body.info.indexOf('untracked') > 0)
+
+    /* Check untrack entity proximity links from entity 1 */
+    t.post({
+      uri: '/find/links',
+      body: {
+        query:{
+          _from:testPlaceOne._id,
+          type:util.statics.typeProximity
+        }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 0)
+      test.done()
+    })
+  })
+}
+
 exports.trackEntityNoBeacons = function(test) {
   t.post({
     uri: '/do/trackEntity?' + userCredTom,
