@@ -819,6 +819,48 @@ exports.insertReply = function (test) {
   })
 }
 
+exports.previewMessagesByProximity = function (test) {
+  t.post({
+    uri: '/do/getEntitiesByProximity?' + userCredBob,
+    body: {
+      cursor: { skip: 0, limit: 50, sort: { modifiedDate: -1 }},
+      links: { shortcuts: true,
+         active:
+          [ { schema: 'beacon',
+              limit: 10,
+              links: true,
+              type: 'proximity',
+              count: true,
+              direction: 'both' },
+            { schema: 'message',
+              limit: 2,
+              links: true,
+              type: 'content',
+              count: true,
+              direction: 'both' }]
+      },
+      beaconIds: [ testBeacon._id ]
+    }
+  },
+
+  function(err, res, body) {
+    t.assert(body.data && body.data.length >= 0)
+    /*
+     * Place is public so Bob should be able to see the message previews
+     * even though he isn't the owner of the place.
+     */
+    var place = body.data[0]
+    t.assert(place._id === testPlaceCustom._id)
+    t.assert(place.linksIn && place.linksIn.length === 2)
+
+    place.linksIn.forEach(function(link) {
+      t.assert(link.shortcut)
+      t.assert(link.shortcut.description)
+    })
+  })
+}
+
+
 /*
  * ----------------------------------------------------------------------------
  * Alerts feed
