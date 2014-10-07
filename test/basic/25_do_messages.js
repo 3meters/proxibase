@@ -824,7 +824,7 @@ exports.previewMessagesByProximity = function (test) {
     uri: '/do/getEntitiesByProximity?' + userCredBob,
     body: {
       cursor: { skip: 0, limit: 50, sort: { modifiedDate: -1 }},
-      links: { shortcuts: true,
+      links: { shortcuts: false,
          active:
           [ { schema: 'beacon',
               limit: 10,
@@ -851,12 +851,15 @@ exports.previewMessagesByProximity = function (test) {
      */
     var place = body.data[0]
     t.assert(place._id === testPlaceCustom._id)
-    t.assert(place.linksIn && place.linksIn.length === 2)
-
-    place.linksIn.forEach(function(link) {
-      t.assert(link.shortcut)
-      t.assert(link.shortcut.description)
-    })
+    t.assert(!place.linksIn)
+    t.assert(!place.linksOut)
+    t.assert(place.linksInCounts && place.linksInCounts.length === 1)
+    t.assert(place.linksInCounts[0].schema === 'message')
+    t.assert(place.linksInCounts[0].count === 2)
+    t.assert(place.linksOutCounts[0].schema === 'beacon')
+    t.assert(place.linksOutCounts[0].count === 1)
+    t.assert(place.linksOutCounts && place.linksOutCounts.length === 1)
+    test.done()
   })
 }
 

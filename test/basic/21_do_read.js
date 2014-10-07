@@ -148,7 +148,7 @@ exports.getEntitiesWithLinkStatsOnly = function (test) {
     body: {
       entityIds: [constants.placeId], 
       links: {
-        statsOnly: true,
+        shortcuts: false,
         active: [
           { type:statics.typeProximity, schema:statics.schemaBeacon }, 
           { type:statics.typeContent, schema:statics.schemaApplink }, 
