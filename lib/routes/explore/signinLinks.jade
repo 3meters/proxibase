@@ -2,6 +2,16 @@ if user
   | Welcome #{user.name}
   = ': '
   a(href='/v1/explore/signout') Sign out
+  - var cred = 'user=' + query.user + '&session=' + query.session
+  - var logUri = config.service.uri + '/v1/admin/log?' + cred
+  - var logErrUri = config.service.uri + '/v1/admin/errlog?' + cred
+  = '  '
+  a(href=logUri) View log
+  = '  '
+  a(href=logErrUri) View error log
+  = '  '
+
+
 else
   a(href='/v1/explore/newaccount') Sign up
   = ' '
