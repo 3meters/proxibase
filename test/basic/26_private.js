@@ -226,7 +226,7 @@ exports.janeSendsMessageToJanehouse = function(test) {
         type: 'content',
       }]
     },
-  }, 201, function(err, body, data) {
+  }, 201, function(err, res, body) {
     test.done()
   })
 }
@@ -246,7 +246,7 @@ exports.tarzanSendsMessageToJanehouseAndFails = function(test) {
         type: 'content',
       }]
     },
-  }, 401, function(err, body, data) {
+  }, 401, function(err, res, body) {
     test.done()
   })
 }
@@ -582,8 +582,36 @@ exports.janeCanSendsMessageToTreehouse = function(test) {
         type: 'content',
       }]
     },
-  }, 201, function(err, body, data) {
+  }, 201, function(err, res, body) {
     test.done()
+  })
+}
+
+exports.janeCanEditHerMessageToTreehouse = function(test) {
+  t.post({
+    uri: '/data/messages/me.janeToTreehouse' + seed + '?' + jane.cred,
+    body: {
+      data: {
+        description: 'On second thought, hammock sucks',
+      },
+    },
+  }, function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.data.description === 'On second thought, hammock sucks')
+    test.done()
+  })
+}
+
+exports.janeCanDeleteHerMessageToTreehouse = function(test) {
+  t.del({
+    uri: '/data/messages/me.janeToTreehouse' + seed + '?' + jane.cred,
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.get('/data/links?query[_from]=me.janeToTreehouse' + seed + '&query[_to]=' + treehouse._id + '&' + jane.cred,
+    function(err, res, body) {
+      t.assert(body.count === 0)
+      test.done()
+    })
   })
 }
 
