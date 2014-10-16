@@ -107,6 +107,33 @@ var testPlaceCustom = {
   },
 }
 
+var testPlaceCustomPrivate = {
+  _id : "pl.111111.11111.111.211112",
+  schema : util.statics.schemaPlace,
+  name : "Seahawks Private VIP Club",
+  photo: {
+    prefix:"1001_20111224_104245.jpg",
+    source:"aircandi"
+  },
+  signalFence : -100,
+  location: {
+    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
+  },
+  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065550004",
+  provider: {
+    aircandi: 'aircandi',
+  },
+  category:{
+    id:"4bf58dd8d48988d18c941735",
+    name : "Baseball Stadium",
+    photo:{
+      prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
+      source : "assets.categories",
+    },
+  },
+  visibility: "private",
+}
+
 var testMessage = {
   _id : "me.111111.11111.111.222222",
   schema : util.statics.schemaMessage,
@@ -500,22 +527,20 @@ exports.insertCustomPlaceMessages = function (test) {
       entity: testPlaceCustom,    // custom place
       beacons: [testBeacon],
       primaryBeaconId: testBeacon._id,
-      returnMessages: true,
+      returnNotifications: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data._id)
     activityDate = body.data.modifiedDate  // For later checks
-
     /*
      * Alice and Max get notified because they are nearby.
      */
-    t.assert(body.messages.length === 1)
+    t.assert(body.notifications.length === 1)
     var aliceHit = false, maxHit = false
 
-    body.messages.forEach(function(message) {
-      t.assert(message.action.user && message.action.entity)
-      t.assert(message.action.entity.id == testPlaceCustom._id)
+    body.notifications.forEach(function(message) {
+      t.assert(message._target == testPlaceCustom._id)
       message.registrationIds.forEach(function(registrationId){
         if (registrationId.indexOf('alice') > 0 && message.trigger == 'nearby') aliceHit = true
         if (registrationId.indexOf('max') > 0 && message.trigger == 'nearby') maxHit = true
@@ -529,6 +554,70 @@ exports.insertCustomPlaceMessages = function (test) {
   })
 }
 
+exports.insertPlaceCustomPrivate = function (test) {
+  t.post({
+    uri: '/do/insertEntity?' + userCredBob,
+    body: {
+      entity: testPlaceCustomPrivate,
+      beacons: [testBeacon],
+      primaryBeaconId: testBeacon._id,
+      returnNotifications: true,
+    }
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data)
+    /*
+     * Tom, Alice and Max should get a nearby message since tom is registered
+     * with beacons that intersect the ones for custom place 2.
+     * Bob should get a message because he is the source.
+     */
+    t.assert(body.notifications.length === 1)
+    var aliceHit = false
+      , maxHit = false
+      , tomHit = false
+
+    body.notifications.forEach(function(message) {
+      t.assert(message._target == testPlaceCustomPrivate._id)
+      message.registrationIds.forEach(function(registrationId){
+        if (registrationId.indexOf('tom') > 0 && message.trigger == 'nearby') tomHit = true
+        if (registrationId.indexOf('alice') > 0 && message.trigger == 'nearby') aliceHit = true
+        if (registrationId.indexOf('max') > 0 && message.trigger == 'nearby') maxHit = true
+      })
+    })
+
+    t.assert(tomHit)
+    t.assert(aliceHit)
+    t.assert(maxHit)
+
+    var savedEnt = body.data
+    t.assert(savedEnt._owner === testUserBob._id)
+    t.assert(savedEnt._creator === testUserBob._id)
+    t.assert(savedEnt._modifier === testUserBob._id)
+
+    /* Check insert place custom */
+    t.post({
+      uri: '/find/places',
+      body: {
+        query:{ _id:testPlaceCustomPrivate._id }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+
+      /* Check beacon link count */
+      t.post({
+        uri: '/find/links',
+        body: {
+          query: { _to:testBeacon._id }
+        }
+      }, function(err, res, body) {
+        /* Will fail if run stand-alone */
+        t.assert(body.count === 3)
+        test.done()
+      })
+    })
+  })
+}
+
 exports.watchPublicPlace = function(test) {
   t.post({
     uri: '/do/insertLink?' + userCredBob,  // owned by tom
@@ -537,15 +626,17 @@ exports.watchPublicPlace = function(test) {
       fromId: testUserBob._id,
       enabled: true,
       type: util.statics.typeWatch,
-      actionEvent: 'watch',
-      returnMessages: true,
+      actionEvent: 'watch_entity_place',
+      returnNotifications: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     /*
-     * Tom gets an alert notification because he owns the place.
+     * Tom should get a watch alert because he is the place owner.
      */
-    t.assert(body.messages.length === 1)
+    t.assert(body.notifications.length == 1)
+    t.assert(body.notifications[0].type === 'alert')
+    t.assert(body.notifications[0].trigger === 'own_to')
 
     /* Check watch entity link to entity 2 */
     t.post({
@@ -567,7 +658,7 @@ exports.watchPublicPlace = function(test) {
         body: {
           query:{
             _entity:testPlaceCustom._id,
-            event:'watch',
+            event:'watch_entity_place',
             _user: testUserBob._id,
           }
         }
@@ -579,6 +670,113 @@ exports.watchPublicPlace = function(test) {
   })
 }
 
+exports.watchPrivatePlaceRequest = function(test) {
+  t.post({
+    uri: '/do/insertLink?' + userCredAlice,  // owned by bob
+    body: {
+      toId: testPlaceCustomPrivate._id,
+      fromId: testUserAlice._id,
+      type: util.statics.typeWatch,
+      enabled: false,
+      actionEvent: 'request_watch_entity',
+      returnNotifications: true,
+      log: true,
+    }
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
+    /*
+     * Bob should get a request alert because he is the place owner.
+     */
+    t.assert(body.notifications.length == 1)
+    t.assert(body.notifications[0].type === 'alert')
+    t.assert(body.notifications[0].trigger === 'own_to')
+
+    /* Check watch entity link to entity 2 */
+    t.post({
+      uri: '/find/links',
+      body: {
+        query: {
+          _to: testPlaceCustomPrivate._id,
+          _from: testUserAlice._id,
+          type: util.statics.typeWatch
+        }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+      t.assert(body.data[0].enabled === false)
+      watchLinkId = body.data[0]._id
+
+      /* Check link entity log action */
+      t.post({
+        uri: '/find/actions?' + adminCred,
+        body: {
+          query:{
+            _entity:testPlaceCustomPrivate._id,
+            event:'request_watch_entity',
+            _user: testUserAlice._id,
+          }
+        }
+      }, function(err, res, body) {
+        t.assert(body.count === 1)
+        test.done()
+      })
+    })
+  })
+}
+
+exports.watchPrivatePlaceApprove = function(test) {
+  t.post({
+    uri: '/do/insertLink?' + userCredBob,  // owned by bob
+    body: {
+      linkId: watchLinkId,
+      toId: testPlaceCustomPrivate._id,
+      fromId: testUserAlice._id,
+      type: util.statics.typeWatch,
+      enabled: true,
+      actionEvent: 'approve_watch_entity',
+      returnNotifications: true,
+      log: true,
+    }
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
+    /*
+     * Alice should get a request alert because she is the requestor.
+     */
+    t.assert(body.notifications.length == 1)
+    t.assert(body.notifications[0].type === 'alert')
+    t.assert(body.notifications[0].trigger === 'own_from')
+
+    /* Check watch entity link to entity 2 */
+    t.post({
+      uri: '/find/links',
+      body: {
+        query: {
+          _to: testPlaceCustomPrivate._id,
+          _from: testUserAlice._id,
+          type: util.statics.typeWatch
+        }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+      t.assert(body.data[0].enabled === true)
+
+      /* Check link entity log action */
+      t.post({
+        uri: '/find/actions?' + adminCred,
+        body: {
+          query:{
+            _entity:testPlaceCustomPrivate._id,
+            event:'approve_watch_entity',
+            _user: userCredBob._id,
+          }
+        }
+      }, function(err, res, body) {
+        t.assert(body.count === 1)
+        test.done()
+      })
+    })
+  })
+}
 
 /*
  * ----------------------------------------------------------------------------
@@ -621,7 +819,7 @@ exports.insertMessage = function (test) {
         _to: testPlaceCustom._id,     // Toms place
         type: util.statics.typeContent
       }],
-      returnMessages: true,
+      returnNotifications: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
@@ -632,15 +830,14 @@ exports.insertMessage = function (test) {
      * Alice and Max get notified because they are nearby the patch.
      * Becky does not get notified because she is the sender.
      */
-    t.assert(body.messages.length === 3)
+    t.assert(body.notifications.length === 3)
     var tomHit = false
       , bobHit = false
       , aliceHit = false
       , maxHit = false
 
-    body.messages.forEach(function(message) {
-      t.assert(message.action.user && message.action.entity)
-      t.assert(message.action.toEntity && message.action.toEntity.id == testPlaceCustom._id)
+    body.notifications.forEach(function(message) {
+      t.assert(message._target === testMessage._id)
       message.registrationIds.forEach(function(registrationId){
         if (registrationId.indexOf('tom') > 0 && message.trigger == 'own_to') tomHit = true
         if (registrationId.indexOf('bob') > 0 && message.trigger == 'watch_to') bobHit = true
@@ -712,7 +909,7 @@ exports.insertReply = function (test) {
          { _to: testMessage._id,              // Reply to Bobs message
             type: util.statics.typeContent }
         ],
-      returnMessages: true,
+      returnNotifications: true,
       activityDateWindow: 0,
     }
   }, 201, function(err, res, body) {
@@ -730,20 +927,13 @@ exports.insertReply = function (test) {
      * If not run stand-alone, Alice create in previous test module
      * gets a message because she is watching tom.
      */
-    t.assert(body.messages.length === 4)
+    t.assert(body.notifications.length === 4)
     var tomHit = false
       , bobHit = false
       , beckyHit = false
       , maxHit = false
 
-    body.messages.forEach(function(message) {
-      t.assert(message.action.user && message.action.entity)
-      if (message.registrationIds[0].indexOf('becky') > 0) {
-        t.assert(message.action.toEntity && message.action.toEntity.id == testMessage._id)
-      }
-      else {
-        t.assert(message.action.toEntity && message.action.toEntity.id == testPlaceCustom._id)
-      }
+    body.notifications.forEach(function(message) {
       message.registrationIds.forEach(function(registrationId){
         if (registrationId.indexOf('tom') > 0 && message.trigger == 'own_to') tomHit = true
         if (registrationId.indexOf('bob') > 0 && message.trigger == 'watch_to') bobHit = true
@@ -844,21 +1034,27 @@ exports.previewMessagesByProximity = function (test) {
   },
 
   function(err, res, body) {
-    t.assert(body.data && body.data.length >= 0)
+    t.assert(body.data && body.data.length >= 2)
     /*
-     * Place is public so Bob should be able to see the message previews
-     * even though he isn't the owner of the place.
+     * Includes one private and one public place.
+     * Counts are available but not message content for either.
      */
-    var place = body.data[0]
-    t.assert(place._id === testPlaceCustom._id)
-    t.assert(!place.linksIn)
-    t.assert(!place.linksOut)
-    t.assert(place.linksInCounts && place.linksInCounts.length === 1)
-    t.assert(place.linksInCounts[0].schema === 'message')
-    t.assert(place.linksInCounts[0].count === 2)
-    t.assert(place.linksOutCounts[0].schema === 'beacon')
-    t.assert(place.linksOutCounts[0].count === 1)
-    t.assert(place.linksOutCounts && place.linksOutCounts.length === 1)
+    var privatePlace = body.data[0]
+    t.assert(privatePlace._id === testPlaceCustomPrivate._id)
+    t.assert(!privatePlace.linksIn)
+    t.assert(!privatePlace.linksOut)
+    t.assert(privatePlace.linksOutCounts[0].schema === 'beacon')
+    t.assert(privatePlace.linksOutCounts[0].count === 1)
+
+    var publicPlace = body.data[1]
+    t.assert(!publicPlace.linksIn)
+    t.assert(!publicPlace.linksOut)
+    t.assert(publicPlace.linksInCounts && publicPlace.linksInCounts.length === 1)
+    t.assert(publicPlace.linksInCounts[0].schema === 'message')
+    t.assert(publicPlace.linksInCounts[0].count === 2)
+    t.assert(publicPlace.linksOutCounts && publicPlace.linksOutCounts.length === 1)
+    t.assert(publicPlace.linksOutCounts[0].schema === 'beacon')
+    t.assert(publicPlace.linksOutCounts[0].count === 1)
     test.done()
   })
 }
@@ -876,8 +1072,6 @@ exports.getAlertsForSelf = function (test) {
     body: {
       entityId: testUserTom._id,
       cursor: {
-        linkTypes: ['create'],
-        schemas: ['place'],
         sort: { modifiedDate: -1 },
         skip: 0,
         limit: 50,
@@ -890,7 +1084,7 @@ exports.getAlertsForSelf = function (test) {
     // Note: this test file does not stand on it's own because
     // an earlier test file is creating another watch.
     t.assert(body.data)
-    t.assert(body.count === 2)
+    t.assert(body.count === 1 || body.count === 2)
     test.done()
   })
 }
@@ -955,7 +1149,7 @@ exports.getMessagesForSelf = function (test) {
     // Note: this test file does not stand on it's own because
     // an earlier test file is creating a message for Tom.
     t.assert(body.data)
-    t.assert(body.count === 3)
+    t.assert(body.count === 2 || body.count === 3)
     test.done()
   })
 }

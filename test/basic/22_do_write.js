@@ -15,6 +15,7 @@ var userCredBob
 var userCredAlice
 var adminCred
 var trackingLink
+var watchLinkId
 var _exports = {} // for commenting out tests
 var testLatitude = 46.1
 var testLongitude = -121.1
@@ -127,32 +128,6 @@ var testPlaceCustomPublic = {
   },
   visibility: "public",
 }
-var testPlaceCustomPrivate = {
-  _id : "pl.111111.11111.111.211112",
-  schema : util.statics.schemaPlace,
-  name : "Testing place entity custom two",
-  photo: {
-    prefix:"1001_20111224_104245.jpg",
-    source:"aircandi"
-  },
-  signalFence : -100,
-  location: {
-    lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
-  },
-  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065550004",
-  provider: {
-    aircandi: 'aircandi',
-  },
-  category:{
-    id:"4bf58dd8d48988d18c941735",
-    name : "Baseball Stadium",
-    photo:{
-      prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
-      source : "assets.categories",
-    },
-  },
-  visibility: "private",
-}
 var testPlaceCustomLocked = {
   _id : "pl.111111.11111.111.211113",
   schema : util.statics.schemaPlace,
@@ -177,6 +152,7 @@ var testPlaceCustomLocked = {
       source : "assets.categories",
     },
   },
+  visibility: "public",
   locked: true,
 }
 var testPost = {
@@ -563,12 +539,11 @@ exports.insertPlaceOne = function (test) {
     uri: '/do/insertEntity?' + userCredTom,
     body: {
       entity: testPlaceOne,
-      returnMessages: true,
+      returnNotifications: true,
     },
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
-    t.assert(body.messages.length == 0) // Messaging isn't called because place is synthetic
 
     var savedEnt = body.data
     t.assert(savedEnt._owner === util.adminUser._id)
@@ -622,21 +597,11 @@ exports.insertPlaceCustomPublic = function (test) {
       entity: testPlaceCustomPublic,
       beacons: [testBeacon],
       primaryBeaconId: testBeacon._id,
-      returnMessages: true,
+      returnNotifications: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
-    /*
-     * Bob should get a nearby message since bob is registered
-     * with beacons that intersect the ones for custom place 1. Tom should
-     * not get a message because he is the source.
-     */
-    t.assert(body.messages.length == 1) // Messaging is called
-    t.assert(body.messages[0].action.user && body.messages[0].action.entity)
-    t.assert(!body.messages[0].action.toEntity)
-    t.assert(!body.messages[0].action.fromEntity)
-    t.assert(body.messages[0].trigger == 'nearby')
 
     var savedEnt = body.data
     t.assert(savedEnt._owner === testUserTom._id)
@@ -712,18 +677,10 @@ exports.insertPlaceCustomLockedWithNoLinks = function (test) {
     uri: '/do/insertEntity?' + userCredTom,
     body: {
       entity: testPlaceCustomLocked,
-      returnMessages: true,
+      returnNotifications: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
-    /*
-     * Message is generated because this is a custom place but should not be any valid triggers.
-     */
-    t.assert(body.messages.length == 1)
-    t.assert(body.messages[0].action.user && body.messages[0].action.entity)
-    t.assert(!body.messages[0].action.toEntity)
-    t.assert(!body.messages[0].action.fromEntity)
-    t.assert(body.messages[0].info.indexOf('no triggers') >= 0)
 
     /* Check insert entity no links */
     t.post({
@@ -742,310 +699,6 @@ exports.insertPlaceCustomLockedWithNoLinks = function (test) {
       t.assert(ent._modifier === testUserTom._id)
       t.assert(ent.createdDate === ent.modifiedDate)
       test.done()
-    })
-  })
-}
-
-exports.insertPlaceCustomPrivate = function (test) {
-  t.post({
-    uri: '/do/insertEntity?' + userCredBob,
-    body: {
-      entity: testPlaceCustomPrivate,
-      beacons: [testBeacon],
-      primaryBeaconId: testBeacon._id,
-      returnMessages: true,
-    }
-  }, 201, function(err, res, body) {
-    t.assert(body.count === 1)
-    t.assert(body.data)
-    /*
-     * Tom should get a nearby message since tom is registered
-     * with beacons that intersect the ones for custom place 2. Bob should
-     * not get a message because he is the source.
-     */
-    t.assert(body.messages.length == 1) // Messaging is called
-    t.assert(body.messages[0].action.user && body.messages[0].action.entity)
-    t.assert(!body.messages[0].action.toEntity)
-    t.assert(!body.messages[0].action.fromEntity)
-    t.assert(body.messages[0].trigger == 'nearby')
-
-    var savedEnt = body.data
-    t.assert(savedEnt._owner === testUserBob._id)
-    t.assert(savedEnt._creator === testUserBob._id)
-    t.assert(savedEnt._modifier === testUserBob._id)
-
-    /* Check insert place custom */
-    t.post({
-      uri: '/find/places',
-      body: {
-        query:{ _id:testPlaceCustomPrivate._id }
-      }
-    }, function(err, res, body) {
-      t.assert(body.count === 1)
-
-      /* Check beacon link count */
-      t.post({
-        uri: '/find/links',
-        body: {
-          query: { _to:testBeacon._id }
-        }
-      }, function(err, res, body) {
-        t.assert(body.count === 2)
-        test.done()
-      })
-    })
-  })
-}
-
-/*
- * ----------------------------------------------------------------------------
- * Like and unlike, watch, request/approve
- * ----------------------------------------------------------------------------
- */
-
-exports.likeEntity = function(test) {
-  t.post({
-    uri: '/do/insertLink?' + userCredBob,
-    body: {
-      toId: testPlaceCustomPublic._id,
-      fromId: testUserBob._id,
-      type: util.statics.typeLike,
-      actionEvent: 'like'
-    }
-  }, 201, function(err, res, body) {
-    t.assert(body.count === 1)
-
-    /* Check like entity link to entity 2 */
-    t.post({
-      uri: '/find/links',
-      body: {
-        query: {
-          _to:testPlaceCustomPublic._id,
-          _from:testUserBob._id,
-          type: util.statics.typeLike
-        }
-      }
-    }, function(err, res, body) {
-      t.assert(body.count === 1)
-
-      /* Check link entity log action */
-      t.post({
-        uri: '/find/actions?' + adminCred,
-        body: {
-          query:{ _entity:testPlaceCustomPublic._id, event:'like'}
-        }
-      }, function(err, res, body) {
-        t.assert(body.count === 1)
-        test.done()
-      })
-    })
-  })
-}
-
-exports.unlikeEntity = function(test) {
-  t.post({
-    uri: '/do/deleteLink?' + userCredBob,
-    body: {
-      toId: testPlaceCustomPublic._id,
-      fromId: testUserBob._id,
-      type: util.statics.typeLike,
-      actionEvent: 'unlike'
-    }
-  }, function(err, res, body) {
-    t.assert(body.info.indexOf('successful') > 0)
-
-    /* Check unlike entity */
-    t.post({
-      uri: '/find/links',
-      body: {
-        query:{
-          _to:testPlaceCustomPublic._id,
-          _from:testUserBob._id,
-          type:util.statics.typeLike
-        }
-      }
-    }, function(err, res, body) {
-      t.assert(body.count === 0)
-      test.done()
-    })
-  })
-}
-
-exports.watchPublicPlace = function(test) {
-  t.post({
-    uri: '/do/insertLink?' + userCredAlice,  // owned by tom
-    body: {
-      toId: testPlaceCustomPublic._id,
-      fromId: testUserAlice._id,
-      enabled: true,
-      type: util.statics.typeWatch,
-      actionEvent: 'watch'
-    }
-  }, 201, function(err, res, body) {
-    t.assert(body.count === 1)
-
-    /* Check watch entity link to entity 2 */
-    t.post({
-      uri: '/find/links',
-      body: {
-        query: {
-          _to: testPlaceCustomPublic._id,
-          _from: testUserAlice._id,
-          type: util.statics.typeWatch
-        }
-      }
-    }, function(err, res, body) {
-      t.assert(body.count === 1)
-      t.assert(body.data[0].enabled === true)
-
-      /* Check link entity log action */
-      t.post({
-        uri: '/find/actions?' + adminCred,
-        body: {
-          query:{
-            _entity:testPlaceCustomPublic._id,
-            event:'watch',
-            _user: testUserAlice._id,
-          }
-        }
-      }, function(err, res, body) {
-        t.assert(body.count === 1)
-        test.done()
-      })
-    })
-  })
-}
-
-exports.watchPrivatePlaceRequest = function(test) {
-  t.post({
-    uri: '/do/insertLink?' + userCredAlice,  // owned by bob
-    body: {
-      toId: testPlaceCustomPrivate._id,
-      fromId: testUserAlice._id,
-      type: util.statics.typeWatch,
-      enabled: false,
-      actionEvent: 'watch_requested'
-    }
-  }, 201, function(err, res, body) {
-    t.assert(body.count === 1)
-
-    /* Check watch entity link to entity 2 */
-    t.post({
-      uri: '/find/links',
-      body: {
-        query: {
-          _to: testPlaceCustomPrivate._id,
-          _from: testUserAlice._id,
-          type: util.statics.typeWatch
-        }
-      }
-    }, function(err, res, body) {
-      t.assert(body.count === 1)
-      t.assert(body.data[0].enabled === false)
-
-      /* Check link entity log action */
-      t.post({
-        uri: '/find/actions?' + adminCred,
-        body: {
-          query:{
-            _entity:testPlaceCustomPrivate._id,
-            event:'watch_requested',
-            _user: testUserAlice._id,
-          }
-        }
-      }, function(err, res, body) {
-        t.assert(body.count === 1)
-        test.done()
-      })
-    })
-  })
-}
-
-exports.watchPrivatePlaceApprove = function(test) {
-  t.post({
-    uri: '/do/enableLink?' + userCredBob,  // owned by bob
-    body: {
-      toId: testPlaceCustomPrivate._id,
-      fromId: testUserAlice._id,
-      type: util.statics.typeWatch,
-      enabled: true,
-      actionEvent: 'watch_approved'
-    }
-  }, 200, function(err, res, body) {
-    t.assert(body.count === 1)
-
-    /* Check watch entity link to entity 2 */
-    t.post({
-      uri: '/find/links',
-      body: {
-        query: {
-          _to: testPlaceCustomPrivate._id,
-          _from: testUserAlice._id,
-          type: util.statics.typeWatch
-        }
-      }
-    }, function(err, res, body) {
-      t.assert(body.count === 1)
-      t.assert(body.data[0].enabled === true)
-
-      /* Check link entity log action */
-      t.post({
-        uri: '/find/actions?' + adminCred,
-        body: {
-          query:{
-            _entity:testPlaceCustomPrivate._id,
-            event:'watch_approved',
-            _user: userCredBob._id,
-          }
-        }
-      }, function(err, res, body) {
-        t.assert(body.count === 1)
-        test.done()
-      })
-    })
-  })
-}
-
-exports.watchUser = function(test) {
-  t.post({
-    uri: '/do/insertLink?' + userCredAlice,
-    body: {
-      toId: testUserTom._id,
-      fromId: testUserAlice._id,
-      type: util.statics.typeWatch,
-      enabled: true,
-      actionEvent: 'watch'
-    }
-  }, 201, function(err, res, body) {
-    t.assert(body.count === 1)
-
-    /* Check watch entity link to entity 2 */
-    t.post({
-      uri: '/find/links',
-      body: {
-        query:{
-          _to: testUserTom._id,
-          _from: testUserAlice._id,
-          type: util.statics.typeWatch
-        }
-      }
-    }, function(err, res, body) {
-      t.assert(body.count === 1)
-
-      /* Check link entity log action */
-      t.post({
-        uri: '/find/actions?' + adminCred,
-        body: {
-          query:{
-            _entity:testUserTom._id,
-            event:'watch',
-            _user: testUserAlice._id,
-          }
-        }
-      }, function(err, res, body) {
-        t.assert(body.count === 1)
-        test.done()
-      })
     })
   })
 }
