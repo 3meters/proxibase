@@ -229,7 +229,7 @@ exports.janeSendsMessageToJanehouse = function(test) {
       }],
       returnNotifications: true,
     },
-  }, 201, function(err, body, data) {
+  }, 201, function(err, res, body) {
     test.done()
   })
 }
@@ -250,7 +250,7 @@ exports.tarzanSendsMessageToJanehouseAndFails = function(test) {
       }],
       returnNotifications: true,
     },
-  }, 401, function(err, body, data) {
+  }, 401, function(err, res, body) {
     test.done()
   })
 }
@@ -399,7 +399,7 @@ exports.tarzanCannotReadJanesMessagesYet = function(test) {
 }
 
 
-exports.tarzanCannonAcceptHisOwnRequestOnJanesBehalf = function(test) {
+exports.tarzanCannotAcceptHisOwnRequestOnJanesBehalf = function(test) {
   t.post({
     uri: '/data/links/' + tarzanWatchesJanehouse._id + '?' + tarzan.cred,
     body: {data: {enabled: true}},
@@ -518,18 +518,17 @@ exports.janeCanReadTarzansInvite = function(test) {
 
 exports.janeAcceptsTarzanInvite = function(test) {
   t.post({
-    uri: '/data/links?' + jane.cred,
+    uri: '/do/insertLink?' + jane.cred,
     body: {
-      data: {
-        _to: treehouse._id,
-        _from: jane._id,
-        type: 'watch',
-      }
+      toId: treehouse._id,
+      fromId: jane._id,
+      type: 'watch',
     }
   }, 201, function(err, res, body) {
     t.assert(body.data)
+    t.assert(body.data.length == 1)
     // enabled because we recognized outstanding invitation
-    t.assert(body.data.enabled === true)
+    t.assert(body.data[0].enabled === true)
     test.done()
   })
 }
@@ -575,3 +574,51 @@ exports.janeCanCommentOnTarzansTreehouseMessage = function(test) {
     test.done()
   })
 }
+
+exports.janeCanSendsMessageToTreehouse = function(test) {
+  t.post({
+    uri: '/do/insertEntity?' + jane.cred,
+    body: {
+      entity: {
+        schema: 'message',
+        _id: 'me.janeToTreehouse' + seed,
+        description: 'Hmm, maybe hammock is ok afterall...',
+      },
+      links: [{
+        _to: treehouse._id,
+        type: 'content',
+      }]
+    },
+  }, 201, function(err, res, body) {
+    test.done()
+  })
+}
+
+exports.janeCanEditHerMessageToTreehouse = function(test) {
+  t.post({
+    uri: '/data/messages/me.janeToTreehouse' + seed + '?' + jane.cred,
+    body: {
+      data: {
+        description: 'On second thought, hammock sucks',
+      },
+    },
+  }, function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.data.description === 'On second thought, hammock sucks')
+    test.done()
+  })
+}
+
+exports.janeCanDeleteHerMessageToTreehouse = function(test) {
+  t.del({
+    uri: '/data/messages/me.janeToTreehouse' + seed + '?' + jane.cred,
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.get('/data/links?query[_from]=me.janeToTreehouse' + seed + '&query[_to]=' + treehouse._id + '&' + jane.cred,
+    function(err, res, body) {
+      t.assert(body.count === 0)
+      test.done()
+    })
+  })
+}
+
