@@ -88,6 +88,7 @@ exports.adminCanAddUserViaRest = function(test) {
     body: {data: testUser}
   }, 201, function(err, res, body) {
     var user = body.data
+    t.assert(user)
     t.assert(user._id)
     t.assert(user.email === testUser.email)
     t.assert(user.validationNotifyDate)
@@ -318,6 +319,7 @@ exports.adminCanMakeUserDeveloper = function(test) {
     uri: '/data/users/' + testUser._id + '?' + adminCred,
     body: {data: {developer: true}}
   }, function(err, res, body) {
+    t.assert(body.data)
     t.assert(body.data.developer)
     test.done()
   })
