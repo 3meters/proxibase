@@ -1065,13 +1065,13 @@ exports.previewMessagesByProximity = function (test) {
 
 /*
  * ----------------------------------------------------------------------------
- * Alerts feed
+ * Notifications feed
  * ----------------------------------------------------------------------------
  */
 
-exports.getAlertsForSelf = function (test) {
+exports.getNotificationsForSelf = function (test) {
   t.post({
-    uri: '/do/getAlerts?' + userCredTom,
+    uri: '/do/getNotifications?' + userCredTom,
     body: {
       entityId: testUserTom._id,
       cursor: {
