@@ -22,6 +22,7 @@ module.exports = {
     },
   },
   log: 1,                               // 0-3 higher numbers mean more log output
+  requestLog: 1,                        // create a json-formated log of all requests, accepts file name
   db: {
     host: 'localhost',
     port: 27017,
@@ -33,7 +34,7 @@ module.exports = {
     },
   },
   maxWorkers: -1,                       // default -1 means one per cpu core
-  ignoreTasks: true,                   // default false, if true skip autostart of recurring tasks
+  ignoreTasks: true,                    // default false, if true skip autostart of recurring tasks
   doNotRestart: false,                  // default false, if true do not restart dead workers
   sendMail: './testMail.log',           // boolean or filename for logging, default false
   notify: {
