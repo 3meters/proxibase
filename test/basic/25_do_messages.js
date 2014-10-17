@@ -635,7 +635,8 @@ exports.watchPublicPlace = function(test) {
      * Tom should get a watch alert because he is the place owner.
      */
     t.assert(body.notifications.length == 1)
-    t.assert(body.notifications[0].type === 'alert')
+    t.assert(body.notifications[0].type === 'watch')
+    t.assert(body.notifications[0].event === 'watch_entity_place')
     t.assert(body.notifications[0].trigger === 'own_to')
 
     /* Check watch entity link to entity 2 */
@@ -688,7 +689,8 @@ exports.watchPrivatePlaceRequest = function(test) {
      * Bob should get a request alert because he is the place owner.
      */
     t.assert(body.notifications.length == 1)
-    t.assert(body.notifications[0].type === 'alert')
+    t.assert(body.notifications[0].type === 'watch')
+    t.assert(body.notifications[0].event === 'request_watch_entity')
     t.assert(body.notifications[0].trigger === 'own_to')
 
     /* Check watch entity link to entity 2 */
@@ -743,7 +745,8 @@ exports.watchPrivatePlaceApprove = function(test) {
      * Alice should get a request alert because she is the requestor.
      */
     t.assert(body.notifications.length == 1)
-    t.assert(body.notifications[0].type === 'alert')
+    t.assert(body.notifications[0].type === 'watch')
+    t.assert(body.notifications[0].event === 'approve_watch_entity')
     t.assert(body.notifications[0].trigger === 'own_from')
 
     /* Check watch entity link to entity 2 */
@@ -1084,7 +1087,7 @@ exports.getAlertsForSelf = function (test) {
     // Note: this test file does not stand on it's own because
     // an earlier test file is creating another watch.
     t.assert(body.data)
-    t.assert(body.count === 1 || body.count === 2)
+    t.assert(body.count === 2 || body.count === 4)
     test.done()
   })
 }
@@ -1094,65 +1097,6 @@ exports.getAlertsForSelf = function (test) {
  * Message feed
  * ----------------------------------------------------------------------------
  */
-
-exports.getMessagesForSelf = function (test) {
-  t.post({
-    uri: '/do/getMessages?' + userCredTom,
-    body: {
-      entityId: testUserTom._id,
-      cursor: {
-        limit: 50,
-        linkTypes: ['create', 'watch'],
-        schemas: ['place', 'user'],
-        skip: 0,
-        sort: { modifiedDate: -1 },
-      },
-      links : {
-        shortcuts: true,
-        active:
-        [ { schema: 'place',
-            limit: 1,
-            links: true,
-            type: 'content',
-            count: true,
-            direction: 'out' },
-          { schema: 'message',
-            limit: 1,
-            links: true,
-            type: 'content',
-            count: true,
-            direction: 'both' },
-          { schema: 'place',
-            limit: 1,
-            links: true,
-            type: 'share',
-            count: true,
-            direction: 'out' },
-          { schema: 'message',
-            limit: 1,
-            links: true,
-            type: 'share',
-            count: true,
-            direction: 'out' },
-          { schema: 'user',
-            limit: 5,
-            links: true,
-            type: 'share',
-            count: true,
-            direction: 'out' } ]
-      }
-    }
-  },
-
-  function(err, res, body) {
-    // Should see bobs message and alices reply
-    // Note: this test file does not stand on it's own because
-    // an earlier test file is creating a message for Tom.
-    t.assert(body.data)
-    t.assert(body.count === 2 || body.count === 3)
-    test.done()
-  })
-}
 
 exports.getMessage = function (test) {
   t.post({
