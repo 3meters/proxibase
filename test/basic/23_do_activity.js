@@ -415,11 +415,11 @@ exports.insertCustomPlace = function (test) {
 
     body.notifications.forEach(function(message) {
       message.registrationIds.forEach(function(registrationId){
-        if (registrationId.indexOf('tom') > 0 && message.trigger == 'nearby') tomHit = true
+        if (registrationId.indexOf('tom') > 0) tomHit = true
         if (registrationId.indexOf('bob') > 0 && message.trigger == 'nearby') bobHit = true
       })
     })
-    t.assert(tomHit)
+    t.assert(!tomHit)
     t.assert(bobHit)
     test.done()
   })
@@ -497,11 +497,9 @@ exports.insertMessage = function (test) {
     t.assert(body.count === 1)
     t.assert(body.data)
     /*
-     * Tom should get a notification message because he owns the place that the message
-     * is being added to.
-     * Bob gets a nearby notification.
+     * Tom should get a notification message because he owns the place
      */
-    t.assert(body.notifications && body.notifications.length == 2)
+    t.assert(body.notifications && body.notifications.length == 1)
     var tomHit = false
       , bobHit = false
 
@@ -509,11 +507,11 @@ exports.insertMessage = function (test) {
       message.registrationIds.forEach(function(registrationId){
         t.assert(message._target === testMessage._id)
         if (registrationId.indexOf('tom') > 0 && message.trigger == 'own_to') tomHit = true
-        if (registrationId.indexOf('bob') > 0 && message.trigger == 'nearby') bobHit = true
+        if (registrationId.indexOf('bob') > 0) bobHit = true
       })
     })
     t.assert(tomHit)
-    t.assert(bobHit)
+    t.assert(!bobHit)
 
     var savedEnt = body.data
     t.assert(savedEnt._owner === testUserBob._id)
