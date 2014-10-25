@@ -472,7 +472,11 @@ exports.tarzanInvitesJaneToTreehouse = function(test) {
   })
 }
 
-exports.janeCanReadTarzansInvite = function(test) {
+/*
+ * This should change to be a check for reading notifications including
+ * tarzans invite.
+ */
+_exports.janeCanReadTarzansInvite = function(test) {
   t.post({
     uri: '/do/getMessages?' + jane.cred,
     body: {
