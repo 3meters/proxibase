@@ -401,22 +401,26 @@ exports.insertCustomPlace = function (test) {
       entity: testPlaceCustom,    // custom place
       beacons: [testBeacon],
       primaryBeaconId: testBeacon._id,
-      returnMessages: true,
+      returnNotifications: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data._id)
     /*
-     * Bob should get a nearby message since he is registered
-     * with beacons that intersect the ones for custom place three.
-     *
-     * Tom should not get a message because he is the source.
+     * Bob and Tom should get a nearby notification since they see the beacon.
      */
-    t.assert(body.messages.length == 1)
-    t.assert(body.messages[0].action.user && body.messages[0].action.entity)
-    t.assert(!body.messages[0].action.toEntity)
-    t.assert(body.messages[0].trigger === 'nearby')
-    t.assert(body.messages[0].registrationIds[0].indexOf('bob') > 0)
+    t.assert(body.notifications.length == 1)
+    var tomHit = false
+      , bobHit = false
+
+    body.notifications.forEach(function(message) {
+      message.registrationIds.forEach(function(registrationId){
+        if (registrationId.indexOf('tom') > 0) tomHit = true
+        if (registrationId.indexOf('bob') > 0 && message.trigger == 'nearby') bobHit = true
+      })
+    })
+    t.assert(!tomHit)
+    t.assert(bobHit)
     test.done()
   })
 }
@@ -429,7 +433,7 @@ exports.insertCustomPlaceTwo = function (test) {
       entity: testPlaceCustomTwo,    // custom place
       beacons: [testBeacon2],
       primaryBeaconId: testBeacon2._id,
-      returnMessages: true,
+      returnNotifications: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
@@ -440,11 +444,9 @@ exports.insertCustomPlaceTwo = function (test) {
      *
      * Bob should not get a message because he is the source.
      */
-    t.assert(body.messages && body.messages.length == 1)
-    t.assert(body.messages[0].action.user && body.messages[0].action.entity)
-    t.assert(!body.messages[0].action.toEntity)
-    t.assert(body.messages[0].trigger === 'nearby')
-    t.assert(body.messages[0].registrationIds[0].indexOf('alice') > 0)
+    t.assert(body.notifications && body.notifications.length == 1)
+    t.assert(body.notifications[0].trigger === 'nearby')
+    t.assert(body.notifications[0].registrationIds[0].indexOf('alice') > 0)
 
     test.done()
   })
@@ -488,23 +490,28 @@ exports.insertMessage = function (test) {
         _to: testPlaceCustom._id,          // Tom's place
         type: util.statics.typeContent
       }],
-      returnMessages: true,
+      returnNotifications: true,
       activityDateWindow: 0,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
     /*
-     * Tom should get a notification message because he owns the place that the message
-     * is being added to.
+     * Tom should get a notification message because he owns the place
      */
-    t.assert(body.messages.length == 1)
-    body.messages.forEach(function(message) {
-      t.assert(message.action.user && message.action.entity)
-      t.assert(message.action.toEntity && message.action.toEntity.id == testPlaceCustom._id)
-      t.assert(message.trigger == 'own_to')
-      t.assert(message.registrationIds[0].indexOf('tom') > 0)
+    t.assert(body.notifications && body.notifications.length == 1)
+    var tomHit = false
+      , bobHit = false
+
+    body.notifications.forEach(function(message) {
+      message.registrationIds.forEach(function(registrationId){
+        t.assert(message._target === testMessage._id)
+        if (registrationId.indexOf('tom') > 0 && message.trigger == 'own_to') tomHit = true
+        if (registrationId.indexOf('bob') > 0) bobHit = true
+      })
     })
+    t.assert(tomHit)
+    t.assert(!bobHit)
 
     var savedEnt = body.data
     t.assert(savedEnt._owner === testUserBob._id)
@@ -815,41 +822,6 @@ exports.deleteEntity = function (test) {
           test.done()
         })
       })
-    })
-  })
-}
-
-/*
- * ----------------------------------------------------------------------------
- * A bit of cleanup so #25 gets the right stuff
- * ----------------------------------------------------------------------------
- */
-
-exports.unwatchUser = function(test) {
-  t.post({
-    uri: '/do/deleteLink?' + userCredAlice,
-    body: {
-      toId: testUserTom._id,
-      fromId: testUserAlice._id,
-      type: util.statics.typeWatch,
-      actionEvent: 'unwatch'
-    }
-  }, function(err, res, body) {
-    t.assert(body.info.indexOf('successful') > 0)
-
-    /* Check unwatch entity */
-    t.post({
-      uri: '/find/links',
-      body: {
-        query:{
-          _to:testUserTom._id,
-          _from:testUserBob._id,
-          type:util.statics.typeWatch
-        }
-      }
-    }, function(err, res, body) {
-      t.assert(body.count === 0)
-      test.done()
     })
   })
 }

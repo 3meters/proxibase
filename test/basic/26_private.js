@@ -181,7 +181,8 @@ exports.tarzanSendsMessageToRiver = function(test) {
       links: [{
         _to: river._id,
         type: 'content',
-      }]
+      }],
+      returnNotifications: true,
     },
   }, 201, function(err, res, body) {
     t.assert(body.data)
@@ -202,7 +203,8 @@ exports.tarzanSendsMessageToTreehouse = function(test) {
       links: [{
         _to: treehouse._id,
         type: 'content',
-      }]
+      }],
+      returnNotifications: true,
     },
   }, 201, function(err, res, body) {
     t.assert(body.data)
@@ -224,7 +226,8 @@ exports.janeSendsMessageToJanehouse = function(test) {
       links: [{
         _to: janehouse._id,
         type: 'content',
-      }]
+      }],
+      returnNotifications: true,
     },
   }, 201, function(err, res, body) {
     test.done()
@@ -244,7 +247,8 @@ exports.tarzanSendsMessageToJanehouseAndFails = function(test) {
       links: [{
         _to: janehouse._id,
         type: 'content',
-      }]
+      }],
+      returnNotifications: true,
     },
   }, 401, function(err, res, body) {
     test.done()
@@ -335,6 +339,7 @@ exports.tarzanCannotInviteHimselfToJanehouse = function(test) {
         _to: janehouse._id,
         type: 'share',
       }],
+      returnNotifications: true,
     },
   }, 401, function(err, res, body) {
     t.get('/data/messages/me.tarzanInvitesHimselfOver' + seed + '?' + tarzan.cred,
@@ -450,6 +455,7 @@ exports.tarzanInvitesJaneToTreehouse = function(test) {
         _to: jane._id,
         type: 'share',
       }],
+      returnNotifications: true,
     },
   }, 201, function(err, res, body) {
     t.get('/data/links/li.toJaneFromTarzanInvite' + seed,
@@ -466,7 +472,11 @@ exports.tarzanInvitesJaneToTreehouse = function(test) {
   })
 }
 
-exports.janeCanReadTarzansInvite = function(test) {
+/*
+ * This should change to be a check for reading notifications including
+ * tarzans invite.
+ */
+_exports.janeCanReadTarzansInvite = function(test) {
   t.post({
     uri: '/do/getMessages?' + jane.cred,
     body: {
@@ -557,6 +567,7 @@ exports.janeCanCommentOnTarzansTreehouseMessage = function(test) {
       _to: 'me.tarzanToTreehouse' + seed,
       type: 'content',
     }],
+    returnNotifications: true,
   }
   t.post({
     uri: '/do/insertEntity?' + jane.cred,
