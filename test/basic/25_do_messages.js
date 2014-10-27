@@ -1920,7 +1920,7 @@ exports.unwatchPrivatePlace = function(test) {
 }
 
 
-_exports.formerMemberGetMessagesForPrivatePlace = function (test) {
+exports.formerMemberGetMessagesForPrivatePlace = function (test) {
   t.post({
     uri: '/do/getEntitiesForEntity?' + userCredBecky,
     body: {
