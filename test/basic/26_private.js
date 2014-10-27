@@ -4,7 +4,7 @@
 
 var async = require('async')
 var util = require('proxutils')
-var seed = util.seed(4)  // for running tests concurrently
+var seed = util.seed(6)  // for running tests concurrently
 var testUtil = require('../util')
 var skip = testUtil.skip
 var t = testUtil.treq
