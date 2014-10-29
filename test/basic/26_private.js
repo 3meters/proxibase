@@ -63,7 +63,8 @@ var maryhouse = {
 }
 
 
-exports.getUserSession = function(test) {
+// Not needed by this test
+_exports.getUserSession = function(test) {
   testUtil.getUserSession(function(session) {
     userSession = session
     userCred = 'user=' + session._owner + '&session=' + session.key
@@ -363,6 +364,7 @@ exports.tarzanCannotInviteHimselfToJanehouse = function(test) {
 }
 
 var tarzanWatchesJanehouse = {
+  _id: 'li.tarzanWatchesJaneHouse' + seed,
   _from: tarzan._id,
   _to: janehouse._id,
   type: 'watch',
