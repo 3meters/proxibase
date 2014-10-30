@@ -1528,6 +1528,33 @@ exports.nonMemberGetMessagesForPrivatePlace = function (test) {
   })
 }
 
+exports.nonMemberGetMembersForPrivatePlace = function (test) {
+  t.post({
+    uri: '/do/getEntitiesForEntity?' + userCredStan,
+    body: {
+      entityId: testPlacePrivate._id,
+      cursor: {
+        linkTypes: ['watch'],
+        schemas: ['user'],
+        direction: 'in',
+        skip: 0,
+        sort: { modifiedDate: -1},
+        limit: 50,
+        where: { 'enabled': true },
+      },
+    }
+  },
+
+  function(err, res, body) {
+    /*
+     * Should see one watcher (Becky)
+     */
+    t.assert(body.data)
+    t.assert(body.count === 1)
+    test.done()
+  })
+}
+
 exports.getMessageToPublicPlace = function (test) {
   t.post({
     uri: '/do/getEntities?' + userCredTom,
