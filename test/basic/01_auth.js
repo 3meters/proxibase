@@ -459,7 +459,7 @@ exports.newUserEmailValidateUrlWorksFaster = function(test) {
     t.get(newUserEmailValidateUrl.slice(testUtil.serverUri.length + 3)) //  for /v1 path prefix
 
     // Give time for the update to finish, but don't wait for the
-    // call to redirect the user to http://aircandi.com
+    // call to redirect the user to http://patchr.com
     setTimeout(function() {
       t.get('/data/users/' + newUserId + '?' + newUserCred, function(err, res, body) {
         t.assert(body.data.validationDate)
