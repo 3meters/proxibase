@@ -319,6 +319,36 @@ exports.userPublicFieldsSeeOwnRecord = function(test) {
   })
 }
 
+exports.userPrivateFieldsCannotBeReadByOtherUser = function(test) {
+  t.get({
+    uri: '/data/users/' + user1._id + '?' + user2Cred
+  }, 200, function(err, res, body) {
+    t.assert(body && body.data)
+    var user = body.data
+    t.assert(user._id)
+    t.assert(user.name)
+    t.assert(user.photo)
+    t.assert(!user.email)
+    t.assert(!user.role)  // own role visible to user
+    test.done()
+  })
+}
+
+exports.adminSeesUserPrivateFields = function(test) {
+  t.get({
+    uri: '/data/users/' + user1._id + '?' + adminCred
+  }, 200, function(err, res, body) {
+    t.assert(body && body.data)
+    var user = body.data
+    t.assert(user._id)
+    t.assert(user.name)
+    t.assert(user.photo)
+    t.assert(user.email)
+    t.assert(user.role)
+    test.done()
+  })
+}
+
 exports.userPublicFieldsProjection= function(test) {
   t.post({
     uri: '/find/users/' + user2._id + '?' + user1Cred,
