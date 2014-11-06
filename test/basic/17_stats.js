@@ -1,6 +1,12 @@
 /**
  *  Proxibase link stats basic test
  *     linkStats is a computed collection
+ *
+ *
+ *     TODO:  make this test run with a randomly generated seed
+ *     for ids so that it can be run concurrently to test the stat
+ *     engine under load
+ *
  */
 
 var util = require('proxutils')
@@ -300,6 +306,20 @@ exports.addSomeMoreTestData = function(test) {
     fromSchema: 'message',
     toSchema: 'place',
     type: 'content',
+  }, {
+    _id: 'li.140101.statTest.8',
+    _to: place1Id,
+    _from: user1Id,
+    fromSchema: 'user',
+    toSchema: 'place',
+    type: 'watch',
+  }, {
+    _id: 'li.140101.statTest.9',
+    _to: place1Id,
+    _from: user2Id,
+    fromSchema: 'user',
+    toSchema: 'place',
+    type: 'watch',
   }]
 
   db.collection('messages').insert(newMsgs, function(err, savedMsgs) {
@@ -322,12 +342,15 @@ exports.refreshTosWorksWithIncrementalReduce = function(test) {
       uri: '/find/tos?query[_id.fromSchema]=message&sort=-value,-_id.day'
     }, function(err, res, body) {
       t.assert(body.data.length)
+
       // refresh picked up our new links and created a summary record for them.
       t.assert(body.data.some(function(stat) {
         return stat._id.day === '140101'
             && stat._id._to === place1Id
+            && stat._id.type === 'content'
             && stat.value === 6  // proves messages 4, 5, and 6 were reduced into the same record as 1, 2, and 3
       }))
+
       if (dbProfile.mpp <= 6) t.assert(body.data[0]._id.day === '140101') // we should sort to the top
       else t.assert(body.data[cPlaces]._id.day = '140101') // we should sort to the bottom
       test.done()
@@ -335,7 +358,69 @@ exports.refreshTosWorksWithIncrementalReduce = function(test) {
   })
 }
 
+exports.refreshWorksWithDeleteWatchLink = function(test) {
+  t.get('/find/tos?query[_id._to]=' + place1Id + '&query[_id.type]=watch',
+  function(err, res, body) {
+    t.assert(body.data.length === 1)
+    var stat = body.data[0]
+    t.assert(stat.value === 2)
+    t.del({
+      uri: '/data/links/li.140101.statTest.8?' + adminCred ,
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+      t.get('/stats/to/refresh?' + adminCred,
+      function(err, res, body) {
+        t.get('/find/tos?query[_id._to]=' + place1Id + '&query[_id.type]=watch',
+        function(err, res, body) {
+          t.assert(body.data.length === 1)
+          var stat = body.data[0]
+          t.assert(stat.value === 1)
+          test.done()
+        })
+      })
+    })
+  })
+}
 
+exports.createThenDeleteOfWatchLinkBetweenRefreshesWorks = function(test) {
+
+  var watchLink = {
+    _id: 'li.140101.statTest.10',
+    _to: place1Id,
+    _from: user3Id,
+    fromSchema: 'user',
+    toSchema: 'place',
+    type: 'watch',
+  }
+
+  t.post({
+    uri: '/data/links?' + adminCred,
+    body: {data: watchLink},
+  }, 201, function(err, res, body) {
+    t.get('/find/tos?query[_id._to]=' + place1Id + '&query[_id.type]=watch',
+    function(err, res, body) {
+      t.assert(body.data.length === 1)
+      var stat = body.data[0]
+      t.assert(stat.value === 1) // same as last test, not refreshed
+      t.del({
+        uri: '/data/links/' + watchLink._id + '?' + adminCred,
+      }, function(err, res, body) {
+        t.assert(body.count === 1)
+        t.get('/stats/to/refresh?' + adminCred,
+        function(err, res, body) {
+          t.get('/find/tos?query[_id._to]=' + place1Id + '&query[_id.type]=watch',
+          function(err, res, body) {
+            t.assert(body.data.length === 1)
+            var stat = body.data[0]
+            log('NYI:  need custom linkId factory in order to test')
+            // t.assert(stat.value === 1) // same as last test, not refreshed, not decremented
+            test.done()
+          })
+        })
+      })
+    })
+  })
+}
 
 // These test the underlying computed collections
 exports.statFilterWorks = function(test) {
