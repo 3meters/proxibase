@@ -27,6 +27,8 @@ var installId5 = '5905d547-8321-4612-abe1-00005'
 var installId6 = '5905d547-8321-4612-abe1-00006'
 var expirationDate
 var activityDate
+var beckyWatchLinkId
+var aliceWatchLinkId
 
 
 // From sample data in base test database
@@ -616,7 +618,7 @@ exports.updateBeaconsInstallSix = function (test) {
  * ----------------------------------------------------------------------------
  */
 
-exports.insertPublicPlace = function (test) {
+exports.tomInsertsPublicPlace = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCredTom,
     body: {
@@ -664,7 +666,7 @@ exports.insertPublicPlace = function (test) {
 }
 
 
-exports.insertPrivatePlace = function (test) {
+exports.bobInsertsPrivatePlace = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCredBob,
     body: {
@@ -735,7 +737,7 @@ exports.insertPrivatePlace = function (test) {
 }
 
 
-exports.watchPublicPlace = function(test) {
+exports.bobWatchesTomsPublicPlace = function(test) {
   t.post({
     uri: '/do/insertLink?' + userCredBob,  // owned by tom
     body: {
@@ -815,7 +817,7 @@ exports.watchPublicPlace = function(test) {
 }
 
 
-exports.watchPrivatePlaceRequest = function(test) {
+exports.beckyRequestsToWatchBobsPrivatePlace = function(test) {
   t.post({
     uri: '/do/insertLink?' + userCredBecky,
     body: {
@@ -875,7 +877,7 @@ exports.watchPrivatePlaceRequest = function(test) {
     }, function(err, res, body) {
       t.assert(body.count === 1)
       t.assert(body.data[0].enabled === false)
-      watchLinkId = body.data[0]._id
+      beckyWatchLinkId = body.data[0]._id
 
       /* Check link entity log action */
       t.post({
@@ -896,11 +898,11 @@ exports.watchPrivatePlaceRequest = function(test) {
 }
 
 
-exports.watchPrivatePlaceApprove = function(test) {
+exports.bobApprovesBeckysRequestToWatchBobsPrivatePlace = function(test) {
   t.post({
     uri: '/do/insertLink?' + userCredBob,
     body: {
-      linkId: watchLinkId,
+      linkId: beckyWatchLinkId,
       toId: testPlacePrivate._id,       // Owned by bob
       fromId: testUserBecky._id,
       type: util.statics.typeWatch,
@@ -979,6 +981,66 @@ exports.watchPrivatePlaceApprove = function(test) {
 
 /*
  * ----------------------------------------------------------------------------
+ * Add another watcher to Bobs private patch for later testing scenarios.
+ * ----------------------------------------------------------------------------
+ */
+
+exports.aliceRequestsToWatchBobsPrivatePlace = function(test) {
+  t.post({
+    uri: '/do/insertLink?' + userCredAlice,
+    body: {
+      toId: testPlacePrivate._id,             // Owned by bob
+      fromId: testUserAlice._id,
+      type: util.statics.typeWatch,
+      enabled: false,
+      actionEvent: 'request_watch_entity',
+      returnNotifications: true,
+      log: true,
+    }
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
+
+    /* Check watch entity link to entity 2 */
+    t.post({
+      uri: '/find/links',
+      body: {
+        query: {
+          _to: testPlacePrivate._id,
+          _from: testUserAlice._id,
+          type: util.statics.typeWatch
+        }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+      t.assert(body.data[0].enabled === false)
+      aliceWatchLinkId = body.data[0]._id
+      test.done()
+    })
+  })
+}
+
+
+exports.bobApprovesAlicesRequestToWatchBobsPrivatePlace = function(test) {
+  t.post({
+    uri: '/do/insertLink?' + userCredBob,
+    body: {
+      linkId: aliceWatchLinkId,
+      toId: testPlacePrivate._id,       // Owned by bob
+      fromId: testUserAlice._id,
+      type: util.statics.typeWatch,
+      enabled: true,
+      actionEvent: 'approve_watch_entity',
+      returnNotifications: true,
+      log: true,
+    }
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
+    test.done()
+  })
+}
+
+/*
+ * ----------------------------------------------------------------------------
  *
  * Users
  * - Tom owns the public patch
@@ -989,17 +1051,18 @@ exports.watchPrivatePlaceApprove = function(test) {
  *
  * - Bob is watching the public patch and is far away
  * - Becky is watching the private patch and is nearby
+ * - Alice is watching the private patch and is far away
  *
  * - Alice and Max are nearby the public patch
  * - Becky and Stan are nearby the private patch
  *
- * - Alice, Stan and Max are not watching or owners of any patches
+ * - Stan and Max are not watching or owners of any patches
  *
  * Seed message scenarios: Notified because:
  * - I own the patch
  *      (Tom gets notified when Becky posts message to patch)
  * - I am watching the patch
- *      (Bob gets notified when Becky posts message to patch)
+ *      (Bob gets notified when Becky or Alice post messages to patch)
  * - I am nearby the patch
  *      (Alice and Max get notified when Becky posts message to patch)
  *
@@ -1016,7 +1079,7 @@ exports.watchPrivatePlaceApprove = function(test) {
  * ----------------------------------------------------------------------------
  */
 
-exports.insertMessageToPublicPlace = function (test) {
+exports.beckyInsertsMessageToTomsPublicPlace = function (test) {
 
   t.post({
     uri: '/do/insertEntity?' + userCredBecky,
@@ -1113,7 +1176,7 @@ exports.insertMessageToPublicPlace = function (test) {
   })
 }
 
-exports.insertReplyToPublicMessage = function (test) {
+exports.aliceInsertsReplyToBeckysPublicMessage = function (test) {
 
   t.post({
     uri: '/do/insertEntity?' + userCredAlice,
@@ -1232,7 +1295,7 @@ exports.insertReplyToPublicMessage = function (test) {
   })
 }
 
-exports.insertMessageToPrivatePlace = function (test) {
+exports.beckyInsertsMessageToBobsPrivatePlace = function (test) {
 
   t.post({
     uri: '/do/insertEntity?' + userCredBecky,
@@ -1249,8 +1312,9 @@ exports.insertMessageToPrivatePlace = function (test) {
     t.assert(body.data)
     /*
      * Bob gets notified because he owns the patch.
+     * Alice get notified as a member.
      */
-    t.assert(body.notifications.length === 1)
+    t.assert(body.notifications.length === 2)
 
     var tomHit = false
       , bobHit = false
@@ -1263,7 +1327,7 @@ exports.insertMessageToPrivatePlace = function (test) {
       t.assert(message._target === testMessageToPrivate._id)
       message.registrationIds.forEach(function(registrationId){
         if (registrationId.indexOf('tom') > 0) tomHit = true
-        if (registrationId.indexOf('alice') > 0) aliceHit = true
+        if (registrationId.indexOf('alice') > 0 && message.trigger == 'watch_to') aliceHit = true
         if (registrationId.indexOf('max') > 0) maxHit = true
         if (registrationId.indexOf('bob') > 0 && message.trigger == 'own_to') bobHit = true
         if (registrationId.indexOf('becky') > 0) beckyHit = true
@@ -1272,7 +1336,7 @@ exports.insertMessageToPrivatePlace = function (test) {
     })
 
     t.assert(!tomHit)
-    t.assert(!aliceHit)
+    t.assert(aliceHit)
     t.assert(!maxHit)
     t.assert(bobHit)
     t.assert(!beckyHit)
@@ -1326,7 +1390,7 @@ exports.insertMessageToPrivatePlace = function (test) {
 }
 
 
-exports.insertReplyToPrivateMessage = function (test) {
+exports.bobInsertsReplyToBeckysPrivateMessage = function (test) {
 
   t.post({
     uri: '/do/insertEntity?' + userCredBob,
@@ -1345,7 +1409,7 @@ exports.insertReplyToPrivateMessage = function (test) {
     t.assert(body.count === 1)
     t.assert(body.data)
     /*
-     * Becky gets notified because she is watching the place.
+     * Becky and Alice get notified because they are watching the place.
      * Becky gets notified because she is owner of the message being replied to.
      *
      * Both notifications come through because they are separate calls.
@@ -1368,7 +1432,7 @@ exports.insertReplyToPrivateMessage = function (test) {
     body.notifications.forEach(function(message) {
       message.registrationIds.forEach(function(registrationId){
         if (registrationId.indexOf('tom') > 0) tomHit = true
-        if (registrationId.indexOf('alice') > 0) aliceHit = true
+        if (registrationId.indexOf('alice') > 0 && message.trigger == 'watch_to') aliceHit = true
         if (registrationId.indexOf('max') > 0) maxHit = true
         if (registrationId.indexOf('bob') > 0 && message.trigger == 'own_to') bobHit = true
         if (registrationId.indexOf('becky') > 0 && message.trigger == 'watch_to') beckyWatchHit = true
@@ -1378,7 +1442,7 @@ exports.insertReplyToPrivateMessage = function (test) {
     })
 
     t.assert(!tomHit)
-    t.assert(!aliceHit)
+    t.assert(aliceHit)
     t.assert(!maxHit)
     t.assert(!bobHit)
     t.assert(beckyOwnHit)
@@ -1448,7 +1512,7 @@ exports.insertReplyToPrivateMessage = function (test) {
   })
 }
 
-exports.memberGetMessagesForPrivatePlace = function (test) {
+exports.memberBeckyGetsMessagesForBobsPrivatePlace = function (test) {
   t.post({
     uri: '/do/getEntitiesForEntity?' + userCredBecky,
     body: {
@@ -1475,7 +1539,7 @@ exports.memberGetMessagesForPrivatePlace = function (test) {
 }
 
 
-exports.ownerGetMessagesForPrivatePlace = function (test) {
+exports.ownerBobGetMessagesForBobsPrivatePlace = function (test) {
   t.post({
     uri: '/do/getEntitiesForEntity?' + userCredBob,
     body: {
@@ -1502,7 +1566,7 @@ exports.ownerGetMessagesForPrivatePlace = function (test) {
 }
 
 
-exports.nonMemberGetMessagesForPrivatePlace = function (test) {
+exports.nonMemberStanCantGetMessagesForBobsPrivatePlace = function (test) {
   t.post({
     uri: '/do/getEntitiesForEntity?' + userCredStan,
     body: {
@@ -1528,7 +1592,8 @@ exports.nonMemberGetMessagesForPrivatePlace = function (test) {
   })
 }
 
-exports.nonMemberGetMembersForPrivatePlace = function (test) {
+
+exports.nonMemberStanCanGetMembersForBobsPrivatePlace = function (test) {
   t.post({
     uri: '/do/getEntitiesForEntity?' + userCredStan,
     body: {
@@ -1547,15 +1612,16 @@ exports.nonMemberGetMembersForPrivatePlace = function (test) {
 
   function(err, res, body) {
     /*
-     * Should see one watcher (Becky)
+     * Should see two watchers (Becky and Alice)
      */
     t.assert(body.data)
-    t.assert(body.count === 1)
+    t.assert(body.count === 2)
     test.done()
   })
 }
 
-exports.getMessageToPublicPlace = function (test) {
+
+exports.tomCanGetMessageToTomsPublicPlace = function (test) {
   t.post({
     uri: '/do/getEntities?' + userCredTom,
     body: {
@@ -1563,36 +1629,11 @@ exports.getMessageToPublicPlace = function (test) {
       links : {
         shortcuts: true,
         active:
-        [ { schema: 'place',
-            limit: 1,
-            links: true,
-            type: 'content',
-            count: true,
-            direction: 'out' },
-          { schema: 'message',
-            limit: 1,
-            links: true,
-            type: 'content',
-            count: true,
-            direction: 'both' },
-          { schema: 'place',
-            limit: 1,
-            links: true,
-            type: 'share',
-            count: true,
-            direction: 'out' },
-          { schema: 'message',
-            limit: 1,
-            links: true,
-            type: 'share',
-            count: true,
-            direction: 'out' },
-          { schema: 'user',
-            limit: 5,
-            links: true,
-            type: 'share',
-            count: true,
-            direction: 'out' } ]
+        [ { schema: 'place', limit: 1, links: true, type: 'content', count: true, direction: 'out' },
+          { schema: 'message', limit: 1, links: true, type: 'content', count: true, direction: 'both' },
+          { schema: 'place', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
+          { schema: 'message', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
+          { schema: 'user', limit: 5, links: true, type: 'share', count: true, direction: 'out' } ]
       }
     }
   },
@@ -1606,25 +1647,15 @@ exports.getMessageToPublicPlace = function (test) {
 }
 
 
-exports.previewMessageLinkByProximity = function (test) {
+exports.bobCanPreviewMessageCountsByProximity = function (test) {
   t.post({
     uri: '/do/getEntitiesByProximity?' + userCredBob,
     body: {
       cursor: { skip: 0, limit: 50, sort: { modifiedDate: -1 }},
       links: { shortcuts: false,
          active:
-          [ { schema: 'beacon',
-              limit: 10,
-              links: true,
-              type: 'proximity',
-              count: true,
-              direction: 'both' },
-            { schema: 'message',
-              limit: 2,
-              links: true,
-              type: 'content',
-              count: true,
-              direction: 'both' }]
+          [ { schema: 'beacon', limit: 10, links: true, type: 'proximity', count: true, direction: 'both' },
+            { schema: 'message', limit: 2, links: true, type: 'content', count: true, direction: 'both' }]
       },
       beaconIds: [ testBeacon._id, testBeacon2._id ]
     }
@@ -1662,7 +1693,7 @@ exports.previewMessageLinkByProximity = function (test) {
  * ----------------------------------------------------------------------------
  */
 
-exports.getNotificationsForSelf = function (test) {
+exports.tomCanGetNotificationsForSelf = function (test) {
   t.post({
     uri: '/do/getNotifications?' + userCredTom,
     body: {
@@ -1687,6 +1718,798 @@ exports.getNotificationsForSelf = function (test) {
 
 /*
  * ----------------------------------------------------------------------------
+ * Sharing
+ * ----------------------------------------------------------------------------
+ */
+
+var beckySharePlaceWithStanId = "me.111111.11111.111.222224"
+var beckyShareMessageWithStanId = "me.111111.11111.111.222225"
+var beckyShareMessageWithAliceId = "me.111111.11111.111.222226"
+var beckySharePhotoWithStanId = "me.111111.11111.111.222227"
+var beckySharePhotoWithAliceId = "me.111111.11111.111.222228"
+
+exports.beckySharesPrivatePatchWithStan = function(test) {
+  t.post({
+    uri: '/do/insertEntity?' + userCredBecky,
+    body: {
+      entity: {
+        _id : beckySharePlaceWithStanId,
+        schema : util.statics.schemaMessage,
+        type : "share",
+        description : "Checkout the \'Seahawks Private VIP Club\' patch!",
+      },
+      links: [{
+        type: 'share',
+        _to: testPlacePrivate._id,
+      }, {
+        type: 'share',
+        _to: testUserStan._id,
+      }],
+      returnNotifications: true,
+    },
+  }, 201, function(err, res, body) {
+
+    t.assert(body.count === 1)
+    t.assert(body.data)
+    var messageDate = body.data.modifiedDate  // For later checks
+    /*
+     * Stan gets notified as the recipient.
+     */
+    t.assert(body.notifications.length === 1)
+
+    var tomHit = false
+      , bobHit = false
+      , aliceHit = false
+      , maxHit = false
+      , beckyHit = false
+      , stanHit = false
+
+    body.notifications.forEach(function(message) {
+      t.assert(message._target === beckySharePlaceWithStanId)
+      message.registrationIds.forEach(function(registrationId){
+        if (registrationId.indexOf('tom') > 0) tomHit = true
+        if (registrationId.indexOf('alice') > 0) aliceHit = true
+        if (registrationId.indexOf('max') > 0) maxHit = true
+        if (registrationId.indexOf('bob') > 0) bobHit = true
+        if (registrationId.indexOf('becky') > 0) beckyHit = true
+        if (registrationId.indexOf('stan') > 0 && message.trigger == 'share') stanHit = true
+      })
+    })
+
+    t.assert(!tomHit)
+    t.assert(!aliceHit)
+    t.assert(!maxHit)
+    t.assert(!bobHit)
+    t.assert(!beckyHit)
+    t.assert(stanHit)
+
+    var savedEnt = body.data
+    t.assert(savedEnt._owner === testUserBecky._id)
+    t.assert(savedEnt._creator === testUserBecky._id)
+    t.assert(savedEnt._modifier === testUserBecky._id)
+
+    /* Check insert */
+    t.post({
+      uri: '/find/messages?' + userCredBecky,
+      body: {
+        query:{ _id:beckySharePlaceWithStanId }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+
+      /* Check links */
+      t.post({
+        uri: '/find/links?' + adminCred,
+        body: {
+          query: {
+            type: 'share',
+            _from: beckySharePlaceWithStanId,
+            _to: testPlacePrivate._id,
+          }
+        }
+      }, function(err, res, body) {
+        t.assert(body && body.data && 1 === body.data.length)
+        var link = body.data[0]
+        /* Bob owns the place */
+        t.assert(link._creator === testUserBecky._id)
+        t.assert(link._owner === testUserBob._id)
+        t.assert(link._modifier === testUserBecky._id)
+
+        t.post({
+          uri: '/find/links?' + adminCred,
+          body: {
+            query: {
+              type: 'share',
+              _from: beckySharePlaceWithStanId,
+              _to: testUserStan._id,
+            }
+          }
+        }, function(err, res, body) {
+          t.assert(body && body.data && 1 === body.data.length)
+          var link = body.data[0]
+          /* Stan owns the user */
+          t.assert(link._creator === testUserBecky._id)
+          t.assert(link._owner === testUserStan._id)
+          t.assert(link._modifier === testUserBecky._id)
+
+          /* Check activityDate for place - should not have changed */
+          t.post({
+            uri: '/find/places',
+            body: {
+              query:{ _id:testPlacePrivate._id }
+            }
+          }, function(err, res, body) {
+            t.assert(body.count === 1)
+            t.assert(body.data && body.data[0])
+            t.assert(body.data[0].activityDate < messageDate)
+            test.done()
+          })
+        })
+      })
+    })
+  })
+}
+
+
+exports.beckySharesMemberMessageWithNonMemberStan = function(test) {
+  t.post({
+    uri: '/do/insertEntity?' + userCredBecky,
+    body: {
+      entity: {
+        _id : beckyShareMessageWithStanId,
+        schema : util.statics.schemaMessage,
+        type : "share",
+        description : "Checkout Becky\'s message to the \'Seahawks Private VIP Club\' patch!",
+      },
+      links: [{
+        type: 'share',
+        _to: testMessageToPrivate._id,
+      }, {
+        type: 'share',
+        _to: testUserStan._id,
+      }],
+      returnNotifications: true,
+    },
+  }, 201, function(err, res, body) {
+
+    t.assert(body.count === 1)
+    t.assert(body.data)
+    /*
+     * Stan gets notified as the recipient.
+     */
+    t.assert(body.notifications.length === 2)
+
+    var tomHit = false
+      , bobHit = false
+      , aliceHit = false
+      , maxHit = false
+      , beckyHit = false
+      , stanHit = false
+
+    body.notifications.forEach(function(message) {
+      if (!message.info) {
+        t.assert(message._target === beckyShareMessageWithStanId)
+        message.registrationIds.forEach(function(registrationId){
+          if (registrationId.indexOf('tom') > 0) tomHit = true
+          if (registrationId.indexOf('alice') > 0) aliceHit = true
+          if (registrationId.indexOf('max') > 0) maxHit = true
+          if (registrationId.indexOf('bob') > 0) bobHit = true
+          if (registrationId.indexOf('becky') > 0) beckyHit = true
+          if (registrationId.indexOf('stan') > 0 && message.trigger == 'share') stanHit = true
+        })
+      }
+    })
+
+    t.assert(!tomHit)
+    t.assert(!aliceHit)
+    t.assert(!maxHit)
+    t.assert(!bobHit)
+    t.assert(!beckyHit)
+    t.assert(stanHit)
+
+    var savedEnt = body.data
+    t.assert(savedEnt._owner === testUserBecky._id)
+    t.assert(savedEnt._creator === testUserBecky._id)
+    t.assert(savedEnt._modifier === testUserBecky._id)
+
+    /* Check insert */
+    t.post({
+      uri: '/find/messages?' + userCredBecky,
+      body: {
+        query:{ _id:beckyShareMessageWithStanId }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+
+      /* Check links */
+      t.post({
+        uri: '/find/links?' + adminCred,
+        body: {
+          query: {
+            type: 'share',
+            _from: beckyShareMessageWithStanId,
+            _to: testMessageToPrivate._id,
+          }
+        }
+      }, function(err, res, body) {
+        t.assert(body && body.data && 1 === body.data.length)
+        var link = body.data[0]
+        /* Bob owns the place */
+        t.assert(link._creator === testUserBecky._id)
+        t.assert(link._owner === testUserBecky._id)
+        t.assert(link._modifier === testUserBecky._id)
+
+        t.post({
+          uri: '/find/links?' + adminCred,
+          body: {
+            query: {
+              type: 'share',
+              _from: beckyShareMessageWithStanId,
+              _to: testUserStan._id,
+            }
+          }
+        }, function(err, res, body) {
+          t.assert(body && body.data && 1 === body.data.length)
+          var link = body.data[0]
+          /* Stan owns the user */
+          t.assert(link._creator === testUserBecky._id)
+          t.assert(link._owner === testUserStan._id)
+          t.assert(link._modifier === testUserBecky._id)
+
+          test.done()
+        })
+      })
+    })
+  })
+}
+
+
+exports.beckySharesMemberMessageWithMemberAlice = function(test) {
+  t.post({
+    uri: '/do/insertEntity?' + userCredBecky,
+    body: {
+      entity: {
+        _id : beckyShareMessageWithAliceId,
+        schema : util.statics.schemaMessage,
+        type : "share",
+        description : "Checkout Becky\'s message to the \'Seahawks Private VIP Club\' patch!",
+      },
+      links: [{
+        type: 'share',
+        _to: testMessageToPrivate._id,
+      }, {
+        type: 'share',
+        _to: testUserAlice._id,
+      }],
+      returnNotifications: true,
+    },
+  }, 201, function(err, res, body) {
+
+    t.assert(body.count === 1)
+    t.assert(body.data)
+    /*
+     * Stan gets notified as the recipient.
+     */
+    t.assert(body.notifications.length === 2)
+
+    var tomHit = false
+      , bobHit = false
+      , aliceHit = false
+      , maxHit = false
+      , beckyHit = false
+      , stanHit = false
+
+    body.notifications.forEach(function(message) {
+      if (!message.info) {
+        t.assert(message._target === beckyShareMessageWithAliceId)
+        message.registrationIds.forEach(function(registrationId){
+          if (registrationId.indexOf('tom') > 0) tomHit = true
+          if (registrationId.indexOf('alice') > 0 && message.trigger == 'share') aliceHit = true
+          if (registrationId.indexOf('max') > 0) maxHit = true
+          if (registrationId.indexOf('bob') > 0) bobHit = true
+          if (registrationId.indexOf('becky') > 0) beckyHit = true
+          if (registrationId.indexOf('stan') > 0) stanHit = true
+        })
+      }
+    })
+
+    t.assert(!tomHit)
+    t.assert(aliceHit)
+    t.assert(!maxHit)
+    t.assert(!bobHit)
+    t.assert(!beckyHit)
+    t.assert(!stanHit)
+
+    var savedEnt = body.data
+    t.assert(savedEnt._owner === testUserBecky._id)
+    t.assert(savedEnt._creator === testUserBecky._id)
+    t.assert(savedEnt._modifier === testUserBecky._id)
+
+    /* Check insert */
+    t.post({
+      uri: '/find/messages?' + userCredBecky,
+      body: {
+        query:{ _id:beckyShareMessageWithAliceId }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+
+      /* Check links */
+      t.post({
+        uri: '/find/links?' + adminCred,
+        body: {
+          query: {
+            type: 'share',
+            _from: beckyShareMessageWithAliceId,
+            _to: testMessageToPrivate._id,
+          }
+        }
+      }, function(err, res, body) {
+        t.assert(body && body.data && 1 === body.data.length)
+        var link = body.data[0]
+        /* Bob owns the place */
+        t.assert(link._owner === testUserBecky._id)
+        t.assert(link._creator === testUserBecky._id)
+        t.assert(link._modifier === testUserBecky._id)
+
+        t.post({
+          uri: '/find/links?' + adminCred,
+          body: {
+            query: {
+              type: 'share',
+              _from: beckyShareMessageWithAliceId,
+              _to: testUserAlice._id,
+            }
+          }
+        }, function(err, res, body) {
+          t.assert(body && body.data && 1 === body.data.length)
+          var link = body.data[0]
+          /* Stan owns the user */
+          t.assert(link._owner === testUserAlice._id)
+          t.assert(link._creator === testUserBecky._id)
+          t.assert(link._modifier === testUserBecky._id)
+
+          test.done()
+        })
+      })
+    })
+  })
+}
+
+
+exports.beckySharesPhotoWithNonMemberStan = function(test) {
+  t.post({
+    uri: '/do/insertEntity?' + userCredBecky,
+    body: {
+      entity: {
+        _id : beckySharePhotoWithStanId,
+        schema : util.statics.schemaMessage,
+        type : "share",
+        description : "Checkout Becky\'s photo!",
+        photo: {
+          prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
+          source:"aircandi",
+        },
+      },
+      links: [{
+        type: 'share',
+        _to: testUserStan._id,
+      }],
+      returnNotifications: true,
+    },
+  }, 201, function(err, res, body) {
+
+    t.assert(body.count === 1)
+    t.assert(body.data)
+    /*
+     * Stan gets notified as the recipient.
+     */
+    t.assert(body.notifications.length === 1)
+
+    var tomHit = false
+      , bobHit = false
+      , aliceHit = false
+      , maxHit = false
+      , beckyHit = false
+      , stanHit = false
+
+    body.notifications.forEach(function(message) {
+      if (!message.info) {
+        t.assert(message._target === beckySharePhotoWithStanId)
+        message.registrationIds.forEach(function(registrationId){
+          if (registrationId.indexOf('tom') > 0) tomHit = true
+          if (registrationId.indexOf('alice') > 0) aliceHit = true
+          if (registrationId.indexOf('max') > 0) maxHit = true
+          if (registrationId.indexOf('bob') > 0) bobHit = true
+          if (registrationId.indexOf('becky') > 0) beckyHit = true
+          if (registrationId.indexOf('stan') > 0 && message.trigger == 'share') stanHit = true
+        })
+      }
+    })
+
+    t.assert(!tomHit)
+    t.assert(!aliceHit)
+    t.assert(!maxHit)
+    t.assert(!bobHit)
+    t.assert(!beckyHit)
+    t.assert(stanHit)
+
+    var savedEnt = body.data
+    t.assert(savedEnt._owner === testUserBecky._id)
+    t.assert(savedEnt._creator === testUserBecky._id)
+    t.assert(savedEnt._modifier === testUserBecky._id)
+
+    /* Check insert */
+    t.post({
+      uri: '/find/messages?' + userCredBecky,
+      body: {
+        query:{ _id:beckySharePhotoWithStanId }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+
+      /* Check link */
+      t.post({
+        uri: '/find/links?' + adminCred,
+        body: {
+          query: {
+            type: 'share',
+            _from: beckySharePhotoWithStanId,
+            _to: testUserStan._id,
+          }
+        }
+      }, function(err, res, body) {
+        t.assert(body && body.data && 1 === body.data.length)
+        var link = body.data[0]
+        /* Stan owns the user */
+        t.assert(link._creator === testUserBecky._id)
+        t.assert(link._owner === testUserStan._id)
+        t.assert(link._modifier === testUserBecky._id)
+
+        test.done()
+      })
+    })
+  })
+}
+
+
+exports.beckySharesPhotoWithMemberAlice = function(test) {
+  t.post({
+    uri: '/do/insertEntity?' + userCredBecky,
+    body: {
+      entity: {
+        _id : beckySharePhotoWithAliceId,
+        schema : util.statics.schemaMessage,
+        type : "share",
+        description : "Checkout Becky\'s photo!",
+        photo: {
+          prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
+          source:"aircandi",
+        },
+      },
+      links: [{
+        type: 'share',
+        _to: testUserAlice._id,
+      }],
+      returnNotifications: true,
+    },
+  }, 201, function(err, res, body) {
+
+    t.assert(body.count === 1)
+    t.assert(body.data)
+    /*
+     * Stan gets notified as the recipient.
+     */
+    t.assert(body.notifications.length === 1)
+
+    var tomHit = false
+      , bobHit = false
+      , aliceHit = false
+      , maxHit = false
+      , beckyHit = false
+      , stanHit = false
+
+    body.notifications.forEach(function(message) {
+      if (!message.info) {
+        t.assert(message._target === beckySharePhotoWithAliceId)
+        message.registrationIds.forEach(function(registrationId){
+          if (registrationId.indexOf('tom') > 0) tomHit = true
+          if (registrationId.indexOf('alice') > 0 && message.trigger == 'share') aliceHit = true
+          if (registrationId.indexOf('max') > 0) maxHit = true
+          if (registrationId.indexOf('bob') > 0) bobHit = true
+          if (registrationId.indexOf('becky') > 0) beckyHit = true
+          if (registrationId.indexOf('stan') > 0) stanHit = true
+        })
+      }
+    })
+
+    t.assert(!tomHit)
+    t.assert(aliceHit)
+    t.assert(!maxHit)
+    t.assert(!bobHit)
+    t.assert(!beckyHit)
+    t.assert(!stanHit)
+
+    var savedEnt = body.data
+    t.assert(savedEnt._owner === testUserBecky._id)
+    t.assert(savedEnt._creator === testUserBecky._id)
+    t.assert(savedEnt._modifier === testUserBecky._id)
+
+    /* Check insert */
+    t.post({
+      uri: '/find/messages?' + userCredBecky,
+      body: {
+        query:{ _id:beckySharePhotoWithAliceId }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+
+      /* Check links */
+      t.post({
+        uri: '/find/links?' + adminCred,
+        body: {
+          query: {
+            type: 'share',
+            _from: beckySharePhotoWithAliceId,
+            _to: testUserAlice._id,
+          }
+        }
+      }, function(err, res, body) {
+        t.assert(body && body.data && 1 === body.data.length)
+        var link = body.data[0]
+        /* Stan owns the user */
+        t.assert(link._owner === testUserAlice._id)
+        t.assert(link._creator === testUserBecky._id)
+        t.assert(link._modifier === testUserBecky._id)
+
+        test.done()
+      })
+    })
+  })
+}
+
+
+exports.stanGetsSharePlaceFromBecky = function (test) {
+  t.post({
+    uri: '/do/getEntities?' + userCredStan,
+    body: {
+      entityIds: [beckySharePlaceWithStanId],
+      links : {
+        shortcuts: true,
+        active:
+        [
+          { schema: 'place', limit: 1, links: true, type: 'content', count: true, direction: 'out' },
+          { schema: 'place', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
+          { schema: 'message', limit: 1, links: true, type: 'content', count: true, direction: 'both' },
+          { schema: 'message', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
+          { schema: 'user', limit: 5, links: true, type: 'share', count: true, direction: 'out' },
+        ]
+      }
+    }
+  },
+
+  function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.count === 1)
+
+    /* Should have share links to message */
+    t.assert(!body.data[0].linksIn)
+    t.assert(body.data[0].linksOut && body.data[0].linksOut.length === 2)
+    t.assert(body.data[0].linksOutCounts && body.data[0].linksOutCounts.length === 2)
+
+    var placeHit = false
+      , userHit = false
+
+    body.data[0].linksOut.forEach(function(link) {
+      if (link.type === 'share'
+          && link.targetSchema === 'user'
+          && link.shortcut
+          && link.shortcut.id === testUserStan._id) userHit = true
+      if (link.type === 'share'
+          && link.targetSchema === 'place'
+          && link.shortcut
+          && link.shortcut.id === testPlacePrivate._id) placeHit = true
+    })
+
+    t.assert(placeHit)
+    t.assert(userHit)
+
+    test.done()
+  })
+}
+
+
+exports.stanGetsSharePhotoFromBecky = function (test) {
+  t.post({
+    uri: '/do/getEntities?' + userCredStan,
+    body: {
+      entityIds: [beckySharePhotoWithStanId],
+      links : {
+        shortcuts: true,
+        active:
+        [
+          { schema: 'place', limit: 1, links: true, type: 'content', count: true, direction: 'out' },
+          { schema: 'place', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
+          { schema: 'message', limit: 1, links: true, type: 'content', count: true, direction: 'both' },
+          { schema: 'message', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
+          { schema: 'user', limit: 5, links: true, type: 'share', count: true, direction: 'out' },
+        ]
+      }
+    }
+  },
+
+  function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.count === 1)
+
+    /* - Link to Stan */
+    t.assert(!body.data[0].linksIn)
+    t.assert(body.data[0].linksOut && body.data[0].linksOut.length === 1)
+    t.assert(body.data[0].linksOutCounts && body.data[0].linksOutCounts.length === 1)
+
+    var userHit = false
+
+    var link = body.data[0].linksOut[0]
+    t.assert(link.type === 'share'
+        && link.targetSchema === 'user'
+        && link.shortcut
+        && link.shortcut.id === testUserStan._id)
+
+    test.done()
+  })
+}
+
+
+exports.aliceGetsSharePhotoFromBecky = function (test) {
+  t.post({
+    uri: '/do/getEntities?' + userCredAlice,
+    body: {
+      entityIds: [beckySharePhotoWithAliceId],
+      links : {
+        shortcuts: true,
+        active:
+        [
+          { schema: 'place', limit: 1, links: true, type: 'content', count: true, direction: 'out' },
+          { schema: 'place', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
+          { schema: 'message', limit: 1, links: true, type: 'content', count: true, direction: 'both' },
+          { schema: 'message', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
+          { schema: 'user', limit: 5, links: true, type: 'share', count: true, direction: 'out' },
+        ]
+      }
+    }
+  },
+
+  function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.count === 1)
+
+    /* - Link to Stan */
+    t.assert(!body.data[0].linksIn)
+    t.assert(body.data[0].linksOut && body.data[0].linksOut.length === 1)
+    t.assert(body.data[0].linksOutCounts && body.data[0].linksOutCounts.length === 1)
+
+    var userHit = false
+
+    var link = body.data[0].linksOut[0]
+    t.assert(link.type === 'share'
+        && link.targetSchema === 'user'
+        && link.shortcut
+        && link.shortcut.id === testUserAlice._id)
+
+    test.done()
+  })
+}
+
+
+exports.stanGetsShareMessageFromBecky = function (test) {
+  t.post({
+    uri: '/do/getEntities?' + userCredStan,
+    body: {
+      entityIds: [beckyShareMessageWithStanId],
+      links : {
+        shortcuts: true,
+        active:
+        [
+          { schema: 'place', limit: 1, links: true, type: 'content', count: true, direction: 'out' },
+          { schema: 'place', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
+          { schema: 'message', limit: 1, links: true, type: 'content', count: true, direction: 'both' },
+          { schema: 'message', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
+          { schema: 'user', limit: 5, links: true, type: 'share', count: true, direction: 'out' },
+        ]
+      }
+    }
+  },
+
+  function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.count === 1)
+
+    /*
+     * - Link to Stan
+     * - Link to message but no shortcut because Stan is not a member of the
+     *   private place the message is from.
+     */
+    t.assert(!body.data[0].linksIn)
+    t.assert(body.data[0].linksOut && body.data[0].linksOut.length === 2)
+    t.assert(body.data[0].linksOutCounts && body.data[0].linksOutCounts.length === 2)
+
+    var messageHit = false
+      , userHit = false
+
+    body.data[0].linksOut.forEach(function(link) {
+      if (link.type === 'share'
+          && link.targetSchema === 'user'
+          && link.shortcut
+          && link.shortcut.id === testUserStan._id) userHit = true
+      if (link.type === 'share'
+          && link.targetSchema === 'message'
+          && !link.shortcut) messageHit = true
+    })
+
+    t.assert(messageHit)
+    t.assert(userHit)
+
+    test.done()
+  })
+}
+
+
+_exports.aliceGetsShareMessageFromBecky = function (test) {
+  t.post({
+    uri: '/do/getEntities?' + userCredAlice,
+    body: {
+      entityIds: [beckyShareMessageWithAliceId],
+      links : {
+        shortcuts: true,
+        active:
+        [
+          { schema: 'place', limit: 1, links: true, type: 'content', count: true, direction: 'out' },
+          { schema: 'place', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
+          { schema: 'message', limit: 1, links: true, type: 'content', count: true, direction: 'both' },
+          { schema: 'message', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
+          { schema: 'user', limit: 5, links: true, type: 'share', count: true, direction: 'out' },
+        ]
+      }
+    }
+  },
+
+  function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.count === 1)
+
+    /*
+     * - Link to Stan
+     * - Link to message with shortcut because Alice is a member of the
+     *   private place the message is from.
+     */
+    t.assert(!body.data[0].linksIn)
+    t.assert(body.data[0].linksOut && body.data[0].linksOut.length === 2)
+    t.assert(body.data[0].linksOutCounts && body.data[0].linksOutCounts.length === 2)
+
+    var messageHit = false
+      , userHit = false
+
+    body.data[0].linksOut.forEach(function(link) {
+      if (link.type === 'share'
+          && link.targetSchema === 'user'
+          && link.shortcut
+          && link.shortcut.id === testUserAlice._id) userHit = true
+      if (link.type === 'share'
+          && link.targetSchema === 'message'
+          && link.shortcut
+          && link.shortcut.id === testMessageToPrivate._id) messageHit = true
+    })
+
+    t.assert(messageHit)
+    t.assert(userHit)
+
+    test.done()
+  })
+}
+
+
+/*
+ * ----------------------------------------------------------------------------
  * Sent messages
  * ----------------------------------------------------------------------------
  */
@@ -1708,36 +2531,11 @@ exports.userGetMessagesSentByAlice = function (test) {
       links : {
         shortcuts: true,
         active:
-        [ { schema: 'place',
-            limit: 1,
-            links: true,
-            type: 'content',
-            count: true,
-            direction: 'out' },
-          { schema: 'message',
-            limit: 1,
-            links: true,
-            type: 'content',
-            count: true,
-            direction: 'both' },
-          { schema: 'place',
-            limit: 1,
-            links: true,
-            type: 'share',
-            count: true,
-            direction: 'out' },
-          { schema: 'message',
-            limit: 1,
-            links: true,
-            type: 'share',
-            count: true,
-            direction: 'out' },
-          { schema: 'user',
-            limit: 5,
-            links: true,
-            type: 'share',
-            count: true,
-            direction: 'out' } ]
+        [ { schema: 'place', limit: 1, links: true, type: 'content', count: true, direction: 'out' },
+          { schema: 'message', limit: 1, links: true, type: 'content', count: true, direction: 'both' },
+          { schema: 'place', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
+          { schema: 'message', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
+          { schema: 'user', limit: 5, links: true, type: 'share', count: true, direction: 'out' } ]
       }
     }
   },
