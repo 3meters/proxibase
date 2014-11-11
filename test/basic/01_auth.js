@@ -202,6 +202,16 @@ exports.canValidateSession = function(test) {
   })
 }
 
+exports.canValidateSessionUsingParamsInQuery = function(test) {
+  t.get('/find/places?user=' + session._owner + '&session=' + session.key,
+  function(err, res, body) {
+    t.assert(body.user)
+    t.assert(body.user._id === testUser._id)
+    t.assert(body.user.name === testUser.name)
+    test.done()
+  })
+}
+
 exports.canValidateSessionUsingParamsInBody = function(test) {
   t.post({
     uri: '/find/places',
