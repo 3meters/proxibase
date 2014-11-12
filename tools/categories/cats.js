@@ -137,7 +137,7 @@ function writeCategoriesFile(foursquareCats) {
     var cat = {
       id: row[0],
       name: row[1],
-      photo: { 
+      photo: {
         source: 'assets.categories',
         prefix: row[0] + '_',
         suffix: '.png',
