@@ -13,14 +13,12 @@ var
   cli = require('commander')  // command line interface
 
 cli
-  .option('-u, --users <num>', 'users to generate')
-  .option('-b, --beacons <num>', 'beacons to generate')
-  .option('-e, --epb <num>', 'place entities per beacon')
-  .option('-a, --ape <num>', 'applink entities per place')
-  .option('-s, --spe <num>', 'post entities per place')
-  .option('-c, --cpe <num>', 'comment entities per post and place entity')
-  .option('-l, --likes <num>', 'likes per entity and user')
-  .option('-w, --watch <num>', 'watches per entiy and user')
+  .option('-users, --users <num>', 'users to generate')
+  .option('-ppu, --ppu <num>', 'patches per user')
+  .option('-bpp, --bpp <num>', 'beacon per patch')
+  .option('-ppp, --ppp <num>', 'places per patch')
+  .option('-mpp, --mpp <num>', 'messages per patch')
+  .option('-app, --app <num>', 'applinks per patch')
   .option('-d, --database <database>', 'database name [proxTest]', String, 'proxTest')
   .parse(process.argv)
 
