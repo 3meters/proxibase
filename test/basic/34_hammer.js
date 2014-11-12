@@ -74,7 +74,7 @@ exports.runHammer = function(test) {
     t.post({
       uri: '/do/getEntities?' + userCred,
       body: {
-        entityIds: [constants.placeId],
+        entityIds: [constants.patchId],
         links: {
           active: [
             { type:statics.typeProximity, schema:statics.schemaBeacon, links: true, count: true, direction: 'both' }, 
@@ -93,7 +93,7 @@ exports.runHammer = function(test) {
         t.assert(record.linksIn && record.linksIn.length)
         // t.assert(record.linksIn && record.linksIn.length === dbProfile.spe + dbProfile.cpe + dbProfile.ape + dbProfile.likes + dbProfile.watch)
         t.assert(record.linksOut && record.linksOut.length === 1)
-        t.assert(record.linksInCounts && record.linksInCounts.length === 5)
+        t.assert(record.linksInCounts && record.linksInCounts.length === 4)
         t.assert(record.linksOutCounts && record.linksOutCounts.length === 1)
         getEntsLinkedByUser()
     })
@@ -103,7 +103,7 @@ exports.runHammer = function(test) {
     t.post({
       uri: '/do/getEntities?' + userCred,
       body: {
-        entityIds: [constants.placeId], 
+        entityIds: [constants.patchId], 
         links: {
           loadWhere: { _creator: constants.uid1 },
           active: [ 
@@ -130,7 +130,7 @@ exports.runHammer = function(test) {
         entityIds: [constants.beaconId],
         links: {
           active: [ 
-            { type:statics.typeProximity, schema:statics.schemaPlace, links: true, count: true }, 
+            { type:statics.typeProximity, schema:statics.schemaPatch, links: true, count: true }, 
           ]},
       }
     }, function(err, res, body) {

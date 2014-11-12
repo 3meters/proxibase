@@ -19,7 +19,7 @@ var testUser = {
   email : "johnqtest@3meters.com",
   password : "12345678",
   photo: { 
-    prefix:"resource:placeholder_user", 
+    prefix:"resource:patchholder_user", 
     source:"resource",
   },
   area : "Testville, WA",
@@ -72,7 +72,7 @@ exports.getEntitiesMinimum = function (test) {
   t.post({
     uri: '/do/getEntities',
     body: {
-      entityIds: [constants.placeId],
+      entityIds: [constants.patchId],
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
@@ -89,7 +89,7 @@ exports.getEntitiesMessages = function (test) {
   t.post({
     uri: '/do/getEntities',
     body: {
-      entityIds: [constants.placeId], 
+      entityIds: [constants.patchId], 
       links: {
         active: [
           { type:statics.typeContent, schema:statics.schemaMessage, links: true, count: true, direction: 'both' },
@@ -113,7 +113,7 @@ exports.getEntitiesMaximum = function (test) {
   t.post({
     uri: '/do/getEntities',
     body: {
-      entityIds: [constants.placeId], 
+      entityIds: [constants.patchId], 
       links: {
         active: [
           { type:statics.typeProximity, schema:statics.schemaBeacon, links: true, count: true, direction: 'both' },
@@ -130,9 +130,9 @@ exports.getEntitiesMaximum = function (test) {
     t.assert(body.data && body.data[0])
     var record = body.data[0]
     t.assert(record.linksIn && record.linksIn.length)
-    t.assert(record.linksIn && record.linksIn.length === dbProfile.spe + dbProfile.cpe + dbProfile.ape + dbProfile.mpp + dbProfile.likes + dbProfile.watch)
+    t.assert(record.linksIn && record.linksIn.length === dbProfile.spe + dbProfile.cpe + dbProfile.mpp + dbProfile.likes + dbProfile.watch)
     t.assert(record.linksOut && record.linksOut.length === 1)
-    t.assert(record.linksInCounts && record.linksInCounts.length === 6)
+    t.assert(record.linksInCounts && record.linksInCounts.length === 5)
     t.assert(record.linksOutCounts && record.linksOutCounts.length === 1)
     test.done()
   })
@@ -146,12 +146,11 @@ exports.getEntitiesWithLinkStatsOnly = function (test) {
   t.post({
     uri: '/do/getEntities',
     body: {
-      entityIds: [constants.placeId], 
+      entityIds: [constants.patchId], 
       links: {
         shortcuts: false,
         active: [
           { type:statics.typeProximity, schema:statics.schemaBeacon }, 
-          { type:statics.typeContent, schema:statics.schemaApplink }, 
           { type:statics.typeContent, schema:statics.schemaComment }, 
           { type:statics.typeContent, schema:statics.schemaPost }, 
           { type:statics.typeWatch, schema:statics.schemaUser }, 
@@ -162,7 +161,7 @@ exports.getEntitiesWithLinkStatsOnly = function (test) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data[0])
     var record = body.data[0]
-    t.assert(record.linksInCounts && record.linksInCounts.length === 5)
+    t.assert(record.linksInCounts && record.linksInCounts.length === 4)
     t.assert(record.linksOutCounts && record.linksOutCounts.length === 1)
     t.assert(!record.linksIn)
     t.assert(!record.linksOut)
@@ -174,7 +173,7 @@ exports.getEntitiesAndLinkedEntitiesByUser = function (test) {
   t.post({
     uri: '/do/getEntities',
     body: {
-      entityIds: [constants.placeId], 
+      entityIds: [constants.patchId], 
       links: {
         loadWhere: { _creator: constants.uid1 },
         active: [ 
@@ -202,7 +201,7 @@ exports.getEntityLinksAndCountsForBeacon = function (test) {
       entityIds: [constants.beaconId],
       links: {
         active: [ 
-          { type:statics.typeProximity, schema:statics.schemaPlace, links: true, count: true }, 
+          { type:statics.typeProximity, schema:statics.schemaPatch, links: true, count: true }, 
         ]},
     }
   }, function(err, res, body) {
@@ -220,7 +219,7 @@ exports.getEntitiesForLocationLimited = function (test) {
   t.post({
     uri: '/do/getEntities',
     body: {
-      entityIds: [constants.placeId],
+      entityIds: [constants.patchId],
       links: {
         active: [ 
           { type:statics.typeContent, schema:statics.schemaPost, links: true, limit: 3 }, 
@@ -304,7 +303,7 @@ exports.getEntitesLinksLimitSortSkip = function (test) {
       cursor: {
         direction: 'out',
         linkTypes: ['create'],
-        schemas: ['place'],
+        schemas: ['patch'],
       },
       links : {
         active : [
@@ -339,7 +338,7 @@ exports.getEntitesLinksLimitSortSkip = function (test) {
         cursor: {
           direction: 'out',
           linkTypes: ['create'],
-          schemas: ['place'],
+          schemas: ['patch'],
         },
         links : {
           active : [
@@ -369,7 +368,7 @@ exports.getEntitesLinksLimitSortSkip = function (test) {
           cursor: {
             direction: 'out',
             linkTypes: ['create'],
-            schemas: ['place'],
+            schemas: ['patch'],
           },
           links : {
             active : [
@@ -414,11 +413,11 @@ exports.getEntitiesCreatedByUserPostsOnly = function (test) {
   })
 }
 
-exports.getEntitiesForPlacePostsOnly = function (test) {
+exports.getEntitiesForPatchPostsOnly = function (test) {
   t.post({
     uri: '/do/getEntitiesForEntity',
     body: {
-      entityId: constants.placeId, 
+      entityId: constants.patchId, 
       cursor: { 
         linkTypes: [statics.typeContent], 
         schemas: [statics.schemaPost],
@@ -432,11 +431,11 @@ exports.getEntitiesForPlacePostsOnly = function (test) {
   })
 }
 
-exports.getEntitiesForPlacePostsOnlyLimited = function (test) {
+exports.getEntitiesForPatchPostsOnlyLimited = function (test) {
   t.post({
     uri: '/do/getEntitiesForEntity',
     body: {
-      entityId: constants.placeId, 
+      entityId: constants.patchId, 
       cursor: { 
         linkTypes: [statics.typeContent], 
         schemas: [statics.schemaPost],
@@ -454,11 +453,11 @@ exports.getEntitiesForPlacePostsOnlyLimited = function (test) {
   })
 }
 
-exports.getEntitiesForPlacePostsOnlyLimitedAndSkip = function (test) {
+exports.getEntitiesForPatchPostsOnlyLimitedAndSkip = function (test) {
   t.post({
     uri: '/do/getEntitiesForEntity',
     body: {
-      entityId: constants.placeId,
+      entityId: constants.patchId,
       cursor: {
         linkTypes: [statics.typeContent],
         schemas: [statics.schemaPost],
@@ -504,7 +503,7 @@ exports.getUserViaGetEntitiesForEntity = function (test) {
   t.post({
     uri: '/do/getEntitiesForEntity?' + userCred,
     body: {
-      entityId: constants.placeId,
+      entityId: constants.patchId,
       cursor: {direction: 'in',
         limit: 50,
         linkTypes: ['watch'],

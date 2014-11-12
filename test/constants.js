@@ -14,7 +14,7 @@ var
   beaconId = _schemas.beacon.id + '.' + bssid,
   applinkId = _schemas.applink.id + '.' + timeStamp + '.000001',
   commentId = _schemas.comment.id + '.' + timeStamp + '.000001',
-  placeId = _schemas.place.id + '.' + timeStamp + '.000001',
+  patchId = _schemas.patch.id + '.' + timeStamp + '.000001',
   postId = _schemas.post.id + '.' + timeStamp + '.000001',
   messageId = _schemas.message.id + '.' + timeStamp + '.000001',
   documentId = _schemas.document.id + '.' + timeStamp + '.000001',
@@ -28,11 +28,11 @@ var
     smokeTest: {
       users: 10,
       beacons: 10,
-      epb: 1,       // place entities per beacon
-      spe: 5,       // post entities per place entity
-      mpp: 10,      // messages per place entity
-      ape: 5,       // applinks per place
-      cpe: 2,       // comment entities per place and post entity
+      epb: 1,       // patch entities per beacon
+      spe: 5,       // post entities per patch entity
+      mpp: 10,      // messages per patch entity
+      ape: 0,       // applinks per place
+      cpe: 2,       // comment entities per patch and post entity
       likes: 2,
       watch: 2,
       database: 'smokeData',
@@ -40,11 +40,11 @@ var
     perfTest: {
       users: 100,
       beacons: 100,
-      epb: 5,       // place entities per beacon
-      spe: 5,       // post entities per place entity
-      mpp: 5,       // messages per place
-      ape: 5,       // applinks per place
-      cpe: 2,       // comment entities per place and post entity
+      epb: 5,       // patch entities per beacon
+      spe: 5,       // post entities per patch entity
+      mpp: 5,       // messages per patch
+      ape: 0,       // applinks per place
+      cpe: 2,       // comment entities per patch and post entity
       likes: 2,
       watch: 2,
       database: 'perfTest',
@@ -57,7 +57,7 @@ defaultDoc.user = defaultDoc.users1 = {
   name: 'Test User',
   email: 'test@3meters.com',
   photo: {
-    prefix:"resource:placeholder_user",
+    prefix:"resource:patchholder_user",
     source:"resource",
   },
   area: 'Testville, WA',
@@ -69,7 +69,7 @@ defaultDoc.user2 = {
   name: 'Test User Dev',
   email: 'testdev@3meters.com',
   photo: {
-    prefix:"resource:placeholder_user",
+    prefix:"resource:patchholder_user",
     source:"resource",
   },
   area: 'Testville, WA',
@@ -95,15 +95,14 @@ defaultDoc.beacon = {
   _creator: uid1,
 }
 
-defaultDoc.place = {
-  _id: placeId,
+defaultDoc.patch = {
+  _id: patchId,
   name: 'Museum of Modern Art',
   subtitle: 'Contemporary Galleries: 1980-Now',
-  description: 'The Museum of Modern Art is a place that fuels creativity, ignites minds, and provides inspiration. With extraordinary exhibitions and the world\'s finest collection of modern and contemporary art, MoMA is dedicated to the conversation between the past and the present, the established and the experimental. Our mission is helping you understand and enjoy the art of our time.',
+  description: 'The Museum of Modern Art is a patch that fuels creativity, ignites minds, and provides inspiration. With extraordinary exhibitions and the world\'s finest collection of modern and contemporary art, MoMA is dedicated to the conversation between the past and the present, the established and the experimental. Our mission is helping you understand and enjoy the art of our time.',
   photo: { prefix:"https://s3.amazonaws.com/3meters_images/test_preview.jpg", source:"aircandi" },
   signalFence: -100,
   location: { lat:latitude, lng:longitude, altitude:0, accuracy:30, speed: 0, geometry:[longitude, latitude] },
-  address:"123 Central Park", city:"New York", region:"NY", country:"USA", // phone:"2065551212",
   category:{
     id:"4bf58dd8d48988d18c941735",
     name : "Baseball Stadium",
@@ -113,7 +112,6 @@ defaultDoc.place = {
     },
   },
   _creator: uid1,
-  _owner: util.adminId,
 }
 
 defaultDoc.applink = {
@@ -153,7 +151,7 @@ defaultDoc.comment = {
 
 defaultDoc.link = {
   _id: linkId,
-  _to : placeId,
+  _to : patchId,
   _from : postId
 }
 
@@ -168,7 +166,7 @@ module.exports = {
   beaconId: beaconId,
   applinkId: applinkId,
   commentId: commentId,
-  placeId: placeId,
+  patchId: patchId,
   postId: postId,
   latitude: latitude,
   longitude: longitude,

@@ -95,7 +95,7 @@ exports.echo = function(test) {
 
 // Make sure public database read works
 exports.canReadPublidData = function(test) {
-  t.get('/data/places', function(err, res, body) {
+  t.get('/data/patches', function(err, res, body) {
     t.assert(body)
     t.assert(body.data)
     t.assert(body.data.length)  // relies on sample data

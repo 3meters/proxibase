@@ -245,7 +245,7 @@ exports.adminCanDeleteOthersRecords = function(test) {
 
 
 exports.userCannotReadSysCollections = function(test) {
-  t.get('/data/places?' + user1Cred, 200, function(err, res) {
+  t.get('/data/patches?' + user1Cred, 200, function(err, res) {
     t.get('/data/tasks?' + user1Cred, 401, function(err, res) {
       // t.get('/data/installs?' + user1Cred, 401, function(err, res) {
         t.get('/data/sessions?' + user1Cred, 401, function(err, res) {

@@ -14,7 +14,7 @@ var testUtil = require('../../test/util')
 var docs = {                            // Map of collections to be generated
   users: [],
   beacons: [],
-  places: [],
+  patches: [],
   posts: [],
   messages: [],
   applinks: [],
@@ -25,22 +25,22 @@ var startTime                             // Elapsed time counter
 var options = {                           // Default options
   users: 10,                           // Count of users
   beacons: 10,                         // Count of beacons
-  epb: 1,                             // Places per beacon
-  spe: 5,                             // Posts (aka children) per place
-  mpp: 5,                             // Messages per place
-  ape: 5,                             // Applinks per place
-  cpe: 2,                             // Comments per post and place entity
+  epb: 1,                             // Patches per beacon
+  spe: 5,                             // Posts (aka children) per patch
+  mpp: 5,                             // Messages per patch
+  ape: 0,                             // Applinks per place
+  cpe: 2,                             // Comments per post and patch entity
   likes: 2,
   watch: 2,
   database: 'proxTest',               // Database name
 }
 var beaconIds = []
-var placeIds = []
+var patchIds = []
 var postIds = []
 var messageIds = []
 var applinkIds = []
 var commentIds = []
-var entityCount = { applinks: 0, beacons: 0, comments: 0, places: 0, posts: 0 }
+var entityCount = { applinks: 0, beacons: 0, comments: 0, patches: 0, posts: 0 }
 
 module.exports = function(profile, callback) {
 
@@ -86,21 +86,21 @@ function run(callback) {
   log('generating beacons')
   genEntityRecords([0], options.beacons, 'beacon', null)
 
-  log('generating places')
-  genEntityRecords(beaconIds, options.epb, 'place', 'proximity')
+  log('generating patches')
+  genEntityRecords(beaconIds, options.epb, 'patch', 'proximity')
 
   log('generating posts')
-  genEntityRecords(placeIds, options.spe, 'post', 'content')
+  genEntityRecords(patchIds, options.spe, 'post', 'content')
 
   log('generating messages')
-  genEntityRecords(placeIds, options.mpp, 'message', 'content')
+  genEntityRecords(patchIds, options.mpp, 'message', 'content')
 
   log('generating applinks')
-  genEntityRecords(placeIds, options.ape, 'applink', 'content')
+  genEntityRecords(patchIds, options.ape, 'applink', 'content')
 
   log('generating comments')
-  var placeAndPostIds = placeIds.concat(postIds)
-  genEntityRecords(placeAndPostIds, options.cpe, 'comment', 'content')
+  var patchAndPostIds = patchIds.concat(postIds)
+  genEntityRecords(patchAndPostIds, options.cpe, 'comment', 'content')
 
   saveAll(function(err) {
     if (db) db.close()
@@ -188,7 +188,7 @@ function genEntityRecords(parentIds, count, entitySchema, linkType) {
           type:   linkType,
           _creator:  newEnt._creator,
         }
-        if (entitySchema === 'place') {
+        if (entitySchema === 'patch') {
           link.proximity = { primary: true, signal: -80 }
         }
         links.push(link)
@@ -203,7 +203,7 @@ function genEntityRecords(parentIds, count, entitySchema, linkType) {
         })
 
         /*
-        if (entitySchema === 'place') {
+        if (entitySchema === 'patch') {
 
           // Like
           for (var u = 0; u < options.users && u < options.likes; u++) {
@@ -232,7 +232,7 @@ function genEntityRecords(parentIds, count, entitySchema, linkType) {
 
       switch (entitySchema) {
         case 'beacon':  beaconIds.push(newEnt._id);   break
-        case 'place':   placeIds.push(newEnt._id);    break
+        case 'patch':   patchIds.push(newEnt._id);    break
         case 'applink': applinkIds.push(newEnt._id);  break
         case 'post':    postIds.push(newEnt._id);    break
         case 'message': messageIds.push(newEnt._id);    break
@@ -241,10 +241,10 @@ function genEntityRecords(parentIds, count, entitySchema, linkType) {
     }
   }
 
-  // Now create place Like and Watch Links in oposite order to test sorting
-  if (entitySchema === 'place') {
+  // Now create patch Like and Watch Links in oposite order to test sorting
+  if (entitySchema === 'patch') {
 
-    // Create Likes in ascending order of places
+    // Create Likes in ascending order of patches
     for (var i = 0; i < entDocs.length; i++) {
       var ent = entDocs[i]
       for (var u = 0; u < options.users && u < options.likes; u++) {
@@ -258,7 +258,7 @@ function genEntityRecords(parentIds, count, entitySchema, linkType) {
       }
     }
 
-    // Create Watches in descending order of places
+    // Create Watches in descending order of patches
     for (i = entDocs.length; i--;) {
       var ent = entDocs[i]
       for (var u = 0; u < options.users && u < options.likes; u++) {

@@ -47,12 +47,12 @@ exports.getUserSession = function(test) {
 }
 
 exports.genIdWorks = function(test) {
-  t.get('/data/places/genId',
+  t.get('/data/patches/genId',
   function(err, res, body) {
     t.assert(body.data._id)
     var schemaId = body.data._id.split('.')[0]
     t.assert(schemaId)
-    t.assert(schemaId === util.statics.schemas.place.id)
+    t.assert(schemaId === util.statics.schemas.patch.id)
     test.done()
   })
 }
@@ -231,7 +231,7 @@ _exports.canUpdateNestedArrays = function(test) {
   t.post({
     uri: '/data/entities?' + userCred,
     body: {data: {
-      type: util.statics.schemaPlace,
+      type: util.statics.schemaPatch,
       name: 'Test Entity With Comments',
       comments: [
         {name: 'Comment 1', description: 'I am comment 1'},
@@ -670,42 +670,42 @@ exports.sortsDescendingByModifiedDateByDefault = function(test) {
 }
 
 exports.sortWorks = function(test) {
-  t.get('/data/places?sort[0][_id]=-1',
+  t.get('/data/patches?sort[0][_id]=-1',
   function(err, res, body) {
-    var lastId = 'pl.999999.99999.999.999999'
-    body.data.forEach(function(place, i) {
-      t.assert(place._id < lastId, i)
-      lastId = place._id
+    var lastId = 'pa.999999.99999.999.999999'
+    body.data.forEach(function(patch, i) {
+      t.assert(patch._id < lastId, i)
+      lastId = patch._id
     })
     test.done()
   })
 }
 
 exports.sortAltFormatWorks = function(test) {
-  t.get('/data/places?sort[0][0]=namelc&sort[0][1]=asc',
+  t.get('/data/patches?sort[0][0]=namelc&sort[0][1]=asc',
   function(err, res, body) {
     var namelc = 'a'
-    body.data.forEach(function(place, i) {
-      t.assert(place.namelc > namelc, i)
-      namelc = place.namelc
+    body.data.forEach(function(patch, i) {
+      t.assert(patch.namelc > namelc, i)
+      namelc = patch.namelc
     })
     test.done()
   })
 }
 
 exports.sortAltFormat2Works = function(test) {
-  t.get('/data/places?sort=_owner,-namelc',
+  t.get('/data/patches?sort=_owner,-namelc',
   function(err, res, body) {
     var namelc, _owner = ''
-    body.data.forEach(function(place, i) {
-      if (place._owner !== _owner) {
-        t.assert(place._owner > _owner, i)
-        _owner = place._owner
+    body.data.forEach(function(patch, i) {
+      if (patch._owner !== _owner) {
+        t.assert(patch._owner > _owner, i)
+        _owner = patch._owner
         namelc = 'zzzzzzzzzzzzzzzzzzzzzzzz'
       }
-      if (place.namelc !== namelc) {
-        t.assert(place.namelc < namelc, i)
-        namelc = place.namelc
+      if (patch.namelc !== namelc) {
+        t.assert(patch.namelc < namelc, i)
+        namelc = patch.namelc
       }
     })
     test.done()
@@ -713,7 +713,7 @@ exports.sortAltFormat2Works = function(test) {
 }
 
 exports.countWorks = function(test) {
-  t.get('/data/places/count',
+  t.get('/data/patches/count',
   function(err, res, body) {
     t.assert(body.count)
     test.done()
@@ -721,7 +721,7 @@ exports.countWorks = function(test) {
 }
 
 exports.formatDatesWorks = function(test) {
-  t.get('/data/places?datesToUTC=1',
+  t.get('/data/patches?datesToUTC=1',
   function(err, res, body) {
     t.assert(tipe.isString(body.data[1].createdDate))
     t.assert(tipe.isString(body.data[1].modifiedDate))

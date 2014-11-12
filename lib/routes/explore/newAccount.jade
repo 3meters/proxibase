@@ -2,9 +2,9 @@ extends layout
 
 block content
   .form: form#createAccount(method='post', action='/explore/newaccount')
-    .field: input(name='name', placeholder='Name')
-    .field: input(name='email', placeholder='Email')
-    .field: input(name='password', type='password', placeholder='Password')
-    .field: input(name='password2', type='password', placeholder='Password')
-    .field: input(name='secret', placeholder='Secret')
+    .field: input(name='name', patchholder='Name')
+    .field: input(name='email', patchholder='Email')
+    .field: input(name='password', type='password', patchholder='Password')
+    .field: input(name='password2', type='password', patchholder='Password')
+    .field: input(name='secret', patchholder='Secret')
     .button: input(type='submit', value='Create Account')
