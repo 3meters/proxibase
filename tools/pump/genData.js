@@ -20,7 +20,7 @@ var options = {       // Default options
   ppp: 1,             // Places per patch
   mpp: 5,             // Messages per patch
   app: 5,             // Applinks per patch
-  database: null,     // Database name
+  database: '',       // Database name
 }
 
 var users = []
@@ -41,10 +41,11 @@ module.exports = function(profile, cb) {
     options[key] = profile[key]
   }
 
+  if (!options.database) throw('Missing required options.database')
+
   // Configure
   var config = util.config
-  if (options.database) config.db.database = options.database
-  else config.db.database += 'Template'
+  config.db.database = options.database
 
   var dbUri = 'mongodb://' + config.db.host + ':' + config.db.port +  '/' + config.db.database
 

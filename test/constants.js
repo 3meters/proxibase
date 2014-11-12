@@ -26,28 +26,22 @@ var
   dbProfile = {
     smokeTest: {
       users: 10,
-      beacons: 10,
-      epb: 1,       // patch entities per beacon
-      spe: 5,       // post entities per patch entity
-      mpp: 10,      // messages per patch entity
-      ape: 0,       // applinks per place
-      cpe: 2,       // comment entities per patch and post entity
-      likes: 2,
-      watch: 2,
+      ppu: 5,   // patches per user
+      bpp: 5,   // beacons per patch
+      ppp: 1,   // places per patch
+      mpp: 5,    // messages per patch
+      app: 5,   // applinks per patch
       database: 'smokeData',
     },
     perfTest: {
-      users: 100,
-      beacons: 100,
-      epb: 5,       // patch entities per beacon
-      spe: 5,       // post entities per patch entity
-      mpp: 5,       // messages per patch
-      ape: 0,       // applinks per place
-      cpe: 2,       // comment entities per patch and post entity
-      likes: 2,
-      watch: 2,
-      database: 'perfTest',
-    }
+      users: 1000,
+      ppu: 5,
+      bpp: 5,
+      ppp: 1,
+      mpp: 5,
+      app: 5,
+      database: 'perf',
+    },
   }
 
 
