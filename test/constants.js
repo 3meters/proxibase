@@ -91,11 +91,19 @@ defaultDoc.beacon = {
 defaultDoc.patch = {
   _id: patchId,
   name: 'Test Patch',
+  category: {
+    id: 'testCategory',
+    name: 'Test Categegory'
+  }
 }
 
 defaultDoc.place = {
   _id: placeId,
   name: 'Test Place',
+  category: {
+    id: 'testCategory',
+    name: 'Test Categegory'
+  }
 }
 
 defaultDoc.applink = {

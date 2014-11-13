@@ -34,7 +34,7 @@ var user2Id = 'us.010101.00000.555.000002'
 var user3Id = 'us.010101.00000.555.000003'
 var patch1Id = 'pa.statsTestPatch1'
 var cUsers = dbProfile.users
-var cPatches = dbProfile.beacons * dbProfile.epb
+var cPatches = dbProfile.users * dbProfile.ppu
 var cMessages = cPatches * dbProfile.mpp
 
 
@@ -130,9 +130,7 @@ exports.statsCountContentMessagesToPatchesViaPost = function(test) {
     body.data.forEach(function(doc) {
       t.assert(doc._id)
       t.assert(doc.name)
-      t.assert(doc.photo)
       t.assert(doc.schema)
-      t.assert(doc.category)
       t.assert(doc.count)
       t.assert(doc.rank)
       cMsg += doc.count
@@ -150,7 +148,6 @@ exports.statsCountPatchesByTunings = function(test) {
     body.data.forEach(function(doc) {
       t.assert(doc._id)
       t.assert(doc.name)
-      t.assert(doc.photo)
       t.assert(doc.count)
       t.assert(doc.rank)
     })
@@ -245,7 +242,7 @@ exports.refreshWorks = function(test) {
     t.assert(body.from)
     t.assert(body.from.cmd)
     t.assert(body.from.results)
-    t.get('/find/tos?query[_id.fromSchema]=message&sort=-value',
+    t.get('/find/tos?query[_id.fromSchema]=message&sort=-value&limit=1000',
     function(err, res, body) {
       t.assert(body.data.length)
       // refresh picked up our new links and created a summary record for them.
@@ -254,7 +251,7 @@ exports.refreshWorks = function(test) {
             && stat._id._to === patch1Id
             && stat.value === 3
       }))
-      t.get('/find/froms?query[_id.fromSchema]=patch&query[_id.toSchema]=beacon',
+      t.get('/find/froms?query[_id.fromSchema]=patch&query[_id.toSchema]=beacon&limit=1000',
       function(err, res, body) {
         t.assert(body.data.length)
         // refresh picked up our new links and created a summary record for them.
@@ -532,14 +529,12 @@ exports.statRefsDoNotPopulateForAnonUsers = function(test) {
 
 exports.statsCountToPatchesTypeWatch = function(test) {
   t.get({
-    uri: '/stats/to/patches?type=like&log=1',
+    uri: '/stats/to/patches?type=watch&log=1',
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)
     body.data.forEach(function(doc) {
       t.assert(doc._id)
       t.assert(doc.name)
-      t.assert(doc.photo)
-      t.assert(doc.category)
       t.assert(doc.count)
       t.assert(doc.rank)
     })
@@ -550,12 +545,12 @@ exports.statsCountToPatchesTypeWatch = function(test) {
 
 exports.statsFilterOnCategory = function(test) {
   t.get({
-    uri: '/stats/to/patches?_category=4bf58dd8d48988d18c941735&log=1'
+    uri: '/stats/to/patches?_category=testCategory&log=1'
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)
     body.data.forEach(function(doc) {
       t.assert(doc.category)
-      t.assert(doc.category.id === '4bf58dd8d48988d18c941735')
+      t.assert(doc.category.id === 'testCategory')
     })
     test.done()
   })
@@ -563,7 +558,7 @@ exports.statsFilterOnCategory = function(test) {
 
 exports.statsFilterOnName = function(test) {
   t.get({
-    uri: '/stats/to/patches?name=art'
+    uri: '/stats/to/patches?name=Test P'
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)
     test.done()
@@ -609,6 +604,7 @@ exports.statsRemoveMessageDecrementsPatchStats = function(test) {
 }
 
 exports.statsRemovePatchDropsFromStats= function(test) {
+  return skip(test)
   t.get('/stats/to/patches',
   function(err, res, body) {
     t.assert(body && body.data && body.data.length)
