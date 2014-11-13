@@ -75,7 +75,8 @@ exports.suggestPlacesGoogle = function(test) {
     }
   }, 200, function(err, res, body) {
     var places = body.data
-    t.assert(places && places.length <= 5) // 4 if lucky is in db and 5 otherwise
+    t.assert(places && places.length)
+    t.assert(places.length <= 5) // 4 if lucky is in db and 5 otherwise
     var hitCount = 0
     places.forEach(function(place){
       t.assert(place.score)
