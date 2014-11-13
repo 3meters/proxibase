@@ -235,7 +235,7 @@ exports.getEntitiesForLocationLimited = function (test) {
 }
 
 exports.getEntitiesCreatedByUser = function (test) {
-  return skip(test)  // Added 11/12/14 since test is a noop
+  return skip(test)  // Skipping 11/12/14 since test is a noop
   t.post({
     uri: '/do/getEntitiesForEntity?' + testUser1.cred,
     body: {
@@ -247,7 +247,7 @@ exports.getEntitiesCreatedByUser = function (test) {
     }
   }, function(err, res, body) {
     t.assert(body.count > 0 && body.count <= statics.db.limits.default)
-    // TODO: tests?  body.count is for the entity itself, not the links
+    // TODO: test something.  body.count is for the entity itself, not the links
     test.done()
   })
 }

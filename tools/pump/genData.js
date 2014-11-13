@@ -59,7 +59,7 @@ module.exports = function(profile, cb) {
       var schemaPath = path.join(__dirname, '../../lib/schemas')  // fragile
       mongo.initDb(config.db, function(err, proxdb) {
         if (err) throw err
-        db.close()
+        // Global
         db = proxdb
         return run(cb)
       })
@@ -188,7 +188,7 @@ function saveAll(cb) {
   docs.users = users
   docs.links = links
 
-  async.forEachSeries(clNames, save, cb)
+  async.forEachSeries(clNames, save, finish)
 
   function save(clName, cb) {
     var collection = db.collection(clName)
@@ -207,5 +207,17 @@ function saveAll(cb) {
         return cb(err)
       })
     }
+  }
+
+  function finish(err) {
+    log(1)
+    if (err) return cb(err)
+    log(2)
+    db.close(true, function(err) {
+      log(3)
+      if (err) return cb(err)
+      log(4)
+      cb()
+    })
   }
 }

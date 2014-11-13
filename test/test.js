@@ -16,6 +16,7 @@ var cli = require('commander')
 var reporter = require('nodeunit').reporters.default
 var req = require('request')
 var async = require('async')
+var safeDb  // handed to testUtil after final connection
 var db
 var adminDb
 var genData = require(__dirname + '/../tools/pump/genData')
@@ -76,6 +77,9 @@ util.log('test config', config)
 // Make sure the right database exists
 ensureDb(dbProfile, function(err) {
   if (err) throw err
+  if (!safeDb) throw new Error('safeDb not initialized')
+  util.debug('safeDb:', safeDb.databaseName)
+  testUtil.db = safeDb
   ensureServer(function() {
     runTests()
   })
@@ -133,7 +137,7 @@ function ensureDb(ops, cb) {
             if (err) throw err
             db.close(function(err) {
               if (err) throw err
-              ensureDb(ops, cb)
+              return ensureDb(ops, cb)
             })
           })
         })
@@ -152,8 +156,8 @@ function ensureDb(ops, cb) {
             throw new Error('Unexpected results from listDatabases')
           }
           var templateExists = false
-          results.databases.forEach(function(db) {
-            if (db.name === templateName) {
+          results.databases.forEach(function(otherDb) {
+            if (otherDb.name === templateName) {
               templateExists = true
               return
             }
@@ -180,13 +184,12 @@ function ensureDb(ops, cb) {
             adminDb.command({copydb:1, fromdb:templateName, todb:dbName}, function(err, result) {
               if (err) throw err
               log('Database copied in ' + dbtimer.read() + ' seconds')
-              // make the raw mongodb database connection available directly to tests
-              testUtil.db = db
               // Run the mongosafe init command so that the mongosafe methods are
               // available directly to the tests
-              mongo.initDb(config.db, function(err, safeDb) {
+              mongo.initDb(config.db, function(err, db) {
                 if (err) throw err
-                testUtil.safeDb = safeDb
+                // Module global
+                safeDb = db
                 cb()
               })
            })

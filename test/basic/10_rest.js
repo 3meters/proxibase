@@ -143,8 +143,7 @@ exports.canAddDoc2 = function(test) {
 }
 
 
-exports.canUpdateSinglePropertyOfNestedObject = function(test) {
-  return skip(test)
+exports.cannotUpdateSinglePropertyOfNestedObject = function(test) {
   t.post({
     uri: '/data/documents/' + testDoc2._id + '?' + userCred,
     body: {
@@ -157,8 +156,8 @@ exports.canUpdateSinglePropertyOfNestedObject = function(test) {
   }, function(err, res, body) {
     t.assert(body.data)
     t.assert(body.data.data)
-    t.assert(body.data.data.foo === 'bar')
     t.assert(body.data.data.number === 3)
+    t.assert(!body.data.data.foo)
     test.done()
   })
 }

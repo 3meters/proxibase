@@ -382,13 +382,15 @@ exports.refreshWorksWithDeleteWatchLink = function(test) {
 exports.createThenDeleteOfWatchLinkBetweenRefreshesWorks = function(test) {
 
   var watchLink = {
-    _id: 'li.140101.statTest.10',
+    //_id: 'li.140101.statTest.10',
     _to: patch1Id,
     _from: user3Id,
     fromSchema: 'user',
     toSchema: 'patch',
     type: 'watch',
   }
+
+  watchLink._id = db.links.genId(watchLink)
 
   t.post({
     uri: '/data/links?' + adminCred,
@@ -409,8 +411,7 @@ exports.createThenDeleteOfWatchLinkBetweenRefreshesWorks = function(test) {
           function(err, res, body) {
             t.assert(body.data.length === 1)
             var stat = body.data[0]
-            log('NYI:  need custom linkId factory in order to test')
-            // t.assert(stat.value === 1) // same as last test, not refreshed, not decremented
+            t.assert(stat.value === 1) // same as last test, not refreshed, not decremented
             test.done()
           })
         })
@@ -604,23 +605,22 @@ exports.statsRemoveMessageDecrementsPatchStats = function(test) {
 }
 
 exports.statsRemovePatchDropsFromStats= function(test) {
-  return skip(test)
-  t.get('/stats/to/patches',
+  t.get('/stats/to/patches?limit=1000',
   function(err, res, body) {
     t.assert(body && body.data && body.data.length)
     var cToPatches = body.data.length
-    t.get('/stats/from/patches',
+    t.get('/stats/from/patches?limit=1000',
     function(err, res, body) {
       t.assert(body && body.data && body.data.length)
       var cFromPatches = body.data.length
       t.del({uri: '/data/patches/' + patch1Id + '?' + adminCred},
       function(err, res, body) {
         t.assert(body.count === 1)
-        t.get('/stats/to/patches',
+        t.get('/stats/to/patches?limit=1000',
         function(err, res, body) {
           t.assert(body.data && body.data.length)
-          t.assert(body.data.length + 1 === cToPatches)
-          t.get('/stats/from/patches',
+          t.assert(body.data.length === (cToPatches - 1), {len: body.data.length, cToPatches: cToPatches})
+          t.get('/stats/from/patches?limit=1000',
           function(err, res, body) {
             t.assert(body.data && body.data.length)
             t.assert(body.data.length === (cFromPatches - 1))

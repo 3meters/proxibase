@@ -29,7 +29,7 @@ var
       ppu: 5,   // patches per user
       bpp: 5,   // beacons per patch
       ppp: 1,   // places per patch
-      mpp: 5,    // messages per patch
+      mpp: 5,   // messages per patch
       app: 5,   // applinks per patch
       database: 'smokeData',
     },

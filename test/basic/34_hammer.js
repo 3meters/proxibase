@@ -16,6 +16,7 @@ var testUtil = require('../util')
 var t = testUtil.treq  // newfangled test helper
 var disconnected = testUtil.disconnected
 var skip = testUtil.skip
+var dbProfile = testUtil.dbProfile
 var _exports = {} // for commenting out tests
 var testLatitude = 46.1
 var testLongitude = -121.1
@@ -77,9 +78,9 @@ exports.runHammer = function(test) {
         entityIds: [constants.patchId],
         links: {
           active: [
-            { type:statics.typeProximity, schema:statics.schemaBeacon, links: true, count: true, direction: 'both' }, 
-            { type:statics.typeContent, schema:statics.schemaApplink, links: true, count: true, direction: 'both' }, 
-            { type:statics.typeWatch, schema:statics.schemaUser, links: true, count: true, direction: 'both' }, 
+            { type:statics.typeProximity, schema:statics.schemaBeacon, links: true, count: true, direction: 'out' }, 
+            { type:statics.typeContent, schema:statics.schemaApplink, links: true, count: true, direction: 'in' }, 
+            { type:statics.typeWatch, schema:statics.schemaUser, links: true, count: true, direction: 'in' }, 
           ]
         },
       }
@@ -87,13 +88,10 @@ exports.runHammer = function(test) {
         t.assert(body.count === 1)
         t.assert(body.data && body.data[0])
         var record = body.data[0]
-        t.assert(record.linksIn && record.linksIn.length)
-        log('     TODO: validate test link counts')
-        /* t.assert(record.linksIn && record.linksIn.length === dbProfile.spe + dbProfile.cpe + dbProfile.ape + dbProfile.likes + dbProfile.watch)
-        t.assert(record.linksOut && record.linksOut.length === 1)
-        t.assert(record.linksInCounts && record.linksInCounts.length === 4)
+        t.assert(record.linksIn && record.linksIn.length === dbProfile.app + 1)
+        t.assert(record.linksOut && record.linksOut.length === dbProfile.bpp)
+        t.assert(record.linksInCounts && record.linksInCounts.length === 2)
         t.assert(record.linksOutCounts && record.linksOutCounts.length === 1)
-        */
         getEntsLinkedByUser()
     })
   }

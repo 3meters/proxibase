@@ -5,7 +5,7 @@
 var util = require('proxutils')
 var log = util.log
 var testUtil = require('../util')
-var db = testUtil.db   // raw mongodb connection object without mongoSafe wrapper
+var db = testUtil.db
 var t = testUtil.treq
 var userSession
 var userCred
@@ -15,6 +15,7 @@ var _exports = {}  // For commenting out tests
 
 
 exports.getUserSession = function(test) {
+  util.debug(db.databaseName)
   testUtil.getUserSession(function(session) {
     userSession = session
     userCred = 'user=' + session._owner + '&session=' + session.key

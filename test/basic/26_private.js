@@ -558,12 +558,11 @@ exports.janeCanSeeTreehouseMessagesViaFindOne = function(test) {
   })
 }
 
-exports.janeCanCommentOnTarzansTreehouseMessage = function(test) {
-  return skip(test)
-  var janeCommentOnMsg = {
+exports.janeCanNestAMessageOnTarzansTreehouseMessage = function(test) {
+  var janeMessageOnMessage = {
     entity: {
-      schema: 'comment',
-      _id: 'co.janeCommentOnTarzanMsg' + seed,
+      schema: 'message',
+      _id: 'me.janeMessageOnTarzanMsg' + seed,
       description: 'Trust me, you will like bed',
     },
     links: [{
@@ -574,7 +573,7 @@ exports.janeCanCommentOnTarzansTreehouseMessage = function(test) {
   }
   t.post({
     uri: '/do/insertEntity?' + jane.cred,
-    body: janeCommentOnMsg,
+    body: janeMessageOnMessage,
   }, 201, function(err, res, body) {
     t.assert(body.count)
     t.assert(body.data._acl === 'pa.treehouse' + seed)  // checks setAcl in insertEntity

@@ -163,6 +163,39 @@ exports.suggestPlacesFts = function(test) {
     test.done()
   })
 }
+exports.suggestPatchesRegex = function(test) {
+
+  if (disconnected) return skip(test)
+
+  t.post({
+    uri: '/suggest/patches?' + userCred,
+    body: {
+      input: '3',                         // initial exact match of third word in name
+      fts: false,                             // turn off full text search
+      limit: 10,
+      log: true,
+    }
+  }, 200, function(err, res, body) {
+    t.assert(body.data.length)
+    body.data.forEach(function(patch) {
+      t.assert(patch.name.indexOf('3') >= 0)
+    })
+    test.done()
+  })
+}
+
+exports.suggestPatchesFts = function(test) {
+
+  if (disconnected) return skip(test)
+
+  t.get('/suggest/patches?input=patch 33&regex=0',  // turn off regex search
+  function(err, res, body) {
+    t.assert(body.data.length === 1)
+    t.assert(body.data[0].name.indexOf('Test Patch 33') === 0)
+    test.done()
+  })
+}
+
 
 exports.suggestUsersRegex = function(test) {
 
