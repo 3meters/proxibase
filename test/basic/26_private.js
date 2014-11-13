@@ -559,6 +559,7 @@ exports.janeCanSeeTreehouseMessagesViaFindOne = function(test) {
 }
 
 exports.janeCanCommentOnTarzansTreehouseMessage = function(test) {
+  return skip(test)
   var janeCommentOnMsg = {
     entity: {
       schema: 'comment',

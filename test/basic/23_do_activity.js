@@ -113,11 +113,11 @@ var testMessage = {
   },
 }
 
-var testComment = {
-  _id : "co.111111.11111.111.111114",
-  schema : util.statics.schemaComment,
-  name : "Test comment",
-  description : "Test comment, much ado about nothing.",
+var testMessage2 = {
+  _id : "me.111111.11111.111.111112",
+  _acl: testPatchCustom._id,
+  schema : util.statics.schemaMessage,
+  name : "Testing message entity 2",
 }
 
 var testApplink = {
@@ -445,8 +445,9 @@ exports.insertCustomPatchTwo = function (test) {
 }
 
 
-// This belongs in the aruba tests
-_exports.cannotUpdateApplinksforLockedPatchOwnedByAnotherUser = function(test) {
+exports.cannotUpdateApplinksforLockedPatchOwnedByAnotherUser = function(test) {
+  // This belongs in the aruba tests
+  return skip(test)
   t.post({
     uri: '/do/replaceEntitiesForEntity?' + userCredTom,  // patch is owned by Bob
     body: {
@@ -545,6 +546,7 @@ exports.insertMessage = function (test) {
  */
 
 exports.addEntitySet = function (test) {
+  // This belongs in the aruba tests
   return skip(test)
   t.post({
     uri: '/do/replaceEntitiesForEntity?' + userCredTom,
@@ -666,13 +668,16 @@ exports.replaceEntitySet = function (test) {
  * ----------------------------------------------------------------------------
  */
 
-exports.insertComment = function (test) {
+// This inserts a message to a message and checks that the activity date 
+// on the top-level patch is ticked.  The client doesn't exersise this feature, 
+// but the service supports it.
+exports.insertMessage2 = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCredTom,
     body: {
-      entity: testComment,
+      entity: testMessage2,
       links: [{
-        _to: testMessage._id,
+        _to: testMessage._id,  // message to a message
         type: util.statics.typeContent,
       }],
       activityDateWindow: 0,
@@ -685,9 +690,9 @@ exports.insertComment = function (test) {
 
     /* Check insert */
     t.post({
-      uri: '/find/comments',
+      uri: '/find/messages',
       body: {
-        query: { _id: testComment._id }
+        query: { _id: testMessage2._id }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -704,30 +709,18 @@ exports.insertComment = function (test) {
         t.assert(body.count === 1)
         t.assert(body.data && body.data[0])
         t.assert(body.data[0].activityDate >= activityDate)
-
-        /* Check activityDate for message */
-        t.post({
-          uri: '/find/messages?' + userCredBob,  // bob's comment
-          body: {
-            query:{ _id: testMessage._id }
-          }
-        }, function(err, res, body) {
-          t.assert(body.count === 1)
-          t.assert(body.data && body.data[0])
-          t.assert(body.data[0].activityDate >= activityDate)
-          test.done()
-        })
+        test.done()
       })
     })
   })
 }
 
-exports.updateEntity = function (test) {
-  testComment.name = 'Testing comment update'
+exports.updateNestedMessage = function (test) {
+  testMessage2.name = 'Testing message 2 updated name'
   t.post({
     uri: '/do/updateEntity?' + userCredTom,
     body: {
-      entity:testComment
+      entity:testMessage2
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
@@ -736,9 +729,9 @@ exports.updateEntity = function (test) {
 
     /* Check update */
     t.post({
-      uri: '/find/comments',
+      uri: '/find/messages',
       body: {
-        query: { _id: testComment._id }
+        query: { _id: testMessage2._id }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -774,11 +767,11 @@ exports.updateEntity = function (test) {
   })
 }
 
-exports.deleteEntity = function (test) {
+exports.deleteNestedMessage = function (test) {
   t.post({
     uri: '/do/deleteEntity?' + adminCred,
     body: {
-      entityId:testComment._id,
+      entityId:testMessage2._id,
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
@@ -786,9 +779,9 @@ exports.deleteEntity = function (test) {
     var activityDate = body.date
     /* Check delete */
     t.post({
-      uri: '/find/comments',
+      uri: '/find/messages',
       body: {
-        query: { _id: testComment._id }
+        query: { _id: testMessage2._id }
       }
     }, function(err, res, body) {
       t.assert(body.count === 0)
