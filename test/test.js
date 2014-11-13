@@ -167,7 +167,7 @@ function ensureDb(ops, cb) {
               ops.validate = true         // Run schema validators on insert
               genData(ops, function(err) {
                 if (err) throw err
-                // Now try again with the template database in place
+                // Now try again with the template database in patch
                 ops.database = dbName
                 return ensureDb(ops, cb)
               })

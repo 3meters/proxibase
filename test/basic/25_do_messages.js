@@ -36,8 +36,8 @@ var dbProfile = testUtil.dbProfile
 var user1Id = 'us.010101.00000.555.000001'
 var user2Id = 'us.010101.00000.555.000002'
 var user3Id = 'us.010101.00000.555.000003'
-var place1Id = 'pl.010101.00000.555.000001'
-var messagesPerPlace = dbProfile.mpp
+var patch1Id = 'pa.010101.00000.555.000001'
+var messagesPerPatch = dbProfile.mpp
 
 
 var testUserTom = {
@@ -46,7 +46,7 @@ var testUserTom = {
   email : "tomtest@3meters.com",
   password : "12345678",
   photo: {
-    prefix:"resource:placeholder_user",
+    prefix:"resource:patchholder_user",
     source:"resource",
   },
   area : "Testville, WA",
@@ -93,9 +93,9 @@ var testUserStan = {
   enabled: true,
 }
 
-var testPlacePublic = {
-  _id : "pl.111111.11111.111.311114",
-  schema : util.statics.schemaPlace,
+var testPatchPublic = {
+  _id : "pa.111111.11111.111.311114",
+  schema : util.statics.schemaPatch,
   name : "Hawks Nest",
   photo: {
     prefix:"1001_20111224_104245.jpg",
@@ -104,10 +104,6 @@ var testPlacePublic = {
   signalFence : -100,
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
-  },
-  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"4259950004",
-  provider:{
-    aircandi: 'aircandi',
   },
   category:{
     id:"4bf58dd8d48988d18c941735",
@@ -120,9 +116,9 @@ var testPlacePublic = {
   visibility: "public"
 }
 
-var testPlacePrivate = {
-  _id : "pl.111111.11111.111.211112",
-  schema : util.statics.schemaPlace,
+var testPatchPrivate = {
+  _id : "pa.111111.11111.111.211112",
+  schema : util.statics.schemaPatch,
   name : "Seahawks Private VIP Club",
   photo: {
     prefix:"1001_20111224_104245.jpg",
@@ -131,10 +127,6 @@ var testPlacePrivate = {
   signalFence : -100,
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
-  },
-  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065550004",
-  provider: {
-    aircandi: 'aircandi',
   },
   category:{
     id:"4bf58dd8d48988d18c941735",
@@ -156,7 +148,7 @@ var testMessage = {
     prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
     source:"aircandi",
   },
-  _acl: testPlacePublic._id,  // Usually set by client
+  _acl: testPatchPublic._id,  // Usually set by client
 }
 
 var testReply = {
@@ -166,7 +158,7 @@ var testReply = {
   description : "Repeat! Repeat!",
   _root : "me.111111.11111.111.222222",
   _replyTo: testUserBecky._id,
-  _acl: testPlacePublic._id,  // Usually set by client
+  _acl: testPatchPublic._id,  // Usually set by client
 }
 
 var testMessageToPrivate = {
@@ -178,7 +170,7 @@ var testMessageToPrivate = {
     prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
     source:"aircandi",
   },
-  _acl: testPlacePublic._id,  // Usually set by client
+  _acl: testPatchPublic._id,  // Usually set by client
 }
 
 var testReplyToPrivate = {
@@ -188,7 +180,7 @@ var testReplyToPrivate = {
   description : "Use the little touch control next to the mini bar",
   _root : "me.111111.11111.111.222223",
   _replyTo: testUserBecky._id,
-  _acl: testPlacePrivate._id,  // Usually set by client
+  _acl: testPatchPrivate._id,  // Usually set by client
 }
 
 var testBeacon = {
@@ -618,11 +610,11 @@ exports.updateBeaconsInstallSix = function (test) {
  * ----------------------------------------------------------------------------
  */
 
-exports.tomInsertsPublicPlace = function (test) {
+exports.tomInsertsPublicPatch = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCredTom,
     body: {
-      entity: testPlacePublic,    // custom place
+      entity: testPatchPublic,    // custom patch
       beacons: [testBeacon],
       primaryBeaconId: testBeacon._id,
       returnNotifications: true,
@@ -643,7 +635,7 @@ exports.tomInsertsPublicPlace = function (test) {
       , stanHit = false
 
     body.notifications.forEach(function(notification) {
-      t.assert(notification._target == testPlacePublic._id)
+      t.assert(notification._target == testPatchPublic._id)
       notification.registrationIds.forEach(function(registrationId){
         if (registrationId.indexOf('tom') > 0) tomHit = true
         if (registrationId.indexOf('alice') > 0 && notification.trigger == 'nearby') aliceHit = true
@@ -666,11 +658,11 @@ exports.tomInsertsPublicPlace = function (test) {
 }
 
 
-exports.bobInsertsPrivatePlace = function (test) {
+exports.bobInsertsPrivatePatch = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCredBob,
     body: {
-      entity: testPlacePrivate,
+      entity: testPatchPrivate,
       beacons: [testBeacon2],
       primaryBeaconId: testBeacon2._id,
       returnNotifications: true,
@@ -690,7 +682,7 @@ exports.bobInsertsPrivatePlace = function (test) {
       , stanHit = false
 
     body.notifications.forEach(function(notification) {
-      t.assert(notification._target == testPlacePrivate._id)
+      t.assert(notification._target == testPatchPrivate._id)
       notification.registrationIds.forEach(function(registrationId){
         if (registrationId.indexOf('tom') > 0) tomHit = true
         if (registrationId.indexOf('alice') > 0) aliceHit = true
@@ -713,11 +705,11 @@ exports.bobInsertsPrivatePlace = function (test) {
     t.assert(savedEnt._creator === testUserBob._id)
     t.assert(savedEnt._modifier === testUserBob._id)
 
-    /* Check insert place */
+    /* Check insert patch */
     t.post({
-      uri: '/find/places',
+      uri: '/find/patches',
       body: {
-        query:{ _id:testPlacePrivate._id }
+        query:{ _id:testPatchPrivate._id }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -737,22 +729,22 @@ exports.bobInsertsPrivatePlace = function (test) {
 }
 
 
-exports.bobWatchesTomsPublicPlace = function(test) {
+exports.bobWatchesTomsPublicPatch = function(test) {
   t.post({
     uri: '/do/insertLink?' + userCredBob,  // owned by tom
     body: {
-      toId: testPlacePublic._id,
+      toId: testPatchPublic._id,
       fromId: testUserBob._id,
       enabled: true,
       type: util.statics.typeWatch,
-      actionEvent: 'watch_entity_place',
+      actionEvent: 'watch_entity_patch',
       returnNotifications: true,
       log: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     /*
-     * Tom should get a watch alert because he is the place owner.
+     * Tom should get a watch alert because he is the patch owner.
      */
     t.assert(body.notifications.length == 1)
     var tomHit = false
@@ -763,12 +755,12 @@ exports.bobWatchesTomsPublicPlace = function(test) {
       , stanHit = false
 
     body.notifications.forEach(function(notification) {
-      t.assert(notification._target == testPlacePublic._id)
+      t.assert(notification._target == testPatchPublic._id)
       notification.registrationIds.forEach(function(registrationId){
         if (registrationId.indexOf('tom') > 0
           && notification.type === 'watch'
           && notification.trigger == 'own_to'
-          && notification.event === 'watch_entity_place') tomHit = true
+          && notification.event === 'watch_entity_patch') tomHit = true
         if (registrationId.indexOf('alice') > 0) aliceHit = true
         if (registrationId.indexOf('max') > 0) maxHit = true
         if (registrationId.indexOf('bob') > 0) bobHit = true
@@ -789,7 +781,7 @@ exports.bobWatchesTomsPublicPlace = function(test) {
       uri: '/find/links',
       body: {
         query: {
-          _to: testPlacePublic._id,
+          _to: testPatchPublic._id,
           _from: testUserBob._id,
           type: util.statics.typeWatch
         }
@@ -803,8 +795,8 @@ exports.bobWatchesTomsPublicPlace = function(test) {
         uri: '/find/actions?' + adminCred,
         body: {
           query:{
-            _entity:testPlacePublic._id,
-            event:'watch_entity_place',
+            _entity:testPatchPublic._id,
+            event:'watch_entity_patch',
             _user: testUserBob._id,
           }
         }
@@ -817,11 +809,11 @@ exports.bobWatchesTomsPublicPlace = function(test) {
 }
 
 
-exports.beckyRequestsToWatchBobsPrivatePlace = function(test) {
+exports.beckyRequestsToWatchBobsPrivatePatch = function(test) {
   t.post({
     uri: '/do/insertLink?' + userCredBecky,
     body: {
-      toId: testPlacePrivate._id,             // Owned by bob
+      toId: testPatchPrivate._id,             // Owned by bob
       fromId: testUserBecky._id,
       type: util.statics.typeWatch,
       enabled: false,
@@ -832,7 +824,7 @@ exports.beckyRequestsToWatchBobsPrivatePlace = function(test) {
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     /*
-     * Bob should get a request alert because he is the place owner.
+     * Bob should get a request alert because he is the patch owner.
      */
     t.assert(body.notifications.length == 1)
     var tomHit = false
@@ -843,7 +835,7 @@ exports.beckyRequestsToWatchBobsPrivatePlace = function(test) {
       , stanHit = false
 
     body.notifications.forEach(function(notification) {
-      t.assert(notification._target == testPlacePrivate._id)
+      t.assert(notification._target == testPatchPrivate._id)
       notification.registrationIds.forEach(function(registrationId){
         if (registrationId.indexOf('tom') > 0) tomHit = true
         if (registrationId.indexOf('alice') > 0) aliceHit = true
@@ -869,7 +861,7 @@ exports.beckyRequestsToWatchBobsPrivatePlace = function(test) {
       uri: '/find/links',
       body: {
         query: {
-          _to: testPlacePrivate._id,
+          _to: testPatchPrivate._id,
           _from: testUserBecky._id,
           type: util.statics.typeWatch
         }
@@ -884,7 +876,7 @@ exports.beckyRequestsToWatchBobsPrivatePlace = function(test) {
         uri: '/find/actions?' + adminCred,
         body: {
           query:{
-            _entity:testPlacePrivate._id,
+            _entity:testPatchPrivate._id,
             event:'request_watch_entity',
             _user: testUserBecky._id,
           }
@@ -898,12 +890,12 @@ exports.beckyRequestsToWatchBobsPrivatePlace = function(test) {
 }
 
 
-exports.bobApprovesBeckysRequestToWatchBobsPrivatePlace = function(test) {
+exports.bobApprovesBeckysRequestToWatchBobsPrivatePatch = function(test) {
   t.post({
     uri: '/do/insertLink?' + userCredBob,
     body: {
       linkId: beckyWatchLinkId,
-      toId: testPlacePrivate._id,       // Owned by bob
+      toId: testPatchPrivate._id,       // Owned by bob
       fromId: testUserBecky._id,
       type: util.statics.typeWatch,
       enabled: true,
@@ -926,7 +918,7 @@ exports.bobApprovesBeckysRequestToWatchBobsPrivatePlace = function(test) {
       , stanHit = false
 
     body.notifications.forEach(function(notification) {
-      t.assert(notification._target == testPlacePrivate._id)
+      t.assert(notification._target == testPatchPrivate._id)
       notification.registrationIds.forEach(function(registrationId){
         if (registrationId.indexOf('tom') > 0) tomHit = true
         if (registrationId.indexOf('alice') > 0) aliceHit = true
@@ -952,7 +944,7 @@ exports.bobApprovesBeckysRequestToWatchBobsPrivatePlace = function(test) {
       uri: '/find/links',
       body: {
         query: {
-          _to: testPlacePrivate._id,
+          _to: testPatchPrivate._id,
           _from: testUserBecky._id,
           type: util.statics.typeWatch
         }
@@ -966,7 +958,7 @@ exports.bobApprovesBeckysRequestToWatchBobsPrivatePlace = function(test) {
         uri: '/find/actions?' + adminCred,
         body: {
           query:{
-            _entity:testPlacePrivate._id,
+            _entity:testPatchPrivate._id,
             event:'approve_watch_entity',
             _user: userCredBecky._id,
           }
@@ -985,11 +977,11 @@ exports.bobApprovesBeckysRequestToWatchBobsPrivatePlace = function(test) {
  * ----------------------------------------------------------------------------
  */
 
-exports.aliceRequestsToWatchBobsPrivatePlace = function(test) {
+exports.aliceRequestsToWatchBobsPrivatePatch = function(test) {
   t.post({
     uri: '/do/insertLink?' + userCredAlice,
     body: {
-      toId: testPlacePrivate._id,             // Owned by bob
+      toId: testPatchPrivate._id,             // Owned by bob
       fromId: testUserAlice._id,
       type: util.statics.typeWatch,
       enabled: false,
@@ -1005,7 +997,7 @@ exports.aliceRequestsToWatchBobsPrivatePlace = function(test) {
       uri: '/find/links',
       body: {
         query: {
-          _to: testPlacePrivate._id,
+          _to: testPatchPrivate._id,
           _from: testUserAlice._id,
           type: util.statics.typeWatch
         }
@@ -1020,12 +1012,12 @@ exports.aliceRequestsToWatchBobsPrivatePlace = function(test) {
 }
 
 
-exports.bobApprovesAlicesRequestToWatchBobsPrivatePlace = function(test) {
+exports.bobApprovesAlicesRequestToWatchBobsPrivatePatch = function(test) {
   t.post({
     uri: '/do/insertLink?' + userCredBob,
     body: {
       linkId: aliceWatchLinkId,
-      toId: testPlacePrivate._id,       // Owned by bob
+      toId: testPatchPrivate._id,       // Owned by bob
       fromId: testUserAlice._id,
       type: util.statics.typeWatch,
       enabled: true,
@@ -1079,14 +1071,14 @@ exports.bobApprovesAlicesRequestToWatchBobsPrivatePlace = function(test) {
  * ----------------------------------------------------------------------------
  */
 
-exports.beckyInsertsMessageToTomsPublicPlace = function (test) {
+exports.beckyInsertsMessageToTomsPublicPatch = function (test) {
 
   t.post({
     uri: '/do/insertEntity?' + userCredBecky,
     body: {
       entity: testMessage,
       links: [{
-        _to: testPlacePublic._id,     // Toms place watched by Bob, Alice and Max are nearby
+        _to: testPatchPublic._id,     // Toms patch watched by Bob, Alice and Max are nearby
         type: util.statics.typeContent
       }],
       returnNotifications: true,
@@ -1142,14 +1134,14 @@ exports.beckyInsertsMessageToTomsPublicPlace = function (test) {
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
-      t.assert(body.data[0]._acl === testPlacePublic._id)
+      t.assert(body.data[0]._acl === testPatchPublic._id)
 
       /* Check link */
       t.post({
         uri: '/find/links?' + adminCred,
         body: {
           query: {
-            _to: testPlacePublic._id,
+            _to: testPatchPublic._id,
             _from: testMessage._id,
           }
         }
@@ -1159,11 +1151,11 @@ exports.beckyInsertsMessageToTomsPublicPlace = function (test) {
         t.assert(link._creator === testUserBecky._id)
         t.assert(link._owner === testUserTom._id)  // strong links to entites are owned by ent owner
 
-        /* Check activityDate for place */
+        /* Check activityDate for patch */
         t.post({
-          uri: '/find/places',
+          uri: '/find/patches',
           body: {
-            query:{ _id:testPlacePublic._id }
+            query:{ _id:testPatchPublic._id }
           }
         }, function(err, res, body) {
           t.assert(body.count === 1)
@@ -1183,7 +1175,7 @@ exports.aliceInsertsReplyToBeckysPublicMessage = function (test) {
     body: {
       entity: testReply,
       links: [
-         { _to: testPlacePublic._id,          // Toms place
+         { _to: testPatchPublic._id,          // Toms patch
             type: util.statics.typeContent },
          { _to: testMessage._id,              // Reply to Bobs message
             type: util.statics.typeContent }
@@ -1252,7 +1244,7 @@ exports.aliceInsertsReplyToBeckysPublicMessage = function (test) {
         uri: '/find/links?' + adminCred,
         body: {
           query: {
-            _to: testPlacePublic._id,
+            _to: testPatchPublic._id,
             _from: testReply._id,
           }
         }
@@ -1277,11 +1269,11 @@ exports.aliceInsertsReplyToBeckysPublicMessage = function (test) {
           t.assert(link._creator === testUserAlice._id)
           t.assert(link._owner === testUserBecky._id)     // strong links to entites are owned by ent owner
 
-          /* Check activityDate for place */
+          /* Check activityDate for patch */
           t.post({
-            uri: '/find/places',
+            uri: '/find/patches',
             body: {
-              query:{ _id:testPlacePublic._id }
+              query:{ _id:testPatchPublic._id }
             }
           }, function(err, res, body) {
             t.assert(body.count === 1)
@@ -1295,14 +1287,14 @@ exports.aliceInsertsReplyToBeckysPublicMessage = function (test) {
   })
 }
 
-exports.beckyInsertsMessageToBobsPrivatePlace = function (test) {
+exports.beckyInsertsMessageToBobsPrivatePatch = function (test) {
 
   t.post({
     uri: '/do/insertEntity?' + userCredBecky,
     body: {
       entity: testMessageToPrivate,
       links: [{
-        _to: testPlacePrivate._id,     // Bobs place watched by Becky
+        _to: testPatchPrivate._id,     // Bobs patch watched by Becky
         type: util.statics.typeContent
       }],
       returnNotifications: true,
@@ -1355,14 +1347,14 @@ exports.beckyInsertsMessageToBobsPrivatePlace = function (test) {
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
-      t.assert(body.data[0]._acl === testPlacePrivate._id)
+      t.assert(body.data[0]._acl === testPatchPrivate._id)
 
       /* Check link */
       t.post({
         uri: '/find/links?' + adminCred,
         body: {
           query: {
-            _to: testPlacePrivate._id,
+            _to: testPatchPrivate._id,
             _from: testMessageToPrivate._id,
           }
         }
@@ -1372,11 +1364,11 @@ exports.beckyInsertsMessageToBobsPrivatePlace = function (test) {
         t.assert(link._creator === testUserBecky._id)
         t.assert(link._owner === testUserBob._id)  // strong links to entites are owned by ent owner
 
-        /* Check activityDate for place */
+        /* Check activityDate for patch */
         t.post({
-          uri: '/find/places',
+          uri: '/find/patches',
           body: {
-            query:{ _id:testPlacePrivate._id }
+            query:{ _id:testPatchPrivate._id }
           }
         }, function(err, res, body) {
           t.assert(body.count === 1)
@@ -1397,7 +1389,7 @@ exports.bobInsertsReplyToBeckysPrivateMessage = function (test) {
     body: {
       entity: testReplyToPrivate,
       links: [
-         { _to: testPlacePrivate._id,                   // Bobs place
+         { _to: testPatchPrivate._id,                   // Bobs patch
             type: util.statics.typeContent },
          { _to: testMessageToPrivate._id,               // Reply to Beckys message
             type: util.statics.typeContent }
@@ -1409,7 +1401,7 @@ exports.bobInsertsReplyToBeckysPrivateMessage = function (test) {
     t.assert(body.count === 1)
     t.assert(body.data)
     /*
-     * Becky and Alice get notified because they are watching the place.
+     * Becky and Alice get notified because they are watching the patch.
      * Becky gets notified because she is owner of the message being replied to.
      *
      * Both notifications come through because they are separate calls.
@@ -1469,7 +1461,7 @@ exports.bobInsertsReplyToBeckysPrivateMessage = function (test) {
         uri: '/find/links?' + adminCred,
         body: {
           query: {
-            _to: testPlacePrivate._id,
+            _to: testPatchPrivate._id,
             _from: testReplyToPrivate._id,
           }
         }
@@ -1494,11 +1486,11 @@ exports.bobInsertsReplyToBeckysPrivateMessage = function (test) {
           t.assert(link._creator === testUserBob._id)
           t.assert(link._owner === testUserBecky._id)     // strong links to entites are owned by ent owner
 
-          /* Check activityDate for place */
+          /* Check activityDate for patch */
           t.post({
-            uri: '/find/places',
+            uri: '/find/patches',
             body: {
-              query:{ _id:testPlacePrivate._id }
+              query:{ _id:testPatchPrivate._id }
             }
           }, function(err, res, body) {
             t.assert(body.count === 1)
@@ -1512,11 +1504,11 @@ exports.bobInsertsReplyToBeckysPrivateMessage = function (test) {
   })
 }
 
-exports.memberBeckyGetsMessagesForBobsPrivatePlace = function (test) {
+exports.memberBeckyGetsMessagesForBobsPrivatePatch = function (test) {
   t.post({
     uri: '/do/getEntitiesForEntity?' + userCredBecky,
     body: {
-      entityId: testPlacePrivate._id,
+      entityId: testPatchPrivate._id,
       cursor: {
         linkTypes: ['content'],
         schemas: ['message'],
@@ -1539,11 +1531,11 @@ exports.memberBeckyGetsMessagesForBobsPrivatePlace = function (test) {
 }
 
 
-exports.ownerBobGetMessagesForBobsPrivatePlace = function (test) {
+exports.ownerBobGetMessagesForBobsPrivatePatch = function (test) {
   t.post({
     uri: '/do/getEntitiesForEntity?' + userCredBob,
     body: {
-      entityId: testPlacePrivate._id,
+      entityId: testPatchPrivate._id,
       cursor: {
         linkTypes: ['content'],
         schemas: ['message'],
@@ -1566,11 +1558,11 @@ exports.ownerBobGetMessagesForBobsPrivatePlace = function (test) {
 }
 
 
-exports.nonMemberStanCantGetMessagesForBobsPrivatePlace = function (test) {
+exports.nonMemberStanCantGetMessagesForBobsPrivatePatch = function (test) {
   t.post({
     uri: '/do/getEntitiesForEntity?' + userCredStan,
     body: {
-      entityId: testPlacePrivate._id,
+      entityId: testPatchPrivate._id,
       cursor: {
         linkTypes: ['content'],
         schemas: ['message'],
@@ -1593,11 +1585,11 @@ exports.nonMemberStanCantGetMessagesForBobsPrivatePlace = function (test) {
 }
 
 
-exports.nonMemberStanCanGetMembersForBobsPrivatePlace = function (test) {
+exports.nonMemberStanCanGetMembersForBobsPrivatePatch = function (test) {
   t.post({
     uri: '/do/getEntitiesForEntity?' + userCredStan,
     body: {
-      entityId: testPlacePrivate._id,
+      entityId: testPatchPrivate._id,
       cursor: {
         linkTypes: ['watch'],
         schemas: ['user'],
@@ -1621,7 +1613,7 @@ exports.nonMemberStanCanGetMembersForBobsPrivatePlace = function (test) {
 }
 
 
-exports.tomCanGetMessageToTomsPublicPlace = function (test) {
+exports.tomCanGetMessageToTomsPublicPatch = function (test) {
   t.post({
     uri: '/do/getEntities?' + userCredTom,
     body: {
@@ -1629,9 +1621,9 @@ exports.tomCanGetMessageToTomsPublicPlace = function (test) {
       links : {
         shortcuts: true,
         active:
-        [ { schema: 'place', limit: 1, links: true, type: 'content', count: true, direction: 'out' },
+        [ { schema: 'patch', limit: 1, links: true, type: 'content', count: true, direction: 'out' },
           { schema: 'message', limit: 1, links: true, type: 'content', count: true, direction: 'both' },
-          { schema: 'place', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
+          { schema: 'patch', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
           { schema: 'message', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
           { schema: 'user', limit: 5, links: true, type: 'share', count: true, direction: 'out' } ]
       }
@@ -1664,25 +1656,25 @@ exports.bobCanPreviewMessageCountsByProximity = function (test) {
   function(err, res, body) {
     t.assert(body.data && body.data.length >= 2)
     /*
-     * Includes one private and one public place.
+     * Includes one private and one public patch.
      * Counts are available but not message content for either.
      */
-    var privatePlace = body.data[0]
-    t.assert(privatePlace._id === testPlacePrivate._id)
-    t.assert(!privatePlace.linksIn)
-    t.assert(!privatePlace.linksOut)
-    t.assert(privatePlace.linksOutCounts[0].schema === 'beacon')
-    t.assert(privatePlace.linksOutCounts[0].count === 1)
+    var privatePatch = body.data[0]
+    t.assert(privatePatch._id === testPatchPrivate._id)
+    t.assert(!privatePatch.linksIn)
+    t.assert(!privatePatch.linksOut)
+    t.assert(privatePatch.linksOutCounts[0].schema === 'beacon')
+    t.assert(privatePatch.linksOutCounts[0].count === 1)
 
-    var publicPlace = body.data[1]
-    t.assert(!publicPlace.linksIn)
-    t.assert(!publicPlace.linksOut)
-    t.assert(publicPlace.linksInCounts && publicPlace.linksInCounts.length === 1)
-    t.assert(publicPlace.linksInCounts[0].schema === 'message')
-    t.assert(publicPlace.linksInCounts[0].count === 2)
-    t.assert(publicPlace.linksOutCounts && publicPlace.linksOutCounts.length === 1)
-    t.assert(publicPlace.linksOutCounts[0].schema === 'beacon')
-    t.assert(publicPlace.linksOutCounts[0].count === 1)
+    var publicPatch = body.data[1]
+    t.assert(!publicPatch.linksIn)
+    t.assert(!publicPatch.linksOut)
+    t.assert(publicPatch.linksInCounts && publicPatch.linksInCounts.length === 1)
+    t.assert(publicPatch.linksInCounts[0].schema === 'message')
+    t.assert(publicPatch.linksInCounts[0].count === 2)
+    t.assert(publicPatch.linksOutCounts && publicPatch.linksOutCounts.length === 1)
+    t.assert(publicPatch.linksOutCounts[0].schema === 'beacon')
+    t.assert(publicPatch.linksOutCounts[0].count === 1)
     test.done()
   })
 }
@@ -1707,7 +1699,7 @@ exports.tomCanGetNotificationsForSelf = function (test) {
   },
 
   function(err, res, body) {
-    // Should see Bob watching Tom's place
+    // Should see Bob watching Tom's patch
     // Note: this test file does not stand on it's own because
     // an earlier test file is creating another watch.
     t.assert(body.data)
@@ -1722,7 +1714,7 @@ exports.tomCanGetNotificationsForSelf = function (test) {
  * ----------------------------------------------------------------------------
  */
 
-var beckySharePlaceWithStanId = "me.111111.11111.111.222224"
+var beckySharePatchWithStanId = "me.111111.11111.111.222224"
 var beckyShareMessageWithStanId = "me.111111.11111.111.222225"
 var beckyShareMessageWithAliceId = "me.111111.11111.111.222226"
 var beckySharePhotoWithStanId = "me.111111.11111.111.222227"
@@ -1733,14 +1725,14 @@ exports.beckySharesPrivatePatchWithStan = function(test) {
     uri: '/do/insertEntity?' + userCredBecky,
     body: {
       entity: {
-        _id : beckySharePlaceWithStanId,
+        _id : beckySharePatchWithStanId,
         schema : util.statics.schemaMessage,
         type : "share",
         description : "Checkout the \'Seahawks Private VIP Club\' patch!",
       },
       links: [{
         type: 'share',
-        _to: testPlacePrivate._id,
+        _to: testPatchPrivate._id,
       }, {
         type: 'share',
         _to: testUserStan._id,
@@ -1765,7 +1757,7 @@ exports.beckySharesPrivatePatchWithStan = function(test) {
       , stanHit = false
 
     body.notifications.forEach(function(message) {
-      t.assert(message._target === beckySharePlaceWithStanId)
+      t.assert(message._target === beckySharePatchWithStanId)
       message.registrationIds.forEach(function(registrationId){
         if (registrationId.indexOf('tom') > 0) tomHit = true
         if (registrationId.indexOf('alice') > 0) aliceHit = true
@@ -1792,7 +1784,7 @@ exports.beckySharesPrivatePatchWithStan = function(test) {
     t.post({
       uri: '/find/messages?' + userCredBecky,
       body: {
-        query:{ _id:beckySharePlaceWithStanId }
+        query:{ _id:beckySharePatchWithStanId }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -1803,14 +1795,14 @@ exports.beckySharesPrivatePatchWithStan = function(test) {
         body: {
           query: {
             type: 'share',
-            _from: beckySharePlaceWithStanId,
-            _to: testPlacePrivate._id,
+            _from: beckySharePatchWithStanId,
+            _to: testPatchPrivate._id,
           }
         }
       }, function(err, res, body) {
         t.assert(body && body.data && 1 === body.data.length)
         var link = body.data[0]
-        /* Bob owns the place */
+        /* Bob owns the patch */
         t.assert(link._creator === testUserBecky._id)
         t.assert(link._owner === testUserBob._id)
         t.assert(link._modifier === testUserBecky._id)
@@ -1820,7 +1812,7 @@ exports.beckySharesPrivatePatchWithStan = function(test) {
           body: {
             query: {
               type: 'share',
-              _from: beckySharePlaceWithStanId,
+              _from: beckySharePatchWithStanId,
               _to: testUserStan._id,
             }
           }
@@ -1832,11 +1824,11 @@ exports.beckySharesPrivatePatchWithStan = function(test) {
           t.assert(link._owner === testUserStan._id)
           t.assert(link._modifier === testUserBecky._id)
 
-          /* Check activityDate for place - should not have changed */
+          /* Check activityDate for patch - should not have changed */
           t.post({
-            uri: '/find/places',
+            uri: '/find/patches',
             body: {
-              query:{ _id:testPlacePrivate._id }
+              query:{ _id:testPatchPrivate._id }
             }
           }, function(err, res, body) {
             t.assert(body.count === 1)
@@ -1934,7 +1926,7 @@ exports.beckySharesMemberMessageWithNonMemberStan = function(test) {
       }, function(err, res, body) {
         t.assert(body && body.data && 1 === body.data.length)
         var link = body.data[0]
-        /* Bob owns the place */
+        /* Bob owns the patch */
         t.assert(link._creator === testUserBecky._id)
         t.assert(link._owner === testUserBecky._id)
         t.assert(link._modifier === testUserBecky._id)
@@ -2047,7 +2039,7 @@ exports.beckySharesMemberMessageWithMemberAlice = function(test) {
       }, function(err, res, body) {
         t.assert(body && body.data && 1 === body.data.length)
         var link = body.data[0]
-        /* Bob owns the place */
+        /* Bob owns the patch */
         t.assert(link._owner === testUserBecky._id)
         t.assert(link._creator === testUserBecky._id)
         t.assert(link._modifier === testUserBecky._id)
@@ -2269,17 +2261,17 @@ exports.beckySharesPhotoWithMemberAlice = function(test) {
 }
 
 
-exports.stanGetsSharePlaceFromBecky = function (test) {
+exports.stanGetsSharePatchFromBecky = function (test) {
   t.post({
     uri: '/do/getEntities?' + userCredStan,
     body: {
-      entityIds: [beckySharePlaceWithStanId],
+      entityIds: [beckySharePatchWithStanId],
       links : {
         shortcuts: true,
         active:
         [
-          { schema: 'place', limit: 1, links: true, type: 'content', count: true, direction: 'out' },
-          { schema: 'place', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
+          { schema: 'patch', limit: 1, links: true, type: 'content', count: true, direction: 'out' },
+          { schema: 'patch', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
           { schema: 'message', limit: 1, links: true, type: 'content', count: true, direction: 'both' },
           { schema: 'message', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
           { schema: 'user', limit: 5, links: true, type: 'share', count: true, direction: 'out' },
@@ -2297,7 +2289,7 @@ exports.stanGetsSharePlaceFromBecky = function (test) {
     t.assert(body.data[0].linksOut && body.data[0].linksOut.length === 2)
     t.assert(body.data[0].linksOutCounts && body.data[0].linksOutCounts.length === 2)
 
-    var placeHit = false
+    var patchHit = false
       , userHit = false
 
     body.data[0].linksOut.forEach(function(link) {
@@ -2306,12 +2298,12 @@ exports.stanGetsSharePlaceFromBecky = function (test) {
           && link.shortcut
           && link.shortcut.id === testUserStan._id) userHit = true
       if (link.type === 'share'
-          && link.targetSchema === 'place'
+          && link.targetSchema === 'patch'
           && link.shortcut
-          && link.shortcut.id === testPlacePrivate._id) placeHit = true
+          && link.shortcut.id === testPatchPrivate._id) patchHit = true
     })
 
-    t.assert(placeHit)
+    t.assert(patchHit)
     t.assert(userHit)
 
     test.done()
@@ -2328,8 +2320,8 @@ exports.stanGetsSharePhotoFromBecky = function (test) {
         shortcuts: true,
         active:
         [
-          { schema: 'place', limit: 1, links: true, type: 'content', count: true, direction: 'out' },
-          { schema: 'place', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
+          { schema: 'patch', limit: 1, links: true, type: 'content', count: true, direction: 'out' },
+          { schema: 'patch', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
           { schema: 'message', limit: 1, links: true, type: 'content', count: true, direction: 'both' },
           { schema: 'message', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
           { schema: 'user', limit: 5, links: true, type: 'share', count: true, direction: 'out' },
@@ -2369,8 +2361,8 @@ exports.aliceGetsSharePhotoFromBecky = function (test) {
         shortcuts: true,
         active:
         [
-          { schema: 'place', limit: 1, links: true, type: 'content', count: true, direction: 'out' },
-          { schema: 'place', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
+          { schema: 'patch', limit: 1, links: true, type: 'content', count: true, direction: 'out' },
+          { schema: 'patch', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
           { schema: 'message', limit: 1, links: true, type: 'content', count: true, direction: 'both' },
           { schema: 'message', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
           { schema: 'user', limit: 5, links: true, type: 'share', count: true, direction: 'out' },
@@ -2410,8 +2402,8 @@ exports.stanGetsShareMessageFromBecky = function (test) {
         shortcuts: true,
         active:
         [
-          { schema: 'place', limit: 1, links: true, type: 'content', count: true, direction: 'out' },
-          { schema: 'place', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
+          { schema: 'patch', limit: 1, links: true, type: 'content', count: true, direction: 'out' },
+          { schema: 'patch', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
           { schema: 'message', limit: 1, links: true, type: 'content', count: true, direction: 'both' },
           { schema: 'message', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
           { schema: 'user', limit: 5, links: true, type: 'share', count: true, direction: 'out' },
@@ -2427,7 +2419,7 @@ exports.stanGetsShareMessageFromBecky = function (test) {
     /*
      * - Link to Stan
      * - Link to message but no shortcut because Stan is not a member of the
-     *   private place the message is from.
+     *   private patch the message is from.
      */
     t.assert(!body.data[0].linksIn)
     t.assert(body.data[0].linksOut && body.data[0].linksOut.length === 2)
@@ -2463,8 +2455,8 @@ _exports.aliceGetsShareMessageFromBecky = function (test) {
         shortcuts: true,
         active:
         [
-          { schema: 'place', limit: 1, links: true, type: 'content', count: true, direction: 'out' },
-          { schema: 'place', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
+          { schema: 'patch', limit: 1, links: true, type: 'content', count: true, direction: 'out' },
+          { schema: 'patch', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
           { schema: 'message', limit: 1, links: true, type: 'content', count: true, direction: 'both' },
           { schema: 'message', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
           { schema: 'user', limit: 5, links: true, type: 'share', count: true, direction: 'out' },
@@ -2480,7 +2472,7 @@ _exports.aliceGetsShareMessageFromBecky = function (test) {
     /*
      * - Link to Stan
      * - Link to message with shortcut because Alice is a member of the
-     *   private place the message is from.
+     *   private patch the message is from.
      */
     t.assert(!body.data[0].linksIn)
     t.assert(body.data[0].linksOut && body.data[0].linksOut.length === 2)
@@ -2531,9 +2523,9 @@ exports.userGetMessagesSentByAlice = function (test) {
       links : {
         shortcuts: true,
         active:
-        [ { schema: 'place', limit: 1, links: true, type: 'content', count: true, direction: 'out' },
+        [ { schema: 'patch', limit: 1, links: true, type: 'content', count: true, direction: 'out' },
           { schema: 'message', limit: 1, links: true, type: 'content', count: true, direction: 'both' },
-          { schema: 'place', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
+          { schema: 'patch', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
           { schema: 'message', limit: 1, links: true, type: 'share', count: true, direction: 'out' },
           { schema: 'user', limit: 5, links: true, type: 'share', count: true, direction: 'out' } ]
       }
@@ -2543,7 +2535,7 @@ exports.userGetMessagesSentByAlice = function (test) {
   function(err, res, body) {
     // Should not see alices reply message from above
     t.assert(body.data)
-    // George changed.  I think it is ok to see her messages to public places
+    // George changed.  I think it is ok to see her messages to public patches
     // t.assert(body.count === 0)
     t.assert(body.count === 1)
     test.done()
@@ -2551,15 +2543,15 @@ exports.userGetMessagesSentByAlice = function (test) {
 }
 
 
-exports.userWatchesPlaceViaRestWatchParam = function(test) {
-  t.get('/find/places/' + testPlacePublic._id + '?watch=true&' + userCredAlice,
+exports.userWatchesPatchViaRestWatchParam = function(test) {
+  t.get('/find/patches/' + testPatchPublic._id + '?watch=true&' + userCredAlice,
   function(err, res, body) {
-    t.assert(body.data._id === testPlacePublic._id)
+    t.assert(body.data._id === testPatchPublic._id)
     t.post({
       uri: '/find/links?' + userCredAlice,
       body: {
         query: {
-          _to: testPlacePublic._id,
+          _to: testPatchPublic._id,
           _from: testUserAlice._id,
           type: 'watch',
         }
@@ -2569,14 +2561,14 @@ exports.userWatchesPlaceViaRestWatchParam = function(test) {
       var watchLink = body.data[0]
 
       // Now do it again
-      t.get('/find/places/' + testPlacePublic._id + '?watch=true&' + userCredAlice,
+      t.get('/find/patches/' + testPatchPublic._id + '?watch=true&' + userCredAlice,
       function(err, res, body) {
-        t.assert(body.data._id === testPlacePublic._id)
+        t.assert(body.data._id === testPatchPublic._id)
         t.post({
           uri: '/find/links?' + userCredAlice,
           body: {
             query: {
-              _to: testPlacePublic._id,
+              _to: testPatchPublic._id,
               _from: testUserAlice._id,
               type: 'watch',
             }
@@ -2593,7 +2585,7 @@ exports.userWatchesPlaceViaRestWatchParam = function(test) {
 }
 
 
-exports.userWatchPlaceViaRestWatchParamOnMessage = function(test) {
+exports.userWatchPatchViaRestWatchParamOnMessage = function(test) {
   t.get('/find/messages/' + testMessage._id + '?watch=true&' + userCredBecky,
   function(err, res, body) {
     t.assert(body.data._id === testMessage._id)
@@ -2601,7 +2593,7 @@ exports.userWatchPlaceViaRestWatchParamOnMessage = function(test) {
       uri: '/find/links?' + userCredBecky,
       body: {
         query: {
-          _to: testPlacePublic._id,  // watch link is to the message's parent place, not the message itself
+          _to: testPatchPublic._id,  // watch link is to the message's parent patch, not the message itself
           _from: testUserBecky._id,
           type: 'watch',
         }
@@ -2618,7 +2610,7 @@ exports.userWatchPlaceViaRestWatchParamOnMessage = function(test) {
           uri: '/find/links?' + userCredBecky,
           body: {
             query: {
-              _to: testPlacePublic._id,
+              _to: testPatchPublic._id,
               _from: testUserBecky._id,
               type: 'watch',
             }
@@ -2652,12 +2644,12 @@ exports.messagePagingRest = function(test) {
 }
 
 exports.messagePagingRestLinks = function(test) {
-  t.get('/find/places/' + place1Id + '?links[from][messages]=1&' + adminCred,
+  t.get('/find/patches/' + patch1Id + '?links[from][messages]=1&' + adminCred,
   function(err, res, body) {
     t.assert(body.data)
     t.assert(body.data.links)
-    t.assert(body.data.links.length = messagesPerPlace)
-    t.get('/find/places/' + place1Id + '?links[from][messages]=1&links[limit]=2&links[skip]=2&links[sort]=_id&' + adminCred,
+    t.assert(body.data.links.length = messagesPerPatch)
+    t.get('/find/patches/' + patch1Id + '?links[from][messages]=1&links[limit]=2&links[skip]=2&links[sort]=_id&' + adminCred,
     function(err, res, body) {
       t.assert(body.data)
       t.assert(body.data.links)
@@ -2671,11 +2663,11 @@ exports.messagePagingRestLinks = function(test) {
 }
 
 
-exports.removeMessageFromPlace = function(test) {
+exports.removeMessageFromPatch = function(test) {
   t.post({
-    uri: '/do/removeLinks?' + userCredTom,  // place owner
+    uri: '/do/removeLinks?' + userCredTom,  // patch owner
     body: {
-      toId: testPlacePublic._id,
+      toId: testPatchPublic._id,
       fromId: testMessage._id,              // owned by bob
       type: util.statics.typeContent,
       actionEvent: 'remove'
@@ -2688,7 +2680,7 @@ exports.removeMessageFromPlace = function(test) {
       uri: '/find/links',
       body: {
         query:{
-          _to:testPlacePublic._id,
+          _to:testPatchPublic._id,
           _from:testMessage._id,            // owned by bob
           type:util.statics.typeContent
         }
@@ -2701,14 +2693,14 @@ exports.removeMessageFromPlace = function(test) {
 }
 
 
-exports.unwatchPrivatePlace = function(test) {
+exports.unwatchPrivatePatch = function(test) {
   t.post({
     uri: '/do/deleteLink?' + userCredBecky,
     body: {
-      toId: testPlacePrivate._id,             // Owned by bob
+      toId: testPatchPrivate._id,             // Owned by bob
       fromId: testUserBecky._id,
       type: util.statics.typeWatch,
-      actionEvent: 'unwatch_entity_place',
+      actionEvent: 'unwatch_entity_patch',
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
@@ -2718,7 +2710,7 @@ exports.unwatchPrivatePlace = function(test) {
       uri: '/find/links',
       body: {
         query: {
-          _to: testPlacePrivate._id,
+          _to: testPatchPrivate._id,
           _from: testUserBecky._id,
           type: util.statics.typeWatch
         }
@@ -2731,8 +2723,8 @@ exports.unwatchPrivatePlace = function(test) {
         uri: '/find/actions?' + adminCred,
         body: {
           query:{
-            _entity:testPlacePrivate._id,
-            event:'unwatch_entity_place',
+            _entity:testPatchPrivate._id,
+            event:'unwatch_entity_patch',
             _user: testUserBecky._id,
           }
         }
@@ -2745,11 +2737,11 @@ exports.unwatchPrivatePlace = function(test) {
 }
 
 
-exports.formerMemberGetMessagesForPrivatePlace = function (test) {
+exports.formerMemberGetMessagesForPrivatePatch = function (test) {
   t.post({
     uri: '/do/getEntitiesForEntity?' + userCredBecky,
     body: {
-      entityId: testPlacePrivate._id,
+      entityId: testPatchPrivate._id,
       cursor: {
         linkTypes: ['content'],
         schemas: ['message'],

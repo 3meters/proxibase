@@ -75,7 +75,8 @@ exports.suggestPlacesGoogle = function(test) {
     }
   }, 200, function(err, res, body) {
     var places = body.data
-    t.assert(places && places.length <= 5) // 4 if lucky is in db and 5 otherwise
+    t.assert(places && places.length)
+    t.assert(places.length <= 5) // 4 if lucky is in db and 5 otherwise
     var hitCount = 0
     places.forEach(function(place){
       t.assert(place.score)
@@ -100,7 +101,7 @@ exports.getPlacesNear = function(test) {
       limit: 50,
       refresh: true,
       // radius: 500,
-      // log: true,
+      log: true,
     }
   }, 200, function(err, res, body) {
     var places = body.data
@@ -142,6 +143,7 @@ exports.suggestPlaceRegex = function(test) {
       input: 'schmi',                         // initial exact match of third word in name
       fts: false,                             // turn off full text search
       limit: 10,
+      log: true,
     }
   }, 200, function(err, res, body) {
     t.assert(body.data.length === 1)
@@ -197,11 +199,11 @@ exports.suggestCombined = function(test) {
 
   if (disconnected) return skip(test)
 
-  t.get('/suggest?input=t&limit=50',
+  t.get('/suggest?users=1&patches=true&input=t&limit=50',
   function(err, res, body) {
     t.assert(body.data.length)
     var cUsers = 0
-    var cPlaces = 0
+    var cPatches = 0
     var lastScore = Infinity
     body.data.forEach(function(ent) {
       t.assert(ent.score >= 1)
@@ -209,11 +211,11 @@ exports.suggestCombined = function(test) {
       t.assert(lastScore >= ent.score)
       lastScore = ent.score
       if ('user' === ent.schema) cUsers++
-      if ('place' === ent.schema) cPlaces++
+      if ('patch' === ent.schema) cPatches++
     })
     t.assert(cUsers)
-    t.assert(cPlaces)
-    t.assert(cUsers + cPlaces === body.data.length)
+    t.assert(cPatches)
+    t.assert(cUsers + cPatches === body.data.length)
     test.done()
   })
 }

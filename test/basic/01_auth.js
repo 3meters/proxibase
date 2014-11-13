@@ -193,7 +193,7 @@ exports.cannotValidateSessionWithBogusKey = function(test) {
 
 exports.canValidateSession = function(test) {
   t.get({
-    uri: '/data/places?user=' + session._owner + '&session=' + session.key
+    uri: '/data/patches?user=' + session._owner + '&session=' + session.key
   }, function(err, res, body) {
     t.assert(body.user)
     t.assert(body.user._id === testUser._id)
@@ -203,7 +203,7 @@ exports.canValidateSession = function(test) {
 }
 
 exports.canValidateSessionUsingParamsInQuery = function(test) {
-  t.get('/find/places?user=' + session._owner + '&session=' + session.key,
+  t.get('/find/patches?user=' + session._owner + '&session=' + session.key,
   function(err, res, body) {
     t.assert(body.user)
     t.assert(body.user._id === testUser._id)
@@ -214,7 +214,7 @@ exports.canValidateSessionUsingParamsInQuery = function(test) {
 
 exports.canValidateSessionUsingParamsInBody = function(test) {
   t.post({
-    uri: '/find/places',
+    uri: '/find/patches',
     body: {user: session._owner, session: session.key}
   }, function(err, res, body) {
     t.assert(body.user)
@@ -226,11 +226,11 @@ exports.canValidateSessionUsingParamsInBody = function(test) {
 
 exports.sessionParamsInQueryStringOverrideOnesInBody = function(test) {
   t.post({
-    uri: '/find/places?user=' + session._owner + '&session=' + session.key,
+    uri: '/find/patches?user=' + session._owner + '&session=' + session.key,
     body: {user: util.adminUser._id, session: session.key}
   }, function(err, res, body) {
     t.post({
-      uri: '/find/places?user=' + util.adminUser._id + '&session=' + session.key,
+      uri: '/find/patches?user=' + util.adminUser._id + '&session=' + session.key,
       body: {user: session._owner, session: session.key}
     }, 401, function(err, res, body) {
       test.done()
@@ -291,7 +291,7 @@ exports.userCanChangePassword = function(test) {
 
 exports.changingPasswordDestroysOldSession = function(test) {
   t.get({
-    uri: '/data/places?' + userOldCred
+    uri: '/data/patches?' + userOldCred
   }, 401, function(err, res, body) {
     test.done()
   })
@@ -299,7 +299,7 @@ exports.changingPasswordDestroysOldSession = function(test) {
 
 exports.changingPasswordsCreatesNewSession = function(test) {
   t.get({
-    uri: '/data/places?' + userCred
+    uri: '/data/patches?' + userCred
   }, function(err, res, body) {
     test.done()
   })
@@ -567,11 +567,11 @@ exports.userCanInviteNewUser = function(test) {
 
 exports.autoWatchWorks = function(test) {
   t.post({
-    uri: '/data/places?' + adminCred,
+    uri: '/data/patches?' + adminCred,
     body: {
       data: {
         _id: util.statics.autowatch[0],
-        name: 'test autowatch place',
+        name: 'test autowatch patch',
       }
     }
   }, 201, function(err, res, body) {
@@ -614,7 +614,7 @@ exports.autoWatchWorks = function(test) {
           t.assert(body.count === 1)  // proves user can unwatch
           // cleanup
           t.del({
-            uri: '/data/places/' + util.statics.autowatch[0] + '?' + adminCred
+            uri: '/data/patches/' + util.statics.autowatch[0] + '?' + adminCred
           }, function(err, res, body) {
             t.assert(body.count === 1)
             test.done()

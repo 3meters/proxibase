@@ -26,7 +26,7 @@ var radiusBig = 10000
 var installId1 = '5905d547-8321-4612-abe1-00001'
 var installId2 = '5905d547-8321-4612-abe1-00002'
 var installId3 = '5905d547-8321-4612-abe1-00003'
-var placeMovedToId
+var patchMovedToId
 
 var testUserTom = {
   _id :  "us.111111.11111.000.111111",
@@ -34,7 +34,7 @@ var testUserTom = {
   email : "tomtest@3meters.com",
   password : "12345678",
   photo: {
-    prefix:"resource:placeholder_user",
+    prefix:"resource:patchholder_user",
     source:"resource",
   },
   area : "Testville, WA",
@@ -57,10 +57,10 @@ var testUserAlice = {
   enabled: true,
 }
 
-var testPlaceCustom = {
-  _id : "pl.111111.11111.111.211114",
-  schema : util.statics.schemaPlace,
-  name : "Testing place entity custom one for messages",
+var testPatchCustom = {
+  _id : "pa.111111.11111.111.211114",
+  schema : util.statics.schemaPatch,
+  name : "Testing patch entity custom one for messages",
   photo: {
     prefix:"1001_20111224_104245.jpg",
     source:"aircandi"
@@ -69,10 +69,6 @@ var testPlaceCustom = {
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
-  provider: {
-    aircandi: 'aircandi',
-  },
-  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"4259950006",
   category:{
     id:"4bf58dd8d48988d18c941735",
     name : "Baseball Stadium",
@@ -83,10 +79,10 @@ var testPlaceCustom = {
   },
 }
 
-var testPlaceCustomTwo = {
-  _id : "pl.111111.11111.111.211115",
-  schema : util.statics.schemaPlace,
-  name : "Testing place entity custom two",
+var testPatchCustomTwo = {
+  _id : "pa.111111.11111.111.211115",
+  schema : util.statics.schemaPatch,
+  name : "Testing patch entity custom two",
   locked: true,
   photo: {
     prefix:"1001_20111224_104245.jpg",
@@ -95,10 +91,6 @@ var testPlaceCustomTwo = {
   signalFence : -100,
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
-  },
-  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"4259950007",
-  provider: {
-    aircandi: 'aircandi',
   },
   category:{
     id:"4bf58dd8d48988d18c941735",
@@ -112,7 +104,7 @@ var testPlaceCustomTwo = {
 
 var testMessage = {
   _id : "me.111111.11111.111.111111",
-  _acl: testPlaceCustom._id,
+  _acl: testPatchCustom._id,
   schema : util.statics.schemaMessage,
   name : "Testing message entity",
   photo: {
@@ -121,11 +113,11 @@ var testMessage = {
   },
 }
 
-var testComment = {
-  _id : "co.111111.11111.111.111114",
-  schema : util.statics.schemaComment,
-  name : "Test comment",
-  description : "Test comment, much ado about nothing.",
+var testMessage2 = {
+  _id : "me.111111.11111.111.111112",
+  _acl: testPatchCustom._id,
+  schema : util.statics.schemaMessage,
+  name : "Testing message entity 2",
 }
 
 var testApplink = {
@@ -394,11 +386,11 @@ exports.updateBeaconsInstallThree = function (test) {
  * ----------------------------------------------------------------------------
  */
 
-exports.insertCustomPlace = function (test) {
+exports.insertCustomPatch = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCredTom,
     body: {
-      entity: testPlaceCustom,    // custom place
+      entity: testPatchCustom,    // custom patch
       beacons: [testBeacon],
       primaryBeaconId: testBeacon._id,
       returnNotifications: true,
@@ -426,11 +418,11 @@ exports.insertCustomPlace = function (test) {
 }
 
 
-exports.insertCustomPlaceTwo = function (test) {
+exports.insertCustomPatchTwo = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCredBob,
     body: {
-      entity: testPlaceCustomTwo,    // custom place
+      entity: testPatchCustomTwo,    // custom patch
       beacons: [testBeacon2],
       primaryBeaconId: testBeacon2._id,
       returnNotifications: true,
@@ -440,7 +432,7 @@ exports.insertCustomPlaceTwo = function (test) {
     t.assert(body.data && body.data._id)
     /*
      * Alice should get a nearby message since alice is registered
-     * with beacons that intersect the ones for custom place two.
+     * with beacons that intersect the ones for custom patch two.
      *
      * Bob should not get a message because he is the source.
      */
@@ -453,11 +445,13 @@ exports.insertCustomPlaceTwo = function (test) {
 }
 
 
-exports.cannotUpdateApplinksforLockedPlaceOwnedByAnotherUser = function(test) {
+exports.cannotUpdateApplinksforLockedPatchOwnedByAnotherUser = function(test) {
+  // This belongs in the aruba tests
+  return skip(test)
   t.post({
-    uri: '/do/replaceEntitiesForEntity?' + userCredTom,  // place is owned by Bob
+    uri: '/do/replaceEntitiesForEntity?' + userCredTom,  // patch is owned by Bob
     body: {
-      entityId: testPlaceCustomTwo._id,
+      entityId: testPatchCustomTwo._id,
       entities: [
         util.clone(testApplink),
         util.clone(testApplink),
@@ -471,7 +465,7 @@ exports.cannotUpdateApplinksforLockedPlaceOwnedByAnotherUser = function(test) {
 
     /* Now have bob unlock it */
     t.post({
-      uri: '/data/places/' + testPlaceCustomTwo._id + '?' + userCredBob,
+      uri: '/data/patches/' + testPatchCustomTwo._id + '?' + userCredBob,
       body: {data: {locked: false}},
     }, function(err, res, body) {
       t.assert(false === body.data.locked)
@@ -487,7 +481,7 @@ exports.insertMessage = function (test) {
     body: {
       entity: testMessage,
       links: [{
-        _to: testPlaceCustom._id,          // Tom's place
+        _to: testPatchCustom._id,          // Tom's patch
         type: util.statics.typeContent
       }],
       returnNotifications: true,
@@ -497,7 +491,7 @@ exports.insertMessage = function (test) {
     t.assert(body.count === 1)
     t.assert(body.data)
     /*
-     * Tom should get a notification message because he owns the place
+     * Tom should get a notification message because he owns the patch
      */
     t.assert(body.notifications && body.notifications.length == 1)
     var tomHit = false
@@ -528,11 +522,11 @@ exports.insertMessage = function (test) {
     }, function(err, res, body) {
       t.assert(body.count === 1)
 
-      /* Check activityDate for place */
+      /* Check activityDate for patch */
       t.post({
-        uri: '/find/places',
+        uri: '/find/patches',
         body: {
-          query:{ _id:testPlaceCustom._id }
+          query:{ _id:testPatchCustom._id }
         }
       }, function(err, res, body) {
         t.assert(body.count === 1)
@@ -552,10 +546,12 @@ exports.insertMessage = function (test) {
  */
 
 exports.addEntitySet = function (test) {
+  // This belongs in the aruba tests
+  return skip(test)
   t.post({
     uri: '/do/replaceEntitiesForEntity?' + userCredTom,
     body: {
-      entityId: testPlaceCustom._id,
+      entityId: testPatchCustom._id,
       entities: [
         util.clone(testApplink),
         util.clone(testApplink),
@@ -571,7 +567,7 @@ exports.addEntitySet = function (test) {
     t.post({
       uri: '/find/links',
       body: {
-        query: { _to: testPlaceCustom._id, type: util.statics.typeContent, fromSchema: util.statics.schemaApplink }
+        query: { _to: testPatchCustom._id, type: util.statics.typeContent, fromSchema: util.statics.schemaApplink }
       }
     }, function(err, res, body) {
       t.assert(body.count === 3)
@@ -585,11 +581,11 @@ exports.addEntitySet = function (test) {
       }, function(err, res, body) {
         t.assert(body.count === 3)
 
-        /* Check activityDate and _applinkModifier for place */
+        /* Check activityDate and _applinkModifier for patch */
         t.post({
-          uri: '/find/places',
+          uri: '/find/patches',
           body: {
-            query:{ _id: testPlaceCustom._id }
+            query:{ _id: testPatchCustom._id }
           }
         }, function(err, res, body) {
           t.assert(body.count === 1)
@@ -604,10 +600,11 @@ exports.addEntitySet = function (test) {
 }
 
 exports.replaceEntitySet = function (test) {
+  return skip(test)
   t.post({
     uri: '/do/replaceEntitiesForEntity?' + userCredTom,
     body: {
-      entityId: testPlaceCustom._id,
+      entityId: testPatchCustom._id,
       entities: [
         util.clone(testApplink2),
         util.clone(testApplink2),
@@ -624,7 +621,7 @@ exports.replaceEntitySet = function (test) {
     t.post({
       uri: '/find/links',
       body: {
-        query: { _to: testPlaceCustom._id, type: util.statics.typeContent, fromSchema: util.statics.schemaApplink }
+        query: { _to: testPatchCustom._id, type: util.statics.typeContent, fromSchema: util.statics.schemaApplink }
       }
     }, function(err, res, body) {
       t.assert(body.count === 3)
@@ -647,11 +644,11 @@ exports.replaceEntitySet = function (test) {
         }, function(err, res, body) {
           t.assert(body.count === 0)
 
-          /* Check activityDate for place */
+          /* Check activityDate for patch */
           t.post({
-            uri: '/find/places',
+            uri: '/find/patches',
             body: {
-              query:{ _id: testPlaceCustom._id }
+              query:{ _id: testPatchCustom._id }
             }
           }, function(err, res, body) {
             t.assert(body.count === 1)
@@ -671,13 +668,16 @@ exports.replaceEntitySet = function (test) {
  * ----------------------------------------------------------------------------
  */
 
-exports.insertComment = function (test) {
+// This inserts a message to a message and checks that the activity date 
+// on the top-level patch is ticked.  The client doesn't exersise this feature, 
+// but the service supports it.
+exports.insertMessage2 = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCredTom,
     body: {
-      entity: testComment,
+      entity: testMessage2,
       links: [{
-        _to: testMessage._id,
+        _to: testMessage._id,  // message to a message
         type: util.statics.typeContent,
       }],
       activityDateWindow: 0,
@@ -690,49 +690,37 @@ exports.insertComment = function (test) {
 
     /* Check insert */
     t.post({
-      uri: '/find/comments',
+      uri: '/find/messages',
       body: {
-        query: { _id: testComment._id }
+        query: { _id: testMessage2._id }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
       t.assert(body.data && body.data[0])
       t.assert(!body.data[0].activityDate)
 
-      /* Check activityDate for place */
+      /* Check activityDate for patch */
       t.post({
-        uri: '/find/places',
+        uri: '/find/patches',
         body: {
-          query:{ _id:testPlaceCustom._id }
+          query:{ _id:testPatchCustom._id }
         }
       }, function(err, res, body) {
         t.assert(body.count === 1)
         t.assert(body.data && body.data[0])
         t.assert(body.data[0].activityDate >= activityDate)
-
-        /* Check activityDate for message */
-        t.post({
-          uri: '/find/messages?' + userCredBob,  // bob's comment
-          body: {
-            query:{ _id: testMessage._id }
-          }
-        }, function(err, res, body) {
-          t.assert(body.count === 1)
-          t.assert(body.data && body.data[0])
-          t.assert(body.data[0].activityDate >= activityDate)
-          test.done()
-        })
+        test.done()
       })
     })
   })
 }
 
-exports.updateEntity = function (test) {
-  testComment.name = 'Testing comment update'
+exports.updateNestedMessage = function (test) {
+  testMessage2.name = 'Testing message 2 updated name'
   t.post({
     uri: '/do/updateEntity?' + userCredTom,
     body: {
-      entity:testComment
+      entity:testMessage2
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
@@ -741,9 +729,9 @@ exports.updateEntity = function (test) {
 
     /* Check update */
     t.post({
-      uri: '/find/comments',
+      uri: '/find/messages',
       body: {
-        query: { _id: testComment._id }
+        query: { _id: testMessage2._id }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -751,11 +739,11 @@ exports.updateEntity = function (test) {
       log('activityDate', activityDate)
       t.assert(body.data[0].activityDate != activityDate)
 
-      /* Check activityDate for place */
+      /* Check activityDate for patch */
       t.post({
-        uri: '/find/places',
+        uri: '/find/patches',
         body: {
-          query:{ _id:testPlaceCustom._id }
+          query:{ _id:testPatchCustom._id }
         }
       }, function(err, res, body) {
         t.assert(body.count === 1)
@@ -779,11 +767,11 @@ exports.updateEntity = function (test) {
   })
 }
 
-exports.deleteEntity = function (test) {
+exports.deleteNestedMessage = function (test) {
   t.post({
     uri: '/do/deleteEntity?' + adminCred,
     body: {
-      entityId:testComment._id,
+      entityId:testMessage2._id,
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
@@ -791,18 +779,18 @@ exports.deleteEntity = function (test) {
     var activityDate = body.date
     /* Check delete */
     t.post({
-      uri: '/find/comments',
+      uri: '/find/messages',
       body: {
-        query: { _id: testComment._id }
+        query: { _id: testMessage2._id }
       }
     }, function(err, res, body) {
       t.assert(body.count === 0)
 
-      /* Check activityDate for place */
+      /* Check activityDate for patch */
       t.post({
-        uri: '/find/places',
+        uri: '/find/patches',
         body: {
-          query:{ _id:testPlaceCustom._id }
+          query:{ _id:testPatchCustom._id }
         }
       }, function(err, res, body) {
         t.assert(body.count === 1)

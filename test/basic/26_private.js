@@ -1,5 +1,5 @@
 /**
- *  Private places tests
+ *  Private patches tests
  */
 
 var async = require('async')
@@ -40,24 +40,24 @@ var mary = {
 }
 
 var river = {
-  _id: 'pl.river' + seed,
+  _id: 'pa.river' + seed,
   name: 'River' + seed,
 }
 
 var treehouse = {
-  _id: 'pl.treehouse' + seed,
+  _id: 'pa.treehouse' + seed,
   name: 'Treehouse' + seed,
   visibility: 'private',
 }
 
 var janehouse = {
-  _id: 'pl.janehouse' + seed,
+  _id: 'pa.janehouse' + seed,
   name: 'Janehouse' + seed,
   visibility: 'private',
 }
 
 var maryhouse = {
-  _id: 'pl.maryhouse' + seed,
+  _id: 'pa.maryhouse' + seed,
   name: 'Maryhouse' + seed,
   visibility: 'hidden',
 }
@@ -121,21 +121,21 @@ exports.createUsers = function(test) {
   })
 }
 
-exports.createPlaces = function(test) {
+exports.createPatches = function(test) {
   t.post({
-    uri: '/data/places?' + tarzan.cred,
+    uri: '/data/patches?' + tarzan.cred,
     body: {data: river},
   }, 201, function (err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data.visibility === 'public')  // proves default
     t.post({
-      uri: '/data/places?' + tarzan.cred,
+      uri: '/data/patches?' + tarzan.cred,
       body: {data: treehouse},
     }, 201, function (err, res, body) {
       t.assert(body.count === 1)
       t.assert(body.data.visibility === 'private')
       t.post({
-        uri: '/data/places?' + jane.cred,
+        uri: '/data/patches?' + jane.cred,
         body: {data: janehouse},
       }, 201, function (err, res, body) {
         t.assert(body.count === 1)
@@ -144,7 +144,7 @@ exports.createPlaces = function(test) {
         // Hidden is currently NYI, skip
         /*
         t.post({
-          uri: '/data/places?' + mary.cred,
+          uri: '/data/patches?' + mary.cred,
           body: {data: maryhouse},
         }, 201, function (err, res, body) {
           t.assert(body.count === 1)
@@ -286,7 +286,7 @@ exports.getEntsForEntsDoesNotExposePrivateFieldsOfWatchers = function(test) {
   t.post({
     uri: '/do/getEntitiesForEntity',
     body: {
-      entityId: 'pl.river' + seed,
+      entityId: 'pa.river' + seed,
       cursor: {
         linkTypes: ['watch'],
         direction: 'in',
@@ -302,11 +302,11 @@ exports.getEntsForEntsDoesNotExposePrivateFieldsOfWatchers = function(test) {
 }
 
 
-exports.getEntitiesForEntsReadsMessagesToPublicPlaces = function(test) {
+exports.getEntitiesForEntsReadsMessagesToPublicPatches = function(test) {
   t.post({
     uri: '/do/getEntitiesForEntity',
     body: {
-      entityId: 'pl.river' + seed,
+      entityId: 'pa.river' + seed,
       cursor: {
         linkTypes: ['content'],
         direction: 'in',
@@ -559,6 +559,7 @@ exports.janeCanSeeTreehouseMessagesViaFindOne = function(test) {
 }
 
 exports.janeCanCommentOnTarzansTreehouseMessage = function(test) {
+  return skip(test)
   var janeCommentOnMsg = {
     entity: {
       schema: 'comment',
@@ -576,7 +577,7 @@ exports.janeCanCommentOnTarzansTreehouseMessage = function(test) {
     body: janeCommentOnMsg,
   }, 201, function(err, res, body) {
     t.assert(body.count)
-    t.assert(body.data._acl === 'pl.treehouse' + seed)  // checks setAcl in insertEntity
+    t.assert(body.data._acl === 'pa.treehouse' + seed)  // checks setAcl in insertEntity
     test.done()
   })
 }

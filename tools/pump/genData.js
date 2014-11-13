@@ -11,40 +11,26 @@ var mongo = require('proxdb')       // Proxdb lib, inits schemas
 var _schemas = statics.schemas
 var constants = require('../../test/constants')
 var testUtil = require('../../test/util')
-var docs = {                            // Map of collections to be generated
-  users: [],
-  beacons: [],
-  places: [],
-  posts: [],
-  messages: [],
-  applinks: [],
-  comments: [],
-  links: [],
-}
-var startTime                             // Elapsed time counter
-var options = {                           // Default options
-  users: 10,                           // Count of users
-  beacons: 10,                         // Count of beacons
-  epb: 1,                             // Places per beacon
-  spe: 5,                             // Posts (aka children) per place
-  mpp: 5,                             // Messages per place
-  ape: 5,                             // Applinks per place
-  cpe: 2,                             // Comments per post and place entity
-  likes: 2,
-  watch: 2,
-  database: 'proxTest',               // Database name
-}
-var beaconIds = []
-var placeIds = []
-var postIds = []
-var messageIds = []
-var applinkIds = []
-var commentIds = []
-var entityCount = { applinks: 0, beacons: 0, comments: 0, places: 0, posts: 0 }
+var startTime         // Elapsed time counter
 
-module.exports = function(profile, callback) {
+var options = {       // Default options
+  users: 10,          // Count of users
+  ppu: 5,             // Patches per user
+  bpp: 5,             // Beacons per patch
+  ppp: 1,             // Places per patch
+  mpp: 5,             // Messages per patch
+  app: 5,             // Applinks per patch
+  database: '',       // Database name
+}
 
-  callback = callback || function(err, result) {
+var users = []
+var docs = {}
+var links = []
+
+
+module.exports = function(profile, cb) {
+
+  cb = cb || function(err, result) {
     if (err) return console.error(err.stack||err)
     if (result) console.log(result)
   }
@@ -55,15 +41,18 @@ module.exports = function(profile, callback) {
     options[key] = profile[key]
   }
 
+  if (!options.database) throw('Missing required options.database')
+
   // Configure
-  var config = util.config                  // Use the default server database connection
-  config.db.database = options.database     // Override database name
+  var config = util.config
+  config.db.database = options.database
+
   var dbUri = 'mongodb://' + config.db.host + ':' + config.db.port +  '/' + config.db.database
 
   log('Saving to database ' + dbUri + ' with validation')
 
   mongo.connect(dbUri, function(err, database) {
-    if (err) return callback(err)
+    if (err) return cb(err)
     db = database
     db.dropDatabase(function(err) {
       if (err) throw err
@@ -72,236 +61,151 @@ module.exports = function(profile, callback) {
         if (err) throw err
         db.close()
         db = proxdb
-        return run(callback)
+        return run(cb)
       })
     })
   })
 }
 
-function run(callback) {
+function run(cb) {
 
-  log('generating users')
   genUsers()
 
-  log('generating beacons')
-  genEntityRecords([0], options.beacons, 'beacon', null)
+  users.forEach(function(user, iUser) {
+    genEntities(user, iUser, 'patch', options.ppu, [user], [{from: 'watch'}], true)
+    genEntities(user, iUser, 'beacon', options.bpp, user.ents.patches, [{from: 'proximity'}], false)
+    genEntities(user, iUser, 'place', options.ppp, user.ents.patches, [{from: 'proximity'}], false)
+    genEntities(user, iUser, 'message', options.mpp, user.ents.patches, [{to: 'content'}], true)
+    genEntities(user, iUser, 'applink', options.app, user.ents.patches, [{to: 'content'}], false)
+  })
 
-  log('generating places')
-  genEntityRecords(beaconIds, options.epb, 'place', 'proximity')
-
-  log('generating posts')
-  genEntityRecords(placeIds, options.spe, 'post', 'content')
-
-  log('generating messages')
-  genEntityRecords(placeIds, options.mpp, 'message', 'content')
-
-  log('generating applinks')
-  genEntityRecords(placeIds, options.ape, 'applink', 'content')
-
-  log('generating comments')
-  var placeAndPostIds = placeIds.concat(postIds)
-  genEntityRecords(placeAndPostIds, options.cpe, 'comment', 'content')
+  // Unpack the entities stashed under each user
+  users.forEach(function(user) {
+    for (var clName in user.ents) {
+      docs[clName] = docs[clName] || []
+      user.ents[clName].forEach(function(ent) {
+        docs[clName].push(ent)
+      })
+    }
+    delete user.ents
+  })
 
   saveAll(function(err) {
     if (db) db.close()
-    if (err) return callback(err)
+    if (err) return cb(err)
     var elapsedTime = ((new Date().getTime()) - startTime) / 1000
     log('genData finished in ' + elapsedTime + ' seconds')
-    return callback()
+    return cb()
   })
 }
 
 function genUsers() {
-
   for (var i = 0; i < options.users; i++) {
     var user = constants.getDefaultDoc('user')
     user._id = testUtil.genId('user', i)
     user.name = 'Test User ' + (i + 1)
     user.email = 'testuser' + (i + 1) + '@3meters.com'
     user.password = 'password' + (i + 1)
-    docs.users.push(user)
-  }
-
-  // Users like and watch each other
-  for (var i = 0; i < docs.users.length; i++) {
-    for (var j = 0; j < docs.users.length; j++) {
-
-      if (i == j) continue   // Don't like or watch yourself
-
-      // like
-      docs.links.push({
-        _id:      testUtil.genId('link', docs.links.length),
-        _from:    docs.users[i]._id,
-        _to:      docs.users[j]._id,
-        type:     'like',
-        _creator: docs.users[i]._id,
-      })
-
-      // watch
-      docs.links.push({
-        _id:      testUtil.genId('link', docs.links.length),
-        _from:    docs.users[i]._id,
-        _to:      docs.users[j]._id,
-        type:     'watch',
-        _creator: docs.users[i]._id,
-      })
-    }
+    user.ents = {}  // map of entities this user will create
+    users.push(user)
   }
 }
 
-function genDocuments() {
-  docs.documents.push(constants.getDefaultDoc('document'))
-}
 
-function genEntityRecords(parentIds, count, entitySchema, linkType) {
+function genEntities(user, iUser, schemaName, count, linkedEnts, linkSpecs, makeCreateLinks) {
 
-  for (var p = 0; p < parentIds.length; p++) {
+  var schema = db.safeSchemas[schemaName]
+  var clName = schema.collection
+  user.ents[clName] = []
+  var userEnts = user.ents[clName]
+
+  for (var p = 0; p < linkedEnts.length; p++) {
     for (var i = 0; i < count; i++) {
 
-      var newEnt = constants.getDefaultDoc(entitySchema)
-      var entDocs = docs[_schemas[entitySchema].collection]
-
-      // Entity
-      if (entitySchema === statics.schemaBeacon) {
-        newEnt._id = testUtil.genBeaconId(i)
-        newEnt.bssid = newEnt._id.substring(5)
-        newEnt.ssid = newEnt.ssid + ' ' + entDocs.length
+      var seed = (iUser * count * linkedEnts.length) + (p * count) + i
+      // log({iUser: iUser, count: count, p: i, i: i, seed: seed})
+      var newEnt = constants.getDefaultDoc(schemaName)
+      if (schemaName === statics.schemaBeacon) {
+        newEnt._id = testUtil.genBeaconId(seed)
+        newEnt.bssid = newEnt._id.slice(3)
+        newEnt.ssid = newEnt.ssid + ' ' + seed
       }
       else {
-        newEnt._id = testUtil.genId(entitySchema, entDocs.length)
+        newEnt._id = testUtil.genId(schemaName, seed)
       }
-      newEnt.name = newEnt.name + ' ' + entDocs.length
-      newEnt._creator = testUtil.genId('user', (entDocs.length % options.users))
+      newEnt.name = newEnt.name + ' ' + seed
+      newEnt._creator = user._id
 
-      entDocs.push(newEnt)
+      userEnts.push(newEnt)
 
-      // Create links
-      if (entitySchema !== 'beacon') {
-
-        var links = docs.links
-
-        // Link
-        var link = {
-          _id:    testUtil.genId('link', links.length),
-          _from:  newEnt._id,
-          _to:    parentIds[p],
-          type:   linkType,
-          _creator:  newEnt._creator,
+      linkSpecs.forEach(function(linkSpec) {
+        var link
+        if (linkSpec.to) {
+          link = {
+            _to: linkedEnts[p]._id,
+            _from: newEnt._id,
+            type: linkSpec.to,
+          }
         }
-        if (entitySchema === 'place') {
-          link.proximity = { primary: true, signal: -80 }
+        if (linkSpec.from) {
+          link = {
+            _to: newEnt._id,
+            _from: linkedEnts[p]._id,
+            type: linkSpec.from,
+          }
         }
+        link._id = testUtil.genId('link', links.length),
+        link._creator = newEnt._creator
         links.push(link)
+      })
 
-        // Create
+      // Optionally add a create link from the user
+      if (makeCreateLinks) {
         links.push({
           _id:    testUtil.genId('link', links.length),
-          _from:  newEnt._creator,
           _to:    newEnt._id,
+          _from:  user._id,
           type:   'create',
-          _creator:  newEnt._creator,
-        })
-
-        /*
-        if (entitySchema === 'place') {
-
-          // Like
-          for (var u = 0; u < options.users && u < options.likes; u++) {
-            links.push({
-              _id:      testUtil.genId('link', links.length),
-              _from:    testUtil.genId('user', u),
-              _to:      newEnt._id,
-              type:     'like',
-              _creator: testUtil.genId('user', u),
-            })
-          }
-
-          // Watch
-          for (var u = 0; u < options.users && u < options.watch; u++) {
-            links.push({
-              _id:      testUtil.genId('link', links.length),
-              _from:    testUtil.genId('user', u),
-              _to:      newEnt._id,
-              type:     'watch',
-              _creator: testUtil.genId('user', u),
-            })
-          }
-        }
-        */ 
-      }
-
-      switch (entitySchema) {
-        case 'beacon':  beaconIds.push(newEnt._id);   break
-        case 'place':   placeIds.push(newEnt._id);    break
-        case 'applink': applinkIds.push(newEnt._id);  break
-        case 'post':    postIds.push(newEnt._id);    break
-        case 'message': messageIds.push(newEnt._id);    break
-        case 'comment': commentIds.push(newEnt._id);  break
-      }
-    }
-  }
-
-  // Now create place Like and Watch Links in oposite order to test sorting
-  if (entitySchema === 'place') {
-
-    // Create Likes in ascending order of places
-    for (var i = 0; i < entDocs.length; i++) {
-      var ent = entDocs[i]
-      for (var u = 0; u < options.users && u < options.likes; u++) {
-        links.push({
-          _id:      testUtil.genId('link', links.length),
-          _from:    testUtil.genId('user', u),
-          _to:      ent._id,
-          type:     'like',
-          _creator: testUtil.genId('user', u),
-        })
-      }
-    }
-
-    // Create Watches in descending order of places
-    for (i = entDocs.length; i--;) {
-      var ent = entDocs[i]
-      for (var u = 0; u < options.users && u < options.likes; u++) {
-        links.push({
-          _id:      testUtil.genId('link', links.length),
-          _from:    testUtil.genId('user', u),
-          _to:      ent._id,
-          type:     'watch',
-          _creator: testUtil.genId('user', u),
+          _creator:  user._id,
         })
       }
     }
   }
 }
 
-function saveAll(callback) {
-  var collectionNames = []
-  var linkCollection
-  for (name in docs) {
-    name === 'links' ? linkCollection = true : collectionNames.push(name)
+
+function saveAll(cb) {
+
+  // An ordered list of collection names
+  var clNames = []
+
+  clNames.push('users')
+  for (var clName in docs) {
+    clNames.push(clName)
   }
-  async.forEachSeries(collectionNames, save, function(err) {
-    if (err) return callback(err)
-    if (linkCollection) return save('links', callback)
-    callback()
-  })
-}
+  clNames.push('links')
 
-function save(collectionName, callback) {
-  var collection = db.collection(collectionName)
+  docs.users = users
+  docs.links = links
 
-  async.forEachSeries(docs[collectionName], saveRow, function(err) {
-    if (err) return callback(err)
-    log(docs[collectionName].length + ' ' + collectionName)
-    return callback()
-  })
+  async.forEachSeries(clNames, save, cb)
 
-  function saveRow(row, callback) {
-    var user = (row._creator)
-      ? {_id: row._creator, role: 'user'}
-      : util.adminUser
-    collection.safeInsert(row, {user: user, ip: '127.0.0.1'}, function(err) {
-      return callback(err)
+  function save(clName, cb) {
+    var collection = db.collection(clName)
+
+    async.forEachSeries(docs[clName], saveRow, function(err) {
+      if (err) return cb(err)
+      log(docs[clName].length + ' ' + clName)
+      return cb()
     })
+
+    function saveRow(row, cb) {
+      var user = (row._creator)
+        ? {_id: row._creator, role: 'user'}
+        : util.adminUser
+      collection.safeInsert(row, {user: user, ip: '127.0.0.1'}, function(err) {
+        return cb(err)
+      })
+    }
   }
 }

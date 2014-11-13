@@ -94,12 +94,8 @@ exports.addSomeTestData = function(test) {
     toSchema: 'user',
   }
 
-  var orphanPost1 = {
-    _id: 'po.gctest.orphanPost1',
-  }
-
-  var orphanComment1 = {
-    _id: 'co.gctest.orphanComment1',
+  var orphanMessage1 = {
+    _id: 'me.gctest.orphanMessage1',
   }
 
   var orphanApplink1 = {
@@ -113,14 +109,11 @@ exports.addSomeTestData = function(test) {
     db.collection('links').insert(links, function(err, result) {
       assert(!err, err)
       assert(result && result.length === 5, result)
-      db.collection('comments').insert(orphanComment1, function(err, result) {
+      db.collection('messages').insert(orphanMessage1, function(err, result) {
         assert(!err, err)
-        db.collection('posts').insert(orphanPost1, function(err, result) {
+        db.collection('applinks').insert(orphanApplink1, function(err, result) {
           assert(!err, err)
-          db.collection('applinks').insert(orphanApplink1, function(err, result) {
-            assert(!err, err)
-            test.done()
-          })
+          test.done()
         })
       })
     })
@@ -163,10 +156,9 @@ exports.moveBadLinksToTrash = function(test) {
 exports.findOrphanedEnts = function(test) {
   t.get('/admin/gcentities?' + adminCred, function(err, res, body) {
     t.assert(body.orphans)
-    t.assert(body.orphans.comments.length = 1)
-    t.assert(body.orphans.posts.length = 1)
     t.assert(body.orphans.applinks.length = 1)
-    t.assert(body.count === 3)
+    t.assert(body.orphans.messages.length = 1)
+    t.assert(body.count === 2)
     t.assert(body.movedToTrash === 0)
     test.done()
   })
@@ -175,16 +167,16 @@ exports.findOrphanedEnts = function(test) {
 exports.moveBadEntsToTrash = function(test) {
   t.get('/admin/gcentities/remove?' + adminCred, function(err, res, body) {
     t.assert(body.orphans)
-    t.assert(body.count === 3)
-    t.assert(body.movedToTrash === 3)
-    db.collection('posts').find({_id: /^po\.gctest/}).toArray(function(err, links) {
+    t.assert(body.count === 2)
+    t.assert(body.movedToTrash === 2)
+    db.collection('messages').find({_id: /^me\.gctest/}).toArray(function(err, links) {
       t.assert(!err, err)
       t.assert(links.length === 0)
-      db.collection('trash').find({fromSchema: 'post'}).toArray(function(err, docs) {
+      db.collection('trash').find({fromSchema: 'message'}).toArray(function(err, docs) {
         t.assert(!err, err)
         t.assert(docs)
         t.assert(docs.length === 1, docs)
-        t.assert(docs[0].data._id === 'po.gctest.orphanPost1')
+        t.assert(docs[0].data._id === 'me.gctest.orphanMessage1')
         test.done()
       })
     })

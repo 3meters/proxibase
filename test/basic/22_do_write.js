@@ -32,7 +32,7 @@ var testUserTom = {
   email : "tomtest@3meters.com",
   password : "12345678",
   photo: {
-    prefix:"resource:placeholder_user",
+    prefix:"resource:patchholder_user",
     source:"resource",
   },
   area : "Testville, WA",
@@ -52,10 +52,10 @@ var testUserAlice = {
   password : "12345678",
   enabled: true,
 }
-var testPlaceOne = {
-  _id : "pl.111111.11111.111.111111",
-  schema : util.statics.schemaPlace,
-  name : "Testing place entity",
+var testPatchOne = {
+  _id : "pa.111111.11111.111.111111",
+  schema : util.statics.schemaPatch,
+  name : "Testing patch entity",
   photo: {
     prefix:"1001_20111224_104245.jpg",
     source:"aircandi"
@@ -63,10 +63,6 @@ var testPlaceOne = {
   signalFence : -100,
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
-  },
-  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065550001",
-  provider:{
-    foursquare:"0001"
   },
   category:{
     id:"4bf58dd8d48988d18c941735",
@@ -77,10 +73,10 @@ var testPlaceOne = {
     },
   }
 }
-var testPlaceTwo = {
-  _id : "pl.111111.11111.111.111112",
-  schema : util.statics.schemaPlace,
-  name : "Testing place entity",
+var testPatchTwo = {
+  _id : "pa.111111.11111.111.111112",
+  schema : util.statics.schemaPatch,
+  name : "Testing patch entity",
   photo: {
     prefix:"1001_20111224_104245.jpg",
     source:"aircandi"
@@ -88,10 +84,6 @@ var testPlaceTwo = {
   signalFence : -100,
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
-  },
-  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"206550002",
-  provider:{
-    foursquare:"0002"
   },
   category:{
     id:"4bf58dd8d48988d18c941735",
@@ -102,10 +94,10 @@ var testPlaceTwo = {
     },
   },
 }
-var testPlaceCustomPublic = {
-  _id : "pl.111111.11111.111.211111",
-  schema : util.statics.schemaPlace,
-  name : "Testing place entity custom",
+var testPatchCustomPublic = {
+  _id : "pa.111111.11111.111.211111",
+  schema : util.statics.schemaPatch,
+  name : "Testing patch entity custom",
   photo: {
     prefix:"1001_20111224_104245.jpg",
     source:"aircandi"
@@ -113,10 +105,6 @@ var testPlaceCustomPublic = {
   signalFence : -100,
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
-  },
-  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065550003",
-  provider: {
-    aircandi: 'aircandi',
   },
   category:{
     id:"4bf58dd8d48988d18c941735",
@@ -128,10 +116,10 @@ var testPlaceCustomPublic = {
   },
   visibility: "public",
 }
-var testPlaceCustomLocked = {
-  _id : "pl.111111.11111.111.211113",
-  schema : util.statics.schemaPlace,
-  name : "Testing place entity custom locked",
+var testPatchCustomLocked = {
+  _id : "pa.111111.11111.111.211113",
+  schema : util.statics.schemaPatch,
+  name : "Testing patch entity custom locked",
   photo: {
     prefix:"1001_20111224_104245.jpg",
     source:"aircandi"
@@ -140,10 +128,6 @@ var testPlaceCustomLocked = {
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
-  provider: {
-    aircandi: 'aircandi',
-  },
-  address:"123 Main St", city:"Fremont", region:"WA", country:"USA", phone:"2065550005",
   category:{
     id:"4bf58dd8d48988d18c941735",
     name : "Baseball Stadium",
@@ -155,32 +139,14 @@ var testPlaceCustomLocked = {
   visibility: "public",
   locked: true,
 }
-var testPost = {
-  _id : "po.111111.11111.111.111111",
-  schema : util.statics.schemaPost,
-  name : "Testing post entity",
+var testMessage = {
+  _id : "me.111111.11111.111.111111",
+  schema : util.statics.schemaMessage,
+  name : "Testing message entity",
   photo: {
     prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
     source:"aircandi",
   },
-}
-var testComment = {
-  _id : "co.111111.11111.111.111111",
-  schema : util.statics.schemaComment,
-  name : "Test comment",
-  description : "Test comment, much ado about nothing.",
-}
-var testComment2 = {
-  _id : "co.111111.11111.111.111112",
-  schema : util.statics.schemaComment,
-  name : "Test comment for locked entity",
-  description : "Test comment, much ado about nothing.",
-}
-var testComment3 = {
-  _id : "co.111111.11111.111.111113",
-  schema : util.statics.schemaComment,
-  name : "Another test comment for locked entity",
-  description : "Test comment, much ado about nothing.",
 }
 var testApplink = {
   schema: util.statics.schemaApplink,
@@ -253,9 +219,8 @@ var testBeacon3 = {
   },
 }
 var testLink = {
-  // _to : clIds.beacons + '.11:11:11:11:11:22',
   _to : testBeacon3._id,
-  _from : 'pl.111111.11111.111.111111',
+  _from : 'pa.111111.11111.111.111111',
   type: 'proximity',
   proximity: {
     primary: true,
@@ -516,7 +481,7 @@ exports.updateBeaconsInstallThree = function (test) {
 
 /*
  * ----------------------------------------------------------------------------
- * Insert places
+ * Insert patches
  * ----------------------------------------------------------------------------
  */
 
@@ -525,7 +490,7 @@ _exports.cannotInsertEntityNotLoggedIn = function (test) {
   t.post({
     uri: '/do/insertEntity',
     body: {
-      entity:testPlaceOne,
+      entity:testPatchOne,
       beacons:[testBeacon],
       primaryBeaconId:testBeacon._id,
     }
@@ -534,11 +499,11 @@ _exports.cannotInsertEntityNotLoggedIn = function (test) {
   })
 }
 
-exports.insertPlaceOne = function (test) {
+exports.insertPatchOne = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCredTom,
     body: {
-      entity: testPlaceOne,
+      entity: testPatchOne,
       returnNotifications: true,
     },
   }, 201, function(err, res, body) {
@@ -546,40 +511,39 @@ exports.insertPlaceOne = function (test) {
     t.assert(body.data)
 
     var savedEnt = body.data
-    t.assert(savedEnt._owner === util.adminUser._id)
+    t.assert(savedEnt._owner === testUserTom._id)
     t.assert(savedEnt._creator === testUserTom._id)
     t.assert(savedEnt._modifier === testUserTom._id)
 
-    /* Check insert place */
+    /* Check insert patch */
     t.post({
-      uri: '/find/places',
+      uri: '/find/patches',
       body: {
-        query: { _id: testPlaceOne._id }
+        query: { _id: testPatchOne._id }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
 
       /*
-       * Check did not insert 'create' link. Create link requires
-       * that user is both owner and creator.
+       * Check inserted 'create' link.
        */
       t.post({
         uri: '/find/links',
         body: {
           query: {
             _from: testUserTom._id,
-            _to: testPlaceOne._id,
+            _to: testPatchOne._id,
             type: 'create',
           }
         }
       }, function(err, res, body) {
-        t.assert(body.count === 0)
+        t.assert(body.count === 1)
 
         /* Check inserted action */
         t.post({
           uri: '/find/actions?' + adminCred,
           body: {
-            query: { _entity:testPlaceOne._id, event:'insert_entity_place'}
+            query: { _entity:testPatchOne._id, event:'insert_entity_patch'}
           }
         }, function(err, res, body) {
           t.assert(body.count === 1)
@@ -590,11 +554,11 @@ exports.insertPlaceOne = function (test) {
   })
 }
 
-exports.insertPlaceCustomPublic = function (test) {
+exports.insertPatchCustomPublic = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCredTom,
     body: {
-      entity: testPlaceCustomPublic,
+      entity: testPatchCustomPublic,
       beacons: [testBeacon],
       primaryBeaconId: testBeacon._id,
       returnNotifications: true,
@@ -608,11 +572,11 @@ exports.insertPlaceCustomPublic = function (test) {
     t.assert(savedEnt._creator === testUserTom._id)
     t.assert(savedEnt._modifier === testUserTom._id)
 
-    /* Check insert place custom */
+    /* Check insert patch custom */
     t.post({
-      uri: '/find/places',
+      uri: '/find/patches',
       body: {
-        query: { _id:testPlaceCustomPublic._id }
+        query: { _id:testPatchCustomPublic._id }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -635,7 +599,7 @@ exports.insertPlaceCustomPublic = function (test) {
           body: {
             query:{
               _to:testBeacon._id,
-              _from:testPlaceCustomPublic._id,
+              _from:testPatchCustomPublic._id,
               'proximity.primary':true
             }
           }
@@ -648,7 +612,7 @@ exports.insertPlaceCustomPublic = function (test) {
             body: {
               query:{
                 _from: testUserTom._id,
-                _to: testPlaceCustomPublic._id,
+                _to: testPatchCustomPublic._id,
                 type: 'create',
               }
             }
@@ -659,7 +623,7 @@ exports.insertPlaceCustomPublic = function (test) {
             t.post({
               uri: '/find/actions?' + adminCred,
               body: {
-                query: { _entity:testPlaceCustomPublic._id, event:'insert_entity_place'}
+                query: { _entity:testPatchCustomPublic._id, event:'insert_entity_patch'}
               }
             }, function(err, res, body) {
               t.assert(body.count === 1)
@@ -672,11 +636,11 @@ exports.insertPlaceCustomPublic = function (test) {
   })
 }
 
-exports.insertPlaceCustomLockedWithNoLinks = function (test) {
+exports.insertPatchCustomLockedWithNoLinks = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCredTom,
     body: {
-      entity: testPlaceCustomLocked,
+      entity: testPatchCustomLocked,
       returnNotifications: true,
     }
   }, 201, function(err, res, body) {
@@ -684,9 +648,9 @@ exports.insertPlaceCustomLockedWithNoLinks = function (test) {
 
     /* Check insert entity no links */
     t.post({
-      uri: '/find/places',
+      uri: '/find/patches',
       body: {
-        query:{_id:testPlaceCustomLocked._id}
+        query:{_id:testPatchCustomLocked._id}
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -713,7 +677,7 @@ exports.trackEntityProximity = function(test) {
   t.post({
     uri: '/do/trackEntity?' + userCredTom,
     body: {
-      entityId:testPlaceOne._id,
+      entityId:testPatchOne._id,
       beacons:[testBeacon, testBeacon2, testBeacon3],
       primaryBeaconId:testBeacon2._id,
       actionEvent:'proximity',
@@ -726,7 +690,7 @@ exports.trackEntityProximity = function(test) {
       uri: '/find/links',
       body: {
         query:{
-          _from:testPlaceOne._id,
+          _from:testPatchOne._id,
           type:util.statics.typeProximity
         }
       }
@@ -739,7 +703,7 @@ exports.trackEntityProximity = function(test) {
         body: {
           query:{
             _to:testBeacon2._id,
-            _from:testPlaceOne._id,
+            _from:testPatchOne._id,
             type:util.statics.typeProximity
           }
         }
@@ -771,7 +735,7 @@ exports.untrackEntityProximity = function(test) {
   t.post({
     uri: '/do/untrackEntity?' + userCredTom,
     body: {
-      entityId:testPlaceOne._id,
+      entityId:testPatchOne._id,
       beacons:[testBeacon, testBeacon2, testBeacon3],
       actionEvent:'proximity_minus',
     }
@@ -783,7 +747,7 @@ exports.untrackEntityProximity = function(test) {
       uri: '/find/links',
       body: {
         query:{
-          _from:testPlaceOne._id,
+          _from:testPatchOne._id,
           type:util.statics.typeProximity
         }
       }
@@ -798,7 +762,7 @@ exports.trackEntityProximityAgain = function(test) {
   t.post({
     uri: '/do/trackEntity?' + userCredTom,
     body: {
-      entityId:testPlaceOne._id,
+      entityId:testPatchOne._id,
       beacons:[testBeacon, testBeacon2, testBeacon3],
       primaryBeaconId:testBeacon2._id,
       actionEvent:'proximity',
@@ -811,7 +775,7 @@ exports.trackEntityProximityAgain = function(test) {
       uri: '/find/links',
       body: {
         query:{
-          _from:testPlaceOne._id,
+          _from:testPatchOne._id,
           type:util.statics.typeProximity
         }
       }
@@ -824,7 +788,7 @@ exports.trackEntityProximityAgain = function(test) {
         body: {
           query:{
             _to:testBeacon2._id,
-            _from:testPlaceOne._id,
+            _from:testPatchOne._id,
             type:util.statics.typeProximity
           }
         }
@@ -856,7 +820,7 @@ exports.untrackEntityProximityWipeAll = function(test) {
   t.post({
     uri: '/do/untrackEntity?' + userCredTom,
     body: {
-      entityId:testPlaceOne._id,
+      entityId:testPatchOne._id,
     }
   }, function(err, res, body) {
     t.assert(body.info.indexOf('untracked') > 0)
@@ -866,7 +830,7 @@ exports.untrackEntityProximityWipeAll = function(test) {
       uri: '/find/links',
       body: {
         query:{
-          _from:testPlaceOne._id,
+          _from:testPatchOne._id,
           type:util.statics.typeProximity
         }
       }
@@ -881,7 +845,7 @@ exports.trackEntityNoBeacons = function(test) {
   t.post({
     uri: '/do/trackEntity?' + userCredTom,
     body: {
-      entityId:testPlaceOne._id,
+      entityId:testPatchOne._id,
       actionEvent:'proximity',
     }
   }, function(err, res, body) {
@@ -892,7 +856,7 @@ exports.trackEntityNoBeacons = function(test) {
       uri: '/find/actions?' + adminCred,
       body: {
         query:{
-          _entity:testPlaceOne._id,
+          _entity:testPatchOne._id,
           event:'entity_proximity'
         }
       }
@@ -973,17 +937,17 @@ exports.adminCanDeleteBeaconEntityUserCreated = function (test) {
 
 /*
  * ----------------------------------------------------------------------------
- * Insert, update, delete posts and comments
+ * Insert, update, delete messages
  * ----------------------------------------------------------------------------
  */
 
-exports.insertPost = function (test) {
+exports.insertMessage = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCredBob,
     body: {
-      entity: testPost,
+      entity: testMessage,
       links: [{
-        _to: testPlaceCustomPublic._id,
+        _to: testPatchCustomPublic._id,
         type: util.statics.typeContent,
       }],
     }
@@ -991,23 +955,23 @@ exports.insertPost = function (test) {
     t.assert(body.count === 1)
     t.assert(body.data)
 
-    /* Check inserted post */
+    /* Check inserted message */
     t.post({
-      uri: '/find/posts',
+      uri: '/find/messages',
       body: {
-        query: { _id: testPost._id }
+        query: { _id: testMessage._id }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
       t.assert(body.data && body.data[0])
 
-      /* Check content link for post */
+      /* Check content link for message */
       t.post({
         uri: '/find/links',
         body: {
           query:{
-            _from: testPost._id,
-            _to: testPlaceCustomPublic._id,
+            _from: testMessage._id,
+            _to: testPatchCustomPublic._id,
             type: 'content',
           }
         }
@@ -1015,13 +979,13 @@ exports.insertPost = function (test) {
         t.assert(body.count === 1)
         t.assert(body.data && body.data[0])
 
-        /* Check create link for post */
+        /* Check create link for message */
         t.post({
           uri: '/find/links',
           body: {
             query:{
               _from: testUserBob._id,
-              _to: testPost._id,
+              _to: testMessage._id,
               type: 'create',
             }
           }
@@ -1035,63 +999,6 @@ exports.insertPost = function (test) {
   })
 }
 
-exports.insertComment = function (test) {
-  t.post({
-    uri: '/do/insertEntity?' + userCredTom,
-    body: {
-      entity: testComment,
-      links: [{
-        _to: testPost._id,
-        type: util.statics.typeContent,
-      }],
-    }
-  }, 201, function(err, res, body) {
-    t.assert(body.count === 1)
-    t.assert(body.data)
-
-    /* Check insert */
-    t.post({
-      uri: '/find/comments',
-      body: {
-        query: { _id: testComment._id }
-      }
-    }, function(err, res, body) {
-      t.assert(body.count === 1)
-      t.assert(body.data && body.data[0])
-
-      /* Check content link for comment */
-      t.post({
-        uri: '/find/links',
-        body: {
-          query:{
-            _from: testComment._id,
-            _to: testPost._id,
-            type: 'content',
-          }
-        }
-      }, function(err, res, body) {
-        t.assert(body.count === 1)
-        t.assert(body.data && body.data[0])
-
-        /* Check create link for comment */
-        t.post({
-          uri: '/find/links',
-          body: {
-            query:{
-              _from: testUserTom._id,
-              _to: testComment._id,
-              type: 'create',
-            }
-          }
-        }, function(err, res, body) {
-          t.assert(body.count === 1)
-          t.assert(body.data && body.data[0])
-          test.done()
-        })
-      })
-    })
-  })
-}
 
 exports.insertLink = function (test) {
   t.post({
@@ -1111,27 +1018,18 @@ exports.insertLink = function (test) {
   })
 }
 
-exports.deletePost = function (test) {
-  /*
-  t.post({
-    uri: '/do/deleteEntity?' + adminCred,
-    body: {
-      entityId:testPost._id,
-      verbose: true,
-    }
-  */
+exports.deleteMessage = function (test) {
   t.del({
-    uri: '/data/posts/' + testPost._id + '?' + adminCred
+    uri: '/data/messages/' + testMessage._id + '?' + adminCred
   }, function(err, res, body) {
     t.assert(body.count === 1)
-    // t.assert(body.data && body.data._id)
 
-    /* Check delete post */
+    /* Check delete message */
     t.post({
-      uri: '/find/posts',
+      uri: '/find/messages',
       body: {
         query:{
-          _id:testPost._id
+          _id:testMessage._id
         }
       }
     }, function(err, res, body) {
@@ -1143,75 +1041,30 @@ exports.deletePost = function (test) {
         body: {
           query:{
             $or: [
-              { _to:testPost._id },
-              { _from:testPost._id },
+              { _to:testMessage._id },
+              { _from:testMessage._id },
             ]
           }
         }
       }, function(err, res, body) {
         t.assert(body.count === 0)
-
-        /* Check delete comment link*/
+        /* Check delete post entity log actions */
         t.post({
-          uri: '/find/links',
+          uri: '/find/actions?' + adminCred,
           body: {
             query:{
-              _id:testComment._id
+              $and: [
+                { event: { $ne: 'delete_entity_message' }},
+                { $or: [
+                  { _entity: testMessage._id },
+                  { _toEntity: testMessage._id },
+                ]},
+              ]
             }
           }
         }, function(err, res, body) {
           t.assert(body.count === 0)
-
-          /* Check delete all content links to/from comment */
-          t.post({
-            uri: '/find/links',
-            body: {
-              query:{
-                $or: [
-                  { _to:testComment._id },
-                  { _from:testComment._id },
-                ]
-              }
-            }
-          }, function(err, res, body) {
-            t.assert(body.count === 1)
-            t.assert(body.data[0].fromSchema === 'user')
-            t.assert(body.data[0].type === 'create')
-
-            /* Check delete post entity log actions */
-            t.post({
-              uri: '/find/actions?' + adminCred,
-              body: {
-                query:{
-                  $and: [
-                    { event: { $ne: 'delete_entity_post' }},
-                    { $or: [
-                      { _entity: testPost._id },
-                      { _toEntity: testPost._id },
-                    ]},
-                  ]
-                }
-              }
-            }, function(err, res, body) {
-              t.assert(body.count === 0)
-
-              /* Check that comment log actions were not deleted */
-              t.post({
-                uri: '/find/actions?' + adminCred,
-                body: {
-                  query:{
-                    $or: [
-                      { _entity: testComment._id },
-                      { _toEntity: testComment._id },
-                    ]
-                  }
-                }
-              }, function(err, res, body) {
-                t.assert(body.count !== 0)
-                test.done()
-              })
-            })
-          })
+          test.done()
         })
       })
     })
@@ -1220,17 +1073,17 @@ exports.deletePost = function (test) {
 
 /*
  * ----------------------------------------------------------------------------
- * Update and delete places
+ * Update and delete patches
  * ----------------------------------------------------------------------------
  */
 
-exports.updatePlaceOwnedByAdmin= function (test) {
-  testPlaceOne.name = 'This change will fail silently'
-  testPlaceOne.photo = {prefix: 'newPhoto.jpg'}
+exports.updatePatchOwnedByMe= function (test) {
+  testPatchOne.name = 'This change will take'
+  testPatchOne.photo = {prefix: 'newPhoto.jpg'}
   t.post({
     uri: '/do/updateEntity?' + userCredTom,
     body: {
-      entity:testPlaceOne
+      entity:testPatchOne
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
@@ -1238,13 +1091,13 @@ exports.updatePlaceOwnedByAdmin= function (test) {
 
     /* Check update entity */
     t.get({
-      uri: '/data/places/' + testPlaceOne._id
+      uri: '/data/patches/' + testPatchOne._id
     }, function(err, res, body) {
-      var place = body.data
-      t.assert(place)
-      t.assert(place.photo && place.photo.prefix === 'newPhoto.jpg')
-      t.assert(testUserTom._id === place._modifier)
-      t.assert(place.name === 'Testing place entity')  // update failed silently
+      var patch = body.data
+      t.assert(patch)
+      t.assert(patch.photo && patch.photo.prefix === 'newPhoto.jpg')
+      t.assert(testUserTom._id === patch._modifier)
+      t.assert(patch.name === 'This change will take')
       test.done()
     })
   })
@@ -1252,38 +1105,38 @@ exports.updatePlaceOwnedByAdmin= function (test) {
 
 exports.userCantDeleteEntityTheyDontOwn = function (test) {
   t.del({
-    uri: '/data/places/' + testPlaceOne._id + '?' + userCredTom
+    uri: '/data/patches/' + testPatchOne._id + '?' + userCredAlice
   }, 401, function(err, res, body) {
     test.done()
   })
 }
 
-exports.deletePlace = function (test) {
+exports.deletePatch = function (test) {
   t.del({
-    uri: '/data/places/' + testPlaceOne._id + '?' + adminCred
+    uri: '/data/patches/' + testPatchOne._id + '?' + userCredTom
   }, function(err, res, body) {
     t.assert(body.count === 1)
     // t.assert(body.data && body.data._id)
 
     /* Check delete entity */
     t.post({
-      uri: '/find/places',
+      uri: '/find/patches',
       body: {
         query:{
-          _id:testPlaceOne._id
+          _id:testPatchOne._id
         }
       }
     }, function(err, res, body) {
       t.assert(body.count === 0)
 
-      /* Check delete all links from/to place */
+      /* Check delete all links from/to patch */
       t.post({
         uri: '/find/links',
         body: {
           query:{
             $or: [
-              { _to: testPlaceOne._id },
-              { _from: testPlaceOne._id },
+              { _to: testPatchOne._id },
+              { _from: testPatchOne._id },
             ]
           }
         }
@@ -1296,10 +1149,10 @@ exports.deletePlace = function (test) {
           body: {
             query:{
               $and: [
-                { event: { $ne: 'delete_entity_place' }},
+                { event: { $ne: 'delete_entity_patch' }},
                 { $or: [
-                  { _entity: testPlaceOne._id },
-                  { _toEntity: testPlaceOne._id },
+                  { _entity: testPatchOne._id },
+                  { _toEntity: testPatchOne._id },
                 ]},
               ]
             }
@@ -1313,82 +1166,13 @@ exports.deletePlace = function (test) {
   })
 }
 
-exports.nonOwnerCannotCommentOnLockedRecord = function(test) {
-  t.post({
-    uri: '/do/insertEntity?' + userCredBob,
-    body: {
-      entity: testComment2,
-      links: [{
-        _to: testPlaceCustomLocked._id,
-        type: util.statics.typeContent
-      }],
-    }
-  }, 401, function(err, res, body) {
-    t.assert(body.error && body.error.code === 401.6)
-    test.done()
-  })
-}
-
-exports.ownerCanCommentOnLockedRecord = function(test) {
-  t.post({
-    uri: '/do/insertEntity?' + userCredTom,
-    body: {
-      entity: testComment2,
-      links: [{
-        _to: testPlaceCustomLocked._id,
-        type: util.statics.typeContent
-      }],
-    }
-  }, 201, function(err, res, body) {
-    t.assert(body.count === 1)
-    t.assert(body.data)
-
-    /* Check owner inserted comment on locked record */
-    t.post({
-      uri: '/find/comments',
-      body: {
-        query:{ _id:testComment2._id }
-      }
-    }, function(err, res, body) {
-      t.assert(body.count === 1)
-      test.done()
-    })
-  })
-}
-
-exports.adminCanCommentOnLockedRecord = function(test) {
-  t.post({
-    uri: '/do/insertEntity?' + adminCred,
-    body: {
-      entity: testComment3,
-      links: [{
-        _to: testPlaceCustomLocked._id,
-        type: util.statics.typeContent
-      }],
-    }
-  }, 201, function(err, res, body) {
-    t.assert(body.count === 1)
-    t.assert(body.data)
-
-    /* Check admin inserted comment on locked record */
-    t.post({
-      uri: '/find/comments',
-      body: {
-        query:{ _id:testComment3._id }
-      }
-    }, function(err, res, body) {
-      t.assert(body.count === 1)
-      test.done()
-    })
-  })
-}
 
 exports.nonOwnerCannotUpdateLockedRecord = function(test) {
-  testPlaceCustomLocked.name = 'Testing non owner update of locked entity'
+  testPatchCustomLocked.name = 'Testing non owner update of locked entity'
   t.post({
     uri: '/do/updateEntity?' + userCredBob,
     body: {
-      entity:testPlaceCustomLocked
+      entity:testPatchCustomLocked
     }
   }, 401, function(err, res, body) {
     t.assert(body.error && body.error.code === 401.6)
@@ -1397,11 +1181,11 @@ exports.nonOwnerCannotUpdateLockedRecord = function(test) {
 }
 
 exports.ownerCanUpdateLockedRecord = function(test) {
-  testPlaceCustomLocked.name = 'Testing owner update of locked entity'
+  testPatchCustomLocked.name = 'Testing owner update of locked entity'
   t.post({
     uri: '/do/updateEntity?' + userCredTom,
     body: {
-      entity:testPlaceCustomLocked
+      entity:testPatchCustomLocked
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
@@ -1409,7 +1193,7 @@ exports.ownerCanUpdateLockedRecord = function(test) {
 
     /* Check owner updated locked record */
     t.get({
-      uri: '/data/places/' + testPlaceCustomLocked._id
+      uri: '/data/patches/' + testPatchCustomLocked._id
     }, function(err, res, body) {
       t.assert(body.data && body.data && body.data.name.indexOf('update') >= 0)
       test.done()
@@ -1418,11 +1202,11 @@ exports.ownerCanUpdateLockedRecord = function(test) {
 }
 
 exports.adminCanUpdateLockedRecord = function(test) {
-  testPlaceCustomLocked.name = 'Testing admin update of locked entity'
+  testPatchCustomLocked.name = 'Testing admin update of locked entity'
   t.post({
     uri: '/do/updateEntity?' + adminCred,
     body: {
-      entity:testPlaceCustomLocked
+      entity:testPatchCustomLocked
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
@@ -1430,20 +1214,10 @@ exports.adminCanUpdateLockedRecord = function(test) {
 
     /* Check admin updated locked record */
     t.get({
-      uri: '/data/places/' + testPlaceCustomLocked._id
+      uri: '/data/patches/' + testPatchCustomLocked._id
     }, function(err, res, body) {
       t.assert(body.data && body.data && body.data.name.indexOf('update') >= 0)
       test.done()
     })
   })
 }
-
-/*
-exports.adminCanDeleteBeaconEntityUserCreated = function (test) {
-  t.del({
-    uri: '/data/beacons/' + testBeacon._id + '?' + adminCred
-  }, function(err, res, body) {
-    test.done()
-  })
-}
-*/

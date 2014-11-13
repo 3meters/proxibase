@@ -258,7 +258,7 @@ function check(req, res, code) {
 
 // Synthesize a beacon Id
 exports.genBeaconId = function(recNum) {
-  var id = pad(recNum + 1, 12)
+  var id = pad(recNum, 12)
   id = delineate(id, 2, ':')
   var prefix = util.statics.schemas.beacon.id + '.'
   return  prefix + id
