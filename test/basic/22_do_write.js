@@ -139,32 +139,14 @@ var testPatchCustomLocked = {
   visibility: "public",
   locked: true,
 }
-var testPost = {
-  _id : "po.111111.11111.111.111111",
-  schema : util.statics.schemaPost,
-  name : "Testing post entity",
+var testMessage = {
+  _id : "me.111111.11111.111.111111",
+  schema : util.statics.schemaMessage,
+  name : "Testing message entity",
   photo: {
     prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
     source:"aircandi",
   },
-}
-var testComment = {
-  _id : "co.111111.11111.111.111111",
-  schema : util.statics.schemaComment,
-  name : "Test comment",
-  description : "Test comment, much ado about nothing.",
-}
-var testComment2 = {
-  _id : "co.111111.11111.111.111112",
-  schema : util.statics.schemaComment,
-  name : "Test comment for locked entity",
-  description : "Test comment, much ado about nothing.",
-}
-var testComment3 = {
-  _id : "co.111111.11111.111.111113",
-  schema : util.statics.schemaComment,
-  name : "Another test comment for locked entity",
-  description : "Test comment, much ado about nothing.",
 }
 var testApplink = {
   schema: util.statics.schemaApplink,
@@ -237,7 +219,6 @@ var testBeacon3 = {
   },
 }
 var testLink = {
-  // _to : clIds.beacons + '.11:11:11:11:11:22',
   _to : testBeacon3._id,
   _from : 'pa.111111.11111.111.111111',
   type: 'proximity',
@@ -956,15 +937,15 @@ exports.adminCanDeleteBeaconEntityUserCreated = function (test) {
 
 /*
  * ----------------------------------------------------------------------------
- * Insert, update, delete posts and comments
+ * Insert, update, delete messages
  * ----------------------------------------------------------------------------
  */
 
-exports.insertPost = function (test) {
+exports.insertMessage = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCredBob,
     body: {
-      entity: testPost,
+      entity: testMessage,
       links: [{
         _to: testPatchCustomPublic._id,
         type: util.statics.typeContent,
@@ -974,22 +955,22 @@ exports.insertPost = function (test) {
     t.assert(body.count === 1)
     t.assert(body.data)
 
-    /* Check inserted post */
+    /* Check inserted message */
     t.post({
-      uri: '/find/posts',
+      uri: '/find/messages',
       body: {
-        query: { _id: testPost._id }
+        query: { _id: testMessage._id }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
       t.assert(body.data && body.data[0])
 
-      /* Check content link for post */
+      /* Check content link for message */
       t.post({
         uri: '/find/links',
         body: {
           query:{
-            _from: testPost._id,
+            _from: testMessage._id,
             _to: testPatchCustomPublic._id,
             type: 'content',
           }
@@ -998,13 +979,13 @@ exports.insertPost = function (test) {
         t.assert(body.count === 1)
         t.assert(body.data && body.data[0])
 
-        /* Check create link for post */
+        /* Check create link for message */
         t.post({
           uri: '/find/links',
           body: {
             query:{
               _from: testUserBob._id,
-              _to: testPost._id,
+              _to: testMessage._id,
               type: 'create',
             }
           }
@@ -1018,63 +999,6 @@ exports.insertPost = function (test) {
   })
 }
 
-exports.insertComment = function (test) {
-  t.post({
-    uri: '/do/insertEntity?' + userCredTom,
-    body: {
-      entity: testComment,
-      links: [{
-        _to: testPost._id,
-        type: util.statics.typeContent,
-      }],
-    }
-  }, 201, function(err, res, body) {
-    t.assert(body.count === 1)
-    t.assert(body.data)
-
-    /* Check insert */
-    t.post({
-      uri: '/find/comments',
-      body: {
-        query: { _id: testComment._id }
-      }
-    }, function(err, res, body) {
-      t.assert(body.count === 1)
-      t.assert(body.data && body.data[0])
-
-      /* Check content link for comment */
-      t.post({
-        uri: '/find/links',
-        body: {
-          query:{
-            _from: testComment._id,
-            _to: testPost._id,
-            type: 'content',
-          }
-        }
-      }, function(err, res, body) {
-        t.assert(body.count === 1)
-        t.assert(body.data && body.data[0])
-
-        /* Check create link for comment */
-        t.post({
-          uri: '/find/links',
-          body: {
-            query:{
-              _from: testUserTom._id,
-              _to: testComment._id,
-              type: 'create',
-            }
-          }
-        }, function(err, res, body) {
-          t.assert(body.count === 1)
-          t.assert(body.data && body.data[0])
-          test.done()
-        })
-      })
-    })
-  })
-}
 
 exports.insertLink = function (test) {
   t.post({
@@ -1094,27 +1018,18 @@ exports.insertLink = function (test) {
   })
 }
 
-exports.deletePost = function (test) {
-  /*
-  t.post({
-    uri: '/do/deleteEntity?' + adminCred,
-    body: {
-      entityId:testPost._id,
-      verbose: true,
-    }
-  */
+exports.deleteMessage = function (test) {
   t.del({
-    uri: '/data/posts/' + testPost._id + '?' + adminCred
+    uri: '/data/messages/' + testMessage._id + '?' + adminCred
   }, function(err, res, body) {
     t.assert(body.count === 1)
-    // t.assert(body.data && body.data._id)
 
-    /* Check delete post */
+    /* Check delete message */
     t.post({
-      uri: '/find/posts',
+      uri: '/find/messages',
       body: {
         query:{
-          _id:testPost._id
+          _id:testMessage._id
         }
       }
     }, function(err, res, body) {
@@ -1126,75 +1041,30 @@ exports.deletePost = function (test) {
         body: {
           query:{
             $or: [
-              { _to:testPost._id },
-              { _from:testPost._id },
+              { _to:testMessage._id },
+              { _from:testMessage._id },
             ]
           }
         }
       }, function(err, res, body) {
         t.assert(body.count === 0)
-
-        /* Check delete comment link*/
+        /* Check delete post entity log actions */
         t.post({
-          uri: '/find/links',
+          uri: '/find/actions?' + adminCred,
           body: {
             query:{
-              _id:testComment._id
+              $and: [
+                { event: { $ne: 'delete_entity_message' }},
+                { $or: [
+                  { _entity: testMessage._id },
+                  { _toEntity: testMessage._id },
+                ]},
+              ]
             }
           }
         }, function(err, res, body) {
           t.assert(body.count === 0)
-
-          /* Check delete all content links to/from comment */
-          t.post({
-            uri: '/find/links',
-            body: {
-              query:{
-                $or: [
-                  { _to:testComment._id },
-                  { _from:testComment._id },
-                ]
-              }
-            }
-          }, function(err, res, body) {
-            t.assert(body.count === 1)
-            t.assert(body.data[0].fromSchema === 'user')
-            t.assert(body.data[0].type === 'create')
-
-            /* Check delete post entity log actions */
-            t.post({
-              uri: '/find/actions?' + adminCred,
-              body: {
-                query:{
-                  $and: [
-                    { event: { $ne: 'delete_entity_post' }},
-                    { $or: [
-                      { _entity: testPost._id },
-                      { _toEntity: testPost._id },
-                    ]},
-                  ]
-                }
-              }
-            }, function(err, res, body) {
-              t.assert(body.count === 0)
-
-              /* Check that comment log actions were not deleted */
-              t.post({
-                uri: '/find/actions?' + adminCred,
-                body: {
-                  query:{
-                    $or: [
-                      { _entity: testComment._id },
-                      { _toEntity: testComment._id },
-                    ]
-                  }
-                }
-              }, function(err, res, body) {
-                t.assert(body.count !== 0)
-                test.done()
-              })
-            })
-          })
+          test.done()
         })
       })
     })
@@ -1233,9 +1103,9 @@ exports.updatePatchOwnedByMe= function (test) {
   })
 }
 
-_exports.userCantDeleteEntityTheyDontOwn = function (test) {
+exports.userCantDeleteEntityTheyDontOwn = function (test) {
   t.del({
-    uri: '/data/patches/' + testPatchOne._id + '?' + userCredTom
+    uri: '/data/patches/' + testPatchOne._id + '?' + userCredAlice
   }, 401, function(err, res, body) {
     test.done()
   })
@@ -1296,75 +1166,6 @@ exports.deletePatch = function (test) {
   })
 }
 
-exports.nonOwnerCannotCommentOnLockedRecord = function(test) {
-  t.post({
-    uri: '/do/insertEntity?' + userCredBob,
-    body: {
-      entity: testComment2,
-      links: [{
-        _to: testPatchCustomLocked._id,
-        type: util.statics.typeContent
-      }],
-    }
-  }, 401, function(err, res, body) {
-    t.assert(body.error && body.error.code === 401.6)
-    test.done()
-  })
-}
-
-exports.ownerCanCommentOnLockedRecord = function(test) {
-  t.post({
-    uri: '/do/insertEntity?' + userCredTom,
-    body: {
-      entity: testComment2,
-      links: [{
-        _to: testPatchCustomLocked._id,
-        type: util.statics.typeContent
-      }],
-    }
-  }, 201, function(err, res, body) {
-    t.assert(body.count === 1)
-    t.assert(body.data)
-
-    /* Check owner inserted comment on locked record */
-    t.post({
-      uri: '/find/comments',
-      body: {
-        query:{ _id:testComment2._id }
-      }
-    }, function(err, res, body) {
-      t.assert(body.count === 1)
-      test.done()
-    })
-  })
-}
-
-exports.adminCanCommentOnLockedRecord = function(test) {
-  t.post({
-    uri: '/do/insertEntity?' + adminCred,
-    body: {
-      entity: testComment3,
-      links: [{
-        _to: testPatchCustomLocked._id,
-        type: util.statics.typeContent
-      }],
-    }
-  }, 201, function(err, res, body) {
-    t.assert(body.count === 1)
-    t.assert(body.data)
-
-    /* Check admin inserted comment on locked record */
-    t.post({
-      uri: '/find/comments',
-      body: {
-        query:{ _id:testComment3._id }
-      }
-    }, function(err, res, body) {
-      t.assert(body.count === 1)
-      test.done()
-    })
-  })
-}
 
 exports.nonOwnerCannotUpdateLockedRecord = function(test) {
   testPatchCustomLocked.name = 'Testing non owner update of locked entity'
@@ -1420,13 +1221,3 @@ exports.adminCanUpdateLockedRecord = function(test) {
     })
   })
 }
-
-/*
-exports.adminCanDeleteBeaconEntityUserCreated = function (test) {
-  t.del({
-    uri: '/data/beacons/' + testBeacon._id + '?' + adminCred
-  }, function(err, res, body) {
-    test.done()
-  })
-}
-*/
