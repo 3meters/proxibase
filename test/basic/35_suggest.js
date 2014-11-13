@@ -101,7 +101,7 @@ exports.getPlacesNear = function(test) {
       limit: 50,
       refresh: true,
       // radius: 500,
-      // log: true,
+      log: true,
     }
   }, 200, function(err, res, body) {
     var places = body.data
@@ -143,6 +143,7 @@ exports.suggestPlaceRegex = function(test) {
       input: 'schmi',                         // initial exact match of third word in name
       fts: false,                             // turn off full text search
       limit: 10,
+      log: true,
     }
   }, 200, function(err, res, body) {
     t.assert(body.data.length === 1)
