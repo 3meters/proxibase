@@ -16,7 +16,6 @@ var cli = require('commander')
 var reporter = require('nodeunit').reporters.default
 var req = require('request')
 var async = require('async')
-var safeDb  // handed to testUtil after final connection
 var db
 var adminDb
 var genData = require(__dirname + '/../tools/pump/genData')
@@ -75,32 +74,15 @@ serverUri = testUtil.serverUri = config.service.uri
 util.log('test config', config)
 
 // Make sure the right database exists
-ensureDb(dbProfile, function(err) {
+ensureDb(dbProfile, function(err, safeDb) {
   if (err) throw err
   if (!safeDb) throw new Error('safeDb not initialized')
-  util.debug('safeDb:', safeDb.databaseName)
   testUtil.db = safeDb
   ensureServer(function() {
     runTests()
   })
 })
 
-
-// Drop the database
-function ensureEmptyDb(cb) {
-  var cfg = config.db
-  var db = new mongo.Db(cfg.database, new mongo.Server(cfg.host, cfg.port), {w:1})
-  db.open(function(err, db) {
-    if (err) throw err
-    db.dropDatabase(function(err) {
-      if (err) throw err
-      db.close(function(err) {
-        if (err) throw err
-        cb()
-      })
-    })
-  })
-}
 
 
 /*
@@ -135,17 +117,14 @@ function ensureDb(ops, cb) {
           delete cli.generate
           templateDb.close(function(err) {
             if (err) throw err
-            db.close(function(err) {
-              if (err) throw err
-              return ensureDb(ops, cb)
-            })
+            return ensureDb(ops, cb)
           })
         })
       })
     }
 
     else {
-      db.dropDatabase(function(err, done) {
+      db.dropDatabase(function(err) {
         if (err) throw err
 
         // See if template database exists
@@ -165,32 +144,26 @@ function ensureDb(ops, cb) {
 
           if (!templateExists) {
             log('Creating new template database ' + templateName)
-            db.close(function(err) {
+            ops.database = templateName
+            genData(ops, function(err) {
               if (err) throw err
-              ops.database = templateName
-              ops.validate = true         // Run schema validators on insert
-              genData(ops, function(err) {
-                if (err) throw err
-                // Now try again with the template database in patch
-                ops.database = dbName
-                return ensureDb(ops, cb)
-              })
+              // Now try again with the template database in patch
+              ops.database = dbName
+              return ensureDb(ops, cb)
             })
           }
 
           else {
             log('Copying database from ' + templateName)
             var dbtimer = util.timer()
-            adminDb.command({copydb:1, fromdb:templateName, todb:dbName}, function(err, result) {
+            adminDb.command({copydb:1, fromdb:templateName, todb:dbName}, function(err) {
               if (err) throw err
               log('Database copied in ' + dbtimer.read() + ' seconds')
               // Run the mongosafe init command so that the mongosafe methods are
               // available directly to the tests
-              mongo.initDb(config.db, function(err, db) {
+              mongo.initDb(config.db, function(err, safeDb) {
                 if (err) throw err
-                // Module global
-                safeDb = db
-                cb()
+                cb(null, safeDb)
               })
            })
           }
@@ -207,7 +180,7 @@ function ensureServer(cb) {
   log('Checking for test server ' + serverUri)
 
   // Make sure the test server is running
-  req.get(serverUri, function(err, res) {
+  req.get(serverUri, function(err) {
 
     if (err) { // Start the test server
 
@@ -224,7 +197,7 @@ function ensureServer(cb) {
 
       // Fires immediately if the server does not compile
       testServer.on('close', function(code) {
-        log('\nTest server closed')
+        log('\nTest server closed with code', code)
         process.exit()
       })
     }
@@ -304,10 +277,6 @@ function runMulti() {
   }
 }
 
-
-function finishInstance(err) {
-  log('Instance finished')
-}
 
 function runPerf() {
   var cTests = 0

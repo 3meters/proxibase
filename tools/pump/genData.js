@@ -3,15 +3,13 @@
  *   Silently overwrites existing collections
  */
 
-var fs = require('fs')
-var path = require('path')
 var async = require('async')
 var util = require('proxutils') // load proxibase extentions to node util, adds globals
 var mongo = require('proxdb')       // Proxdb lib, inits schemas
-var _schemas = statics.schemas
 var constants = require('../../test/constants')
 var testUtil = require('../../test/util')
 var startTime         // Elapsed time counter
+var db
 
 var options = {       // Default options
   users: 10,          // Count of users
@@ -37,14 +35,14 @@ module.exports = function(profile, cb) {
 
   startTime = new Date().getTime() // start program timer
 
-  for (key in profile) {
+  for (var key in profile) {
     options[key] = profile[key]
   }
 
   if (!options.database) throw('Missing required options.database')
 
   // Configure
-  var config = util.config
+  var config = util.clone(util.config)
   config.db.database = options.database
 
   var dbUri = 'mongodb://' + config.db.host + ':' + config.db.port +  '/' + config.db.database
@@ -56,10 +54,9 @@ module.exports = function(profile, cb) {
     db = database
     db.dropDatabase(function(err) {
       if (err) throw err
-      var schemaPath = path.join(__dirname, '../../lib/schemas')  // fragile
       mongo.initDb(config.db, function(err, proxdb) {
         if (err) throw err
-        // Global
+        db.close()
         db = proxdb
         return run(cb)
       })
@@ -210,13 +207,9 @@ function saveAll(cb) {
   }
 
   function finish(err) {
-    log(1)
     if (err) return cb(err)
-    log(2)
-    db.close(true, function(err) {
-      log(3)
+    db.close(function(err) {
       if (err) return cb(err)
-      log(4)
       cb()
     })
   }
