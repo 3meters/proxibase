@@ -13,13 +13,10 @@ var adminCred
 var _exports = {} // for commenting out tests
 
 
-var testPlace = {
-  _id : "pl.111111.11111.111.212121",
-  schema : util.statics.schemaPlace,
-  name : "Testing place for actions",
-  provider:{
-    aircandi: 'aircandi',
-  },
+var testPatch = {
+  _id : "pa.111111.11111.111.212121",
+  schema : util.statics.schemaPatch,
+  name : "Testing patch for actions",
 }
 
 
@@ -39,7 +36,7 @@ exports.getSessions = function (test) {
 exports.actionStatsWork = function(test) {
   t.post({
     uri: '/do/insertEntity?' + userCred,
-    body: {entity: testPlace},
+    body: {entity: testPatch},
   }, 201, function(err, res, body) {
     t.get('/actions/user_events/' + userId,
     function(err, res, body) {
@@ -56,5 +53,5 @@ exports.actionStatsWork = function(test) {
 }
 
 function cleanup(cb) {
-  t.del({uri: '/data/places/' + testPlace._id + '?' + userCred}, cb)
+  t.del({uri: '/data/patches/' + testPatch._id + '?' + userCred}, cb)
 }

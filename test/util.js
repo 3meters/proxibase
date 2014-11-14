@@ -258,7 +258,7 @@ function check(req, res, code) {
 
 // Synthesize a beacon Id
 exports.genBeaconId = function(recNum) {
-  var id = pad(recNum + 1, 12)
+  var id = pad(recNum, 12)
   id = delineate(id, 2, ':')
   var prefix = util.statics.schemas.beacon.id + '.'
   return  prefix + id
@@ -301,5 +301,4 @@ exports.dump = dump
 exports.check = check
 exports.request = request
 exports.skip = skip
-exports.db = 1   // set by test.js after connection
 exports.config = util.config

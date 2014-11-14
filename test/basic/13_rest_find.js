@@ -40,7 +40,7 @@ exports.simpleFind = function(test) {
 exports.findWithLimitNotSignedIn = function(test) {
   var limit = 2
   t.post({
-    uri: '/find/places',
+    uri: '/find/patches',
     body: {limit: limit}
   }, function(err, res, body) {
     t.assert(body && body.data)
@@ -125,10 +125,10 @@ exports.findFieldProjectionsGetSyntax = function(test) {
 
 
 exports.findFirstAndLast = function(test) {
-  t.get('/find/places/first', function(err, res, body) {
+  t.get('/find/patches/first', function(err, res, body) {
     t.assert(body.data)
     var firstId = body.data._id
-    t.get('/data/places/last', function(err, res, body) {
+    t.get('/data/patches/last', function(err, res, body) {
       t.assert(body.data)
       t.assert(body.data._id > firstId)
       test.done()
@@ -138,13 +138,13 @@ exports.findFirstAndLast = function(test) {
 
 
 exports.findNext = function(test) {
-  t.get('/data/places/next', 401, function(err, res, body) {
-    t.get('/data/places/next?' + adminCred, function(err, res, body) {
+  t.get('/data/patches/next', 401, function(err, res, body) {
+    t.get('/data/patches/next?' + adminCred, function(err, res, body) {
       t.assert(body.data)
       t.assert(body.data._id)
       var firstId = body.data._id
       t.assert(firstId)
-      t.get('/data/places/next?' + adminCred, function(err, res, body) {
+      t.get('/data/patches/next?' + adminCred, function(err, res, body) {
         t.assert(body.data._id > firstId)
         test.done()
         // TODO: check for rolling over by looping until hitting a limit (fail)

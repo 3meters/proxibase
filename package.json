@@ -26,7 +26,7 @@
     "cookie-parser": "*",
     "cookie-session": "*",
     "body-parser": "*",
-    "mongodb": "<2.0",
+    "mongodb": "<2",
     "underscore": "*",
     "commander": "*",
     "nodeunit": "*",

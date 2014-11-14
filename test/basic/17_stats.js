@@ -32,10 +32,10 @@ var dbProfile = testUtil.dbProfile
 var user1Id = 'us.010101.00000.555.000001'
 var user2Id = 'us.010101.00000.555.000002'
 var user3Id = 'us.010101.00000.555.000003'
-var place1Id = 'pl.statsTestPlace1'
+var patch1Id = 'pa.statsTestPatch1'
 var cUsers = dbProfile.users
-var cPlaces = dbProfile.beacons * dbProfile.epb
-var cMessages = cPlaces * dbProfile.mpp
+var cPatches = dbProfile.users * dbProfile.ppu
+var cMessages = cPatches * dbProfile.mpp
 
 
 exports.getUserSession = function(test) {
@@ -116,23 +116,21 @@ exports.adminCanRefreshAll = function(test) {
 
 
 // Relies on default sample data
-exports.statsCountContentMessagesToPlacesViaPost = function(test) {
+exports.statsCountContentMessagesToPatchesViaPost = function(test) {
   t.post({
-    uri: '/stats/to/places/from/messages',
+    uri: '/stats/to/patches/from/messages',
     body: {
       type: 'content'
     },
   }, function(err, res, body) {
     var count = (body.data && body.data.length)
     t.assert(count)
-    t.assert(count === cPlaces)
+    t.assert(count === cPatches)
     var cMsg = 0
     body.data.forEach(function(doc) {
       t.assert(doc._id)
       t.assert(doc.name)
-      t.assert(doc.photo)
       t.assert(doc.schema)
-      t.assert(doc.category)
       t.assert(doc.count)
       t.assert(doc.rank)
       cMsg += doc.count
@@ -143,14 +141,13 @@ exports.statsCountContentMessagesToPlacesViaPost = function(test) {
 }
 
 
-exports.statsCountPlacesByTunings = function(test) {
-  t.get('/stats/from/places?type=proximity',
+exports.statsCountPatchesByTunings = function(test) {
+  t.get('/stats/from/patches?type=proximity',
   function(err, res, body) {
     t.assert(body.data && body.data.length)
     body.data.forEach(function(doc) {
       t.assert(doc._id)
       t.assert(doc.name)
-      t.assert(doc.photo)
       t.assert(doc.count)
       t.assert(doc.rank)
     })
@@ -161,10 +158,10 @@ exports.statsCountPlacesByTunings = function(test) {
 
 exports.addSomeTestData = function(test) {
 
-  var newPlaces = [{
-    _id: place1Id,
-    name: 'statsTestPlace1',
-    schema: 'place',
+  var newPatches = [{
+    _id: patch1Id,
+    name: 'statsTestPatch1',
+    schema: 'patch',
   }]
 
   var newMsgs = [{
@@ -191,36 +188,36 @@ exports.addSomeTestData = function(test) {
 
   var newLinks = [{
     _id: 'li.140101.statTest.1',
-    _to: place1Id,
+    _to: patch1Id,
     _from: 'me.statTest.1',
     fromSchema: 'message',
-    toSchema: 'place',
+    toSchema: 'patch',
     type: 'content',
   }, {
     _id: 'li.140101.statTest.2',
-    _to: place1Id,
+    _to: patch1Id,
     _from: 'me.statTest.2',
     fromSchema: 'message',
-    toSchema: 'place',
+    toSchema: 'patch',
     type: 'content',
   }, {
     _id: 'li.140101.statTest.3',
-    _to: place1Id,
+    _to: patch1Id,
     _from: 'me.statTest.3',
     fromSchema: 'message',
-    toSchema: 'place',
+    toSchema: 'patch',
     type: 'content',
   }, {
     _id: 'li.140101.statTest.4',
     _to: 'be.statTest1',
-    _from: place1Id,
+    _from: patch1Id,
     toSchema: 'beacon',
-    fromSchema: 'place',
+    fromSchema: 'patch',
     type: 'proximity',
   }]
 
   // TODO:  this is a probably a bad idea.  figure out how to use the safe methods
-  db.collection('places').insert(newPlaces, function(err, savedPlaces) {
+  db.collection('patches').insert(newPatches, function(err, savedPatches) {
     assert(!err, err)
     db.collection('messages').insert(newMsgs, function(err, savedMsgs) {
       assert(!err, err)
@@ -245,22 +242,22 @@ exports.refreshWorks = function(test) {
     t.assert(body.from)
     t.assert(body.from.cmd)
     t.assert(body.from.results)
-    t.get('/find/tos?query[_id.fromSchema]=message&sort=-value',
+    t.get('/find/tos?query[_id.fromSchema]=message&sort=-value&limit=1000',
     function(err, res, body) {
       t.assert(body.data.length)
       // refresh picked up our new links and created a summary record for them.
       t.assert(body.data.some(function(stat) {
         return stat._id.day === '140101'
-            && stat._id._to === place1Id
+            && stat._id._to === patch1Id
             && stat.value === 3
       }))
-      t.get('/find/froms?query[_id.fromSchema]=place&query[_id.toSchema]=beacon',
+      t.get('/find/froms?query[_id.fromSchema]=patch&query[_id.toSchema]=beacon&limit=1000',
       function(err, res, body) {
         t.assert(body.data.length)
         // refresh picked up our new links and created a summary record for them.
         t.assert(body.data.some(function(stat) {
           return stat._id.day === '140101'
-              && stat._id._from === place1Id
+              && stat._id._from === patch1Id
               && stat.value === 1
         }))
         test.done()
@@ -287,38 +284,38 @@ exports.addSomeMoreTestData = function(test) {
 
   var newLinks = [{
     _id: 'li.140101.statTest.5',
-    _to: place1Id,
+    _to: patch1Id,
     _from: 'me.statTest.5',
     fromSchema: 'message',
-    toSchema: 'place',
+    toSchema: 'patch',
     type: 'content',
   }, {
     _id: 'li.140101.statTest.6',
-    _to: place1Id,
+    _to: patch1Id,
     _from: 'me.statTest.6',
     fromSchema: 'message',
-    toSchema: 'place',
+    toSchema: 'patch',
     type: 'content',
   }, {
     _id: 'li.140101.statTest.7',
-    _to: place1Id,
+    _to: patch1Id,
     _from: 'me.statTest.7',
     fromSchema: 'message',
-    toSchema: 'place',
+    toSchema: 'patch',
     type: 'content',
   }, {
     _id: 'li.140101.statTest.8',
-    _to: place1Id,
+    _to: patch1Id,
     _from: user1Id,
     fromSchema: 'user',
-    toSchema: 'place',
+    toSchema: 'patch',
     type: 'watch',
   }, {
     _id: 'li.140101.statTest.9',
-    _to: place1Id,
+    _to: patch1Id,
     _from: user2Id,
     fromSchema: 'user',
-    toSchema: 'place',
+    toSchema: 'patch',
     type: 'watch',
   }]
 
@@ -346,20 +343,20 @@ exports.refreshTosWorksWithIncrementalReduce = function(test) {
       // refresh picked up our new links and created a summary record for them.
       t.assert(body.data.some(function(stat) {
         return stat._id.day === '140101'
-            && stat._id._to === place1Id
+            && stat._id._to === patch1Id
             && stat._id.type === 'content'
             && stat.value === 6  // proves messages 4, 5, and 6 were reduced into the same record as 1, 2, and 3
       }))
 
       if (dbProfile.mpp <= 6) t.assert(body.data[0]._id.day === '140101') // we should sort to the top
-      else t.assert(body.data[cPlaces]._id.day = '140101') // we should sort to the bottom
+      else t.assert(body.data[cPatches]._id.day = '140101') // we should sort to the bottom
       test.done()
     })
   })
 }
 
 exports.refreshWorksWithDeleteWatchLink = function(test) {
-  t.get('/find/tos?query[_id._to]=' + place1Id + '&query[_id.type]=watch',
+  t.get('/find/tos?query[_id._to]=' + patch1Id + '&query[_id.type]=watch',
   function(err, res, body) {
     t.assert(body.data.length === 1)
     var stat = body.data[0]
@@ -370,7 +367,7 @@ exports.refreshWorksWithDeleteWatchLink = function(test) {
       t.assert(body.count === 1)
       t.get('/stats/to/refresh?' + adminCred,
       function(err, res, body) {
-        t.get('/find/tos?query[_id._to]=' + place1Id + '&query[_id.type]=watch',
+        t.get('/find/tos?query[_id._to]=' + patch1Id + '&query[_id.type]=watch',
         function(err, res, body) {
           t.assert(body.data.length === 1)
           var stat = body.data[0]
@@ -385,19 +382,21 @@ exports.refreshWorksWithDeleteWatchLink = function(test) {
 exports.createThenDeleteOfWatchLinkBetweenRefreshesWorks = function(test) {
 
   var watchLink = {
-    _id: 'li.140101.statTest.10',
-    _to: place1Id,
+    //_id: 'li.140101.statTest.10',
+    _to: patch1Id,
     _from: user3Id,
     fromSchema: 'user',
-    toSchema: 'place',
+    toSchema: 'patch',
     type: 'watch',
   }
+
+  watchLink._id = db.links.genId(watchLink)
 
   t.post({
     uri: '/data/links?' + adminCred,
     body: {data: watchLink},
   }, 201, function(err, res, body) {
-    t.get('/find/tos?query[_id._to]=' + place1Id + '&query[_id.type]=watch',
+    t.get('/find/tos?query[_id._to]=' + patch1Id + '&query[_id.type]=watch',
     function(err, res, body) {
       t.assert(body.data.length === 1)
       var stat = body.data[0]
@@ -408,12 +407,11 @@ exports.createThenDeleteOfWatchLinkBetweenRefreshesWorks = function(test) {
         t.assert(body.count === 1)
         t.get('/stats/to/refresh?' + adminCred,
         function(err, res, body) {
-          t.get('/find/tos?query[_id._to]=' + place1Id + '&query[_id.type]=watch',
+          t.get('/find/tos?query[_id._to]=' + patch1Id + '&query[_id.type]=watch',
           function(err, res, body) {
             t.assert(body.data.length === 1)
             var stat = body.data[0]
-            log('NYI:  need custom linkId factory in order to test')
-            // t.assert(stat.value === 1) // same as last test, not refreshed, not decremented
+            t.assert(stat.value === 1) // same as last test, not refreshed, not decremented
             test.done()
           })
         })
@@ -530,16 +528,14 @@ exports.statRefsDoNotPopulateForAnonUsers = function(test) {
 }
 
 
-exports.statsCountToPlacesTypeWatch = function(test) {
+exports.statsCountToPatchesTypeWatch = function(test) {
   t.get({
-    uri: '/stats/to/places?type=like&log=1',
+    uri: '/stats/to/patches?type=watch&log=1',
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)
     body.data.forEach(function(doc) {
       t.assert(doc._id)
       t.assert(doc.name)
-      t.assert(doc.photo)
-      t.assert(doc.category)
       t.assert(doc.count)
       t.assert(doc.rank)
     })
@@ -550,12 +546,12 @@ exports.statsCountToPlacesTypeWatch = function(test) {
 
 exports.statsFilterOnCategory = function(test) {
   t.get({
-    uri: '/stats/to/places?_category=4bf58dd8d48988d18c941735&log=1'
+    uri: '/stats/to/patches?_category=testCategory&log=1'
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)
     body.data.forEach(function(doc) {
       t.assert(doc.category)
-      t.assert(doc.category.id === '4bf58dd8d48988d18c941735')
+      t.assert(doc.category.id === 'testCategory')
     })
     test.done()
   })
@@ -563,7 +559,7 @@ exports.statsFilterOnCategory = function(test) {
 
 exports.statsFilterOnName = function(test) {
   t.get({
-    uri: '/stats/to/places?name=art'
+    uri: '/stats/to/patches?name=Test P'
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)
     test.done()
@@ -586,21 +582,21 @@ exports.statsCountCreatedLinksFromUsers = function(test) {
   })
 }
 
-exports.statsRemoveMessageDecrementsPlaceStats = function(test) {
-  t.get('/stats/to/places/' + place1Id,
+exports.statsRemoveMessageDecrementsPatchStats = function(test) {
+  t.get('/stats/to/patches/' + patch1Id,
   function(err, res, body) {
     t.assert(body && body.data && !body.data.length)  // document, not array
-    var cToPlace = body.data.count
-    t.get('/stats/from/places/' + place1Id,
+    var cToPatch = body.data.count
+    t.get('/stats/from/patches/' + patch1Id,
     function(err, res, body) {
       t.assert(body && body.data)
       t.del({uri: '/data/messages/me.statTest.1?' + adminCred},
       function(err, res, body) {
         t.assert(body.count === 1)
-        t.get('/stats/to/places/' + place1Id,
+        t.get('/stats/to/patches/' + patch1Id,
         function(err, res, body) {
           t.assert(body.data)
-          t.assert(cToPlace === body.data.count + 1)  // proves stat decrement worked
+          t.assert(cToPatch === body.data.count + 1)  // proves stat decrement worked
           test.done()
         })
       })
@@ -608,26 +604,26 @@ exports.statsRemoveMessageDecrementsPlaceStats = function(test) {
   })
 }
 
-exports.statsRemovePlaceDropsFromStats= function(test) {
-  t.get('/stats/to/places',
+exports.statsRemovePatchDropsFromStats= function(test) {
+  t.get('/stats/to/patches?limit=1000',
   function(err, res, body) {
     t.assert(body && body.data && body.data.length)
-    var cToPlaces = body.data.length
-    t.get('/stats/from/places',
+    var cToPatches = body.data.length
+    t.get('/stats/from/patches?limit=1000',
     function(err, res, body) {
       t.assert(body && body.data && body.data.length)
-      var cFromPlaces = body.data.length
-      t.del({uri: '/data/places/' + place1Id + '?' + adminCred},
+      var cFromPatches = body.data.length
+      t.del({uri: '/data/patches/' + patch1Id + '?' + adminCred},
       function(err, res, body) {
         t.assert(body.count === 1)
-        t.get('/stats/to/places',
+        t.get('/stats/to/patches?limit=1000',
         function(err, res, body) {
           t.assert(body.data && body.data.length)
-          t.assert(body.data.length + 1 === cToPlaces)
-          t.get('/stats/from/places',
+          t.assert(body.data.length === (cToPatches - 1), {len: body.data.length, cToPatches: cToPatches})
+          t.get('/stats/from/patches?limit=1000',
           function(err, res, body) {
             t.assert(body.data && body.data.length)
-            t.assert(body.data.length === (cFromPlaces - 1))
+            t.assert(body.data.length === (cFromPatches - 1))
             test.done()
           })
         })
