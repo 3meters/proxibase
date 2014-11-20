@@ -128,22 +128,6 @@ exports.insertTaskStartsIt = function(test) {
   })
 }
 
-exports.stopTaskWorks = function(test) {
-  t.get('/admin/tasks/' + task1.key + '/stop?' + adminCred,
-  function(err, res, body) {
-    var cDocs = 0
-    db.documents.safeFind({name: 'testTaskDoc1'}, {asAdmin: true}, function(err, docs) {
-      cDocs = docs.length
-      setTimeout(function() {
-        db.documents.safeFind({name: 'testTaskDoc1'}, {asAdmin: true}, function(err, docs) {
-          t.assert(cDocs === docs.length) // No new documents have been added since we stopped task1
-          test.done()
-        })
-      }, 1500)
-    })
-  })
-}
-
 // Update the previous task
 exports.updateTaskWorks = function(test) {
   task1.args[0].name = 'testTaskDoc2'
@@ -153,16 +137,16 @@ exports.updateTaskWorks = function(test) {
   }, function(err, res, body) {
     t.get('/data/documents?name=testTaskDoc1&' + adminCred,
     function(err, res, body) {
-      var cDocsAddedByTask1 = body.data.length
-      t.assert(cDocsAddedByTask1)
+      var cDocs = body.data.length
+      t.assert(cDocs)
       setTimeout(function() {
         t.get('/data/documents?name=testTaskDoc1&' + adminCred,
         function(err, res, body) {
           t.assert(body.data)
-          t.assert(cDocsAddedByTask1 === body.data.length)  // proves task2 was cleared by update
+          t.assert(cDocs === body.data.length)  // proves original task was stopped
           t.get('/data/documents?name=testTaskDoc2&' + adminCred,
           function(err, res, body) {
-            t.assert(body.data.length >= 2)
+            t.assert(body.data.length >= 2)  // proves updated task is now active and generating documents
             test.done()
           })
         })
@@ -173,23 +157,16 @@ exports.updateTaskWorks = function(test) {
 
 
 exports.stopTask = function(test) {
-  t.delete({
-    uri: '/admin/tasks/' + task1Id + '?' + adminCred,
-  }, function (err, res, body) {
-    t.get('/admin/tasks?' + adminCred, function(err, res, body) {
-      t.assert(body.data && 0 === body.data.length)  // all tasks records are gone
-      t.get('/data/documents?name=testTaskDoc&' + adminCred,  // will find the 1s and the 2s
-      function(err, res, body) {
-        t.assert(body.data)
-        docCount = body.data.length  // count records inserted by recurring task
-        setTimeout(function() {
-          t.get('/data/documents?name=testTaskDoc&' + adminCred,
-          function() {
-            t.assert(body.data && docCount === body.data.length)  // make sure we have no new records
-            test.done()
-          })
-        }, 1500)
-      })
+  t.get('/admin/tasks/' + task1.key + '/stop?' + adminCred,
+  function(err, res, body) {
+    db.documents.safeFind({name: 'testTaskDoc'}, {asAdmin: true}, function(err, docs) { // get both 1s and 2s
+      var cDocs = docs.length
+      setTimeout(function() {
+        db.documents.safeFind({name: 'testTaskDoc'}, {asAdmin: true}, function(err, docs) {
+          t.assert(cDocs === docs.length) // No new documents have been added since we stopped task1
+          test.done()
+        })
+      }, 1500)
     })
   })
 }
@@ -200,21 +177,30 @@ exports.stopTask = function(test) {
 // documents.
 exports.insertDisabledTaskDoesNotStartIt = function(test) {
   var task3 = util.clone(task1)
+  task3.key = 'task.3'
+  task3.name = 'task 3'
   task3.args[0].name = 'testTaskDoc3'
   task3.enabled = false
   t.post({
     uri: '/admin/tasks?' + adminCred,
-    body: { data: task3 },
+    body: task3,
   }, function(err, res, body) {
-    setTimeout(function(){
-      t.get('/find/documents?name=testTaskDoc3&' + adminCred,
-      function(err, res, body) {
-        t.assert(body.data.length === 0)
-        test.done()
-      })
-    }, 1500)
+    t.get('/admin/tasks/' + task3.key + '?' + adminCred,
+    function(err, res, body) {
+      // task exists but is not running
+      t.assert(body.task)
+      t.assert(body.task.running === false)
+      setTimeout(function() {
+        t.get('/find/documents?name=testTaskDoc3&' + adminCred,
+        function(err, res, body) {
+          t.assert(body.data.length === 0)
+          test.done()
+        })
+      }, 1500)
+    })
   })
 }
+
 
 exports.leaveServerRunning = function(test) {
   // Comment this out the next line hang the test leaving the test server running
