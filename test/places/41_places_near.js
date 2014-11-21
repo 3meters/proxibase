@@ -25,7 +25,6 @@ var testEntity = {
     prefix: "https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
     source: "aircandi",
   },
-  signalFence : -100,
   enabled : true,
   locked : false,
 }

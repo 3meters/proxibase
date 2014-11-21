@@ -19,11 +19,11 @@ var proxModels = {
 var candiModels = {
   0: "User",  // 5
   1: "BeaconSets",  // 2
-  2: "Comments", // 21 
+  2: "Comments", // 21
   3: "Documents", // 1
   4: "Beacons", // 6
   5: "Entities", // 78
-  6: "EntityTypes" // 6 
+  6: "EntityTypes" // 6
 }
 
 var beacons = [
@@ -201,7 +201,7 @@ function processEntities(iTable, cb) {
         }
       }
     }
-    if (!candi[i]._beacon) 
+    if (!candi[i]._beacon)
       candi[i]._beacon = beacons[0]._id;  // magic unknown beacon
   }
 
@@ -231,7 +231,6 @@ function processEntities(iTable, cb) {
     if (c.Subtitle) e.subtitle = c.Subtitle;
     if (c.Description) e.description = c.Description;
     if (c.Photo) e.photo = c.Photo;
-    if (c.SignalFence != null) e.signalFence = c.SignalFence; 
     if (c.Visibility != null) e.visibility = c.Visibility;
     if (c.Enabled != null) e.enabled = c.Enabled;
     if (c.Locked != null) e.locked = c.Locked;
