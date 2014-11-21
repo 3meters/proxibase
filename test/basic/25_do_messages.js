@@ -170,7 +170,7 @@ var testMessageToPrivate = {
     prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
     source:"aircandi",
   },
-  _acl: testPatchPublic._id,  // Usually set by client
+  _acl: testPatchPrivate._id,  // Usually set by client
 }
 
 var testReplyToPrivate = {
@@ -1965,6 +1965,7 @@ exports.beckySharesMemberMessageWithMemberAlice = function(test) {
         schema : util.statics.schemaMessage,
         type : "share",
         description : "Checkout Becky\'s message to the \'Seahawks Private VIP Club\' patch!",
+        _acl : testPatchPrivate._id,
       },
       links: [{
         type: 'share',
@@ -2446,7 +2447,7 @@ exports.stanGetsShareMessageFromBecky = function (test) {
 }
 
 
-_exports.aliceGetsShareMessageFromBecky = function (test) {
+exports.aliceGetsShareMessageFromBecky = function (test) {
   t.post({
     uri: '/do/getEntities?' + userCredAlice,
     body: {
@@ -2492,10 +2493,23 @@ _exports.aliceGetsShareMessageFromBecky = function (test) {
           && link.shortcut.id === testMessageToPrivate._id) messageHit = true
     })
 
-    t.assert(messageHit)
     t.assert(userHit)
+    t.assert(!messageHit)  // cannot see preview, must drill in
 
-    test.done()
+    // Make a second call to view the contents of the shared message to the private place
+    t.post({
+      uri: '/do/getEntities?' + userCredAlice,
+      body: {
+        entityIds: [testMessageToPrivate._id]
+      }
+    },
+
+    function(err, res, body) {
+      t.assert(body.data)
+      t.assert(body.data.length === 1)
+      t.assert(body.data[0].description)
+      test.done()
+    })
   })
 }
 
