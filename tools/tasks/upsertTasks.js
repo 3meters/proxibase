@@ -5,8 +5,8 @@ var util = require('proxutils')
 var async = require('async')
 var log = util.log
 
-var host = 'https://api.aircandi.com'
-// var host = 'https://localhost:6643'
+var host = 'https://api.aircandi.com/v1'
+// var host = 'https://localhost:6643/v1'
 var adminpw = ''
 
 // accept unsigned certs from test or dev boxes
@@ -30,8 +30,9 @@ function run() {
     },
     */
     {
+      key: 'task.calcStats',
       name: 'calcStats',
-      schedule: {schedules: [{s: [37]}]},  // every minute on the 37th second
+      schedule: {schedules: [{s: [38]}]},  // every minute on the 37th second
       module: 'utils',
       method: 'calcStats',
       enabled: true,
@@ -56,35 +57,25 @@ function run() {
     })
 
   function upsertTask(task, nextTask) {
-    log('searching for existing task ', task.name )
+    log('upserting task ', task.name )
     util.request
-      .post(host + '/find/tasks')
+      .get(host + '/admin/tasks/' + task.key)
       .query({user: util.adminUser._id})
       .query({session: session})
-      .send({query: {name: task.name}})
       .end(function(err, res, body) {
-        if (err) throw err
-        util.log('response', body)
-        var id = null
-        if (body && body.data && body.data[0]) id = body.data[0]._id
-        postTaskDoc(id)
+        var url = host + '/admin/tasks'
+        if (body.task) url += '/' + task.key
+        util.request
+          .post(url)
+          .query({user: util.adminUser._id})
+          .query({session: session})
+          .send(task)
+          .end(function(err, res, body) {
+            if (err) throw err
+            util.log('response', body)
+            nextTask()
+          })
       })
-
-    function postTaskDoc(id) {
-      var uri = host + '/data/tasks'
-      if (id) uri += '/' + id
-      util.log('upserting ', uri)
-      util.request
-        .post(uri)
-        .query({user: util.adminUser._id})
-        .query({session: session})
-        .send({data: task})
-        .end(function(err, res, body) {
-          if (err) throw err
-          util.log(task.name + ' result:', body)
-          nextTask()
-        })
-    }
   }
 
   function finish(err) {
