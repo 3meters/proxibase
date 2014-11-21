@@ -308,7 +308,7 @@ exports.findDocsByGetAndFindWithBadJson = function(test) {
 
 exports.findDocsByName = function(test) {
   t.get({
-    uri: '/data/documents?name=' + testDoc1.name.toUpperCase() + '&' + userCred
+    uri: '/data/documents?name=' + testDoc1.name.toUpperCase() + '&' + userCred + '&log=true'
   }, function(err, res, body) {
     t.assert(body.count === 1)
     test.done()

@@ -15,7 +15,6 @@ var _exports = {}  // For commenting out tests
 
 
 exports.getUserSession = function(test) {
-  util.debug(db.databaseName)
   testUtil.getUserSession(function(session) {
     userSession = session
     userCred = 'user=' + session._owner + '&session=' + session.key
