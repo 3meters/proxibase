@@ -38,7 +38,6 @@ var testUserTom = {
     source:"resource",
   },
   area : "Testville, WA",
-  enabled: true,
 }
 
 var testUserBob = {
@@ -46,7 +45,6 @@ var testUserBob = {
   name : "Bob",
   email : "bobtest@3meters.com",
   password : "12345678",
-  enabled: true,
 }
 
 var testUserAlice = {
@@ -54,7 +52,6 @@ var testUserAlice = {
   name : "Alice",
   email : "alicetest@3meters.com",
   password : "12345678",
-  enabled: true,
 }
 
 var testPatchCustom = {
@@ -65,7 +62,6 @@ var testPatchCustom = {
     prefix:"1001_20111224_104245.jpg",
     source:"aircandi"
   },
-  signalFence : -100,
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
@@ -88,7 +84,6 @@ var testPatchCustomTwo = {
     prefix:"1001_20111224_104245.jpg",
     source:"aircandi"
   },
-  signalFence : -100,
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
@@ -664,8 +659,8 @@ exports.replaceEntitySet = function (test) {
  * ----------------------------------------------------------------------------
  */
 
-// This inserts a message to a message and checks that the activity date 
-// on the top-level patch is ticked.  The client doesn't exersise this feature, 
+// This inserts a message to a message and checks that the activity date
+// on the top-level patch is ticked.  The client doesn't exersise this feature,
 // but the service supports it.
 exports.insertMessage2 = function (test) {
   t.post({

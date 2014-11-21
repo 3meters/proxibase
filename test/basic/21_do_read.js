@@ -19,13 +19,12 @@ var testUser = {
   type: 'user',
   email : "johnqtest@3meters.com",
   password : "12345678",
-  photo: { 
-    prefix:"resource:patchholder_user", 
+  photo: {
+    prefix:"resource:patchholder_user",
     source:"resource",
   },
   area : "Testville, WA",
   developer : false,
-  enabled: true,
 }
 
 var seed = util.seed(5)
@@ -90,7 +89,7 @@ exports.getEntitiesMessages = function (test) {
   t.post({
     uri: '/do/getEntities',
     body: {
-      entityIds: [constants.patchId], 
+      entityIds: [constants.patchId],
       links: {
         active: [
           { type:statics.typeContent, schema:statics.schemaMessage, links: true, count: true, direction: 'both' },
@@ -114,7 +113,7 @@ exports.getEntitiesMaximum = function (test) {
   t.post({
     uri: '/do/getEntities',
     body: {
-      entityIds: [constants.patchId], 
+      entityIds: [constants.patchId],
       links: {
         active: [
           { type:statics.typeProximity, schema:statics.schemaBeacon, links: true, count: true, direction: 'both' },
@@ -146,13 +145,13 @@ exports.getEntitiesWithLinkStatsOnly = function (test) {
   t.post({
     uri: '/do/getEntities',
     body: {
-      entityIds: [constants.patchId], 
+      entityIds: [constants.patchId],
       links: {
         shortcuts: false,
         active: [
-          { type:statics.typeProximity, schema:statics.schemaBeacon }, 
-          { type:statics.typeProximity, schema:statics.schemaPlace }, 
-          { type:statics.typeWatch, schema:statics.schemaUser }, 
+          { type:statics.typeProximity, schema:statics.schemaBeacon },
+          { type:statics.typeProximity, schema:statics.schemaPlace },
+          { type:statics.typeWatch, schema:statics.schemaUser },
         ]},
     }
   }, function(err, res, body) {
@@ -172,13 +171,13 @@ exports.getEntitiesAndLinkedEntitiesByUser = function (test) {
   t.post({
     uri: '/do/getEntities',
     body: {
-      entityIds: [constants.patchId], 
+      entityIds: [constants.patchId],
       links: {
         loadWhere: { _creator: constants.uid1 },
-        active: [ 
-          { type:statics.typeProximity, schema:statics.schemaBeacon }, 
-          { type:statics.typeContent, schema:statics.schemaApplink }, 
-          { type:statics.typeWatch, schema:statics.schemaUser }, 
+        active: [
+          { type:statics.typeProximity, schema:statics.schemaBeacon },
+          { type:statics.typeContent, schema:statics.schemaApplink },
+          { type:statics.typeWatch, schema:statics.schemaUser },
         ]},
     }
   }, function(err, res, body) {
@@ -186,7 +185,7 @@ exports.getEntitiesAndLinkedEntitiesByUser = function (test) {
     t.assert(body.data && body.data[0])
     var record = body.data[0]
     // It looks like this is what should be tested, but it fails
-    //  -- George 
+    //  -- George
     record.linksIn.forEach(function(link) {
       t.assert(link._creator === constants.uid1, link._creator)
     })
@@ -200,8 +199,8 @@ exports.getEntityLinksAndCountsForBeacon = function (test) {
     body: {
       entityIds: [constants.beaconId],
       links: {
-        active: [ 
-          { type:statics.typeProximity, schema:statics.schemaPatch, links: true, count: true }, 
+        active: [
+          { type:statics.typeProximity, schema:statics.schemaPatch, links: true, count: true },
         ]},
     }
   }, function(err, res, body) {
@@ -221,8 +220,8 @@ exports.getEntitiesForLocationLimited = function (test) {
     body: {
       entityIds: [constants.patchId],
       links: {
-        active: [ 
-          { type:statics.typeContent, schema:statics.schemaMessage, links: true, limit: 3 }, 
+        active: [
+          { type:statics.typeContent, schema:statics.schemaMessage, links: true, limit: 3 },
         ]},
     }
   }, function(err, res, body) {
@@ -240,8 +239,8 @@ exports.getEntitiesCreatedByUser = function (test) {
     uri: '/do/getEntitiesForEntity?' + testUser1.cred,
     body: {
       entityId: constants.uid1,
-      cursor: { 
-        linkTypes: [statics.typeCreate], 
+      cursor: {
+        linkTypes: [statics.typeCreate],
         direction: 'out',
       },
     }
@@ -257,7 +256,7 @@ exports.getEntitiesCreatedByUserSortSkipLimit = function (test) {
     uri: '/do/getEntitiesForEntity?' + testUser1.cred,
     body: {
       entityId: constants.uid1,
-      cursor: { 
+      cursor: {
         linkTypes: ['create'],
         direction: 'out',
         sort: {modifiedDate: -1},
@@ -401,9 +400,9 @@ exports.getEntitiesCreatedByUserMessagesOnly = function (test) {
     uri: '/do/getEntitiesForEntity',
     body: {
       entityId: constants.uid1,
-      cursor: { 
-        linkTypes: [statics.typeCreate], 
-        schemas: [statics.schemaMessage], 
+      cursor: {
+        linkTypes: [statics.typeCreate],
+        schemas: [statics.schemaMessage],
         direction: 'out',
       },
     }
@@ -418,9 +417,9 @@ exports.getEntitiesForPatchMessagesOnly = function (test) {
   t.post({
     uri: '/do/getEntitiesForEntity',
     body: {
-      entityId: constants.patchId, 
-      cursor: { 
-        linkTypes: [statics.typeContent], 
+      entityId: constants.patchId,
+      cursor: {
+        linkTypes: [statics.typeContent],
         schemas: [statics.schemaMessage],
       },
     }
@@ -439,9 +438,9 @@ exports.getEntitiesForPatchPostsOnlyLimited = function (test) {
   t.post({
     uri: '/do/getEntitiesForEntity',
     body: {
-      entityId: constants.patchId, 
-      cursor: { 
-        linkTypes: [statics.typeContent], 
+      entityId: constants.patchId,
+      cursor: {
+        linkTypes: [statics.typeContent],
         schemas: [statics.schemaMessage],
         sort: { modifiedDate: -1 },
         limit: 3,
