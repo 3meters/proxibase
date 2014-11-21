@@ -8,9 +8,7 @@ var fs = require('fs')
 var xl = require('xlsx')
 var path = require('path')
 
-var iconDir = '../../assets/img/categories'
 var assetsDir = '../../assets'
-
 var catsJsonFile = 'categories_patch.json'
 var catList = 'category_list.xlsx'
 
@@ -52,7 +50,7 @@ function start() {
   var resultsArray = []
   var parents = {}
 
-  wb.Sheets['patches'].data.forEach(function(row) {
+  wb.Sheets['patches_v2'].data.forEach(function(row) {
     var cat = {
       id: row[0],
       name: row[1],
