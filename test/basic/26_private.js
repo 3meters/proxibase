@@ -286,7 +286,7 @@ exports.getEntsForEntsDoesNotExposePrivateFieldsOfWatchers = function(test) {
   t.post({
     uri: '/do/getEntitiesForEntity',
     body: {
-      entityId: 'pa.river' + seed,
+      entityId:  river._id,
       cursor: {
         linkTypes: ['watch'],
         direction: 'in',
@@ -301,6 +301,27 @@ exports.getEntsForEntsDoesNotExposePrivateFieldsOfWatchers = function(test) {
   })
 }
 
+exports.findWithLinksDoesNotExposePrivateFieldsOfWatches = function(test) {
+  t.post({
+    uri: '/find/patches/' + river._id,
+    body: {
+      links: {
+        from: 'users',
+        linkFilter: {type: 'watch'}
+      }
+    },
+  }, function(err, res, body) {
+    t.assert(body.data)
+    var watchLinks = body.data.links.from.users
+    t.assert(watchLinks.length)
+    watchLinks.forEach(function(watchLink) {
+      t.assert(watchLink.document)
+      t.assert(watchLink.document.name)
+      t.assert(!watchLink.document.email)
+    })
+    test.done()
+  })
+}
 
 exports.getEntitiesForEntsReadsMessagesToPublicPatches = function(test) {
   t.post({
@@ -400,6 +421,21 @@ exports.tarzanCannotReadJanesMessagesYet = function(test) {
   })
 }
 
+exports.tarzanCannotReadJanesMessagesYetUsingRest = function(test) {
+  t.post({
+    uri: '/find/patches/' + janehouse._id + '?' + tarzan.cred,
+    body: {
+      links: {
+        from: 'messages',
+        linkFilter: {type: 'messages'},
+      }
+    },
+  }, function(err, res, body) {
+    t.assert(body.data.links.from.messages.length === 0)
+    test.done()
+  })
+}
+
 
 exports.tarzanCannotAcceptHisOwnRequestOnJanesBehalf = function(test) {
   t.post({
@@ -432,6 +468,21 @@ exports.tarzanCanNowReadMessagesToJanehouse = function(test) {
     },
   }, function(err, res, body) {
     t.assert(body.data.length === 1)
+    test.done()
+  })
+}
+
+exports.tarzanCanNowReadMessagesToJanehouseViaRest = function(test) {
+  t.post({
+    uri: '/find/patches/' + janehouse._id + '?' + tarzan.cred,
+    body: {
+      links: {
+        from: 'messages',
+        linkFilter: {type: 'content'}
+      }
+    },
+  }, function(err, res, body) {
+    t.assert(body.data.links.from.messages.length === 1)
     test.done()
   })
 }
