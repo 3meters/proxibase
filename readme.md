@@ -82,6 +82,7 @@ See the guidelines for posting below, the api is
         password: <password>
       },
       secret: <secret>
+      installId: <installId>
      }
 
 All other fields are optional. Secret is currently a static string. Someday it may be provided by a captcha API.  On successful account creation, the service signs in the user, creating a new session object.  The complete user and session object are returned to the caller.
@@ -101,6 +102,7 @@ Users sign in via :
     body: {
       email: (case-insensitive)
       password: password  (case-sensitive)
+      installId: installId (case-sensitive)
     }
 
 On success the api returns a session object with two fields of interest, _owner and key.  _owner is user's _id, and key is a session key.  In order to validate a request, include those values on each request, either as query parameters like so:
