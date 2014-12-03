@@ -17,6 +17,7 @@ old
 
 !package.json
 !categories.json
+!categories_patch.json
 !catmap*.json
 !/assets/
 !/assets/prox.log

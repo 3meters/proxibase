@@ -445,7 +445,7 @@ exports.staticsUpdateOnRefresh = function(test) {
       data: {
         _from: testUserId,
         _to: testUserId,
-        type: 'like'
+        type: 'watch'
       }
     }
   }, 201, function(err, res, body) {
@@ -465,7 +465,7 @@ exports.staticsUpdateOnRefresh = function(test) {
         t.assert(body.data.some(function(stat) {
           return testUserId === stat._id._to
             && 'user' === stat._id.toSchema
-            && 'like' === stat._id.type
+            && 'watch' === stat._id.type
         }))
         test.done()
       })
@@ -483,7 +483,7 @@ exports.staticsUpdateOnIncrementalRefresh = function(test) {
       data: {
         _from: adminUserId,
         _to: testUserId,
-        type: 'like'
+        type: 'watch'
       }
     }
   }, 201, function(err, res, body) {
@@ -508,7 +508,7 @@ exports.staticsUpdateOnIncrementalRefresh = function(test) {
 
 exports.statsPassThroughQueryCriteriaToUnderlyingReducedCollections = function(test) {
   t.get({
-    uri: '/stats/to?query[_id._to]=' + testUserId + '&query[_id.type]=like'
+    uri: '/stats/to?query[_id._to]=' + testUserId + '&query[_id.type]=watch'
   }, function(err, res, body) {
     t.assert(body.data.length === 1)
     t.assert(body.data[0].count === 2)

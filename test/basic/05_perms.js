@@ -268,7 +268,7 @@ exports.ownerAccessCollectionsWork = function(test) {
       body: {data: {_id: 'do.user2DocOwnerAccessTest'}}
     }, 201, function(err, res, body) {
       t.assert('do.user2DocOwnerAccessTest' === body.data._id)
-      t.get('/data/documents?' + user1Cred, 
+      t.get('/data/documents?' + user1Cred,
       function(err, res, body) {
         t.assert(body.data && body.data.length)
         body.data.forEach(function(doc) {

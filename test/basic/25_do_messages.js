@@ -50,7 +50,6 @@ var testUserTom = {
     source:"resource",
   },
   area : "Testville, WA",
-  enabled: true,
 }
 
 var testUserBob = {
@@ -58,7 +57,6 @@ var testUserBob = {
   name : "Bob",
   email : "bobtest@3meters.com",
   password : "12345678",
-  enabled: true,
 }
 
 var testUserAlice = {
@@ -66,7 +64,6 @@ var testUserAlice = {
   name : "Alice",
   email : "alicetest@3meters.com",
   password : "12345678",
-  enabled: true,
 }
 
 var testUserBecky = {
@@ -74,7 +71,6 @@ var testUserBecky = {
   name : "Becky",
   email : "beckytest@3meters.com",
   password : "12345678",
-  enabled: true,
 }
 
 var testUserMax = {
@@ -82,7 +78,6 @@ var testUserMax = {
   name : "Max",
   email : "maxtest@3meters.com",
   password : "12345678",
-  enabled: true,
 }
 
 var testUserStan = {
@@ -90,7 +85,6 @@ var testUserStan = {
   name : "Stan",
   email : "stantest@3meters.com",
   password : "12345678",
-  enabled: true,
 }
 
 var testPatchPublic = {
@@ -101,7 +95,6 @@ var testPatchPublic = {
     prefix:"1001_20111224_104245.jpg",
     source:"aircandi"
   },
-  signalFence : -100,
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
@@ -124,7 +117,6 @@ var testPatchPrivate = {
     prefix:"1001_20111224_104245.jpg",
     source:"aircandi"
   },
-  signalFence : -100,
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },

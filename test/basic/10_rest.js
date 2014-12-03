@@ -586,7 +586,6 @@ exports.customGenIdsWork = function(test) {
     }
   }, 201, function(err, res, body) {
     t.assert('be.' + bssid === body.data._id)
-    t.assert(body.data.enabled === true)  // proves defaults work
     removeDoc(body.data._id, function() {
       test.done()
     })

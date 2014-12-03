@@ -36,21 +36,18 @@ var testUserTom = {
     source:"resource",
   },
   area : "Testville, WA",
-  enabled: true,
 }
 var testUserBob = {
   _id : "us.111111.11111.000.222222",
   name : "Bob",
   email : "bobtest@3meters.com",
   password : "12345678",
-  enabled: true,
 }
 var testUserAlice = {
   _id : "us.111111.11111.000.333333",
   name : "Alice",
   email : "alicetest@3meters.com",
   password : "12345678",
-  enabled: true,
 }
 var testPatchOne = {
   _id : "pa.111111.11111.111.111111",
@@ -60,7 +57,6 @@ var testPatchOne = {
     prefix:"1001_20111224_104245.jpg",
     source:"aircandi"
   },
-  signalFence : -100,
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
@@ -81,7 +77,6 @@ var testPatchTwo = {
     prefix:"1001_20111224_104245.jpg",
     source:"aircandi"
   },
-  signalFence : -100,
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
@@ -102,7 +97,6 @@ var testPatchCustomPublic = {
     prefix:"1001_20111224_104245.jpg",
     source:"aircandi"
   },
-  signalFence : -100,
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
@@ -124,7 +118,6 @@ var testPatchCustomLocked = {
     prefix:"1001_20111224_104245.jpg",
     source:"aircandi"
   },
-  signalFence : -100,
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },

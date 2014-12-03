@@ -127,7 +127,7 @@ exports.userCannotSignInWithBadEmail = function(test) {
     uri: '/auth/signin',
     body: {email: 'billy@notHere', password: 'wrong', installId: '123456'}
   }, 401, function(err, res, body) {
-    t.assert(body.error.code === 401.1)
+    t.assert(body.error.code === 401.4) // email address not found
     test.done()
   })
 }
@@ -137,7 +137,7 @@ exports.userCannotSignInWithBadPassword = function(test) {
     uri: '/auth/signin',
     body: {email: testUser.email, password: 'wrong', installId: '123456'}
   }, 401, function(err, res, body) {
-    t.assert(body.error.code === 401.1)
+    t.assert(body.error.code === 401.1)  // bad credentials
     test.done()
   })
 }
