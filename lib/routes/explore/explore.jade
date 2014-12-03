@@ -2,7 +2,7 @@ extends layout
 
 block content
 
-  - var truthy = tipe.truthy
+  - var isTruthy = tipe.isTruthy
 
   include signinLinks
   br
@@ -34,8 +34,8 @@ block content
         .row: input#links.field(name='links', patchholder='links', value=JSON.stringify(query.links))
         .row: input#skip.field(name='skip', patchholder='skip', value=query.skip)
         .row: input#limit.field(name='limit', patchholder='limit', value=query.limit)
-        .row: input#datesToUTC.checkbox(name='datesToUTC', type='checkbox', checked=(truthy(query.datesToUTC) ? 'checked' : undefined))
-        .row: input#count.checkbox(name='count', type='checkbox', checked=(truthy(query.count) ? 'checked' : undefined))
+        .row: input#datesToUTC.checkbox(name='datesToUTC', type='checkbox', checked=(isTruthy(query.datesToUTC) ? 'checked' : undefined))
+        .row: input#count.checkbox(name='count', type='checkbox', checked=(isTruthy(query.count) ? 'checked' : undefined))
         .row: input#countBy.field(name='countBy', patchholder='countBy', value=query.countBy)
         input(type='submit', name='cmdRun', value='Run')
         input(type='submit', name='cmdShow', value='Show')
