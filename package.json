@@ -45,7 +45,10 @@
     "later": "*",
     "jade": "*",
     "durable-json-lint": "*",
-    "fuzzy": "*"
+    "fuzzy": "*",
+    "react": "*",
+    "express-react-views": "*",
+    "react-widgets": "*"
   },
 
   "repository": "git://github.com:3meters/proxibase",
