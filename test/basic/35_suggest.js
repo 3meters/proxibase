@@ -279,3 +279,16 @@ exports.suggestWatchedEntitiesSortFirst = function(test) {
     })
   })
 }
+
+exports.suggestPlaceResidence = function(test) {
+  t.get('/suggest/places?provider=google&fts=-1&regex=-1&input="312 N 49th St, 98103"',
+  function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.data.length === 1)
+    var place = body.data[0]
+    t.assert(place.provider.google)
+    t.assert(place.provider.googleRef)
+    t.assert(place.name === "312 N 49th St")
+    test.done()
+  })
+}
