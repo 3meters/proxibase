@@ -1,0 +1,75 @@
+
+<!DOCTYPE html>
+<html>
+  <head><title>API Explorer</title><link rel="stylesheet" href="/v1/assets/styles/style.css"></head>
+
+  <body>
+    <div id="topBar" class="top"><h1>CandiService API Explorer</h1></div>
+
+    <a href="/v1/explore/newaccount">Sign up</a> <a href="/v1/explore/signin">Sign in</a><br><br>
+
+    <div class="container">
+
+      <div class="col-left pad">
+        <div class="row">collection:</div>
+        <div class="row">_id:</div>
+        <div class="row">fields:</div>
+        <div class="row">name:</div>
+        <div class="row">query:</div>
+        <div class="row">sort:</div>
+        <div class="row">refs:</div>
+        <div class="row">links:</div>
+        <div class="row">skip:</div>
+        <div class="row">limit:</div>
+        <div class="row">datesToUTC:</div>
+        <div class="row">count:</div>
+        <div class="row">countBy:</div>
+      </div>
+
+      <div class="col-center pad">
+        <form id="explore" method="post" action="/v1/explore">
+          <div class="row"><input id="collection" name="collection" patchholder="collection" class="field"></div>
+          <div class="row"><input id="_id" name="_id" patchholder="id" class="field"></div>
+          <div class="row"><input id="fields" name="fields" patchholder="fields" class="field"></div>
+          <div class="row"><input id="name" name="name" patchholder="name" class="field"></div>
+          <div class="row"><input id="query" name="query" patchholder="query" class="field"></div>
+          <div class="row"><input id="sort" name="sort" patchholder="sort" class="field"></div>
+          <div class="row"><input id="refs" name="refs" patchholder="refs" class="field"></div>
+          <div class="row"><input id="links" name="links" patchholder="links" class="field"></div>
+          <div class="row"><input id="skip" name="skip" patchholder="skip" class="field"></div>
+          <div class="row"><input id="limit" name="limit" patchholder="limit" class="field"></div>
+          <div class="row"><input id="datesToUTC" name="datesToUTC" type="checkbox" class="checkbox"></div>
+          <div class="row"><input id="count" name="count" type="checkbox" class="checkbox"></div>
+          <div class="row"><input id="countBy" name="countBy" patchholder="countBy" class="field"></div>
+          <input type="submit" name="cmdRun" value="Run">
+          <input type="submit" name="cmdShow" value="Show">
+          <a href="https://github.com/3meters/proxibase#quick-reference">Docs</a>
+        </form>
+      </div>
+
+      <div class="col-right pad">
+        <div class="row"> </div>
+        <div class="row"> </div>
+        <div class="row">name,address,-_id</div>
+        <div class="row">starts-with</div>
+        <div class="row">{city: {$in: ['Seattle', 'Spokane']}}</div>
+        <div class="row">_owner,-modifiedDate</div>
+        <div class="row">include linked documents, boolean or fieldlist</div>
+        <div class="row">{from: {applinks: 1}, to: true}</div>
+        <div class="row"> </div>
+        <div class="row"> </div>
+        <div class="row"> </div>
+        <div class="row"> </div>
+        <div class="row">field1,field2</div>
+      </div>
+
+  </div>
+
+  <div class="content pad">
+    <br><a href="https://api.aircandi.com/v1/find">https://api.aircandi.com/v1/find</a><br>
+  </div>
+
+  <div id="bottomBar" class="bottom"></div>
+
+  </body>
+</html>
