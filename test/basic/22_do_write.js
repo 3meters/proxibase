@@ -862,41 +862,6 @@ exports.trackEntityNoBeacons = function(test) {
 
 /*
  * ----------------------------------------------------------------------------
- * Update beacon location
- * ----------------------------------------------------------------------------
- */
-
-exports.updateBeaconLocationUsingNewLocation = function (test) {
-  t.post({
-    uri: '/do/updateBeaconLocation?' + userCredTom,
-    body: {
-      beaconIds: [testBeacon._id],
-      beaconSignals: [-79],
-      location: testLocation2
-    }
-  }, function(err, res, body) {
-    setTimeout(function() {
-      // beacon observation update is fire-and-forget, give time to finish
-
-      /* Check beacon location update */
-      t.post({
-        uri: '/find/beacons',
-        body: {
-          query:{ _id:testBeacon._id }
-        }
-      }, function(err, res, body) {
-        t.assert(body.count === 1)
-        t.assert(body.data[0].location.lat === 47.1)
-        t.assert(body.data[0].location.lng === -122.1)
-        t.assert(body.data[0].signal === -79)
-        test.done()
-      })
-    }, 200)
-  })
-}
-
-/*
- * ----------------------------------------------------------------------------
  * Permissions
  * ----------------------------------------------------------------------------
  */
