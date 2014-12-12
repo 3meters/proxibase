@@ -27,7 +27,7 @@
     "cookie-session": "*",
     "body-parser": "*",
     "mongodb": "<2",
-    "underscore": "*",
+    "lodash": "*",
     "commander": "*",
     "nodeunit": "*",
     "async": "*",
