@@ -39,9 +39,23 @@ for (var key in fields) {
 var LeftCol = React.createClass({
   render: function() {
     var rows = Object.keys(fields).map(function(key) {
-      return <div className="row" key={'left_' + key}>{key}</div>
+      return <div className="row" key={key}>{key}</div>
     })
     return <div className="col-left.pad">{rows}</div>
+  }
+})
+
+var CenterCol = React.createClass({
+  render: function() {
+    var rows = Object.keys(fields).map(function(key) {
+      var field = fields[key]
+      return (
+        <div className="row" key={key}>
+          <input className="field" id={key} name={field.name} patchholder={field.patchholder} />
+        </div>
+      )
+    })
+    return <div className="col-center.pad">{rows}</div>
   }
 })
 
@@ -50,6 +64,7 @@ var QueryForm = React.createClass({
     return (
       <div className="container">
       <LeftCol />
+      <CenterCol />
       </div>
     )
   }
