@@ -107,9 +107,9 @@ var QueryForm = React.createClass({
   render: function() {
     return (
       <div className="container">
-      <LeftCol />
-      <CenterCol />
-      <RightCol />
+        <LeftCol />
+        <CenterCol />
+        <RightCol />
       </div>
     )
   }
