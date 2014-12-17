@@ -71,14 +71,31 @@ var LeftCol = React.createClass({
 
 var CenterCol = React.createClass({
   render: function() {
+
+    var selectCollection = this.props.clNames.map(function(clName) {
+      return(<option value={clName}>{clName}</option>)
+    })
+
     var rows = Object.keys(fields).map(function(key) {
       var field = fields[key]
-      return (
-        <div className="row" key={key}>
-          <input className="field" id={key} name={field.name} placeholder={field.placeholder} />
-        </div>
-      )
+      if (key === 'collection') {
+        return (
+          <div className="row" key={key}>
+            <select className="field" id={key} name={field.name}>
+              {selectCollection}
+            </select>
+          </div>
+        )
+      }
+      else {
+        return (
+          <div className="row" key={key}>
+            <input className="field" id={key} name={field.name} placeholder={field.placeholder} />
+          </div>
+        )
+      }
     })
+
     return (
       <div className="col-center pad">
         <form id="explore" method="post" action="/v1/explore">
@@ -108,7 +125,7 @@ var QueryForm = React.createClass({
     return (
       <div className="container">
         <LeftCol />
-        <CenterCol />
+        <CenterCol clNames={this.props.clNames} />
         <RightCol />
       </div>
     )
