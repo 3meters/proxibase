@@ -8,6 +8,8 @@ var Layout = require('./layout.jsx')
 var TopBar = React.createClass({
   render: function() {
     var user, cred, logUri, logErrUri
+    debug(Object.keys(this))
+    debug(Object.keys(this.props))
     if (this.props.user) {
       user = this.props.user
       cred = 'user=' + query.user + '&session=' + query.session
@@ -24,6 +26,7 @@ var TopBar = React.createClass({
     } else {
       return (
         <div className="content">
+          {this.props}
           <a href="/v1/explore/newaccount">Sign up</a>{" "}
           <a href="/v1/explore/signin">Sign in</a><br /><br />
         </div>

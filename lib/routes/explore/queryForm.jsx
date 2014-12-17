@@ -13,7 +13,7 @@ var defaultField = {
   type:  'string',
   help:  '',
   input: null,  // or component
-  patchholder: '',
+  placeholder: '',
 }
 
 
@@ -55,7 +55,7 @@ for (var i in fields) {
   }
   field.key = i
   field.name = field.name || i
-  field.patchholder = field.patchholder || i
+  field.placeholder = field.placeholder || i
 }
 
 
@@ -75,7 +75,7 @@ var CenterCol = React.createClass({
       var field = fields[key]
       return (
         <div className="row" key={key}>
-          <input className="field" id={key} name={field.name} patchholder={field.patchholder} />
+          <input className="field" id={key} name={field.name} placeholder={field.placeholder} />
         </div>
       )
     })
