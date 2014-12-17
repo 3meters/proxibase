@@ -7,7 +7,7 @@ var log = util.log
 
 var host = 'https://api.aircandi.com/v1'
 // var host = 'https://localhost:6643/v1'
-var adminpw = ''
+var adminpw = 'Richard2010'
 
 // accept unsigned certs from test or dev boxes
 // process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0

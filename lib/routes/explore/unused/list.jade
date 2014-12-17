@@ -1,8 +1,0 @@
-extends layout
-
-block content
-  h2= title
-  - for (var i in data)
-    - var row = data[i]
-      div
-        a(href= path + '/' + row._id) #{row.name}
