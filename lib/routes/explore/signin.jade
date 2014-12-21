@@ -1,7 +1,0 @@
-extends layout
-
-block content
-  .form: form#signin(method='post', action='/v1/explore/signin')
-    .field: input(name='email', patchholder='Email')
-    .field: input(name='password', type='password', patchholder='Password')
-    .button: input(type='submit', value='Sign in')

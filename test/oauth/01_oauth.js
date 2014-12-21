@@ -28,7 +28,7 @@ var adminCred = ''
 var testOauthId = {
   twitter: 'twitter:606624261'
 }
-var baseUri = testUtil.serverUri
+var baseUri = testUtil.serverUri + '/v1'
 var strictSSL = (util.config.service.mode === 'test') ? false : true
 var _exports = {}  // for commenting out tests
 
@@ -168,8 +168,9 @@ function testProvider(options, callback) {
     // we should be redirected to a URL containing our provider application token and secret,
     // then the provider should respond with the its user interface login page.  This attempts
     // to log in via the provider's UI using the credentials of our test account on each provider
+    if (err) return callback(err)
 
-    fs.writeFileSync(options.authPage, res.text)  // corpse
+    fs.writeFileSync(options.authPage, body)  // corpse
 
     var $ = cheerio.load(body)
     var jQuerySelectLoginFormInputs = options.loginFormName + ' :input'
@@ -191,6 +192,8 @@ function testProvider(options, callback) {
 
     // Use JQuery to extract the login form's action URI
     var loginFormActionUri = $(options.loginFormName).attr('action')
+
+    log('posting form to ' + loginFormActionUri)
 
     superagent.post(loginFormActionUri)
       .set('User-Agent', userAgent)
