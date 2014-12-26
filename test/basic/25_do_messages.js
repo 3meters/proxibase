@@ -800,6 +800,84 @@ exports.bobWatchesTomsPublicPatch = function(test) {
   })
 }
 
+exports.bobLikesTomsPublicPatch = function(test) {
+  t.post({
+    uri: '/do/insertLink?' + userCredBob,  // owned by tom
+    body: {
+      toId: testPatchPublic._id,
+      fromId: testUserBob._id,
+      enabled: true,
+      type: util.statics.typeLike,
+      actionEvent: 'like_entity_patch',
+      returnNotifications: true,
+      log: true,
+    }
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
+    /*
+     * Tom should get a like alert because he is the patch owner.
+     */
+    t.assert(body.notifications.length == 1)
+    var tomHit = false
+      , aliceHit = false
+      , maxHit = false
+      , bobHit = false
+      , beckyHit = false
+      , stanHit = false
+
+    body.notifications.forEach(function(notification) {
+      t.assert(notification._target == testPatchPublic._id)
+      notification.registrationIds.forEach(function(registrationId){
+        if (registrationId.indexOf('tom') > 0
+          && notification.type === 'like'
+          && notification.trigger == 'own_to'
+          && notification.event === 'like_entity_patch') tomHit = true
+        if (registrationId.indexOf('alice') > 0) aliceHit = true
+        if (registrationId.indexOf('max') > 0) maxHit = true
+        if (registrationId.indexOf('bob') > 0) bobHit = true
+        if (registrationId.indexOf('becky') > 0) beckyHit = true
+        if (registrationId.indexOf('stan') > 0) stanHit = true
+      })
+    })
+
+    t.assert(tomHit)
+    t.assert(!aliceHit)
+    t.assert(!maxHit)
+    t.assert(!bobHit)
+    t.assert(!beckyHit)
+    t.assert(!stanHit)
+
+    /* Check watch entity link to entity 2 */
+    t.post({
+      uri: '/find/links',
+      body: {
+        query: {
+          _to: testPatchPublic._id,
+          _from: testUserBob._id,
+          type: util.statics.typeLike
+        }
+      }
+    }, function(err, res, body) {
+      t.assert(body.count === 1)
+      t.assert(body.data[0].enabled === true)
+
+      /* Check link entity log action */
+      t.post({
+        uri: '/find/actions?' + adminCred,
+        body: {
+          query:{
+            _entity:testPatchPublic._id,
+            event:'like_entity_patch',
+            _user: testUserBob._id,
+          }
+        }
+      }, function(err, res, body) {
+        t.assert(body.count === 1)
+        test.done()
+      })
+    })
+  })
+}
 
 exports.beckyRequestsToWatchBobsPrivatePatch = function(test) {
   t.post({
