@@ -1773,7 +1773,7 @@ exports.tomCanGetNotificationsForSelf = function (test) {
     // Note: this test file does not stand on it's own because
     // an earlier test file is creating another watch.
     t.assert(body.data)
-    t.assert(body.count === 4 || body.count === 8)
+    t.assert(body.count === 4 || body.count === 5)
     test.done()
   })
 }
