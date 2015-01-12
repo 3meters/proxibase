@@ -307,7 +307,7 @@ exports.findWithLinksDoesNotExposePrivateFieldsOfWatches = function(test) {
     body: {
       links: {
         from: 'users',
-        linkFilter: {type: 'watch'}
+        filter: {type: 'watch'}
       }
     },
   }, function(err, res, body) {
@@ -427,7 +427,7 @@ exports.tarzanCannotReadJanesMessagesYetUsingRest = function(test) {
     body: {
       links: {
         from: 'messages',
-        linkFilter: {type: 'messages'},
+        filter: {type: 'messages'},
       }
     },
   }, function(err, res, body) {
@@ -478,7 +478,7 @@ exports.tarzanCanNowReadMessagesToJanehouseViaRest = function(test) {
     body: {
       links: {
         from: 'messages',
-        linkFilter: {type: 'content'}
+        filter: {type: 'content'}
       }
     },
   }, function(err, res, body) {

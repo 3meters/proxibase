@@ -46,7 +46,7 @@
     "jade": "*",
     "durable-json-lint": "*",
     "fuzzy": "*",
-    "react": "*",
+    "react": "<0.13",
     "express-react-views": "*",
     "react-widgets": "*"
   },

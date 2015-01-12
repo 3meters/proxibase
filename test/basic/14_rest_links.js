@@ -81,7 +81,7 @@ exports.findLinksWorks = function(test) {
 exports.findLinksNoDocumentsWorks = function(test) {
   var query = {
     uri: '/find/users/' + user1Id + '?' + userCred,
-    body: {links: {to: {patches: 1}, noDocuments: true}},
+    body: {links: {to: {patches: 1}, docFields: -1}},
   }
   t.post(query, function(err, res, body) {
     t.assert(body.data.links)
@@ -99,7 +99,7 @@ exports.findLinksNoDocumentsWorks = function(test) {
 exports.findLinksFieldProjectionWorks = function(test) {
   var query = {
     uri: '/find/users/' + user1Id + '?' + userCred,
-    body: {links: {to: {patches: 1}, fields: {name: 1}, linkFields: {type: 1}}}
+    body: {links: {to: {patches: 1}, docFields: {name: 1}, fields: {type: 1}}}
   }
   t.post(query, function(err, res, body) {
     t.assert(body.data.links)
@@ -124,7 +124,7 @@ exports.findLinksFieldProjectionWorks = function(test) {
 exports.findLinksLinkFilterWorks = function(test) {
   var query = {
     uri: '/find/users/' + user1Id + '?' + userCred,
-    body: {links: {to: {patches: 1}, linkFilter: {type: 'watch'}}}
+    body: {links: {to: {patches: 1}, filter: {type: 'watch'}}}
   }
   t.post(query, function(err, res, body) {
     t.assert(body.data.links)
@@ -139,7 +139,7 @@ exports.findLinksLinkFilterWorks = function(test) {
 exports.findLinksLinkDocFilterWorks = function(test) {
   var query = {
     uri: '/find/users/' + user1Id + '?' + userCred,
-    body: {links: {to: {patches: 1}, filter: {namelc: 'test patch 3'}}}
+    body: {links: {to: 'patches', docFilter: {namelc: 'test patch 3'}}}
   }
   t.post(query, function(err, res, body) {
     t.assert(body.data)
@@ -175,7 +175,7 @@ exports.findLinksSortsDescendingByLinkIdByDefault = function(test) {
 exports.findLinksSortWorks = function(test) {
   var query = {
     uri: '/find/users/' + user1Id + '?' + userCred,
-    body: {links: {to: {patches: 1}, linkFilter: {type: 'watch'}, sort: [{_id: 1}]}}
+    body: {links: {to: {patches: 1}, filter: {type: 'watch'}, sort: [{_id: 1}]}}
   }
   t.post(query, function(err, res, body) {
     var patchLinks = body.data.links.to.patches
@@ -223,7 +223,7 @@ exports.findLinksPagingWorks = function(test) {
 exports.findLinksPagingWorksWithFilter = function(test) {
   var query = {
     uri: '/find/users/' + user1Id + '?' + userCred,
-    body: {links: {to: {patches: 1}, linkFilter: {type: 'watch'}, limit: 2, sort: '-_id'}}
+    body: {links: {to: {patches: 1}, filter: {type: 'watch'}, limit: 2, sort: '-_id'}}
   }
   t.post(query, function(err, res, body) {
     var patchLinks = body.data.links.to.patches
@@ -232,7 +232,7 @@ exports.findLinksPagingWorksWithFilter = function(test) {
     var lastPatchId = patchLinks[1].document._id
     var query = {
       uri: '/find/users/' + user1Id + '?' + userCred,
-      body: {links: {to: {patches: 1}, linkFilter: {type: 'watch'}, limit: 2, skip: 2, sort: '-_id'}}
+      body: {links: {to: 'patches', filter: {type: 'watch'}, limit: 2, skip: 2, sort: '-_id'}}
     }
     t.post(query, function(err, res, body) {
       var patchLinks = body.data.links.to.patches
@@ -247,7 +247,7 @@ exports.findLinksPagingWorksWithFilter = function(test) {
 exports.findLinksCountWorks = function(test) {
   var query = {
     uri: '/find/patches/' + patch1Id + '?' + userCred,
-    body: {links: {to: {places: 1, beacons: 1}, from: {users: 1, messages: 1}, count: true}}
+    body: {links: {to: 'places,beacons', from: {users: 1, messages: 1}, count: true}}
   }
   t.post(query, function(err, res, body) {
     t.assert(body.data.links)
@@ -283,7 +283,7 @@ exports.findLinksAcceptsArrays = function(test) {
 
 exports.findLinksFromWorksWithGetSyntax = function(test) {
   var query = {
-    uri: '/find/patches/' + patch1Id + '?links[from][users]=1&links[linkFilter][type]=watch&' + userCred,
+    uri: '/find/patches/' + patch1Id + '?links[from][users]=1&links[filter][type]=watch&' + userCred,
   }
   t.get(query, function(err, res, body) {
     t.assert(body.data.links.from.users.length === 1)  // create links filtered out
