@@ -312,9 +312,11 @@ exports.findWithLinksDoesNotExposePrivateFieldsOfWatches = function(test) {
     },
   }, function(err, res, body) {
     t.assert(body.data)
-    var watchLinks = body.data.links.from.users
+    var watchLinks = body.data.links
     t.assert(watchLinks.length)
     watchLinks.forEach(function(watchLink) {
+      t.assert(watchLink.type === 'watch')
+      t.assert(watchLink.collection === 'users')
       t.assert(watchLink.document)
       t.assert(watchLink.document.name)
       t.assert(!watchLink.document.email)
@@ -431,7 +433,7 @@ exports.tarzanCannotReadJanesMessagesYetUsingRest = function(test) {
       }
     },
   }, function(err, res, body) {
-    t.assert(body.data.links.from.messages.length === 0)
+    t.assert(body.data.links.length === 0)
     test.done()
   })
 }
@@ -482,7 +484,9 @@ exports.tarzanCanNowReadMessagesToJanehouseViaRest = function(test) {
       }
     },
   }, function(err, res, body) {
-    t.assert(body.data.links.from.messages.length === 1)
+    t.assert(body.data.links.length === 1)
+    t.assert(body.data.links[0].collection === 'messages')
+    t.assert(body.data.links[0].direction === 'from')
     test.done()
   })
 }
