@@ -109,6 +109,30 @@ var testPatchPublic = {
   visibility: "public"
 }
 
+var locationUserMaxNearby = {
+  lat: testLatitude,
+  lng: testLongitude,
+  altitude: 12,
+  accuracy: 30,
+  geometry: [testLongitude, testLatitude]
+}
+
+var locationUserMaxNotNearby = {
+  lat: testLatitude + .1,
+  lng: testLongitude + .1,
+  altitude: 12,
+  accuracy: 30,
+  geometry: [testLongitude, testLatitude]
+}
+
+var locationUserMaxPoorAccuracy = {
+  lat: testLatitude,
+  lng: testLongitude,
+  altitude: 12,
+  accuracy: 1000,
+  geometry: [testLongitude, testLatitude]
+}
+
 var testPatchPrivate = {
   _id : "pa.111111.11111.111.211112",
   schema : util.statics.schemaPatch,
@@ -190,6 +214,7 @@ var testBeacon = {
     geometry:[testLongitude, testLatitude]
   },
 }
+
 var testBeacon2 = {
   _id : 'be.55:55:55:55:55:55',
   schema : util.statics.schemaBeacon,
@@ -442,13 +467,13 @@ exports.registerInstallSix = function (test) {
 
 exports.updateBeaconsInstallOne = function (test) {
   t.post({
-    uri: '/do/getEntitiesByProximity?' + userCredTom,
+    uri: '/do/updateProximity?' + userCredTom,
     body: {
       beaconIds: [testBeacon._id],
       installId: installId1
     }
   }, function(err, res, body) {
-    t.assert(body.data && body.data.length >= 0)
+    t.assert(body.info && body.info.toLowerCase().indexOf('install updated') >= 0)
 
     /* Check install beacons */
     t.post({
@@ -468,13 +493,13 @@ exports.updateBeaconsInstallOne = function (test) {
 
 exports.updateBeaconsInstallThree = function (test) {
   t.post({
-    uri: '/do/getEntitiesByProximity?' + userCredAlice,
+    uri: '/do/updateProximity?' + userCredAlice,
     body: {
       beaconIds: [testBeacon._id],
       installId: installId3
     }
   }, function(err, res, body) {
-    t.assert(body.data && body.data.length >= 0)
+    t.assert(body.info && body.info.toLowerCase().indexOf('install updated') >= 0)
 
     /* Check install beacons */
     t.post({
@@ -494,15 +519,15 @@ exports.updateBeaconsInstallThree = function (test) {
 
 exports.updateBeaconsInstallFive = function (test) {
   t.post({
-    uri: '/do/getEntitiesByProximity?' + userCredMax,
+    uri: '/do/updateProximity?' + userCredMax,
     body: {
-      beaconIds: [testBeacon._id],
+      location: locationUserMaxNearby,
       installId: installId5
     }
   }, function(err, res, body) {
-    t.assert(body.data && body.data.length >= 0)
+    t.assert(body.info && body.info.toLowerCase().indexOf('install updated') >= 0)
 
-    /* Check install beacons */
+    /* Check install location */
     t.post({
       uri: '/find/installs?' + adminCred,
       body: {
@@ -511,8 +536,8 @@ exports.updateBeaconsInstallFive = function (test) {
     }, function(err, res, body) {
       t.assert(body.count === 1)
       t.assert(body.data && body.data[0])
-      t.assert(body.data[0].beacons.length === 1)
-      t.assert(body.data[0].beaconsDate)
+      t.assert(body.data[0].location)
+      t.assert(body.data[0].locationDate)
       test.done()
     })
   })
@@ -520,13 +545,13 @@ exports.updateBeaconsInstallFive = function (test) {
 
 exports.updateBeaconsInstallTwo = function (test) {
   t.post({
-    uri: '/do/getEntitiesByProximity?' + userCredBob,
+    uri: '/do/updateProximity?' + userCredBob,
     body: {
       beaconIds: [testBeacon2._id],
       installId: installId2
     }
   }, function(err, res, body) {
-    t.assert(body.data && body.data.length >= 0)
+    t.assert(body.info && body.info.toLowerCase().indexOf('install updated') >= 0)
 
     /* Check install beacons */
     t.post({
@@ -546,13 +571,13 @@ exports.updateBeaconsInstallTwo = function (test) {
 
 exports.updateBeaconsInstallFour = function (test) {
   t.post({
-    uri: '/do/getEntitiesByProximity?' + userCredBecky,
+    uri: '/do/updateProximity?' + userCredBecky,
     body: {
       beaconIds: [testBeacon2._id],
       installId: installId4
     }
   }, function(err, res, body) {
-    t.assert(body.data && body.data.length >= 0)
+    t.assert(body.info && body.info.toLowerCase().indexOf('install updated') >= 0)
 
     /* Check install beacons */
     t.post({
@@ -572,13 +597,13 @@ exports.updateBeaconsInstallFour = function (test) {
 
 exports.updateBeaconsInstallSix = function (test) {
   t.post({
-    uri: '/do/getEntitiesByProximity?' + userCredStan,
+    uri: '/do/updateProximity?' + userCredStan,
     body: {
       beaconIds: [testBeacon2._id],
       installId: installId6
     }
   }, function(err, res, body) {
-    t.assert(body.data && body.data.length >= 0)
+    t.assert(body.info && body.info.toLowerCase().indexOf('install updated') >= 0)
 
     /* Check install beacons */
     t.post({
@@ -609,6 +634,7 @@ exports.tomInsertsPublicPatch = function (test) {
       entity: testPatchPublic,    // custom patch
       beacons: [testBeacon],
       primaryBeaconId: testBeacon._id,
+      location: testPatchPublic.location,
       returnNotifications: true,
     }
   }, 201, function(err, res, body) {
@@ -616,7 +642,8 @@ exports.tomInsertsPublicPatch = function (test) {
     t.assert(body.data && body.data._id)
     activityDate = body.data.modifiedDate  // For later checks
     /*
-     * Alice and Max get notified because they are nearby.
+     * Alice and Max get notified because they are nearby. Alice via
+     * beacon proximity and Max via location distance.
      */
     t.assert(body.notifications.length === 1)
     var tomHit = false
@@ -648,7 +675,6 @@ exports.tomInsertsPublicPatch = function (test) {
     test.done()
   })
 }
-
 
 exports.bobInsertsPrivatePatch = function (test) {
   t.post({
@@ -719,7 +745,6 @@ exports.bobInsertsPrivatePatch = function (test) {
     })
   })
 }
-
 
 exports.bobWatchesTomsPublicPatch = function(test) {
   t.post({
@@ -959,7 +984,6 @@ exports.beckyRequestsToWatchBobsPrivatePatch = function(test) {
   })
 }
 
-
 exports.bobApprovesBeckysRequestToWatchBobsPrivatePatch = function(test) {
   t.post({
     uri: '/do/insertLink?' + userCredBob,
@@ -1081,7 +1105,6 @@ exports.aliceRequestsToWatchBobsPrivatePatch = function(test) {
   })
 }
 
-
 exports.bobApprovesAlicesRequestToWatchBobsPrivatePatch = function(test) {
   t.post({
     uri: '/do/insertLink?' + userCredBob,
@@ -1159,7 +1182,8 @@ exports.beckyInsertsMessageToTomsPublicPatch = function (test) {
     /*
      * Tom gets notified because he owns the patch.
      * Bob gets notified because he is watching the patch.
-     * Alice and Max get notified because they are nearby the patch.
+     * Alice gets notified because she is nearby the patch.
+     * Max get notified because he is nearby the patch and location accuracy is good.
      * Becky does not get notified because she is the sender.
      * Stan does not get notified because he isn't nearby.
      */
@@ -1238,6 +1262,181 @@ exports.beckyInsertsMessageToTomsPublicPatch = function (test) {
   })
 }
 
+exports.deleteBeckysMessage = function (test) {
+  t.post({
+    uri: '/do/deleteEntity?' + userCredBecky,
+    body: {
+      entityId:testMessage._id,
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data._id)
+    test.done()
+  })
+}
+
+exports.maxWithPoorLocationAccuracy = function (test) {
+  t.post({
+    uri: '/do/updateProximity?' + userCredMax,
+    body: {
+      location: locationUserMaxPoorAccuracy,   // Same location as previous but real bad accuracy
+      installId: installId5
+    }
+  }, function(err, res, body) {
+    t.assert(body.info && body.info.toLowerCase().indexOf('install updated') >= 0)
+    test.done()
+  })
+}
+
+exports.beckyInsertsMessageToTomsPublicPatchMaxPoorAccuracy = function (test) {
+
+  t.post({
+    uri: '/do/insertEntity?' + userCredBecky,
+    body: {
+      entity: testMessage,
+      links: [{
+        _to: testPatchPublic._id,     // Toms patch watched by Bob, Alice and Max are nearby
+        type: util.statics.typeContent
+      }],
+      returnNotifications: true,
+    }
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data)
+    /*
+     * Tom gets notified because he owns the patch.
+     * Bob gets notified because he is watching the patch.
+     * Alice gets notified because she is nearby the patch.
+     * Max does *not* get notified because he is nearby the patch but location accuracy is poor.
+     * Becky does not get notified because she is the sender.
+     * Stan does not get notified because he isn't nearby.
+     */
+    t.assert(body.notifications.length === 3)
+
+    var tomHit = false
+      , bobHit = false
+      , aliceHit = false
+      , maxHit = false
+      , beckyHit = false
+      , stanHit = false
+
+    body.notifications.forEach(function(notification) {
+      t.assert(notification._target === testMessage._id)
+      notification.registrationIds.forEach(function(registrationId){
+        if (registrationId.indexOf('tom') > 0 && notification.trigger == 'own_to') tomHit = true
+        if (registrationId.indexOf('alice') > 0 && notification.trigger == 'nearby') aliceHit = true
+        if (registrationId.indexOf('max') > 0 ) maxHit = true
+        if (registrationId.indexOf('bob') > 0 && notification.trigger == 'watch_to') bobHit = true
+        if (registrationId.indexOf('becky') > 0) beckyHit = true
+        if (registrationId.indexOf('stan') > 0) stanHit = true
+      })
+    })
+
+    t.assert(tomHit)
+    t.assert(aliceHit)
+    t.assert(!maxHit)
+    t.assert(bobHit)
+    t.assert(!beckyHit)
+    t.assert(!stanHit)
+
+    test.done()
+  })
+}
+
+exports.deleteBeckysMessageSecondTime = function (test) {
+  t.post({
+    uri: '/do/deleteEntity?' + userCredBecky,
+    body: {
+      entityId:testMessage._id,
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data._id)
+    test.done()
+  })
+}
+
+exports.maxMovesSoNotNearby = function (test) {
+  t.post({
+    uri: '/do/updateProximity?' + userCredMax,
+    body: {
+      location: locationUserMaxNotNearby,
+      installId: installId5
+    }
+  }, function(err, res, body) {
+    t.assert(body.info && body.info.toLowerCase().indexOf('install updated') >= 0)
+    test.done()
+  })
+}
+
+exports.beckyInsertsMessageToTomsPublicPatchMaxNotNearby = function (test) {
+
+  t.post({
+    uri: '/do/insertEntity?' + userCredBecky,
+    body: {
+      entity: testMessage,
+      links: [{
+        _to: testPatchPublic._id,     // Toms patch watched by Bob
+        type: util.statics.typeContent
+      }],
+      returnNotifications: true,
+    }
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data)
+    /*
+     * Tom gets notified because he owns the patch.
+     * Bob gets notified because he is watching the patch.
+     * Alice gets notified because she is nearby the patch.
+     * Max does *not* get notified because he is *not* nearby the patch.
+     * Becky does not get notified because she is the sender.
+     * Stan does not get notified because he isn't nearby.
+     */
+    t.assert(body.notifications.length === 3)
+
+    var tomHit = false
+      , bobHit = false
+      , aliceHit = false
+      , maxHit = false
+      , beckyHit = false
+      , stanHit = false
+
+    body.notifications.forEach(function(notification) {
+      t.assert(notification._target === testMessage._id)
+      notification.registrationIds.forEach(function(registrationId){
+        if (registrationId.indexOf('tom') > 0 && notification.trigger == 'own_to') tomHit = true
+        if (registrationId.indexOf('alice') > 0 && notification.trigger == 'nearby') aliceHit = true
+        if (registrationId.indexOf('max') > 0) maxHit = true
+        if (registrationId.indexOf('bob') > 0 && notification.trigger == 'watch_to') bobHit = true
+        if (registrationId.indexOf('becky') > 0) beckyHit = true
+        if (registrationId.indexOf('stan') > 0) stanHit = true
+      })
+    })
+
+    t.assert(tomHit)
+    t.assert(aliceHit)
+    t.assert(!maxHit)
+    t.assert(bobHit)
+    t.assert(!beckyHit)
+    t.assert(!stanHit)
+
+    test.done()
+  })
+}
+
+exports.maxMovesNearby = function (test) {
+  t.post({
+    uri: '/do/updateProximity?' + userCredMax,
+    body: {
+      location: locationUserMaxNearby,
+      installId: installId5
+    }
+  }, function(err, res, body) {
+    t.assert(body.info && body.info.toLowerCase().indexOf('install updated') >= 0)
+    test.done()
+  })
+}
+
 exports.aliceInsertsReplyToBeckysPublicMessage = function (test) {
 
   t.post({
@@ -1247,7 +1446,7 @@ exports.aliceInsertsReplyToBeckysPublicMessage = function (test) {
       links: [
          { _to: testPatchPublic._id,          // Toms patch
             type: util.statics.typeContent },
-         { _to: testMessage._id,              // Reply to Bobs message
+         { _to: testMessage._id,              // Becky's message Alice is replying to
             type: util.statics.typeContent }
         ],
       returnNotifications: true,
@@ -1265,7 +1464,7 @@ exports.aliceInsertsReplyToBeckysPublicMessage = function (test) {
 
     /*
      * If not run stand-alone, Alice create in previous test module
-     * gets a message because she is watching tom.
+     * gets a message because she is watching Tom.
      */
     t.assert(body.notifications.length === 4)
 
@@ -1451,7 +1650,6 @@ exports.beckyInsertsMessageToBobsPrivatePatch = function (test) {
   })
 }
 
-
 exports.bobInsertsReplyToBeckysPrivateMessage = function (test) {
 
   t.post({
@@ -1600,7 +1798,6 @@ exports.memberBeckyGetsMessagesForBobsPrivatePatch = function (test) {
   })
 }
 
-
 exports.ownerBobGetMessagesForBobsPrivatePatch = function (test) {
   t.post({
     uri: '/do/getEntitiesForEntity?' + userCredBob,
@@ -1627,7 +1824,6 @@ exports.ownerBobGetMessagesForBobsPrivatePatch = function (test) {
   })
 }
 
-
 exports.nonMemberStanCantGetMessagesForBobsPrivatePatch = function (test) {
   t.post({
     uri: '/do/getEntitiesForEntity?' + userCredStan,
@@ -1653,7 +1849,6 @@ exports.nonMemberStanCantGetMessagesForBobsPrivatePatch = function (test) {
     test.done()
   })
 }
-
 
 exports.nonMemberStanCanGetMembersForBobsPrivatePatch = function (test) {
   t.post({
@@ -1682,7 +1877,6 @@ exports.nonMemberStanCanGetMembersForBobsPrivatePatch = function (test) {
   })
 }
 
-
 exports.tomCanGetMessageToTomsPublicPatch = function (test) {
   t.post({
     uri: '/do/getEntities?' + userCredTom,
@@ -1708,18 +1902,18 @@ exports.tomCanGetMessageToTomsPublicPatch = function (test) {
   })
 }
 
-
 exports.bobCanPreviewMessageCountsByProximity = function (test) {
   t.post({
     uri: '/do/getEntitiesByProximity?' + userCredBob,
     body: {
+      installId: installId1,
       cursor: { skip: 0, limit: 50, sort: { modifiedDate: -1 }},
       links: { shortcuts: false,
          active:
           [ { schema: 'beacon', limit: 10, links: true, type: 'proximity', count: true, direction: 'both' },
             { schema: 'message', limit: 2, links: true, type: 'content', count: true, direction: 'both' }]
       },
-      beaconIds: [ testBeacon._id, testBeacon2._id ]
+      beaconIds: [ testBeacon._id, testBeacon2._id ],
     }
   },
 
@@ -1912,7 +2106,6 @@ exports.beckySharesPrivatePatchWithStan = function(test) {
   })
 }
 
-
 exports.beckySharesMemberMessageWithNonMemberStan = function(test) {
   t.post({
     uri: '/do/insertEntity?' + userCredBecky,
@@ -2024,7 +2217,6 @@ exports.beckySharesMemberMessageWithNonMemberStan = function(test) {
     })
   })
 }
-
 
 exports.beckySharesMemberMessageWithMemberAlice = function(test) {
   t.post({
@@ -2139,7 +2331,6 @@ exports.beckySharesMemberMessageWithMemberAlice = function(test) {
   })
 }
 
-
 exports.beckySharesPhotoWithNonMemberStan = function(test) {
   t.post({
     uri: '/do/insertEntity?' + userCredBecky,
@@ -2234,7 +2425,6 @@ exports.beckySharesPhotoWithNonMemberStan = function(test) {
     })
   })
 }
-
 
 exports.beckySharesPhotoWithMemberAlice = function(test) {
   t.post({
@@ -2331,7 +2521,6 @@ exports.beckySharesPhotoWithMemberAlice = function(test) {
   })
 }
 
-
 exports.stanGetsSharePatchFromBecky = function (test) {
   t.post({
     uri: '/do/getEntities?' + userCredStan,
@@ -2381,7 +2570,6 @@ exports.stanGetsSharePatchFromBecky = function (test) {
   })
 }
 
-
 exports.stanGetsSharePhotoFromBecky = function (test) {
   t.post({
     uri: '/do/getEntities?' + userCredStan,
@@ -2422,7 +2610,6 @@ exports.stanGetsSharePhotoFromBecky = function (test) {
   })
 }
 
-
 exports.aliceGetsSharePhotoFromBecky = function (test) {
   t.post({
     uri: '/do/getEntities?' + userCredAlice,
@@ -2462,7 +2649,6 @@ exports.aliceGetsSharePhotoFromBecky = function (test) {
     test.done()
   })
 }
-
 
 exports.stanGetsShareMessageFromBecky = function (test) {
   t.post({
@@ -2515,7 +2701,6 @@ exports.stanGetsShareMessageFromBecky = function (test) {
     test.done()
   })
 }
-
 
 exports.aliceGetsShareMessageFromBecky = function (test) {
   t.post({
@@ -2583,7 +2768,6 @@ exports.aliceGetsShareMessageFromBecky = function (test) {
   })
 }
 
-
 /*
  * ----------------------------------------------------------------------------
  * Sent messages
@@ -2626,7 +2810,6 @@ exports.userGetMessagesSentByAlice = function (test) {
   })
 }
 
-
 exports.userWatchesPatchViaRestWatchParam = function(test) {
   t.get('/find/patches/' + testPatchPublic._id + '?watch=true&' + userCredAlice,
   function(err, res, body) {
@@ -2667,7 +2850,6 @@ exports.userWatchesPatchViaRestWatchParam = function(test) {
     })
   })
 }
-
 
 exports.userWatchPatchViaRestWatchParamOnMessage = function(test) {
   t.get('/find/messages/' + testMessage._id + '?watch=true&' + userCredBecky,
@@ -2746,7 +2928,6 @@ exports.messagePagingRestLinks = function(test) {
   })
 }
 
-
 exports.removeMessageFromPatch = function(test) {
   t.post({
     uri: '/do/removeLinks?' + userCredTom,  // patch owner
@@ -2775,7 +2956,6 @@ exports.removeMessageFromPatch = function(test) {
     })
   })
 }
-
 
 exports.unwatchPrivatePatch = function(test) {
   t.post({
@@ -2819,7 +2999,6 @@ exports.unwatchPrivatePatch = function(test) {
     })
   })
 }
-
 
 exports.formerMemberGetMessagesForPrivatePatch = function (test) {
   t.post({

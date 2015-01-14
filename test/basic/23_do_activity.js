@@ -299,13 +299,13 @@ exports.registerInstallThree = function (test) {
 
 exports.updateBeaconsInstallOne = function (test) {
   t.post({
-    uri: '/do/getEntitiesByProximity?' + userCredTom,
+    uri: '/do/updateProximity?' + userCredTom,
     body: {
       beaconIds: [testBeacon._id],
       installId: installId1
     }
   }, function(err, res, body) {
-    t.assert(body.data && body.data.length >= 0)
+    t.assert(body.info && body.info.toLowerCase().indexOf('install updated') >= 0)
 
     /* Check install beacons */
     t.post({
@@ -325,13 +325,13 @@ exports.updateBeaconsInstallOne = function (test) {
 
 exports.updateBeaconsInstallTwo = function (test) {
   t.post({
-    uri: '/do/getEntitiesByProximity?' + userCredBob,
+    uri: '/do/updateProximity?' + userCredBob,
     body: {
       beaconIds: [testBeacon._id],
       installId: installId2
     }
   }, function(err, res, body) {
-    t.assert(body.data && body.data.length >= 0)
+    t.assert(body.info && body.info.toLowerCase().indexOf('install updated') >= 0)
 
     /* Check install beacons */
     t.post({
@@ -351,13 +351,13 @@ exports.updateBeaconsInstallTwo = function (test) {
 
 exports.updateBeaconsInstallThree = function (test) {
   t.post({
-    uri: '/do/getEntitiesByProximity?' + userCredAlice,
+    uri: '/do/updateProximity?' + userCredAlice,
     body: {
       beaconIds: [testBeacon2._id],
       installId: installId3
     }
   }, function(err, res, body) {
-    t.assert(body.data && body.data.length == 0)
+    t.assert(body.info && body.info.toLowerCase().indexOf('install updated') >= 0)
 
     /* Check install beacons */
     t.post({
