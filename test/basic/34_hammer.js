@@ -196,13 +196,13 @@ exports.runHammer = function(test) {
 
   function updateBeaconsForInstall() {
     t.post({
-      uri: '/do/getEntitiesByProximity?' + userTomCred,
+      uri: '/do/updateProximity?' + userTomCred,
       body: {
         beaconIds: [testBeacon1._id],
         installId: installId1
       }
     }, function(err, res, body) {
-      t.assert(body.data && body.data.length == 0)
+      t.assert(body.info && body.info.toLowerCase().indexOf('install updated') >= 0)
 
       /* Check install beacons */
       t.post({
