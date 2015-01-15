@@ -22,16 +22,20 @@ Send an authticated request
 
     body|query:  ?user=<user._id>&session=<session.key>
 
-Find Documents
+## Find Documents
 
-    // Collection or field names can be expressed with native mongodb
-    // object syntax or with comma-delimited strings.
+Collection or field names can be expressed with native mongodb
+object syntax or with comma-delimited strings.
+
     nameExpr:  {name1: 1, name2: -1, name3: true, name4: false}
                 - or - 
                 'name1,-name2,name3,-name4'
 
-    queryExpr: pass-through mongodb query expression
+Many APIs pass through mongodb query expressions:
+
+    queryExpr: <passThroughMongoDbQueryExpr>
     
+Find: 
     path: /find/<collection>/<_id>
     method: GET|POST
     body|query: {
@@ -63,7 +67,9 @@ results are returned as so:
     {mydoc:
       {
         field1: 'foo', 
-        field2: 'bar', 
+        field2: 'bar',
+        _owner: <_owner>,
+        owner: </users/_owner.name>
         links: [
           {
             _id: <link[0]._id>,
@@ -99,21 +105,18 @@ Each user account has a role.  The only valid roles are 'user', the default, and
 
 Users or tests can log in with these credentials to perform administrative tasks.
 
-With a few exeptions, admins can perform any operation on the server that would be prevented by permissions.  Users, in general, can read everything, write records to most tables, and can update and remove records that they own.  Users cannot update or delete records owned by other users.
+With a few exeptions, admins can perform any operation on the server that would be prevented by permissions.
 
 ### Creating New Users
 See the guidelines for posting below, the api is 
 
     path: /user/create
-    method: post
-    body:  {
-      data: {
-        email: <email>
-        password: <password>
-      },
+    body|query:  {
+      email: <email>
+      password: <password>
       secret: <secret>
       installId: <installId>
-     }
+    }
 
 All other fields are optional. Secret is currently a static string. Someday it may be provided by a captcha API.  On successful account creation, the service signs in the user, creating a new session object.  The complete user and session object are returned to the caller.
 
@@ -233,10 +236,10 @@ For any fields in the document of the form _<key> which equals the _id field of 
     }
 
 ### POST /data/\<collection\>
-Inserts req.body.data into the collection.  If a value for _id is specified it will be used, otherwise the server will generate a value for _id.  Only one record may be inserted per request. If you specifiy values for any of the system fields, those values will be stored.  If you do not the system will generate defaults for you.  The return value is all fields of the newly created record inside a data tag. 
+Inserts req.body.data into the collection.  If a value for _id is specified it will be used, otherwise the server will generate a value for _id.  Only one record may be inserted per request. If you specifiy values for any of the system fields, those values will be stored.  If you do not the system will generate defaults for you.  The return value is the newly created document. 
 
 ### POST /data/\<collection\>/\<id\>
-Updates the document with _id = id in collection.  The return value is all fields of the modified document inside a data tag. Note that complex fields (objects) will be completely replaced by the updated values, even if you only specify one of their sub-fields in your update.
+Updates the document with _id = id in collection.  The return value updated document. Note that complex fields (objects) will be completely replaced by the updated values, even if you only specify one of their sub-fields in your update.
 
 ### DELETE /data/\<collection\>/\<id1\>
 Deletes the document
@@ -254,30 +257,17 @@ Site statistics are acceessed via
 
     GET /stats
 
-This will return a list of supported stats.  For each stat
+This will return a list of supported stats.
 
-    GET /stats/<stat>
+    GET /stats/
     
 Refreshing statitics requires admin credentials since the operation can be expensive
 
 ### Recurring Tasks
 The service supports a built-in recurring task scheduler based on the later module, https://github.com/bunkat/later.  It enables admins to insert, update, or remove scheduled tasks via the rest api.  
 
-When the server starts, it reads all task documents from the tasks collection, and starts later tasks based on those documents.  Tasks can be inserted, updated, or removed dynamically.  Tasks execute trusted server methods.  The tasks schema extends the _base schema with these fields:
+When the server starts, it reads all task documents and starts later tasks based on those documents.  Tasks can be inserted, updated, or removed dynamically.  Tasks execute trusted server methods.
 
-
-```js
-  {
-    schedule: {type: 'object', required: true, value: {
-      // See http://bunkat.github.io/later/schedules.html
-      schedules:  {type: 'array', required: true},
-      exceptions: {type: 'array'}
-    }},
-    module:   {type: 'string', required: true},   // relative to prox/lib
-    method:   {type: 'string', required: true},   // must be exported
-    args:     {type: 'array'},                    // arguments passed to method
-  },
-```
 ## Wiki
 * (proxibase/wiki/)
 
