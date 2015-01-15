@@ -1,7 +1,7 @@
 # Proxibase
 Proxibase is the backing service for 3meters patchr and related services
 
-## Base Url:
+## Url
 
     https://api.aircandi.com/v1
 
@@ -38,7 +38,8 @@ Many APIs pass through mongodb query expressions:
 
     queryExpr: <passThroughMongoDbQueryExpr>
     
-Find: 
+Find:
+
     path: /find/<collection>/<_id>
     method: GET|POST
     body|query: {
