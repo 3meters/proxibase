@@ -2919,10 +2919,8 @@ exports.messagePagingRestLinks = function(test) {
     function(err, res, body) {
       t.assert(body.data)
       t.assert(body.data.links)
-      t.assert(body.data.links.from)
-      t.assert(body.data.links.from.messages)
-      t.assert(body.data.links.from.messages.length === 2)
-      t.assert(body.data.links.from.messages[0].document.name === 'Message 2')  // skipped messages 0 and 1
+      t.assert(body.data.links.length === 2)
+      t.assert(body.data.links[0].document.name === 'Message 2')  // skipped messages 0 and 1
       test.done()
     })
   })
