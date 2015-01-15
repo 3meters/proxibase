@@ -18,9 +18,12 @@ Sign in
       }
     }
 
-Send an authticated request
+Send an authenticated request
 
-    body|query:  ?user=<user._id>&session=<session.key>
+    body|query: {
+      user: user._id,
+      session: session.key,
+    }
 
 ## Find Documents
 
