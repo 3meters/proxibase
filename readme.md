@@ -1,59 +1,99 @@
 # Proxibase
-Proxibase is the backing service for 3meters aircandi and related services
+Proxibase is the backing service for 3meters patchr and related services
 
-https://api.aircandi.com
+## Url
+
+    https://api.aircandi.com/v1
 
 ## Quick Reference
 
 Sign in
 
     path: /auth/signin
-    method: POST
-    body: {
+    method: POST|GET
+    body|query: {
       user: {
         email: (case-insensitive)
         password: password  (case-sensitive)
       }
     }
 
-Send an authticated request
+Send an authenticated request
 
-    path:  ?user=<user._id>&session=<session.key>
+    body|query: {
+      user: user._id,
+      session: session.key,
+    }
 
-Find Documents
+## Find Documents
+
+Collection or field names can be expressed with native mongodb
+object syntax or with comma-delimited strings.
+
+    nameExpr:  {name1: 1, name2: -1, name3: true, name4: false}
+                - or - 
+                'name1,-name2,name3,-name4'
+
+Many APIs pass through mongodb query expressions:
+
+    queryExpr: <passThroughMongoDbQueryExpr>
+    
+Find:
 
     path: /find/<collection>/<_id>
     method: GET|POST
-    body: {
+    body|query: {
       name: string,                             // case-insensitive starts-with
-      fields: {fieldExpr} || comma-separated string,
-      query: {mongodb query expression},        // pass-through to mongodb
-      refs: boolean || comma-separated string,  // display data from linked documents, try refs=name
+      fields: nameExpr
+      query: queryExpr,                         // pass-through to mongodb
+      refs: boolean || comma-separated string,  // display data from _linked documents, refs=name
       limit: number,                            // default 50, max 1000
       skip: number,
-      sort: [{field1:1}, {field2:-1}]
+      sort: nameExpr,
       count: boolean,                           // returns no records, only count, limit and skip are ignored
-      countBy:  [string]                        // returns count of collection grouped by field or fields
+      countBy:  string                          // returns count of collection grouped by field or fields
       links: {
-        from: {collection1: 1, collection2: 1}, // returns links from this documen
-        to: {collection3: 1, collection4: 1},   // returns links to this document
-        sort: [fieldExpr],                      // applies to link fields, not document fields
-        skip: number,
-        limit: number,
-        fields: {fieldExpr},
-        linkFields: {fieldExpr},
-        filter: {queryExpr},
-        linkFilter: {queryExpr},
-        noDocuments: boolean,                   // set to true to return links only
+        from: nameExpr                          // returns links from this document
+        to: nameExpr                            // returns links to this document
+        sort: nameExpr,                         // applies to link fields, not document fields
+        skip: number,                           // links skip
+        limit: number,                          // links limit
+        filter: queryExpr,                      // link filter
+        fields: nameExpr,                       // link fields
+        docFields: nameExpr,                    // linked document fields, if false don't fetch linked document
+        docFilter: queryExpr,                   // linked document filter
         count: boolean,                         // return count of qualifying links, ignores skip and limit
-      }   // the links param can also accept and array of link specs
+      }   // the links param also accepts and array of link specs
     }
 
-or
+results are returned as so: 
 
-    GET /data/users?countBy=role&lookups=true
-    
-get params are parsed using the querystring module
+    {mydoc:
+      {
+        field1: 'foo', 
+        field2: 'bar',
+        _owner: <_owner>,
+        owner: </users/_owner.name>
+        links: [
+          {
+            _id: <link[0]._id>,
+            collection: 'fooCollection',
+            direction: 'to',
+            _to: <link[0].to>,
+            _from: <link[0].from>,
+            document: <linkedDoc0>
+          },
+          {
+            _id: <link[1]._id>,
+            collection: 'barCollection',
+            direction: 'from',
+            _to: <link[1].to>,
+            _from: <link[1].from>,
+            document: <linkedDoc1>
+            }
+          }
+        ]
+
 
 ## Users and Admins
 Each user account has a role.  The only valid roles are 'user', the default, and 'admin'.  When the server starts it checks for a user with _id 00000.000000.00000.000.00000.  If it does not exist the server creates the user with 
@@ -69,37 +109,31 @@ Each user account has a role.  The only valid roles are 'user', the default, and
 
 Users or tests can log in with these credentials to perform administrative tasks.
 
-With a few exeptions, admins can perform any operation on the server that would be prevented by permissions.  Users, in general, can read everything, write records to most tables, and can update and remove records that they own.  Users cannot update or delete records owned by other users.
+With a few exeptions, admins can perform any operation on the server that would be prevented by permissions.
 
 ### Creating New Users
 See the guidelines for posting below, the api is 
 
     path: /user/create
-    method: post
-    body:  {
-      data: {
-        email: <email>
-        password: <password>
-      },
+    body|query:  {
+      email: <email>
+      password: <password>
       secret: <secret>
       installId: <installId>
-     }
+    }
 
 All other fields are optional. Secret is currently a static string. Someday it may be provided by a captcha API.  On successful account creation, the service signs in the user, creating a new session object.  The complete user and session object are returned to the caller.
 
 Note that on success this call sets return status code to 200, not 201 and one might expect.  This is due to chaining the call to signin.  
 
 ## Authentication
-Users can be authenticated locally with a password or via a oauth provider such as Facebook, Twitter, or Google.  Their authentication source is stored in the users.authSource field which is required.  Valid values may be found in util.statics.authSources.  User emails must be unique in the system.
+Users can be authenticated locally with a password.  We do not yet support oauth authentication. 
 
-### Local
-If a new user is created with a password we assume the authSource is local.  We validate that the password is sufficiently strong before saving, and we save a one-way hash of the password the user entered.  See the users schema for the password rules and hash methods.
-
+### Local Auth
 Users sign in via :
 
     path: /auth/signin
-    method: post
-    body: {
+    body|query: {
       email: (case-insensitive)
       password: password  (case-sensitive)
       installId: installId (case-sensitive)
@@ -107,12 +141,11 @@ Users sign in via :
 
 On success the api returns a session object with two fields of interest, _owner and key.  _owner is user's _id, and key is a session key.  In order to validate a request, include those values on each request, either as query parameters like so:
 
-    /data/users?user=0000.120628.57119.055.350009&session=fb3f74034f591e3053e6e8617c46fb35
-    method:  get, post, or delete
+    /data/users?user=0000.120628.57119.055.350009&session=fb3f74034f591e3053e6e8617c46f 
 
 or as fields in the body of a post like so:
 
-    /do/find
+    /find
     method: post
     body: = {
       collection:'users',
@@ -133,9 +166,8 @@ Sessions can be destroyed via
 
 User passwords cannot be updated via the ordinary rest methods, only via the change password api:
 
-    path: /user/changepw  
-    method: post
-    body: {
+    path: /user/changepw
+    body|query: {
       user:{
         _id:  user._id
         oldPassword: oldPassword
@@ -145,19 +177,10 @@ User passwords cannot be updated via the ordinary rest methods, only via the cha
 
 ### Oauth
 
-Signin via ouath like so:
-
-    path: /auth/signin/facebook|twitter|google
-    method: get
-
-Session management after a sucessful authentication is the same as with local authentication.  If the user authenticates via an oauth provider, we store their provider credentials and user key, allowing us to access their picture and other provider specific data (friends, followers, etc) on their behalf.  
-
-<a name="rest"></a>
+Oauth is NYI
+   
 ## Rest
 The system provides find, insert, update, and remove methods over the base mongodb collections via standard REST apis.  
-
-### GET /schema
-Returns the base collections
 
 ### GET /schema/\<collection\>
 Returns the collection's schema
@@ -174,20 +197,20 @@ meaning
 ### GET /data/\<collection\>
 Returns the collection's first 50 records unsorted.
 
-### GET /data/\<collection\>/\<id1\>,\<id2\>
-Returns records with the specified ids
+### GET /data/\<collection\>/\<id\>
+Returns the document with the specified id
 
 ### GET /data/\<collection\>?name=<name>
-Returns the record beginning with the specified name, case-insensitive.
+Returns documents with a name beginning with the specified name, case-insensitive.
 
 ### GET /data/\<collection\>/genId
-Generates a valid id for the table with the UTC timestamp of the request.  Useful if you want to make posts to mulitple tables with the primary and foreign keys preassigned.
+Generates a valid id for the collection with the UTC timestamp of the request.  Useful if you want to make posts to mulitple tables with the primary and foreign keys preassigned.
 
-    ?sort[namelc]=1&sort[age]=-1
-Returns sorted by name lower case ascending, age decending
+    ?sort=namelc,-age
+Returns sorted by name case ascending, age decending
 
     ?limit=30
-Returns only the first 30 records. Default 100. Max 1000. If there are more records available the more=true flag will be set in the response.  
+Returns only the first 30 records. Default 50. Max 1000. If there are more records available the more=true flag will be set in the response.  
 
     ?skip=1000
 Skip the first 1000 records. Use in conjection with sort, limit, and more to provide paging.
@@ -201,16 +224,13 @@ Returns the count of the colleciton grouped by fieldName
     ?datesToUTC=true
 Converts dates stored in miliseconds since 1970 to UTC-formated strings
 
-    ?lookups=true
-For each reference key of the form _key looks up the name property of the referenced collection and adds it as key.  For example document._owner with lookups=true will also include document.owner = 'Jay'
+    ?refs='name'|true|fieldExpr
+For any fields in the document of the form _<key> which equals the _id field of another collection, add a field to the result named <key> which includes the value of the named field from the referenced collection. Set true to include the referenced document as a nested object under <key>.
 
-### POST Rules
+### POST Rules:
 1. Set req.headers.content-type to 'application/json'
 2. Make sure req.body is parsable json
-3. Write the data for the new object inside a data element in the request body.  The new element can either be a simple object or an array of objects.
-4. You may put your updated elements inside an array, however currently only one element is supported per post
-
-ie
+3. Write the data for the new object inside a data element in the request body:
 
     request.body = {
       "data": {
@@ -219,26 +239,14 @@ ie
       }
     }
 
-or
-
-    request.body = {
-      data: {
-        field1: "foo",
-        field2: "bar"
-      }
-    }
-
 ### POST /data/\<collection\>
-Inserts req.body.data or req.body.data[0] into the collection.  If a value for _id is specified it will be used, otherwise the server will generate a value for _id.  Only one record may be inserted per request. If you specifiy values for any of the system fields, those values will be stored.  If you do not the system will generate defaults for you.  The return value is all fields of the newly created record inside a data tag. 
+Inserts req.body.data into the collection.  If a value for _id is specified it will be used, otherwise the server will generate a value for _id.  Only one record may be inserted per request. If you specifiy values for any of the system fields, those values will be stored.  If you do not the system will generate defaults for you.  The return value is the newly created document. 
 
 ### POST /data/\<collection\>/\<id\>
-Updates the document with _id = id in collection.  Non-system fields not inlucded in request.body.data or request.body.data[0] will not be modified. The return value is all fields of the modified document inside a data tag. Note that complex fields (objects) will be completely replaced by the updated values, even if you only specify one of their sub-fields in your update.
+Updates the document with _id = id in collection.  The return value updated document. Note that complex fields (objects) will be completely replaced by the updated values, even if you only specify one of their sub-fields in your update.
 
-### DELETE /data/\<collection\>/\<id1,id2\>
-Deletes those records
-
-### DELETE /data/\<collection\>/*
-Deletes all records in the collection (admins only)
+### DELETE /data/\<collection\>/\<id1\>
+Deletes the document
 
 <a name="webmethods"></a>
 ## Custom Web Methods
@@ -253,34 +261,17 @@ Site statistics are acceessed via
 
     GET /stats
 
-This will return a list of supported stats.  For each stat
+This will return a list of supported stats.
 
-    GET /stats/<stat>
-  
-will return a collection of the statistics.  These are ordinary monogodb collections.  In the database their names are prefixed by "stats_".  All the normal parameters to the rest GET API will work.  POST /do/find works too using the body param stat: <stat>. All statistic collections are static, and must be recomputed to be current. To recompute a statistic, add the parameter 
-
-    ?refresh=true
-
+    GET /stats/
+    
 Refreshing statitics requires admin credentials since the operation can be expensive
 
 ### Recurring Tasks
 The service supports a built-in recurring task scheduler based on the later module, https://github.com/bunkat/later.  It enables admins to insert, update, or remove scheduled tasks via the rest api.  
 
-When the server starts, it reads all task documents from the tasks collection, and starts later tasks based on those documents.  Tasks can be inserted, updated, or removed dynamically.  Tasks execute trusted server methods.  The tasks schema extends the _base schema with these fields:
+When the server starts, it reads all task documents and starts later tasks based on those documents.  Tasks can be inserted, updated, or removed dynamically.  Tasks execute trusted server methods.
 
-
-```js
-  {
-    schedule: {type: 'object', required: true, value: {
-      // See http://bunkat.github.io/later/schedules.html
-      schedules:  {type: 'array', required: true},
-      exceptions: {type: 'array'}
-    }},
-    module:   {type: 'string', required: true},   // relative to prox/lib
-    method:   {type: 'string', required: true},   // must be exported
-    args:     {type: 'array'},                    // arguments passed to method
-  },
-```
 ## Wiki
 * (proxibase/wiki/)
 
