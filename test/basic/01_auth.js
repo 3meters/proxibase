@@ -13,6 +13,7 @@ var userOldCred
 var session = {}
 var adminSession = {}
 var _exports = {}                    // for commenting out tests
+var qs = require('qs')
 var seed = String(Math.floor(Math.random() * 1000000))
 var testUser = {
   name: 'AuthTestUser',
@@ -44,9 +45,10 @@ exports.canSignInAsAdmin = function(test) {
   }, function(err, res, body) {
     t.assert(body.user)
     t.assert(body.session)
+    t.assert(body.credentials)
     adminSession = body.session
     // These credentials will be useds in subsequent tests
-    adminCred = 'user=' + body.user._id + '&session=' + body.session.key
+    adminCred = qs.stringify(body.credentials)
     test.done()
   })
 }
@@ -64,7 +66,7 @@ exports.cannotSignInAsAnonymous = function(test) {
 exports.adminCannotAddUserWithoutEmail = function(test) {
   t.post({
     uri: '/user/create?' + adminCred,
-    body: {data: {name: 'bob', password: 'foobar'},
+    body: {user: {name: 'bob', password: 'foobar'},
         secret: 'larissa', installId: '123456'}
   }, 400, function(err, res, body) {
     t.assert(body.error.code === 400.1)
@@ -155,6 +157,7 @@ exports.userCanSignIn = function(test) {
     t.assert(body.session)
     session = body.session
     userCred = 'user=' + body.session._owner + '&session=' + body.session.key
+    userCred = qs.stringify(body.credentials)
     test.done()
   })
 }
@@ -525,43 +528,7 @@ exports.userCanInviteNewUser = function(test) {
   }, function(err, res, body) {
     t.assert(body.errors && !body.errors.length)
     t.assert(body.results && body.results.length)
-    // Check the db for whitelisted records
-    t.post({
-      uri: '/find/documents?' + adminCred,
-      body: {
-        query: {
-          type: 'validUser',
-          'data.email': 'test@3meters.com'
-        }
-      }
-    }, function(err, res, body) {
-      t.assert(body.data)
-      t.assert(body.data.length)
-      t.post({
-        uri: '/user/create',
-        body: {
-          data: {
-            name: 'TestInvitedUser',
-            email: 'test@3meters.com',
-            password: 'foobar'
-          },
-          secret: 'larissa',
-          installId: '123456',
-        }
-      }, function(err, res, body) {
-        t.assert(body.user)
-        t.assert(body.session)
-        t.assert(body.session.key)
-        t.assert(body.user.validationDate)
-        t.assert(!body.user.validationNotifyDate)
-        t.del({
-          uri:  '/data/users/' + body.user._id + '?' + adminCred,
-        }, function(err, res, body) {
-          t.assert(1 === body.count)
-          test.done()
-        })
-      })
-    })
+    test.done()
   })
 }
 

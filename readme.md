@@ -13,16 +13,18 @@ Sign in
     method: POST|GET
     body|query: {
       user: {
-        email: (case-insensitive)
-        password: password  (case-sensitive)
+        email: <email>,
+        password: <password>,
+        install: <installId>,  // client device Id, can be any string
       }
     }
 
 Send an authenticated request
 
     body|query: {
-      user: user._id,
-      session: session.key,
+      user: <user._id>,
+      session: <session.key>,
+      install: <installId>,    // client device Id, can be any string
     }
 
 ## Find Documents
@@ -116,10 +118,13 @@ See the guidelines for posting below, the api is
 
     path: /user/create
     body|query:  {
-      email: <email>
-      password: <password>
-      secret: <secret>
-      installId: <installId>
+      data: {
+        name: <name>,
+        email: <email>,
+        password: <password>,
+      },
+      secret: <secret>,
+      installId: <installId>,
     }
 
 All other fields are optional. Secret is currently a static string. Someday it may be provided by a captcha API.  On successful account creation, the service signs in the user, creating a new session object.  The complete user and session object are returned to the caller.
@@ -134,9 +139,9 @@ Users sign in via :
 
     path: /auth/signin
     body|query: {
-      email: (case-insensitive)
-      password: password  (case-sensitive)
-      installId: installId (case-sensitive)
+      email: <email>,
+      password: <password>,
+      installId: <installId>,
     }
 
 On success the api returns a session object with two fields of interest, _owner and key.  _owner is user's _id, and key is a session key.  In order to validate a request, include those values on each request, either as query parameters like so:

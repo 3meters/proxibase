@@ -5,6 +5,7 @@
 var util = require('proxutils')
 var log = util.log
 var testUtil = require('../util')
+var qs = require('qs')
 var db = testUtil.db
 var t = testUtil.treq
 var userSession
@@ -15,12 +16,10 @@ var _exports = {}  // For commenting out tests
 
 
 exports.getUserSession = function(test) {
-  testUtil.getUserSession(function(session) {
-    userSession = session
-    userCred = 'user=' + session._owner + '&session=' + session.key
-    testUtil.getAdminSession(function(session) {
-      adminSession = session
-      adminCred = 'user=' + session._owner + '&session=' + session.key
+  testUtil.getUserSession(function(session, user, credentials) {
+    userCred = qs.stringify(credentials)
+    testUtil.getAdminSession(function(session, user, credentials) {
+      adminCred = qs.stringify(credentials)
     test.done()
     })
   })
