@@ -40,10 +40,22 @@ exports.directDbConnection = function(test) {
 // Check schema info page
 exports.getSchemaPage = function(test) {
   t.get('/schema', function(err, res, body) {
-    t.assert(body && body.schemas && body.schemas.user)
+    t.assert(body && body.schemas && body.schemas.users)
     test.done()
   })
 }
+
+
+// Get all schemas in single call
+exports.getSchemas = function(test) {
+  t.get('/schemas', function(err, res, body) {
+    t.assert(body && body.schemas && body.schemas.users)
+    t.assert(body.schemas.users.fields)
+    t.assert(!body.schemas.users.methods)  // private property
+    test.done()
+  })
+}
+
 
 // Check errors info page
 exports.getErrorsPage = function(test) {
