@@ -93,7 +93,7 @@ var testPatchPublic = {
   name : "Hawks Nest",
   photo: {
     prefix:"1001_20111224_104245.jpg",
-    source:"aircandi"
+    source:"aircandi.images"
   },
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
@@ -139,7 +139,7 @@ var testPatchPrivate = {
   name : "Seahawks Private VIP Club",
   photo: {
     prefix:"1001_20111224_104245.jpg",
-    source:"aircandi"
+    source:"aircandi.images"
   },
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
@@ -162,7 +162,7 @@ var testMessage = {
   description : "Go seahawks!",
   photo: {
     prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
-    source:"aircandi",
+    source:"generic",
   },
   _acl: testPatchPublic._id,  // Usually set by client
 }
@@ -184,7 +184,7 @@ var testMessageToPrivate = {
   description : "How do I switch views on the suite flat panel screen?",
   photo: {
     prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
-    source:"aircandi",
+    source:"generic",
   },
   _acl: testPatchPrivate._id,  // Usually set by client
 }
@@ -2342,7 +2342,7 @@ exports.beckySharesPhotoWithNonMemberStan = function(test) {
         description : "Checkout Becky\'s photo!",
         photo: {
           prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
-          source:"aircandi",
+          source:"generic",
         },
       },
       links: [{
@@ -2437,7 +2437,7 @@ exports.beckySharesPhotoWithMemberAlice = function(test) {
         description : "Checkout Becky\'s photo!",
         photo: {
           prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
-          source:"aircandi",
+          source:"generic",
         },
       },
       links: [{
