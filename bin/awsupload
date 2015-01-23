@@ -1,7 +1,9 @@
-#!env node
+#!/usr/bin/env node
 
 /**
- * backup.js:  backup our nightly proxdump to s3
+ * awsupload.js:  upload our nightly proxdump to s3
+ *
+ *
  **/
 
 var knox = require('knox')  // TJ's simple s3 lib
@@ -52,8 +54,9 @@ function uploadToS3(filePath, bucket) {
   var headers = {'x-amz-acl': 'public-read'}
 
   s3.putFile(filePath, fileName, headers, function(err, s3Res) {
-    log('S3 upload complete after ' + timer.read())
+    log('S3 responded after ' + timer.read())
     if (err) logErr(err)
+    if (!)
     if (200 !== s3Res.statusCode) {
       logErr('Amazon S3 returned error code ' + s3Res.statusCode)
       s3Res.pipe(process.stderr) // can log accept streams?

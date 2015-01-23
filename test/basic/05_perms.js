@@ -16,7 +16,8 @@ var user1 = {
   email: 'permtest1@3meters.com',
   password: 'foobar',
   photo: {
-    prefix: 'user1.png'
+    prefix: 'user1.png',
+    source: "aircandi.images",
   },
 }
 var user2 = {
@@ -25,7 +26,8 @@ var user2 = {
   email: 'permtest2@3meters.com',
   password: 'foobar',
   photo: {
-    prefix: 'user2.png'
+    prefix: 'user2.png',
+    source:"aircandi.images",
   },
 }
 var doc1 = {

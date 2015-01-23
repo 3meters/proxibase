@@ -60,7 +60,7 @@ var testPatchCustom = {
   name : "Testing patch entity custom one for messages",
   photo: {
     prefix:"1001_20111224_104245.jpg",
-    source:"aircandi"
+    source:"aircandi.images"
   },
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
@@ -82,7 +82,7 @@ var testPatchCustomTwo = {
   locked: true,
   photo: {
     prefix:"1001_20111224_104245.jpg",
-    source:"aircandi"
+    source:"aircandi.images"
   },
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
@@ -104,7 +104,7 @@ var testMessage = {
   name : "Testing message entity",
   photo: {
     prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
-    source:"aircandi",
+    source:"aircandi.images",
   },
 }
 
