@@ -1,4 +1,6 @@
-#!env node
+#! node
+
+/* vim: set filetype=js : */
 
 /**
  * backup.js:  backup our nightly proxdump to s3
