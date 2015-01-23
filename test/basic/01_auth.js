@@ -20,7 +20,7 @@ var testUser = {
   type: 'user',
   email: 'authtest' + seed + '@3meters.com',
   password: 'foobar',
-  photo: {prefix: 'authTestUser.jpg'},
+  photo: {prefix: 'authTestUser.jpg', source:"aircandi.images"},
 }
 var newUserId
 var newUserEmail
@@ -379,7 +379,7 @@ exports.annonymousUserCannotCreateUserViaApiWithoutSecret = function(test) {
         name: 'AuthTestUser2',
         email: 'authtest2@3meters.com',
         password: 'foobar',
-        photo: {prefix: 'authTestUser.jpg'},
+        photo: {prefix: 'authTestUser.jpg', source:"aircandi.images"},
       },
       installId: '123456',
     },
@@ -398,7 +398,7 @@ exports.annonymousUserCannotCreateUserViaApiWithWrongSecret = function(test) {
         name: 'AuthTestUser2',
         email: 'authtest2@3meters.com',
         password: 'foobar',
-        photo: {prefix: 'authTestUser.jpg'},
+        photo: {prefix: 'authTestUser.jpg', source:"aircandi.images"},
       },
       secret: 'wrongsecret',
       installId: '123456',
@@ -418,7 +418,7 @@ exports.annonymousUserCanCreateUserViaApi = function(test) {
         name: 'AuthTestUser2',
         email: 'authtest2@3meters.com',
         password: 'foobar',
-        photo: {prefix: 'authTestUser.jpg'},
+        photo: {prefix: 'authTestUser.jpg', source:"aircandi.images"},
       },
       secret: 'larissa',
       installId: '123456',

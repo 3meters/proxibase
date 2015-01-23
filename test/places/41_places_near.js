@@ -23,7 +23,7 @@ var testEntity = {
   name : "Test Place Entity Suggest Applinks",
   photo: {
     prefix: "https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
-    source: "aircandi",
+    source: "generic",
   },
   enabled : true,
   locked : false,
@@ -218,7 +218,7 @@ exports.getPlacesNearLocationUsingLimitAgain = function(test) {
     delete roxy.modifier
     var myRoxy = util.clone(roxy)
     myRoxy.name = 'Changed Roxy'
-    myRoxy.photo = {prefix: 'myNewPhoto.jpeg'}
+    myRoxy.photo = {prefix: 'myNewPhoto.jpeg', source:'generic'}
     t.post({
       uri: '/do/updateEntity?' + userCred,
       body: {

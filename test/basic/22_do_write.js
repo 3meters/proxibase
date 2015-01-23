@@ -55,7 +55,7 @@ var testPatchOne = {
   name : "Testing patch entity",
   photo: {
     prefix:"1001_20111224_104245.jpg",
-    source:"aircandi"
+    source:"aircandi.images"
   },
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
@@ -75,7 +75,7 @@ var testPatchTwo = {
   name : "Testing patch entity",
   photo: {
     prefix:"1001_20111224_104245.jpg",
-    source:"aircandi"
+    source:"aircandi.images"
   },
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
@@ -95,7 +95,7 @@ var testPatchCustomPublic = {
   name : "Testing patch entity custom",
   photo: {
     prefix:"1001_20111224_104245.jpg",
-    source:"aircandi"
+    source:"aircandi.images"
   },
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
@@ -116,7 +116,7 @@ var testPatchCustomLocked = {
   name : "Testing patch entity custom locked",
   photo: {
     prefix:"1001_20111224_104245.jpg",
-    source:"aircandi"
+    source:"aircandi.images"
   },
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
@@ -138,7 +138,7 @@ var testMessage = {
   name : "Testing message entity",
   photo: {
     prefix:"https://s3.amazonaws.com/3meters_images/1001_20111224_104245.jpg",
-    source:"aircandi",
+    source:"aircandi.images",
   },
 }
 var testApplink = {
@@ -1037,7 +1037,7 @@ exports.deleteMessage = function (test) {
 
 exports.updatePatchOwnedByMe= function (test) {
   testPatchOne.name = 'This change will take'
-  testPatchOne.photo = {prefix: 'newPhoto.jpg'}
+  testPatchOne.photo = {prefix: 'newPhoto.jpg', source:'generic'}
   t.post({
     uri: '/do/updateEntity?' + userCredTom,
     body: {
