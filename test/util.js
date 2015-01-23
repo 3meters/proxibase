@@ -192,7 +192,7 @@ function getSession(user, asAdmin, cb) {
     function finish(res) {
       assert(res.body.session)
       assert(res.body.user)
-      cb(res.body.session, res.body.user)
+      cb(res.body.session, res.body.user, res.body.credentials)
     }
   })
 }
