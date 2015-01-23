@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+// vim: set ft=javascript:
+
 /**
  * awsupload.js:  upload our nightly proxdump to s3
  *
@@ -55,8 +57,7 @@ function uploadToS3(filePath, bucket) {
 
   s3.putFile(filePath, fileName, headers, function(err, s3Res) {
     log('S3 responded after ' + timer.read())
-    if (err) logErr(err)
-    if (!)
+    if (err) return console.error(err)
     if (200 !== s3Res.statusCode) {
       logErr('Amazon S3 returned error code ' + s3Res.statusCode)
       s3Res.pipe(process.stderr) // can log accept streams?
