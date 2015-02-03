@@ -291,3 +291,27 @@ exports.findLinksFromWorksWithGetSyntax = function(test) {
     test.done()
   })
 }
+
+
+exports.findLinksWorksWithArrays = function(test) {
+var query = {
+    uri: '/find/patches?links[from][users]=1&links[filter][type]=watch&' + userCred,
+  }
+  t.get(query, function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.data.length)
+    var cLinks = 0
+    body.data.forEach(function(patch) {
+      if (patch.links) {
+        patch.links.forEach(function(link) {
+          cLinks++
+          t.assert(link.document)
+          t.assert(link.type === 'watch')
+          t.assert(link.document)
+        })
+      }
+    })
+    t.assert(cLinks > 10)
+    test.done()
+  })
+}
