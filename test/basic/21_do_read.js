@@ -297,7 +297,7 @@ exports.getEntitiesCreatedByUserSortSkipLimit = function (test) {
 
 exports.getEntitesLinksLimitSortSkip = function (test) {
   t.post({
-    uri: '/do/getEntitiesForEntity',
+    uri: '/do/getEntitiesForEntity?' + testUser1.cred,
     body: {
       entityId: constants.uid1,
       cursor: {
@@ -330,6 +330,7 @@ exports.getEntitesLinksLimitSortSkip = function (test) {
       lastSortDate = link.sortDate
       if (2 === i) link3 = link
     })
+    t.assert(link3 && link3.shortcut, link3)
 
     t.post({
       uri: '/do/getEntitiesForEntity?' + testUser1.cred,
@@ -397,7 +398,7 @@ exports.getEntitesLinksLimitSortSkip = function (test) {
 
 exports.getEntitiesCreatedByUserMessagesOnly = function (test) {
   t.post({
-    uri: '/do/getEntitiesForEntity',
+    uri: '/do/getEntitiesForEntity?' + testUser1.cred,
     body: {
       entityId: constants.uid1,
       cursor: {

@@ -276,8 +276,18 @@ exports.ownerAccessCollectionsWork = function(test) {
         body.data.forEach(function(doc) {
           t.assert(doc._id && doc._owner)
           t.assert(user1._id === doc._owner)
-          t.assert('do.use2DocOwnerAccessTest' !== doc._id)  // can't see user 2's document
-          test.done()
+          t.assert('do.user2DocOwnerAccessTest' !== doc._id)  // can't see user 2's document
+          t.get('/data/documents',
+          function(err, res, body) {
+            t.assert(body.data)
+            t.assert(body.data.length === 0)
+            t.assert(body.count === 0)
+            t.get('/data/documents/do.user1DocOwnerAccessTest',
+            function(err, res, body) {
+              t.assert(body.data === null)
+              test.done()
+            })
+          })
         })
       })
     })

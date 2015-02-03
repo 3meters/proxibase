@@ -915,7 +915,7 @@ exports.insertMessage = function (test) {
 
     /* Check inserted message */
     t.post({
-      uri: '/find/messages',
+      uri: '/find/messages?' + userCredBob,
       body: {
         query: { _id: testMessage._id }
       }
@@ -925,7 +925,7 @@ exports.insertMessage = function (test) {
 
       /* Check content link for message */
       t.post({
-        uri: '/find/links',
+        uri: '/find/links?' + userCredBob,
         body: {
           query:{
             _from: testMessage._id,
@@ -939,7 +939,7 @@ exports.insertMessage = function (test) {
 
         /* Check create link for message */
         t.post({
-          uri: '/find/links',
+          uri: '/find/links?' + userCredBob,
           body: {
             query:{
               _from: testUserBob._id,

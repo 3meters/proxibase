@@ -681,7 +681,7 @@ exports.insertMessage2 = function (test) {
 
     /* Check insert */
     t.post({
-      uri: '/find/messages',
+      uri: '/find/messages?' + userCredTom,
       body: {
         query: { _id: testMessage2._id }
       }
@@ -720,7 +720,7 @@ exports.updateNestedMessage = function (test) {
 
     /* Check update */
     t.post({
-      uri: '/find/messages',
+      uri: '/find/messages?' + userCredTom,
       body: {
         query: { _id: testMessage2._id }
       }
@@ -732,7 +732,7 @@ exports.updateNestedMessage = function (test) {
 
       /* Check activityDate for patch */
       t.post({
-        uri: '/find/patches',
+        uri: '/find/patches?' + userCredTom,
         body: {
           query:{ _id:testPatchCustom._id }
         }
@@ -770,7 +770,7 @@ exports.deleteNestedMessage = function (test) {
     var activityDate = body.date
     /* Check delete */
     t.post({
-      uri: '/find/messages',
+      uri: '/find/messages?' + adminCred,
       body: {
         query: { _id: testMessage2._id }
       }
