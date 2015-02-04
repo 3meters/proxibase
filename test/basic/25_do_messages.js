@@ -2913,14 +2913,14 @@ exports.messagePagingRestLinks = function(test) {
   t.get('/find/patches/' + patch1Id + '?links[from][messages]=1&' + adminCred,
   function(err, res, body) {
     t.assert(body.data)
-    t.assert(body.data.links)
-    t.assert(body.data.links.length = messagesPerPatch)
+    t.assert(body.data.linked)
+    t.assert(body.data.linked.length = messagesPerPatch)
     t.get('/find/patches/' + patch1Id + '?links[from][messages]=1&links[limit]=2&links[skip]=2&links[sort]=_id&' + adminCred,
     function(err, res, body) {
       t.assert(body.data)
-      t.assert(body.data.links)
-      t.assert(body.data.links.length === 2)
-      t.assert(body.data.links[0].document.name === 'Message 2')  // skipped messages 0 and 1
+      t.assert(body.data.linked)
+      t.assert(body.data.linked.length === 2)
+      t.assert(body.data.linked[0].name === 'Message 2')  // skipped messages 0 and 1
       test.done()
     })
   })

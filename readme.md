@@ -65,36 +65,36 @@ Find:
         docFields: nameExpr,                    // linked document fields, if false don't fetch linked document
         docFilter: queryExpr,                   // linked document filter
         count: boolean,                         // return count of qualifying links, ignores skip and limit
-      }   // the links param also accepts and array of link specs
+      }   // the links param also accepts an array of link specs
     }
 
-results are returned as so: 
+results are returned as so:
 
-    {mydoc:
-      {
-        field1: 'foo', 
-        field2: 'bar',
-        _owner: <_owner>,
-        owner: </users/_owner.name>
-        links: [
-          {
-            _id: <link[0]._id>,
-            collection: 'fooCollection',
-            direction: 'to',
-            _to: <link[0].to>,
-            _from: <link[0].from>,
-            document: <linkedDoc0>
-          },
-          {
-            _id: <link[1]._id>,
-            collection: 'barCollection',
-            direction: 'from',
-            _to: <link[1].to>,
-            _from: <link[1].from>,
-            document: <linkedDoc1>
-            }
-          }
-        ]
+      [
+        {
+          _id: <doc1Id>
+          field1: 'foo',
+          field2: 'bar',
+          ...
+          linked: [
+            linkedDoc1,
+            linkedDoc2,
+            ...
+          ]
+        },{
+          _id: <doc2Id>
+          field1: 'foofoo',
+          field2: 'barbar',
+          ...
+          linked: [
+            linkedDoc1,
+            linkedDoc2,
+            ...
+          ]
+        }
+      ]
+
+Under each linkedDoc is a link property containing the link itself.  The sort, skip, limit, and filter properties apply to the link, not the linked document, to support paging.
 
 
 ## Users and Admins
@@ -144,21 +144,22 @@ Users sign in via :
       installId: <installId>,
     }
 
-On success the api returns a session object with two fields of interest, _owner and key.  _owner is user's _id, and key is a session key.  In order to validate a request, include those values on each request, either as query parameters like so:
+On success the api returns a credentials object with three fields: user, session and install. In order to validate subsequent requests, include those values on each request, either as query parameters like so:
 
-    /data/users?user=0000.120628.57119.055.350009&session=fb3f74034f591e3053e6e8617c46f 
+    /data/users?user=0000.120628.57119.055.350009&session=fb3f74034f591e3053e6e8617c46f&instal=<instalId>
 
 or as fields in the body of a post like so:
 
-    /find
+    /find/users
     method: post
-    body: = {
-      collection:'users',
-      user: 0000.120628.57119.055.350009
-      session: fb3f74034f591e3053e6e8617c46fb35
+    body: {
+      "query": {"namelc": "jay massena"},
+      "user": '0000.120628.57119.055.350009",
+      "session": 'fb3f74034f591e3053e6e8617c46fb35",
+      "install": "installId"
     }
 
-If you pass invaild session credentials the request will fail with a 401 (not authorized).  If they are valid, all responses will contain a user object that includes the user's id and name. 
+If you pass invaild session credentials the request will fail with a 401 (not authorized).  If they are valid, all responses will contain a user object that includes the user's id and name.
 
 Sessions can be destroyed via
 
@@ -230,7 +231,7 @@ Returns the count of the colleciton grouped by fieldName
 Converts dates stored in miliseconds since 1970 to UTC-formated strings
 
     ?refs='name'|true|fieldExpr
-For any fields in the document of the form _<key> which equals the _id field of another collection, add a field to the result named <key> which includes the value of the named field from the referenced collection. Set true to include the referenced document as a nested object under <key>.
+For any fields in the document of the form _<key> which equals the _id field of another collection, add a field to the result named <key> which includes the value of the named field from the referenced collection. Set true to include the referenced document as a nested object under <key>.  refs='name' is the most common setting.  For all documents with a _owner field, it will ad a field called owner that is equal to name of the owning user.
 
 ### POST Rules:
 1. Set req.headers.content-type to 'application/json'
