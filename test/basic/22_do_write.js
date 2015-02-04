@@ -1125,19 +1125,6 @@ exports.deletePatch = function (test) {
 }
 
 
-exports.nonOwnerCannotUpdateLockedRecord = function(test) {
-  testPatchCustomLocked.name = 'Testing non owner update of locked entity'
-  t.post({
-    uri: '/do/updateEntity?' + userCredBob,
-    body: {
-      entity:testPatchCustomLocked
-    }
-  }, 401, function(err, res, body) {
-    t.assert(body.error && body.error.code === 401.6)
-    test.done()
-  })
-}
-
 exports.ownerCanUpdateLockedRecord = function(test) {
   testPatchCustomLocked.name = 'Testing owner update of locked entity'
   t.post({
