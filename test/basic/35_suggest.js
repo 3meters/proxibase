@@ -281,6 +281,9 @@ exports.suggestWatchedEntitiesSortFirst = function(test) {
 }
 
 exports.suggestPlaceResidence = function(test) {
+
+  if (disconnected) return skip(test)
+
   t.get('/suggest/places?provider=google&fts=-1&regex=-1&input="312 N 49th St, 98103"',
   function(err, res, body) {
     t.assert(body.data)

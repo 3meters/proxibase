@@ -123,7 +123,7 @@ exports.findLinksFieldProjectionWorks = function(test) {
   })
 }
 
-exports.findLinksLinkFilterWorks = function(test) {
+exports.findLinksFilterWorks = function(test) {
   var query = {
     uri: '/find/users/' + user1Id + '?' + userCred,
     body: {links: {to: {patches: 1}, filter: {type: 'watch'}}}
@@ -248,26 +248,33 @@ exports.findLinksPagingWorksWithFilter = function(test) {
 exports.findLinksCountWorks = function(test) {
   var query = {
     uri: '/find/patches/' + patch1Id + '?' + userCred,
-    body: {links: {to: 'places,beacons,documents', from: {users: 1, messages: 1}, count: true}}
+    body: {links: [
+      {to: 'places,beacons,documents', type: 'proximity', count: true},
+      {from: {users: 1}, type: 'watch', count: 1},
+      {from: {users: 1}, type: 'create', count: 1},
+      {from: {messages: 1}, type: 'content', count: 1},
+    ]},
   }
   t.post(query, function(err, res, body) {
     t.assert(!body.data.linked)
-    var linkedCount = body.data.linkedCount
-    t.assert(linkedCount.to)
-    t.assert(tipe.isDefined(linkedCount.to.places))
-    t.assert(tipe.isDefined(linkedCount.to.beacons))
-    t.assert(tipe.isDefined(linkedCount.to.documents))
-    t.assert(linkedCount.from)
-    t.assert(tipe.isDefined(linkedCount.from.users))
-    t.assert(tipe.isDefined(linkedCount.from.messages))
-    t.assert(linkedCount.to.documents === 0)
-    t.assert(linkedCount.to.places === dbProfile.ppp)
-    t.assert(linkedCount.to.beacons === dbProfile.bpp)
-    t.assert(linkedCount.from.users === 2)  // watch and create
-    t.assert(linkedCount.from.messages === dbProfile.mpp)
+    var lc = body.data.linkedCount
+    t.assert(lc.to)
+    t.assert(tipe.isDefined(lc.to.places.proximity))
+    t.assert(tipe.isDefined(lc.to.beacons.proximity))
+    t.assert(tipe.isDefined(lc.to.documents.proximity))
+    t.assert(lc.from)
+    t.assert(tipe.isDefined(lc.from.users.watch))
+    t.assert(tipe.isDefined(lc.from.messages.content))
+    t.assert(lc.to.documents.proximity === 0)
+    t.assert(lc.to.places.proximity === dbProfile.ppp)
+    t.assert(lc.to.beacons.proximity === dbProfile.bpp)
+    t.assert(lc.from.users.watch === 1)
+    t.assert(lc.from.users.create === 1)
+    t.assert(lc.from.messages.content === dbProfile.mpp)
     test.done()
   })
 }
+
 
 exports.findLinksAcceptsArrays = function(test) {
   var query = {
@@ -292,9 +299,58 @@ exports.findLinksAcceptsArrays = function(test) {
 }
 
 
+exports.mustSpecifyTypeForLinkCount = function(test) {
+  var query = {
+    uri: '/find/patches/' + patch1Id + '?' + userCred,
+    body: {links: {from: 'messages', count: true}},
+  }
+  t.post(query, 400, function(err, res, body) {
+    t.assert(body.error)
+    t.assert(body.error.code === 400.13)
+    test.done()
+  })
+}
+
+
+exports.findLinksComplexWorks = function(test) {
+  var query = {
+    uri: '/find/patches/' + patch1Id + '?' + userCred,
+    body: {links: [
+      {to: 'places,beacons', type: 'proximity', count: true},
+      {from: 'users', type: 'watch', count: true},
+      {from: 'users', type: 'create', count: true},
+      {from: 'messages', type: 'content', count: true},
+      {from: 'messages', type: 'content'},  // get documents not count
+    ]}
+  }
+  t.post(query, function(err, res, body) {
+    t.assert(body.data.linkedCount)
+    var lc = body.data.linkedCount
+    t.assert(tipe.isDefined(lc.to.places.proximity))
+    t.assert(tipe.isDefined(lc.to.beacons.proximity))
+    t.assert(tipe.isDefined(lc.from.users.watch))
+    t.assert(tipe.isDefined(lc.from.messages.content))
+    t.assert(lc.to.beacons.proximity === dbProfile.bpp)
+    t.assert(lc.to.places.proximity === dbProfile.ppp)
+    t.assert(lc.from.users.watch === 1)
+    t.assert(lc.from.users.create === 1)
+    t.assert(lc.from.messages.content === dbProfile.mpp)
+    // Can mix and match count queries with data-fetching queries
+    t.assert(body.data.linked)
+    body.data.linked.forEach(function(doc) {
+      t.assert(doc.collection === 'message')
+      t.assert(doc.link)
+      t.assert(doc.link.type === 'content')
+    })
+    test.done()
+  })
+}
+
+
 exports.findLinksFromWorksWithGetSyntax = function(test) {
   var query = {
-    uri: '/find/patches/' + patch1Id + '?links[from][users]=1&links[filter][type]=watch&' + userCred,
+    uri: '/find/patches/' + patch1Id +
+      '?links[from][users]=1&links[filter][type]=watch&' + userCred,
   }
   t.get(query, function(err, res, body) {
     t.assert(body.data.linked.length === 1)  // create links filtered out
