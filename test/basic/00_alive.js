@@ -106,7 +106,7 @@ exports.echo = function(test) {
 }
 
 // Make sure public database read works
-exports.canReadPublidData = function(test) {
+exports.canReadPublicData = function(test) {
   t.get('/data/patches', function(err, res, body) {
     t.assert(body)
     t.assert(body.data)

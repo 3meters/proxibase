@@ -11,6 +11,10 @@ var t = testUtil.treq
 var testUserId
 var db = testUtil.safeDb   // raw mongodb connection object without mongoSafe wrapper
 var admin = {}
+var photo = {
+  prefix: 'picture.jpg',
+  source: 'aircandi.users'
+}
 
 var _exports = {}  // For commenting out tests
 
@@ -19,6 +23,7 @@ var tarzan = {
   name: 'tarzan' + seed,
   email: 'tarzan' + seed + '@3meters.com',
   password: 'foobar',
+  photo: photo,
 }
 
 var jane = {
@@ -26,6 +31,7 @@ var jane = {
   name: 'jane' + seed,
   email: 'jane' + seed + '@3meters.com',
   password: 'foobar',
+  photo: photo,
 }
 
 var mary = {
@@ -33,11 +39,13 @@ var mary = {
   name: 'mary' + seed,
   email: 'mary' + seed + '@3meters.com',
   password: 'foobar',
+  photo: photo,
 }
 
 var river = {
   _id: 'pa.river' + seed,
   name: 'River' + seed,
+  photo: photo,
 }
 
 var treehouse = {
@@ -802,6 +810,49 @@ exports.maryCanCreatePatchAndLinksToAndFromItInOneRestCall = function(test) {
     })
     t.assert(body.errors)
     t.assert(body.errors.length === 1)
+    test.done()
+  })
+}
+
+
+exports.findWithNestedLinks = function(test) {
+  t.post({
+    uri: '/find/users/' + tarzan._id + ',' + jane._id + ',' + mary._id + '?' + tarzan.cred,
+    body: {refs: 'name,photo',
+      linked: [
+        {to: 'patches', type: 'watch', fields: 'name,visibility,photo', linkFields: 'enabled', linked: [
+          {from: 'messages', type: 'content', fields: 'description,photo', linkFields: false},
+          {from: 'users', type: 'watch', count: true},
+          {from: 'users', type: 'like', count: true},
+        ]}
+      ]
+    },
+  }, function(err, res, body) {
+    var cMessages = 0
+    t.assert(body.data.length === 3)
+    body.data.forEach(function(user) {
+      t.assert(user.collection === 'users')
+      t.assert(user.name)
+      t.assert(!user.email)
+      t.assert(user.linked)
+      user.linked.forEach(function(patch) {
+        t.assert(patch._id)
+        t.assert(patch.collection === 'patches')
+        t.assert(patch._owner)
+        t.assert(patch.owner)  // ref
+        t.assert(patch.owner.name)
+        t.assert(patch.owner.photo)
+        t.assert(patch.linked)
+        t.assert(patch.linkedCount)
+        patch.linked.forEach(function(message) {
+          t.assert(message.collection === 'messages')
+          t.assert(!message.link)  // excluded
+          cMessages++
+        })
+        t.assert(tipe.isDefined(patch.linkedCount.from.users.watch))
+        t.assert(tipe.isDefined(patch.linkedCount.from.users.like))
+      })
+    })
     test.done()
   })
 }

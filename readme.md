@@ -39,36 +39,37 @@ object syntax or with comma-delimited strings.
 Many APIs pass through mongodb query expressions:
 
     queryExpr: <passThroughMongoDbQueryExpr>
-    
+
 Find:
 
     path: /find/<collection>/<_id>
     method: GET|POST
     body|query: {
-      name: string,                             // case-insensitive starts-with
+      name: string,                       // case-insensitive starts-with
       fields: nameExpr
-      query: queryExpr,                         // pass-through to mongodb
-      refs: boolean || comma-separated string,  // display data from _linked documents, refs=name
-      limit: number,                            // default 50, max 1000
+      query: queryExpr,                   // pass-through to mongodb
+      refs: boolean || nameExpr,          // display data from _linked documents, true for name
+      limit: number,                      // default 50, max 1000
       skip: number,
       sort: nameExpr,
-      count: boolean,                           // returns no records, only count, limit and skip are ignored
-      countBy:  string                          // returns count of collection grouped by field or fields
-      links: {
-        from: nameExpr                          // returns links from this document
-        to: nameExpr                            // returns links to this document
-        sort: nameExpr,                         // applies to link fields, not document fields
-        skip: number,                           // links skip
-        limit: number,                          // links limit
-        filter: queryExpr,                      // link filter
-        fields: nameExpr,                       // link fields
-        docFields: nameExpr,                    // linked document fields, if false don't fetch linked document
-        docFilter: queryExpr,                   // linked document filter
-        count: boolean,                         // return count of qualifying links, ignores skip and limit
-      }   // the links param also accepts an array of link specs
+      count: boolean,                     // returns no records, only count, limit and skip are ignored
+      countBy:  string                    // returns count of collection grouped by field or fields
+      linked|links [{
+        from: nameExpr                    // returns links from this document
+        to: nameExpr                      // returns links to this document
+        sort: nameExpr,                   // applies to link fields, not document fields
+        skip: number,                     // links skip
+        limit: number,                    // links limit
+        filter: queryExpr,                // link filter
+        fields: nameExpr,                 // link fields for links query, doc fields for linked query
+        count: boolean,                   // return count of qualifying links, ignores skip and limit
+        linkFields: boolean || name Expr, // (linked only) filter fields in nested link. Return no link if set to false.
+        linkedFilter: queryExpr,          // (linked only) filter outer query by linked document properties
+        linked: [linkQuery],              // (linked only) linked queries can be infinitely nested
+      }]
     }
 
-results are returned as so:
+linked results are returned as so:
 
       [
         {
@@ -78,7 +79,9 @@ results are returned as so:
           ...
           linked: [
             linkedDoc1,
+              link1
             linkedDoc2,
+              link2
             ...
           ]
         },{
@@ -88,13 +91,15 @@ results are returned as so:
           ...
           linked: [
             linkedDoc1,
+              link1
             linkedDoc2,
+              link2
             ...
           ]
         }
       ]
 
-Under each linkedDoc is a link property containing the link itself.  The sort, skip, limit, and filter properties apply to the link, not the linked document, to support paging.
+Under each linkedDoc is a link property containing the link itself.  The sort, skip, limit, and filter properties apply to the link, not the linked document, to support paging.  Calling links rather than liked with the same parameters returns an array of links themselves rather than the linked documents. See tests basic/14* and basic/18* for examples.
 
 
 ## Users and Admins
@@ -114,7 +119,7 @@ Users or tests can log in with these credentials to perform administrative tasks
 With a few exeptions, admins can perform any operation on the server that would be prevented by permissions.
 
 ### Creating New Users
-See the guidelines for posting below, the api is 
+See the guidelines for posting below, the api is
 
     path: /user/create
     body|query:  {
@@ -129,10 +134,10 @@ See the guidelines for posting below, the api is
 
 All other fields are optional. Secret is currently a static string. Someday it may be provided by a captcha API.  On successful account creation, the service signs in the user, creating a new session object.  The complete user and session object are returned to the caller.
 
-Note that on success this call sets return status code to 200, not 201 and one might expect.  This is due to chaining the call to signin.  
+Note that on success this call sets return status code to 200, not 201 and one might expect.  This is due to chaining the call to signin.
 
 ## Authentication
-Users can be authenticated locally with a password.  We do not yet support oauth authentication. 
+Users can be authenticated locally with a password.  We do not yet support oauth authentication.
 
 ### Local Auth
 Users sign in via :
@@ -143,6 +148,8 @@ Users sign in via :
       password: <password>,
       installId: <installId>,
     }
+
+InstallId from a device is a device-local-storage id that is unique to that device when the client app was installed.  It is used to target notifications.  When signing in from a web client, it is still required as a string parameter, but is ignored and can be any string.
 
 On success the api returns a credentials object with three fields: user, session and install. In order to validate subsequent requests, include those values on each request, either as query parameters like so:
 
@@ -186,10 +193,13 @@ User passwords cannot be updated via the ordinary rest methods, only via the cha
 Oauth is NYI
    
 ## Rest
-The system provides find, insert, update, and remove methods over the base mongodb collections via standard REST apis.  
+The system provides find, insert, update, and remove methods over the base mongodb collections via standard REST apis.
+
+### GET /schemas
+Returns a single json document will all the schemas
 
 ### GET /schema/\<collection\>
-Returns the collection's schema
+Returns a single collection's schema
 
 ### _id fields
 Every document in every collection has a unique, immutable _id field of the form:
@@ -230,8 +240,9 @@ Returns the count of the colleciton grouped by fieldName
     ?datesToUTC=true
 Converts dates stored in miliseconds since 1970 to UTC-formated strings
 
-    ?refs='name'|true|fieldExpr
-For any fields in the document of the form _<key> which equals the _id field of another collection, add a field to the result named <key> which includes the value of the named field from the referenced collection. Set true to include the referenced document as a nested object under <key>.  refs='name' is the most common setting.  For all documents with a _owner field, it will ad a field called owner that is equal to name of the owning user.
+    ?refs=true|1|"true"|fieldExpr
+For any fields in the document of the form _<key> which equals the _id field of another collection, add a field to the result named <key> which includes the value of the named field from the referenced collection. Set true to include the name field.  For all documents with a _owner field, setting refs=true will ad a field called owner that is equal to name of the owning  user.
+
 
 ### POST Rules:
 1. Set req.headers.content-type to 'application/json'
@@ -254,12 +265,15 @@ Updates the document with _id = id in collection.  The return value updated docu
 ### DELETE /data/\<collection\>/\<id1\>
 Deletes the document
 
+### POST /find/\<collection\>
+Executes a find query with the parameters of the body merged with the parameters on the query string
+
 <a name="webmethods"></a>
 ## Custom Web Methods
-    
+
     /do
-    
-Lists the custom web methods. 
+
+Lists the custom web methods.
 
 <a name="statistics"></a>
 ### Statistics
@@ -270,7 +284,7 @@ Site statistics are acceessed via
 This will return a list of supported stats.
 
     GET /stats/
-    
+
 Refreshing statitics requires admin credentials since the operation can be expensive
 
 ### Recurring Tasks

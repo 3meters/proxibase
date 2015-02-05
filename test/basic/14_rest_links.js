@@ -79,19 +79,21 @@ exports.findLinkedWorks = function(test) {
   })
 }
 
-exports.findLinkedNoDocumentsWorks = function(test) {
+exports.findLinksWithoutDocumentsWorks = function(test) {
   var query = {
     uri: '/find/users/' + user1Id + '?' + userCred,
-    body: {linked: {to: {patches: 1}, docFields: false}},
+    body: {links: {to: {patches: 1}, fields: 'enabled'}},
   }
   t.post(query, function(err, res, body) {
-    t.assert(body.data.linked)
-    var linked = body.data.linked
-    t.assert(linked.length === (2 * dbProfile.ppu))  // same as above
-    linked.forEach(function(doc) {
-      t.assert(doc.link)
-      t.assert(doc.link._to)
-      t.assert(doc.link._from)
+    t.assert(body.data.links)
+    t.assert(!body.data.linked)
+    var links = body.data.links
+    t.assert(links.length === (2 * dbProfile.ppu))  // same as above
+    links.forEach(function(link) {
+      t.assert(link._to)
+      t.assert(link._from)
+      t.assert(link.enabled)
+      t.assert(!link._creator)
     })
     test.done()
   })
@@ -100,7 +102,7 @@ exports.findLinkedNoDocumentsWorks = function(test) {
 exports.findLinkedFieldProjectionWorks = function(test) {
   var query = {
     uri: '/find/users/' + user1Id + '?' + userCred,
-    body: {linked: {to: {patches: 1}, docFields: 'name', fields: 'type'}}
+    body: {linked: {to: {patches: 1}, fields: 'name', linkFields: 'enabled'}}
   }
   t.post(query, function(err, res, body) {
     t.assert(body.data.linked)
@@ -117,11 +119,30 @@ exports.findLinkedFieldProjectionWorks = function(test) {
       t.assert(doc.link._to)
       t.assert(doc.link._from)
       t.assert(doc.link.type)
+      t.assert(tipe.isDefined(doc.link.enabled))
       t.assert(!doc.link.modifiedDate)
     })
     test.done()
   })
 }
+
+
+exports.findLinkedReturnNoLinksWorks = function(test) {
+  var query = {
+    uri: '/find/users/' + user1Id + '?' + userCred,
+    body: {linked: {to: {patches: 1}, fields: 'name', linkFields: false}}
+  }
+  t.post(query, function(err, res, body) {
+    t.assert(body.data.linked)
+    var linked = body.data.linked
+    t.assert(linked.length === 2 * dbProfile.ppu)
+    linked.forEach(function(doc) {
+      t.assert(!doc.link)
+    })
+    test.done()
+  })
+}
+
 
 exports.findLinkedFilterWorks = function(test) {
   var query = {
@@ -135,10 +156,10 @@ exports.findLinkedFilterWorks = function(test) {
   })
 }
 
-exports.findLinkedLinkDocFilterWorks = function(test) {
+exports.findLinkedFilterDocsWorks = function(test) {
   var query = {
     uri: '/find/users/' + user1Id + '?' + userCred,
-    body: {linked: {to: 'patches', docFilter: {namelc: 'test patch 3'}}}
+    body: {linked: {to: 'patches', linkedFilter: {namelc: 'test patch 3'}}}
   }
   t.post(query, function(err, res, body) {
     t.assert(body.data)

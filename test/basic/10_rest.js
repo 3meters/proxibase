@@ -225,51 +225,13 @@ exports.cannotAddDocMissingRequiredField = function(test) {
   })
 }
 
-// TODO:  reimplement targeting the installs collection
-_exports.canUpdateNestedArrays = function(test) {
-  t.post({
-    uri: '/data/entities?' + userCred,
-    body: {data: {
-      type: util.statics.schemaPatch,
-      name: 'Test Entity With Comments',
-      comments: [
-        {name: 'Comment 1', description: 'I am comment 1'},
-        {name: 'Comment 2', description: 'I am comment 2'},
-      ]
-    }}
-  }, 201, function(err, res, body) {
-    var ent = body.data
-    t.assert(ent.comments.length === 2)
-    t.post({
-      uri: '/data/entities/' + ent._id + '?' + userCred,
-      body: {data: {
-        name: null, // piggy-back test that nulling name deletes namelc
-        comments: [
-          {name: 'Comment 1', description: 'I am comment 1'},
-          {name: 'Comment 2', description: 'I am new comment 2'},
-        ]
-      }}
-    }, function(err, res, body) {
-      var ent = body.data
-      t.assert(ent._id && ent.type && ent.comments)
-      t.assert(tipe.isUndefined(ent.name))
-      t.assert(tipe.isUndefined(ent.namelc))
-      t.assert(ent.comments[0].description === 'I am comment 1')
-      t.assert(ent.comments[1].description === 'I am new comment 2')
-      t.delete({
-        uri: '/data/entities/' + ent._id + '?' + userCred
-      }, function(err, res) {
-        test.done()
-      })
-    })
-  })
-}
 
-exports.findDocsByIdAndCheckSysFields = function(test) {
+exports.findDocsByIdsAndCheckSysFields = function(test) {
   t.get({
     uri: '/data/documents/' + testDoc1._id + ',' + testDoc2._id + '?' + userCred
   }, function(err, res, body) {
     t.assert(body.count === 2)
+    t.assert(body.data.length)
     t.assert((body.data[0]._id === testDoc1._id || body.data[1]._id === testDoc1._id))
     t.assert(body.data[0]._creator === userSession._owner)
     t.assert(body.data[0]._owner === userSession._owner)
@@ -280,9 +242,10 @@ exports.findDocsByIdAndCheckSysFields = function(test) {
   })
 }
 
-exports.findDocsByGetAndFindAndJson = function(test) {
+
+exports.findDocsByQ = function(test) {
   t.get({
-    uri: '/data/documents?query={"_id":"' + testDoc1._id + '"}&' + userCred
+    uri: '/data/documents?q[_id]=' + testDoc1._id + '&' + userCred
   }, function(err, res, body) {
     t.assert(body.data.length === 1)
     test.done()
@@ -292,16 +255,8 @@ exports.findDocsByGetAndFindAndJson = function(test) {
 exports.findDocsByGetAndFindAndJsonFailsWithBadUserCred = function(test) {
   t.get({
     // bogus session key
-    uri: '/data/documents?query={"_id":"' + testDoc1._id + '"}&' + userCred.slice(0, -1)
+    uri: '/data/documents?q[_id]' + testDoc1._id + '&' + userCred.slice(0, -1)
   }, 401, function(err, res, body) {
-    test.done()
-  })
-}
-
-exports.findDocsByGetAndFindWithBadJson = function(test) {
-  t.get({
-    uri: '/data/documents?query={"_id:"' + testDoc1._id + '"}&' + userCred
-  }, 400, function(err, res, body) {
     test.done()
   })
 }
@@ -338,14 +293,14 @@ exports.findWithRefs = function(test) {
 }
 
 
-exports.findWithRefsNestedObject = function(test) {
+exports.findWithRefsDefaultsToName = function(test) {
   t.get({
-    uri: '/data/documents?name=' + testDoc1.name + '&refs=true&' + userCred
+    uri: '/data/documents?name=' + testDoc1.name + '&refs=1&' + userCred
   }, function(err, res, body) {
     var doc = body.data[0]
-    t.assert(doc.owner && doc.owner._id && doc.owner.name)
-    t.assert(doc.creator && doc.creator._id && doc.creator.name)
-    t.assert(doc.modifier && doc.modifier._id && doc.modifier.name)
+    t.assert(doc._owner && tipe.isString(doc.owner))
+    t.assert(doc._creator && tipe.isString(doc.creator))
+    t.assert(doc._modifier && tipe.isString(doc.modifier))
     test.done()
   })
 }
@@ -357,8 +312,8 @@ exports.findWithRefsNestedObjectFieldList = function(test) {
   }, function(err, res, body) {
     var doc = body.data[0]
     t.assert(doc.owner && doc.owner._id && doc.owner.name)
-    t.assert(doc.owner.email)
-    t.assert(!doc.owner.role)
+    t.assert(!doc.owner.email)  // included in list, but private
+    t.assert(!doc.owner.role)   // not included in list
     t.assert(doc.creator && doc.creator._id && doc.creator.name)
     t.assert(doc.modifier && doc.modifier._id && doc.modifier.name)
     test.done()
@@ -627,7 +582,7 @@ exports.userCannotReadSystemCollections = function(test) {
   })
 }
 
-exports.admiCanReadSystemCollections = function(test) {
+exports.adminCanReadSystemCollections = function(test) {
   t.get({uri: '/data/sessions?' + adminCred}, function(err, res, body) {
     t.assert(body.data.length)
     test.done()

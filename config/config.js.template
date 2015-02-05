@@ -1,39 +1,39 @@
 /*
- * App config file
+ * Proxibase config file
  */
 
 module.exports = {
   service: {
-    name: 'CandiService',
+    name: 'Proxibase',
     mode: 'development',                // development | test | stage | production
     protocol: 'https',                  // https | http  (security tests require https)
     host: 'localhost',
     host_external: 'api.aircandi.com',
-    port: 6643,                         // 6643:dev 6644:test 444:stage 443:production
+    port: 8443,                         // dev:8443, test:8443, stage:8443, production: 443
     ssl: {
       keyFilePath: './keys/dev/dev.pem',
       certFilePath: './keys/dev/dev.crt',
       caFilePath: null,
     },
     dkim: {                             // for digitally signing mail, see http://dkimcore.org/
-      domainName: 'aircandi.com',           // default aircanid.com, matches our dkim public key at godadday
+      domainName: 'aircandi.com',       // default aircandi.com, matches our dkim public key at godadday
       keyFilePath: null,
       keySelector: null,
     },
   },
   log: 1,                               // 0-3 higher numbers mean more log output
-  requestLog: 1,                        // create a json-formated log of all requests, accepts file name
+  requestLog: 0,                        // create a json-formated log of all requests, accepts file name
   db: {
     host: 'localhost',
     port: 27017,
-    database: 'prox',                   // dev:prox test:smokeData stage:stage production:prox perfTest: perfTest
+    database: 'prox',                   // dev:prox test:smokeData stage:proxstage production:prox perfTest: perfTest
     limits: {
       default: 50,
       max: 1000,
       join: 1000,
     },
   },
-  maxWorkers: -1,                       // default -1 means one per cpu core
+  maxWorkers: 1,                        // default 1. Values > 1 exercise clustering. -1 means one worker per cpu core
   ignoreTasks: true,                    // default false, if true skip autostart of recurring tasks
   doNotRestart: false,                  // default false, if true do not restart dead workers
   sendMail: './testMail.log',           // boolean or filename for logging, default false

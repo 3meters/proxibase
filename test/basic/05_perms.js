@@ -351,7 +351,7 @@ exports.metaDataWorksforNonOwnerAccessCollections = function(test) {
 
 exports.userPublicFields = function(test) {
   t.get({
-    uri: '/data/users?limit=5&' + user1Cred
+    uri: '/find/users?limit=5&' + user1Cred
   }, 200, function(err, res, body) {
     t.assert(body && body.data)
     var users = body.data
