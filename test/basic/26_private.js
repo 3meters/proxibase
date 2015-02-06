@@ -192,6 +192,44 @@ exports.tarzanSendsMessageToRiver = function(test) {
 }
 
 
+exports.janeSendsMessageToPublicRiverWithoutWatchingIt = function(test) {
+  t.post({
+    uri: '/do/insertEntity?' + jane.cred,
+    body: {
+      entity: {
+        schema: 'message',
+        _id: 'me.janeToRiver' + seed,
+        description: 'I love swimming',
+      },
+      links: [{
+        _to: river._id,
+        type: 'content',
+      }],
+      returnNotifications: true,
+    },
+  }, 201, function(err, res, body) {
+    t.assert(body.data)
+    test.done()
+  })
+}
+
+
+exports.messagesToPublicRiverAreVisibleToAnon = function(test) {
+  t.post({
+    uri: '/find/patches/' + river._id,
+    body: {links: {from: 'messages', type: 'content'}},
+  }, function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.data._id)
+    t.assert(body.data.linked)
+    t.assert(body.data.linked.length === 2)
+    t.assert(body.data.linked[0]._owner = jane._id)
+    t.assert(body.data.linked[1]._owner = tarzan._id)
+    test.done()
+  })
+}
+
+
 exports.tarzanSendsMessageToTreehouse = function(test) {
   t.post({
     uri: '/do/insertEntity?' + tarzan.cred,
@@ -260,7 +298,7 @@ exports.tarzanSendsMessageToJanehouseAndFails = function(test) {
 exports.messagesAreOwnerAccess = function(test) {
   t.get('/find/messages/me.tarzanToRiver' + seed,
   function(err, res, body) {
-    t.assert(body.count === 0)
+    t.assert(body.count === 1)  // anon user can see messages to public patch
     t.get('/find/messages/me.tarzanToRiver' + seed + '?' + tarzan.cred,
     function(err, res, body) {
       t.assert(body.count === 1)
@@ -273,7 +311,11 @@ exports.messagesAreOwnerAccess = function(test) {
           t.get('/find/messages/me.tarzanToTreehouse' + seed + '?' + jane.cred,
           function(err, res, body) {
             t.assert(body.count === 0)  // jane is not watching treehouse
-            test.done()
+            t.get('/find/messages/me.tarzanToTreehouse',
+            function(err, res, body) {
+              t.assert(body.count === 0) // anon user cannot see messages to private
+              test.done()
+            })
           })
         })
       })
@@ -335,8 +377,9 @@ exports.getEntitiesForEntsReadsMessagesToPublicPatches = function(test) {
       },
     },
   }, function(err, res, body) {
-    t.assert(body.count === 1)
-    t.assert(body.data[0].description === 'Good water, bad crocs')
+    t.assert(body.count === 2)
+    t.assert(body.data[0].description === 'I love swimming')
+    t.assert(body.data[1].description === 'Good water, bad crocs')
     test.done()
   })
 }
