@@ -272,20 +272,45 @@ exports.ownerAccessCollectionsWork = function(test) {
       t.assert('do.user2DocOwnerAccessTest' === body.data._id)
       t.get('/data/documents?' + user1Cred,
       function(err, res, body) {
-        t.assert(body.data && body.data.length)
+        // Check data and meta data on safeFind
+        t.assert(body.data && body.data.length === 1)
+        t.assert(tipe.isArray(body.sort))
+        t.assert(body.count === 1)
+        t.assert(body.more === false)
+        t.assert(body.skip === 0)
+        t.assert(tipe.isNumber(body.limit))
+        t.assert(body.limit > 0)
+        t.assert(tipe.isUndefined(body.canEdit))
         body.data.forEach(function(doc) {
           t.assert(doc._id && doc._owner)
           t.assert(user1._id === doc._owner)
           t.assert('do.user2DocOwnerAccessTest' !== doc._id)  // can't see user 2's document
+
+          // Check safeFind for anon user
           t.get('/data/documents',
           function(err, res, body) {
             t.assert(body.data)
             t.assert(body.data.length === 0)
             t.assert(body.count === 0)
+
+            // Check safeFindOne for anon user
             t.get('/data/documents/do.user1DocOwnerAccessTest',
             function(err, res, body) {
               t.assert(body.data === null)
-              test.done()
+              t.assert(body.count === 0)
+
+              // Check safeFindOne for signed-in user own document
+              t.get('/data/documents/do.user1DocOwnerAccessTest?' + user1Cred,
+              function(err, res, body) {
+                t.assert(body.data)
+                t.assert(body.data._id)
+                t.assert(body.count === 1)
+                t.assert(body.canEdit === true)
+                t.assert(tipe.isUndefined(body.sort))
+                t.assert(tipe.isUndefined(body.skip))
+                t.assert(tipe.isUndefined(body.limit))
+                test.done()
+              })
             })
           })
         })
