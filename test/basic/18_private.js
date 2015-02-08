@@ -62,22 +62,6 @@ var maryhouse = {
   visibility: 'hidden',
 }
 
-
-// Not needed by this test
-_exports.getUserSession = function(test) {
-  testUtil.getUserSession(function(session) {
-    userSession = session
-    userCred = 'user=' + session._owner + '&session=' + session.key
-    testUserId = session._owner
-    testUtil.getAdminSession(function(session) {
-      adminSession = session
-      adminCred = 'user=' + session._owner + '&session=' + session.key
-      adminUserId = session._owner
-      test.done()
-    })
-  })
-}
-
 exports.createUsers = function(test) {
   t.post({
     uri: '/user/create',
@@ -122,36 +106,46 @@ exports.createUsers = function(test) {
 }
 
 exports.createPatches = function(test) {
+
+  // Tarzan creates public river patch
   t.post({
     uri: '/data/patches?' + tarzan.cred,
     body: {data: river},
   }, 201, function (err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data.visibility === 'public')  // proves default
+
+    // Tarzan creates private treehouse patch
     t.post({
       uri: '/data/patches?' + tarzan.cred,
       body: {data: treehouse},
     }, 201, function (err, res, body) {
       t.assert(body.count === 1)
       t.assert(body.data.visibility === 'private')
+
+      // Jane creates private janehouse patch
       t.post({
         uri: '/data/patches?' + jane.cred,
         body: {data: janehouse},
       }, 201, function (err, res, body) {
         t.assert(body.count === 1)
         t.assert(body.data.visibility === 'private')
-        test.done()
-        // Hidden is currently NYI, skip
-        /*
-        t.post({
-          uri: '/data/patches?' + mary.cred,
-          body: {data: maryhouse},
-        }, 201, function (err, res, body) {
+
+        // Tarzan can find and edit the patch he created
+        t.get('/data/patches/' + river._id + '?' + tarzan.cred,
+        function(err, res, body) {
+          t.assert(body.data && body.data._id)
           t.assert(body.count === 1)
-          t.assert(body.data.visibility === 'hidden')
-          test.done()
+          t.assert(body.canEdit === true)
+
+          // Tarzan can find but not edit the patch Jane created
+          t.get('/data/patches/' + janehouse._id + '?' + tarzan.cred,
+          function(err, res, body) {
+            t.assert(body.data && body.data._id)
+            t.assert(body.canEdit === false)
+            test.done()
+          })
         })
-        */
       })
     })
   })

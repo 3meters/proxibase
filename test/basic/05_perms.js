@@ -320,6 +320,35 @@ exports.ownerAccessCollectionsWork = function(test) {
 }
 
 
+exports.metaDataWorksforNonOwnerAccessCollections = function(test) {
+  t.get('/find/sessions?' + adminCred,
+  function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.data.length)
+    t.assert(body.count >= 1)
+
+    // admin sees canEdit flag a session document
+    t.get('/find/sessions/' + body.data[0]._id + '?' + adminCred,
+    function(err, res, body) {
+      t.assert(body.data)
+      t.assert(body.data._id)
+      t.assert(body.count === 1)
+      t.assert(body.canEdit === true)
+
+      // users see the canEdit flag on their own records
+      t.get('/find/users/' + user1._id + '?' + user1Cred,
+      function(err, res, body) {
+        t.assert(body.data)
+        t.assert(body.data._id)
+        t.assert(body.data.email)  // private field
+        t.assert(body.count === 1)
+        t.assert(body.canEdit === true)
+        test.done()
+      })
+    })
+  })
+}
+
 exports.userPublicFields = function(test) {
   t.get({
     uri: '/data/users?limit=5&' + user1Cred
