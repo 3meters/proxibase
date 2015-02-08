@@ -24,7 +24,7 @@ var dbProfile = constants.dbProfile.smokeTest
 var testUtil = require('./util')
 var configFile = 'configtest.js'
 var tests = ['basic']
-var allTests = ['basic', 'oauth', 'perf']
+var allTests = ['basic', 'stats', 'aruba']
 var logFile = 'testServer.log'
 var logStream
 var cwd = process.cwd()
@@ -70,6 +70,9 @@ util.setConfig(cli.config || configFile)
 config = util.config
 serverUri = testUtil.serverUri = config.service.uri
 
+
+// TODO: make it possible to reset dbs between
+// test runs of multiple directories
 
 util.log('test config', config)
 

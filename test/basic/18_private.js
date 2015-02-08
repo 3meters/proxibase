@@ -10,11 +10,7 @@ var skip = testUtil.skip
 var t = testUtil.treq
 var testUserId
 var db = testUtil.safeDb   // raw mongodb connection object without mongoSafe wrapper
-var adminUserId
-var userSession
-var userCred
-var adminSession
-var adminCred
+var admin = {}
 
 var _exports = {}  // For commenting out tests
 
@@ -59,7 +55,30 @@ var janehouse = {
 var maryhouse = {
   _id: 'pa.maryhouse' + seed,
   name: 'Maryhouse' + seed,
-  visibility: 'hidden',
+  visibility: 'private',
+}
+
+var jungle = {
+  _id: 'pl.jungle' + seed,
+  name: 'Jungle' + seed,
+}
+
+var beacon1 = {
+  bssid: 'Beacon1.' + seed,
+}
+
+var beacon2 = {
+  bssid: 'Beacon2.' + seed,
+}
+
+
+exports.getAdminSession = function(test) {
+  testUtil.getAdminSession(function(session) {
+    admin._id = session._owner
+    admin.cred = 'user=' + session._owner +
+        '&session=' + session.key + '&install=' + seed
+    test.done()
+  })
 }
 
 exports.createUsers = function(test) {
@@ -101,6 +120,40 @@ exports.createUsers = function(test) {
         mary.cred = 'user=' + mary._id + '&session=' + body.session.key
         test.done()
       })
+    })
+  })
+}
+
+exports.adminCreatePlaces = function(test) {
+
+  // Admin creates the Jungle
+  t.post({
+    uri: '/data/places?' + admin.cred,
+    body: {data: jungle},
+  }, 201, function (err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data._owner === admin._id)
+    test.done()
+  })
+}
+
+exports.createBeacons = function(test) {
+
+  // Tarzan creates beacons
+  t.post({
+    uri: '/data/beacons?' + tarzan.cred,
+    body: {data: beacon1},
+  }, 201, function (err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data._owner === admin._id)  // Admins own beacons
+    t.assert(body.data._creator === tarzan._id)
+    beacon1 = body.data
+    t.post({
+      uri: '/data/beacons?' + jane.cred,
+      body: {data: beacon2},
+    }, 201, function (err, res, body) {
+      beacon2 = body.data
+      test.done()
     })
   })
 }
@@ -211,7 +264,7 @@ exports.janeSendsMessageToPublicRiverWithoutWatchingIt = function(test) {
 exports.messagesToPublicRiverAreVisibleToAnon = function(test) {
   t.post({
     uri: '/find/patches/' + river._id,
-    body: {links: {from: 'messages', type: 'content'}},
+    body: {linked: {from: 'messages', type: 'content'}},
   }, function(err, res, body) {
     t.assert(body.data)
     t.assert(body.data._id)
@@ -337,11 +390,11 @@ exports.getEntsForEntsDoesNotExposePrivateFieldsOfWatchers = function(test) {
   })
 }
 
-exports.findWithLinksDoesNotExposePrivateFieldsOfWatches = function(test) {
+exports.findWithLinkedDoesNotExposePrivateFieldsOfWatches = function(test) {
   t.post({
     uri: '/find/patches/' + river._id,
     body: {
-      links: {
+      linked: {
         from: 'users',
         filter: {type: 'watch'}
       }
@@ -463,7 +516,7 @@ exports.tarzanCannotReadJanesMessagesYetUsingRest = function(test) {
   t.post({
     uri: '/find/patches/' + janehouse._id + '?' + tarzan.cred,
     body: {
-      links: {
+      linked: {
         from: 'messages',
         filter: {type: 'messages'},
       }
@@ -514,7 +567,7 @@ exports.tarzanCanNowReadMessagesToJanehouseViaRest = function(test) {
   t.post({
     uri: '/find/patches/' + janehouse._id + '?' + tarzan.cred,
     body: {
-      links: {
+      linked: {
         from: 'messages',
         filter: {type: 'content'}
       }
@@ -650,6 +703,8 @@ exports.janeCanSeeTreehouseMessagesViaFindOne = function(test) {
   })
 }
 
+// We don't nest messages in the current client ui, but this tests proves
+// that the security model still works if we ever decide to
 exports.janeCanNestAMessageOnTarzansTreehouseMessage = function(test) {
   var janeMessageOnMessage = {
     entity: {
@@ -720,3 +775,33 @@ exports.janeCanDeleteHerMessageToTreehouse = function(test) {
   })
 }
 
+exports.maryCanCreatePatchAndLinksToAndFromItInOneRestCall = function(test) {
+
+  var patch = util.clone(maryhouse)
+  patch.links = [
+    {_from: mary._id, type: 'create'},
+    {_from: mary._id, type: 'watch'},
+    {_to: jungle._id, type: 'proximity'},
+    {_to: beacon1._id, type: 'proximity'},
+    {_to: beacon1._id, type: 'bogus'},      // Will fail
+  ]
+
+  t.post({
+    uri: '/data/patches?' + mary.cred,
+    body: {data: patch},
+  }, 202, function(err, res, body) {  // 202 means partial success, look at errors
+    t.assert(body.data)
+    t.assert(body.data.links)
+    t.assert(body.data.links.length === 4)
+    body.data.links.forEach(function(link) {
+      t.assert(link._to)
+      t.assert(link._from)
+      t.assert(link.type)
+      t.assert(link._id)
+      t.assert(link._id.indexOf('li.' === 0))
+    })
+    t.assert(body.errors)
+    t.assert(body.errors.length === 1)
+    test.done()
+  })
+}

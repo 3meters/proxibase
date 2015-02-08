@@ -2910,12 +2910,12 @@ exports.messagePagingRest = function(test) {
 }
 
 exports.messagePagingRestLinks = function(test) {
-  t.get('/find/patches/' + patch1Id + '?links[from][messages]=1&' + adminCred,
+  t.get('/find/patches/' + patch1Id + '?linked[from][messages]=1&' + adminCred,
   function(err, res, body) {
     t.assert(body.data)
     t.assert(body.data.linked)
     t.assert(body.data.linked.length = messagesPerPatch)
-    t.get('/find/patches/' + patch1Id + '?links[from][messages]=1&links[limit]=2&links[skip]=2&links[sort]=_id&' + adminCred,
+    t.get('/find/patches/' + patch1Id + '?linked[from][messages]=1&linked[limit]=2&linked[skip]=2&linked[sort]=_id&' + adminCred,
     function(err, res, body) {
       t.assert(body.data)
       t.assert(body.data.linked)
