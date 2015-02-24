@@ -63,7 +63,7 @@ Find:
         filter: queryExpr,                // link filter
         fields: nameExpr,                 // link fields for links query, doc fields for linked query
         count: boolean,                   // return count of qualifying links, ignores skip and limit
-        linkFields: boolean || name Expr, // (linked only) filter fields in nested link. Return no link if set to false.
+        linkFields: boolean || name Expr, // (linked only) true or {} to include entire link
         linkedFilter: queryExpr,          // (linked only) filter outer query by linked document properties
         linked: [linkQuery],              // (linked only) linked queries can be infinitely nested
       }]

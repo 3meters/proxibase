@@ -404,7 +404,8 @@ exports.findWithLinkedDoesNotExposePrivateFieldsOfWatches = function(test) {
     body: {
       linked: {
         from: 'users',
-        filter: {type: 'watch'}
+        filter: {type: 'watch'},
+        linkFields: {},
       }
     },
   }, function(err, res, body) {
@@ -575,42 +576,35 @@ exports.tarzanCanNowReadMessagesToJanehouseViaRest = function(test) {
   t.post({
     uri: '/find/patches/' + janehouse._id + '?' + tarzan.cred,
     body: {
-      linked: {
-        from: 'messages',
-        filter: {type: 'content'}
-      }
+      linked: {from: 'messages', type: 'content'}
     },
   }, function(err, res, body) {
     t.assert(body.data.linked.length === 1)
     t.assert(body.data.linked[0].description)
     t.assert(body.data.linked[0].collection === 'messages')
-    t.assert(body.data.linked[0].link)
+    t.assert(!body.data.linked[0].link)  // because no linkFields param
     test.done()
   })
 }
 
-exports.tarzanInvitesJaneToTreehouse = function(test) {
+exports.tarzanInvitesJaneToTreehouseViaRest = function(test) {
   t.post({
-    uri: '/do/insertEntity?' + tarzan.cred,
+    uri: '/data/messages?' + tarzan.cred,
     body: {
-      entity: {
+      data: {
         _id: 'me.tarzanInvite' + seed,
-        schema: 'message',
         type: 'root',
         description: 'Check out my treehouse',
+        links: [{
+          _id: 'li.toTreehouseFromTarzanInvite' + seed,
+          _to: treehouse._id,
+          type: 'share',
+        }, {
+          _id: 'li.toJaneFromTarzanInvite' + seed,
+          _to: jane._id,
+          type: 'share',
+        }],
       },
-      // insertEntity will set the _from side of the following links
-      // to the entity._id of the message
-      links: [{
-        _id: 'li.toTreehouseFromTarzanInvite' + seed,
-        _to: treehouse._id,
-        type: 'share',
-      }, {
-        _id: 'li.toJaneFromTarzanInvite' + seed,
-        _to: jane._id,
-        type: 'share',
-      }],
-      returnNotifications: true,
     },
   }, 201, function(err, res, body) {
     t.get('/data/links/li.toJaneFromTarzanInvite' + seed,
@@ -626,54 +620,6 @@ exports.tarzanInvitesJaneToTreehouse = function(test) {
     })
   })
 }
-
-/*
- * This should change to be a check for reading notifications including
- * tarzans invite.
- */
-_exports.janeCanReadTarzansInvite = function(test) {
-  t.post({
-    uri: '/do/getMessages?' + jane.cred,
-    body: {
-      entityId: jane._id,
-      cursor: {
-        limit: 50,
-        linkTypes: ['share'],
-        schemas: ['message'],
-        skip: 0,
-        sort: { modifiedDate: -1 },
-      },
-      links: {
-        shortcuts: true,
-        active: [{
-          schema: 'message',
-          type: 'share',
-          direction: 'in',
-        }]
-      },
-      log: true,
-    },
-  }, function(err, res, body) {
-    t.assert(body.count === 2)
-
-    async.eachSeries(body.data, getMessage, done)
-
-    function getMessage(msg, next) {
-      t.get('/do/getEntities?entityIds[0]=' + msg._id + '&' + jane.cred,
-      function(err, res, body) {
-        if (err) return next(err)
-        t.assert(body.count)
-        next()
-      })
-    }
-
-    function done(err) {
-      if (err) t.assert(false, err)
-      test.done()
-    }
-  })
-}
-
 
 exports.janeAcceptsTarzanInvite = function(test) {
   t.post({
@@ -854,5 +800,173 @@ exports.findWithNestedLinks = function(test) {
       })
     })
     test.done()
+  })
+}
+
+
+// Find messages for patches with new find syntax vs deprecated
+// getEnitiesForEntity syntax
+exports.FindPatchMessagesCompareGetEntities = function(test) {
+
+  // Recommended syntax
+  t.post({
+    uri: '/find/patches/' + river._id + '?' + tarzan.cred,
+    body: {
+      refs: '_id,name,photo,schema',
+      linked: [{from: 'messages', type: 'content', linkFields: '_id'}]
+    }
+  }, function(err, res, body) {
+    var rfind = body.data
+
+    // Deprecated syntax sent by the android client version 1.5x and earlier
+    t.post({
+      uri: '/do/getEntitiesForEntity?' + tarzan.cred,
+      body: {
+        entityId: river._id,
+        cursor:
+         { where: { enabled: true },
+           skip: 0,
+           sort: { modifiedDate: -1 },
+           schemas: [ 'message' ],
+           limit: 50,
+           linkTypes: [ 'content' ],
+           direction: 'in' },
+        links: {
+          shortcuts: true,
+          active: [
+            { links: true, count: true, schema: 'message', type: 'content', limit: 1, direction: 'both' },
+            { links: true, count: true, schema: 'patch', type: 'content', limit: 1, direction: 'out' },
+            { links: true, count: true, schema: 'patch', type: 'share', limit: 1, direction: 'out' },
+            { links: true, count: true, schema: 'message', type: 'share', limit: 1, direction: 'out' },
+            { links: true, count: true, schema: 'user', type: 'share', limit: 5, direction: 'out' },
+            { where: { _from: tarzan._id }, links: true, count: true, schema: 'user', type: 'like', limit: 1, direction: 'in' }
+          ]
+        }
+      }
+    }, function(err, res, body) {
+      var rge = body.data
+
+      // find returns the river patch on top and includes messages in an array named 'linked'
+      t.assert(rfind.linked.length === rge.length)
+      t.assert(rfind._id === river._id)
+      rfind.linked.forEach(function(message) {
+        t.assert(message.schema === 'message')
+        t.assert(message.description)
+        t.assert(message.description.length)
+        t.assert(message.link._id)
+      })
+
+      // get entities returns an array of messages, each with a copy of the river
+      // patch included as a shortcut under the content link
+      rge.forEach(function(message) {
+        t.assert(message.schema === 'message')
+        t.assert(message.description)
+        t.assert(message.description.length)
+        t.assert(message.linksOut.length === 1)
+        t.assert(message.linksOut[0]._to === river._id)
+        t.assert(message.linksOut[0].shortcut.name === river.name)
+        t.assert(message._link)
+      })
+
+      test.done()
+    })
+  })
+}
+
+
+exports.findMyPatchesCompareGetEntities = function(test) {
+  t.post({
+    // Supported syntax
+    uri: '/find/users/' + tarzan._id + '?' + tarzan.cred,
+    body: {
+      refs: true,
+      linked: [
+        {to: 'patches', type: 'watch', limit: 30, fields: 'name,schema,visibility', linked: [
+          {to: 'beacons', type: 'proximity', limit: 10},
+          {to: 'places', type: 'proximity', fields: 'name,schema,category,photo', limit: 1},
+          {from: 'messages', type: 'content', fields: 'schema,description', limit: 2},
+          {from: 'messages', type: 'content', count: true},
+          {from: 'users', type: 'like', count: true},
+          {from: 'users', type: 'watch', filter: {enabled: true}, count: true},
+        ]}
+      ]
+    }
+  }, function(err, res, body) {
+    var rfind = body.data
+    t.assert(rfind._id === tarzan._id)
+    t.post({
+      // Deprecated syntax sent by Android client 1.5* and earlier
+      uri: '/do/getEntitiesForEntity?' + tarzan.cred,
+      body: {
+        entityId: tarzan._id,
+        cursor:
+         { where: { enabled: true },
+           skip: 0,
+           sort: { modifiedDate: -1 },
+           schemas: [ 'patch' ],
+           limit: 30,
+           linkTypes: [ 'watch' ],
+           direction: 'out' },
+        links: {
+        shortcuts: true,
+          active: [
+            {links: true, count: true, schema: 'beacon', type: 'proximity', limit: 10, direction: 'out'},
+            {links: true, count: true, schema: 'place', type: 'proximity', limit: 1, direction: 'out'},
+            {links: true, count: true, schema: 'message', type: 'content', limit: 2, direction: 'both'},
+            {where: {_from: tarzan._id}, links: true, count: true, schema: 'user', type: 'watch', limit: 1, direction: 'in'},
+            {where: {_from: tarzan._id}, links: true, count: true, schema: 'user', type: 'like', limit: 1, direction: 'in'},
+            {where: {_creator: tarzan._id}, links: true, count: true, schema: 'message', type: 'content', limit: 1, direction: 'in'}
+          ]
+        }
+      }
+    }, function(err, res, body) {
+      var rge = body.data
+      log('find', rfind)
+      log('getEnts', rge)
+
+      // find returns tarzan on top with an array of linked patches.
+      // Under each patch is an array of linked entities, of type beacon, place, or message,
+      // and a linkedCount object that counts messages, watches, and likes to the patch
+      t.assert(rfind.linked.length === rge.length)
+      var cMessagesTot = 0
+      rfind.linked.forEach(function(patch) {
+        var cMessagesPerPatch = 0
+        t.assert(patch.schema === 'patch')
+        t.assert(patch.collection === 'patches')
+        t.assert(patch.linkedCount)
+        t.assert(tipe.isNumber(patch.linkedCount.from.messages.content))
+        t.assert(tipe.isNumber(patch.linkedCount.from.users.watch))
+        t.assert(tipe.isNumber(patch.linkedCount.from.users.like))
+        t.assert(patch.linked)
+        patch.linked.forEach(function(ent) {
+          t.assert(ent.schema)
+          t.assert(ent.schema.match(/message|place|beacon/))
+          if (ent.schema === 'message') {
+            cMessagesPerPatch++
+            cMessagesTot++
+          }
+        })
+        t.assert(cMessagesPerPatch <= 2)  // proves link limit works
+      })
+      t.assert(cMessagesTot > 2)
+
+      // getEntities returns an array of patches, each with two nested arrays,
+      // linksIn and linksInCounts.  The linksIn array contains an array of links
+      // with the linkedDocument include as a property called shortcut
+      rge.forEach(function(patch) {
+        t.assert(patch.schema === 'patch')
+        t.assert(patch.collection === 'patches')
+        t.assert(patch.linksInCounts)
+        t.assert(patch.linksInCounts[0].type === 'content')
+        t.assert(patch.linksInCounts[1].type === 'watch')
+        t.assert(patch.linksIn)
+        patch.linksIn.forEach(function(link) {
+          t.assert(link._id.match(/^li\./))
+          t.assert(link.shortcut)
+          t.assert(link.shortcut.schema.match(/message|place|beacon|user/))
+        })
+      })
+      test.done()
+    })
   })
 }
