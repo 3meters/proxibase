@@ -308,14 +308,16 @@ exports.findWithRefsDefaultsToName = function(test) {
 
 exports.findWithRefsNestedObjectFieldList = function(test) {
   t.get({
-    uri: '/data/documents?name=' + testDoc1.name + '&refs=_id,name,email&' + userCred
+    uri: '/data/documents?name=' + testDoc1.name + '&refs=_id,name,email,photo&' + userCred
   }, function(err, res, body) {
     var doc = body.data[0]
     t.assert(doc.owner && doc.owner._id && doc.owner.name)
     t.assert(!doc.owner.email)  // included in list, but private
     t.assert(!doc.owner.role)   // not included in list
     t.assert(doc.creator && doc.creator._id && doc.creator.name)
+    t.assert(doc.creator && doc.creator.photo && doc.creator.photo.prefix)
     t.assert(doc.modifier && doc.modifier._id && doc.modifier.name)
+    t.assert(doc.modifier && doc.modifier.photo && doc.modifier.photo.prefix)
     test.done()
   })
 }

@@ -113,12 +113,20 @@ var testUser = {
   name: 'Test User',
   email: 'test@3meters.com',
   password: 'foobar',
+  photo: {
+    prefix:"default_user.jpg",
+    source:"aircandi",
+  }
 }
 
 var adminUser = {
   name: 'Test Admin User',
   email: 'admin',
   password: 'admin',
+  photo: {
+    prefix:"default_user.jpg",
+    source:"aircandi",
+  }
 }
 
 function makeTestUser() {
@@ -127,6 +135,10 @@ function makeTestUser() {
     name: 'Test User ' + seed,
     email: 'test' + seed + '@3meters.com',
     password: 'foobar',
+    photo: {
+      prefix:"default_user.jpg",
+      source:"aircandi",
+    }
   }
 }
 

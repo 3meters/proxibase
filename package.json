@@ -47,8 +47,7 @@
     "durable-json-lint": "*",
     "fuzzy": "*",
     "react": "<0.13",
-    "express-react-views": "*",
-    "json-stringify-safe": "*"
+    "express-react-views": "*"
   },
 
   "repository": "git://github.com:3meters/proxibase",

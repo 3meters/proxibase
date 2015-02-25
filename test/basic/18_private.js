@@ -921,8 +921,8 @@ exports.findMyPatchesCompareGetEntities = function(test) {
       }
     }, function(err, res, body) {
       var rge = body.data
-      log('find', rfind)
-      log('getEnts', rge)
+      // log('find', rfind)
+      // log('getEnts', rge)
 
       // find returns tarzan on top with an array of linked patches.
       // Under each patch is an array of linked entities, of type beacon, place, or message,
