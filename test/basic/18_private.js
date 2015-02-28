@@ -5,6 +5,7 @@
 var async = require('async')
 var util = require('proxutils')
 var seed = util.seed(6)  // for running tests concurrently
+var seed2 = util.seed(6)
 var testUtil = require('../util')
 var skip = testUtil.skip
 var t = testUtil.treq
@@ -15,6 +16,15 @@ var photo = {
   prefix: 'picture.jpg',
   source: 'aircandi.users'
 }
+
+// Generate a random location on earth based on seeds 1 and 2
+// This is so that the test can be run concurrently and not
+// have the generated patches land on top of each other
+var base = Math.pow(10,6) // second param should be the same as the seed precision
+var lat = ((Number(seed) % 179) - 89) + (Number(seed2) / base)
+var lng = ((Number(seed2) % 359) - 179) + (Number(seed) / base)
+var distance = 0.0001 // distance between patches in lat / lng increments, should be 100 meters or so
+
 
 var _exports = {}  // For commenting out tests
 
@@ -46,37 +56,72 @@ var river = {
   _id: 'pa.river' + seed,
   name: 'River' + seed,
   photo: photo,
+  location: {
+    lat: lat,
+    lng: lng,
+  },
 }
 
 var treehouse = {
   _id: 'pa.treehouse' + seed,
   name: 'Treehouse' + seed,
   visibility: 'private',
+  location: {
+    lat: lat + distance,
+    lng: lng,
+  },
 }
 
 var janehouse = {
   _id: 'pa.janehouse' + seed,
   name: 'Janehouse' + seed,
   visibility: 'private',
+  location: {
+    lat: lat + (2 * distance),
+    lng: lng,
+  },
 }
 
 var maryhouse = {
   _id: 'pa.maryhouse' + seed,
   name: 'Maryhouse' + seed,
   visibility: 'private',
+  location: {
+    lat: lat + (3 * distance),
+    lng: lng,
+  },
 }
 
 var jungle = {
   _id: 'pl.jungle' + seed,
   name: 'Jungle' + seed,
+  location: {
+    lat: lat,
+    lng: lng
+  }
 }
+
+log('Patch locations', {
+  river: river.location,
+  treeh: treehouse.location,
+  janeh: janehouse.location,
+  maryh: maryhouse.location,
+})
 
 var beacon1 = {
   bssid: 'Beacon1.' + seed,
+  location: {
+    lat: lat,
+    lng: lng
+  }
 }
 
 var beacon2 = {
   bssid: 'Beacon2.' + seed,
+  location: {
+    lat: lat + distance,
+    lng: lng
+  }
 }
 
 
@@ -966,6 +1011,76 @@ exports.findMyPatchesCompareGetEntities = function(test) {
           t.assert(link.shortcut.schema.match(/message|place|beacon|user/))
         })
       })
+      test.done()
+    })
+  })
+}
+
+
+// Patches near with new and old apis
+exports.patchesNear = function(test) {
+
+  var location = {
+      lat: lat,
+      lng: lng,
+      accuracy: 1000,
+      provider: 'fused',
+  }
+
+  t.post({
+    // Supported syntax
+    uri: '/patches/near',
+    body: {
+      location: location,
+      radius: 10000,
+      installId: 'todo',
+      limit: 50,
+      rest: true,   // set to use supported rest Api rather than deprecated getEntities
+      linked: [
+        {to: 'beacons', type: 'proximity', limit: 10},
+        {to: 'places', type: 'proxmity', limit: 10},
+        {from: 'messages', type: 'content', limit: 2},
+        {from: 'messages', type: 'content', count: true},
+        {from: 'users', type: 'like', count: true},
+        {from: 'users', type: 'watch', count: true},
+      ]
+    }
+  }, function(err, res, body) {
+    var patchesFind = body.data
+    t.assert(patchesFind.length === 4)
+    t.assert(patchesFind[0]._id = river._id)      // sorted by distance from query location
+    t.assert(patchesFind[1]._id = treehouse._id)
+    t.assert(patchesFind[2]._id = janehouse._id)
+    t.assert(patchesFind[3]._id = maryhouse._id)
+    patchesFind.forEach(function(patch) {
+      t.assert(patch.linked)
+      t.assert(patch.linkedCount.from)
+      t.assert(patch.linkedCount.from.messages)
+      t.assert(patch.linkedCount.from.users)
+    })
+    t.post({
+      // Deprecated syntax
+      uri: '/patches/near',
+      body: {
+        location: location,
+        radius: 10000,
+        installId: 'todo',
+        limit: 50,
+        links: {shortcuts: true, active: [
+          {links: true, count: true, schema: 'beacon', type: 'proximity', limit: 10, direction: 'out' },
+          {links: true, count: true, schema: 'place', type: 'proximity', limit: 1, direction: 'out' },
+          {links: true, count: true, schema: 'message', type: 'content', limit: 2, direction: 'both' },
+          {where: { _from: 'us.130820.80231.131.599884' },
+            links: true, count: true, schema: 'user', type: 'watch', limit: 1, direction: 'in' },
+          {where: { _from: 'us.130820.80231.131.599884' },
+            links: true, count: true, schema: 'user', type: 'like', limit: 1, direction: 'in' },
+          {where: { _creator: 'us.130820.80231.131.599884' },
+            links: true, count: true, schema: 'message', type: 'content', limit: 1, direction: 'in' }
+        ]},
+      },
+    }, function(err, res, body) {
+      var patchesGe = body.data
+      t.assert(patchesGe.length === 4)
       test.done()
     })
   })
