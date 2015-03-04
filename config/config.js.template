@@ -5,7 +5,7 @@
 module.exports = {
   service: {
     name: 'Proxibase',
-    mode: 'development',                // development | test | stage | production
+    mode: 'development',                // development | test | production
     protocol: 'https',                  // https | http  (security tests require https)
     host: 'localhost',
     host_external: 'api.aircandi.com',
@@ -26,18 +26,19 @@ module.exports = {
   db: {
     host: 'localhost',
     port: 27017,
-    database: 'prox',                   // dev:prox test:smokeData stage:proxstage production:prox perfTest: perfTest
+    database: 'prox',                   // dev:prox test:smokeData stage:prox_stage production:prox perfTest: perfTest
     limits: {
       default: 50,
       max: 1000,
       join: 1000,
     },
   },
-  maxWorkers: 1,                        // default 1. Values > 1 exercise clustering. -1 means one worker per cpu core
-  ignoreTasks: true,                    // default false, if true skip autostart of recurring tasks
-  doNotRestart: false,                  // default false, if true do not restart dead workers
-  sendMail: './testMail.log',           // boolean or filename for logging, default false
-  notify: {
+  maxWorkers: 1,                        // default 1. Values > 1 exercise clustering. -1 means one worker per cpu core.
+  ignoreTasks: false,                   // default false, if true skip autostart of recurring tasks on startup
+  doNotRestart: false,                  // default false, if true do not restart dead workers, necessay for most tests.
+  sendNotifications: false,             // default false, enable push notifications to android and iPhone clients
+  sendMail: false,                      // default false, true to send emails or filename for logging
+  notify: {                             // when to whom to send server alert mail
     onStart: false,
     onCrash: false,
     onFeedback: false,

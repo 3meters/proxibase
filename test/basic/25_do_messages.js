@@ -748,21 +748,23 @@ exports.bobInsertsPrivatePatch = function (test) {
 
 exports.bobWatchesTomsPublicPatch = function(test) {
   t.post({
+    // Deprecated:  use rest api for /data/link
     uri: '/do/insertLink?' + userCredBob,  // owned by tom
     body: {
       toId: testPatchPublic._id,
       fromId: testUserBob._id,
       enabled: true,
       type: util.statics.typeWatch,
-      actionEvent: 'watch_entity_patch',
+      // actionEvent: 'watch_entity_patch',
       returnNotifications: true,
-      log: true,
+      log: false,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     /*
      * Tom should get a watch alert because he is the patch owner.
      */
+    t.assert(body.notifications)
     t.assert(body.notifications.length == 1)
     var tomHit = false
       , aliceHit = false
@@ -825,23 +827,22 @@ exports.bobWatchesTomsPublicPatch = function(test) {
   })
 }
 
-exports.bobLikesTomsPublicPatch = function(test) {
+exports.bobLikesTomsPublicPatchViaRestAPI = function(test) {
   t.post({
-    uri: '/do/insertLink?' + userCredBob,  // owned by tom
+    // Supported API
+    uri: '/data/links?' + userCredBob,  // owned by tom
     body: {
-      toId: testPatchPublic._id,
-      fromId: testUserBob._id,
-      enabled: true,
-      type: util.statics.typeLike,
-      actionEvent: 'like_entity_patch',
-      returnNotifications: true,
-      log: true,
+      data: {
+        _to: testPatchPublic._id,
+        _from: testUserBob._id,
+        type: 'like',
+      },
+      test: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
-    /*
-     * Tom should get a like alert because he is the patch owner.
-     */
+    t.assert(body.notifications)
+    // Tom should get a like alert because he is the patch owner.
     t.assert(body.notifications.length == 1)
     var tomHit = false
       , aliceHit = false
@@ -906,13 +907,14 @@ exports.bobLikesTomsPublicPatch = function(test) {
 
 exports.beckyRequestsToWatchBobsPrivatePatch = function(test) {
   t.post({
+    // Deprecated: use /data/link
     uri: '/do/insertLink?' + userCredBecky,
     body: {
       toId: testPatchPrivate._id,             // Owned by bob
       fromId: testUserBecky._id,
       type: util.statics.typeWatch,
       enabled: false,
-      actionEvent: 'request_watch_entity',
+      // actionEvent: 'request_watch_entity',
       returnNotifications: true,
       log: true,
     }
@@ -986,6 +988,7 @@ exports.beckyRequestsToWatchBobsPrivatePatch = function(test) {
 
 exports.bobApprovesBeckysRequestToWatchBobsPrivatePatch = function(test) {
   t.post({
+    // Deprecated: use /data/link
     uri: '/do/insertLink?' + userCredBob,
     body: {
       linkId: beckyWatchLinkId,
@@ -993,9 +996,9 @@ exports.bobApprovesBeckysRequestToWatchBobsPrivatePatch = function(test) {
       fromId: testUserBecky._id,
       type: util.statics.typeWatch,
       enabled: true,
-      actionEvent: 'approve_watch_entity',
+      // actionEvent: 'approve_watch_entity',
       returnNotifications: true,
-      log: true,
+      debug: false,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
@@ -1032,6 +1035,7 @@ exports.bobApprovesBeckysRequestToWatchBobsPrivatePatch = function(test) {
     t.assert(!bobHit)
     t.assert(beckyHit)
     t.assert(!stanHit)
+
 
     /* Check watch entity link to entity 2 */
     t.post({
@@ -1073,13 +1077,14 @@ exports.bobApprovesBeckysRequestToWatchBobsPrivatePatch = function(test) {
 
 exports.aliceRequestsToWatchBobsPrivatePatch = function(test) {
   t.post({
+    // Deprecated: use /data/link
     uri: '/do/insertLink?' + userCredAlice,
     body: {
       toId: testPatchPrivate._id,             // Owned by bob
       fromId: testUserAlice._id,
       type: util.statics.typeWatch,
       enabled: false,
-      actionEvent: 'request_watch_entity',
+      // actionEvent: 'request_watch_entity',
       returnNotifications: true,
       log: true,
     }
@@ -1107,6 +1112,7 @@ exports.aliceRequestsToWatchBobsPrivatePatch = function(test) {
 
 exports.bobApprovesAlicesRequestToWatchBobsPrivatePatch = function(test) {
   t.post({
+    // Deprecated: use /data/link
     uri: '/do/insertLink?' + userCredBob,
     body: {
       linkId: aliceWatchLinkId,
@@ -1114,7 +1120,7 @@ exports.bobApprovesAlicesRequestToWatchBobsPrivatePatch = function(test) {
       fromId: testUserAlice._id,
       type: util.statics.typeWatch,
       enabled: true,
-      actionEvent: 'approve_watch_entity',
+      // actionEvent: 'approve_watch_entity',
       returnNotifications: true,
       log: true,
     }
@@ -2749,11 +2755,11 @@ exports.aliceGetsShareMessageFromBecky = function (test) {
     })
 
     t.assert(userHit)
-    log('WARNING:  Commented out a test i do not fully understand --- George ')
-    // t.assert(!messageHit)  // cannot see preview, must drill in
+    t.assert(messageHit)  // can see preview -- added in feb 2015 -- no longer have to drill in -george
 
 
     // Make a second call to view the contents of the shared message to the private place
+    // This is no longer necessary
     t.post({
       uri: '/do/getEntities?' + userCredAlice,
       body: {
@@ -2812,6 +2818,7 @@ exports.userGetMessagesSentByAlice = function (test) {
   })
 }
 
+// TODO:  The watch param is unneeded and should be excised
 exports.userWatchesPatchViaRestWatchParam = function(test) {
   t.get('/find/patches/' + testPatchPublic._id + '?watch=true&' + userCredAlice,
   function(err, res, body) {
@@ -2853,6 +2860,7 @@ exports.userWatchesPatchViaRestWatchParam = function(test) {
   })
 }
 
+// TODO:  The watch param is unneeded and should be excised
 exports.userWatchPatchViaRestWatchParamOnMessage = function(test) {
   t.get('/find/messages/' + testMessage._id + '?watch=true&' + userCredBecky,
   function(err, res, body) {
@@ -2934,7 +2942,7 @@ exports.removeMessageFromPatch = function(test) {
       toId: testPatchPublic._id,
       fromId: testMessage._id,              // owned by bob
       type: util.statics.typeContent,
-      actionEvent: 'remove'
+      // actionEvent: 'remove'
     }
   }, function(err, res, body) {
     t.assert(body.info.indexOf('success') > 0)
@@ -2958,15 +2966,16 @@ exports.removeMessageFromPatch = function(test) {
 
 exports.unwatchPrivatePatch = function(test) {
   t.post({
-    uri: '/do/deleteLink?' + userCredBecky,
+    uri: '/do/deleteLink?' + userCredBecky,  // Deprecated:  just DELETE /data/links/<linkId>
     body: {
       toId: testPatchPrivate._id,             // Owned by bob
       fromId: testUserBecky._id,
       type: util.statics.typeWatch,
-      actionEvent: 'unwatch_entity_patch',
+      // actionEvent: 'unwatch_entity_patch',  // now constructed automaticlly
     }
   }, function(err, res, body) {
     t.assert(body.count === 1)
+    t.assert(body.deprecated) // Just DELETE /data/links/<linkId>
 
     /* Check watch entity link to entity 2 */
     t.post({
@@ -2987,7 +2996,7 @@ exports.unwatchPrivatePatch = function(test) {
         body: {
           query:{
             _entity:testPatchPrivate._id,
-            event:'unwatch_entity_patch',
+            event: 'unwatch_entity_patch', // now set automatically
             _user: testUserBecky._id,
           }
         }
