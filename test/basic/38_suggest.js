@@ -228,6 +228,7 @@ exports.suggestUsersFts = function(test) {
 }
 
 
+// TODO:  There is a timing problem here that fails intermitently
 exports.suggestCombined = function(test) {
 
   if (disconnected) return skip(test)
