@@ -272,40 +272,43 @@ exports.tarzanWatchesRiver = function(test) {
 
 exports.tarzanSendsMessageToRiver = function(test) {
   t.post({
-    uri: '/do/insertEntity?' + tarzan.cred,
+    uri: '/data/messages?' + tarzan.cred,
     body: {
-      entity: {
-        schema: 'message',
+      data: {
         _id: 'me.tarzanToRiver' + seed,
         description: 'Good water, bad crocs',
+        links: [{
+          _to: river._id,
+          type: 'content',
+        }],
       },
-      links: [{
-        _to: river._id,
-        type: 'content',
-      }],
-      returnNotifications: true,
+      test: true,
     },
   }, 201, function(err, res, body) {
     t.assert(body.data)
+    t.assert(body.data._owner === tarzan._id)
+    t.assert(body.data._acl === river._id)      // gets its permissions from river
+    t.assert(body.data.links)
+    t.assert(body.data.links.length === 1)
+    // t.assert(body.data.notifications)
     test.done()
   })
 }
 
 
-exports.janeSendsMessageToPublicRiverWithoutWatchingIt = function(test) {
+exports.janeSendsMessageToPublicRiver = function(test) {
   t.post({
-    uri: '/do/insertEntity?' + jane.cred,
+    uri: '/data/messages?' + jane.cred,
     body: {
-      entity: {
-        schema: 'message',
+      data: {
         _id: 'me.janeToRiver' + seed,
         description: 'I love swimming',
+        links: [{
+          _to: river._id,
+          type: 'content',
+        }],
       },
-      links: [{
-        _to: river._id,
-        type: 'content',
-      }],
-      returnNotifications: true,
+      test: true,
     },
   }, 201, function(err, res, body) {
     t.assert(body.data)
@@ -332,18 +335,17 @@ exports.messagesToPublicRiverAreVisibleToAnon = function(test) {
 
 exports.tarzanSendsMessageToTreehouse = function(test) {
   t.post({
-    uri: '/do/insertEntity?' + tarzan.cred,
+    uri: '/data/messages?' + tarzan.cred,
     body: {
-      entity: {
-        schema: 'message',
+      data: {
         _id: 'me.tarzanToTreehouse' + seed,
         description: 'Check out my hammock',
+        links: [{
+          _to: treehouse._id,
+          type: 'content',
+        }],
       },
-      links: [{
-        _to: treehouse._id,
-        type: 'content',
-      }],
-      returnNotifications: true,
+      test: true,
     },
   }, 201, function(err, res, body) {
     t.assert(body.data)
@@ -355,6 +357,7 @@ exports.tarzanSendsMessageToTreehouse = function(test) {
 
 exports.janeSendsMessageToJanehouse = function(test) {
   t.post({
+    // Deprecated:  use /data/messages instead
     uri: '/do/insertEntity?' + jane.cred,
     body: {
       entity: {
@@ -374,22 +377,26 @@ exports.janeSendsMessageToJanehouse = function(test) {
 }
 
 
-exports.tarzanSendsMessageToJanehouseAndFails = function(test) {
+exports.tarzanSendsMessageToJanehouseAndPartiallyFails = function(test) {
   t.post({
-    uri: '/do/insertEntity?' + tarzan.cred,
+    uri: '/data/messages?' + tarzan.cred,
     body: {
-      entity: {
-        schema: 'message',
+      data: {
         _id: 'me.tarzanToJanehouse' + seed,
         description: 'What is bed?',
+        links: [{
+          _to: janehouse._id,
+          type: 'content',
+        }],
       },
-      links: [{
-        _to: janehouse._id,
-        type: 'content',
-      }],
-      returnNotifications: true,
+      test: true,
     },
-  }, 401, function(err, res, body) {
+  }, 202, function(err, res, body) {
+    t.assert(body.data)   // the message was created and saved
+    t.assert(body.data.links.length === 0)   // but it was not linked to Janehouse
+    t.assert(body.errors)
+    t.assert(body.errors[0].type === 'insertLink')
+    t.assert(body.errors[0].error.code === 401) // bad auth, tarzan is not watching janehouse
     test.done()
   })
 }
@@ -426,6 +433,7 @@ exports.messagesAreOwnerAccess = function(test) {
 
 exports.getEntsForEntsDoesNotExposePrivateFieldsOfWatchers = function(test) {
   t.post({
+    // Deprecated: use /find/messages
     uri: '/do/getEntitiesForEntity',
     body: {
       entityId:  river._id,
@@ -469,6 +477,7 @@ exports.findWithLinkedDoesNotExposePrivateFieldsOfWatches = function(test) {
 
 exports.getEntitiesForEntsReadsMessagesToPublicPatches = function(test) {
   t.post({
+    // Deprecated, use find/patches
     uri: '/do/getEntitiesForEntity',
     body: {
       entityId: 'pa.river' + seed,
@@ -486,46 +495,38 @@ exports.getEntitiesForEntsReadsMessagesToPublicPatches = function(test) {
 }
 
 
+exports.findLinkedReadsMessagesToPublicPatches = function(test) {
+  t.post({
+    // Supported
+    uri: '/find/patches/' + river._id,
+    body: {
+      linked: [{from: 'messages', type: 'content'}]
+    },
+  }, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data._id === river._id)
+    t.assert(body.data.linked)
+    t.assert(body.data.linked.length === 2)
+    t.assert(body.data.linked[0].description === 'I love swimming')
+    t.assert(body.data.linked[1].description === 'Good water, bad crocs')
+    test.done()
+  })
+}
+
+
 exports.tarzanCannotInviteHimselfToJanehouse = function(test) {
   t.post({
-    uri: '/do/insertEntity?' + tarzan.cred,
+    uri: '/data/links?' + tarzan.cred,
     body: {
-      entity: {
-        _id: 'me.tarzanInvitesHimselfOver' + seed,
-        schema: 'message',
-        description: 'I would like to see Janehouse',
-      },
-      // insertEntity will set the _from side of the following links
-      // to the entity._id of the message
-      links: [{
-        _id: 'li.toJaneFromTarzanSelfInvite' + seed,
-        _to: jane._id,
+      data: {
+        _id: 'li.tarzanInvitesHimselfOver' + seed,
+        _from: janehouse._id,
+        _to: tarzan._id,
         type: 'share',
-      }, {
-        _id: 'li.toJanehouseFromTarzanSelfInvite' + seed,
-        _to: janehouse._id,
-        type: 'share',
-      }],
-      returnNotifications: true,
+      }
     },
   }, 401, function(err, res, body) {
-    t.get('/data/messages/me.tarzanInvitesHimselfOver' + seed + '?' + tarzan.cred,
-    function(err, res, body) {
-      // The message record exists due to partial failure of the previous call
-      // TODO:  it should be 0, since setting the _acl field should fail
-      t.assert(body.count === 1)
-      t.get('/data/links/li.toJaneFromTarzanSelfInvite' + seed + '?' + tarzan.cred,
-      function(err, res, body) {
-        // The link to jane from the share message still exists.  Should it?
-        t.assert(body.count === 1)
-        t.get('/data/links/li.toJanehouseFromTarzanSelfInvite' + seed + '?' + tarzan.cred,
-        function(err, res, body) {
-          // This is the link failure that caused the 401 in the top-level call
-          t.assert(body.count === 0)
-          test.done()
-        })
-      })
-    })
+    test.done()
   })
 }
 
@@ -552,6 +553,7 @@ exports.tarzanRequestsToWatchJanehouse = function(test) {
 
 exports.tarzanCannotReadJanesMessagesYet = function(test) {
   t.post({
+    // Deprecated, use /find/patches
     uri: '/do/getEntitiesForEntity?' + tarzan.cred,
     body: {
       entityId: janehouse._id,
@@ -601,23 +603,8 @@ exports.janeAcceptsTarzansRequest = function(test) {
   })
 }
 
-exports.tarzanCanNowReadMessagesToJanehouse = function(test) {
-  t.post({
-    uri: '/do/getEntitiesForEntity?' + tarzan.cred,
-    body: {
-      entityId: janehouse._id,
-      cursor: {
-        linkTypes: ['content'],
-        direction: 'in',
-      },
-    },
-  }, function(err, res, body) {
-    t.assert(body.data.length === 1)
-    test.done()
-  })
-}
 
-exports.tarzanCanNowReadMessagesToJanehouseViaRest = function(test) {
+exports.tarzanCanNowReadMessagesToJanehouse = function(test) {
   t.post({
     uri: '/find/patches/' + janehouse._id + '?' + tarzan.cred,
     body: {
@@ -632,7 +619,7 @@ exports.tarzanCanNowReadMessagesToJanehouseViaRest = function(test) {
   })
 }
 
-exports.tarzanInvitesJaneToTreehouseViaRest = function(test) {
+exports.tarzanInvitesJaneToTreehouse = function(test) {
   t.post({
     uri: '/data/messages?' + tarzan.cred,
     body: {
@@ -666,29 +653,31 @@ exports.tarzanInvitesJaneToTreehouseViaRest = function(test) {
   })
 }
 
-exports.janeAcceptsTarzanInvite = function(test) {
+exports.janeAcceptsTarzanInviteByCreatingAWatchLink = function(test) {
   t.post({
-    uri: '/do/insertLink?' + jane.cred,
+    uri: '/data/links?' + jane.cred,
     body: {
-      toId: treehouse._id,
-      fromId: jane._id,
-      type: 'watch',
+      data: {
+        _to: treehouse._id,
+        _from: jane._id,
+        type: 'watch',
+      }
     }
   }, 201, function(err, res, body) {
     t.assert(body.data)
-    t.assert(body.data.length == 1)
-    // enabled because we recognized outstanding invitation
-    t.assert(body.data[0].enabled === true)
+    // enabled because we recognized the existing share link, meaning an invitation
+    t.assert(body.data.enabled === true)
     test.done()
   })
 }
 
-exports.janeCannotSeeTreehouseMessagesViaFind = function(test) {
+exports.janeCannotSeeTreehouseMessagesWithFind = function(test) {
   t.get('/find/messages?' + jane.cred,
   function(err, res, body) {
     t.assert(body.count)
     body.data.forEach(function(msg) {
       t.assert(msg._owner === jane._id)
+      t.assert(msg._id !== 'me.tarzanToTreehouse' + seed)  // only findOne checks parent permissions
     })
     test.done()
   })
@@ -706,40 +695,34 @@ exports.janeCanSeeTreehouseMessagesViaFindOne = function(test) {
 // that the security model still works if we ever decide to
 exports.janeCanNestAMessageOnTarzansTreehouseMessage = function(test) {
   var janeMessageOnMessage = {
-    entity: {
-      schema: 'message',
+    data: {
       _id: 'me.janeMessageOnTarzanMsg' + seed,
       description: 'Trust me, you will like bed',
+      links: [{
+        _to: 'me.tarzanToTreehouse' + seed,
+        type: 'content',
+      }],
     },
-    links: [{
-      _to: 'me.tarzanToTreehouse' + seed,
-      type: 'content',
-    }],
-    returnNotifications: true,
   }
   t.post({
-    uri: '/do/insertEntity?' + jane.cred,
+    uri: '/data/messages?' + jane.cred,
     body: janeMessageOnMessage,
   }, 201, function(err, res, body) {
     t.assert(body.count)
-    t.assert(body.data._acl === 'pa.treehouse' + seed)  // checks setAcl in insertEntity
+    t.assert(body.data._acl === 'pa.treehouse' + seed)  // the message's grandparent, not parent
     test.done()
   })
 }
 
 exports.janeCanSendsMessageToTreehouse = function(test) {
   t.post({
-    uri: '/do/insertEntity?' + jane.cred,
+    uri: '/data/messages?' + jane.cred,
     body: {
-      entity: {
-        schema: 'message',
+      data: {
         _id: 'me.janeToTreehouse' + seed,
         description: 'Hmm, maybe hammock is ok afterall...',
+        links: [{_to: treehouse._id, type: 'content'}]
       },
-      links: [{
-        _to: treehouse._id,
-        type: 'content',
-      }]
     },
   }, 201, function(err, res, body) {
     test.done()
