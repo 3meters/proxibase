@@ -37,7 +37,7 @@ var fields = {
   },
   skip: {},
   limit: {},
-  datesToUTC: {},
+  utc: {},
   count: {},
   countBy: {
     help: 'city,postalCode'
