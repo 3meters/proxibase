@@ -16,6 +16,9 @@ var userCredAlice
 var adminCred
 var trackingLink
 var watchLinkId
+var activityDatePatch
+var modifiedDatePatch
+var activityDatePatchRefreshed
 var _exports = {} // for commenting out tests
 var testLatitude = 46.1
 var testLongitude = -121.1
@@ -574,6 +577,10 @@ exports.insertPatchCustomPublic = function (test) {
     }, function(err, res, body) {
       t.assert(body.count === 1)
 
+      /* Used in later test */
+      activityDatePatch = body.data[0].modifiedDate
+      modifiedDatePatch = body.data[0].modifiedDate
+
       /* Check inserted beacon */
       t.post({
         uri: '/find/beacons',
@@ -899,6 +906,23 @@ exports.adminCanDeleteBeaconEntityUserCreated = function (test) {
  * ----------------------------------------------------------------------------
  */
 
+exports.noPatchWithFreshTimestamp = function (test) {
+   /*
+    * Verify that the patch doesn't come back because the where parameter
+    * did not pass.
+    */
+   t.post({
+     uri: '/do/getEntities',
+     body: {
+       entityIds: [testPatchCustomPublic._id],
+       where: { activityDate: { $gt: activityDatePatch }}
+     }
+   }, function(err, res, body) {
+     t.assert(body.count === 0)
+     test.done()
+   })
+}
+
 exports.insertMessage = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCredBob,
@@ -957,6 +981,77 @@ exports.insertMessage = function (test) {
   })
 }
 
+exports.getPatchWithStaleTimestamp = function (test) {
+   /*
+    * Verify that the patch DOES come back because the where parameter
+    * did pass.
+    */
+   t.post({
+     uri: '/do/getEntities',
+     body: {
+       entityIds: [testPatchCustomPublic._id],
+       where: { activityDate: { $gt: activityDatePatch }}
+     }
+   }, function(err, res, body) {
+     t.assert(body.count === 1)
+     activityDatePatchRefreshed = body.data[0].activityDate
+     test.done()
+   })
+}
+
+exports.getMessagesWithStaleTimestamp = function (test) {
+  t.post({
+    uri: '/do/getEntitiesForEntity?',
+    body: {
+      entityId: testPatchCustomPublic._id,
+      where: { activityDate: { $gt: activityDatePatch }},
+      cursor: {
+        linkTypes: ['content'],
+        schemas: ['message'],
+        direction: 'in',
+        skip: 0,
+        sort: { modifiedDate: -1},
+        limit: 50,
+      },
+    }
+  },
+
+  function(err, res, body) {
+    /*
+     * Should see one messages.
+     */
+    t.assert(body.data)
+    t.assert(body.count === 1)
+    test.done()
+  })
+}
+
+exports.noMessagesWithFreshTimestamp = function (test) {
+  t.post({
+    uri: '/do/getEntitiesForEntity?',
+    body: {
+      entityId: testPatchCustomPublic._id,
+      where: { activityDate: { $gt: activityDatePatchRefreshed }},
+      cursor: {
+        linkTypes: ['content'],
+        schemas: ['message'],
+        direction: 'in',
+        skip: 0,
+        sort: { modifiedDate: -1},
+        limit: 50,
+      },
+    }
+  },
+
+  function(err, res, body) {
+    /*
+     * Should see no messages.
+     */
+    t.assert(body.data)
+    t.assert(body.count === 0)
+    test.done()
+  })
+}
 
 exports.insertLink = function (test) {
   t.post({
@@ -1123,7 +1218,6 @@ exports.deletePatch = function (test) {
     })
   })
 }
-
 
 exports.ownerCanUpdateLockedRecord = function(test) {
   testPatchCustomLocked.name = 'Testing owner update of locked entity'

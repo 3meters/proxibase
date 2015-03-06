@@ -104,7 +104,6 @@ exports.getEntitiesMessages = function (test) {
   })
 }
 
-
 exports.getEntitiesMaximum = function (test) {
   /*
    * We don't currently populate the smoke test data with any entities that have
@@ -293,7 +292,6 @@ exports.getEntitiesCreatedByUserSortSkipLimit = function (test) {
   })
 }
 
-
 exports.getEntitesLinksLimitSortSkip = function (test) {
   t.post({
     uri: '/do/getEntitiesForEntity?' + testUser1.cred,
@@ -393,7 +391,6 @@ exports.getEntitesLinksLimitSortSkip = function (test) {
     })
   })
 }
-
 
 exports.getEntitiesCreatedByUserMessagesOnly = function (test) {
   t.post({

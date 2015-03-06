@@ -2895,7 +2895,6 @@ exports.userWatchPatchViaRestWatchParamOnMessage = function(test) {
 }
 
 
-
 // Relies on sample data from genData
 exports.messagePagingRest = function(test) {
   t.get('/find/messages?limit=10&sort=_id&' + adminCred,
