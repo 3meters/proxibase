@@ -116,7 +116,6 @@ exports.findFieldProjectionsGetSyntax = function(test) {
     t.assert(body.data.length === 1 && body.count === 1)
     t.assert(body.data[0].email === testUser1.email)
     t.assert(body.data[0].name === testUser1.name)
-    t.assert(!body.data[0]._id)
     t.assert(body.data[0]._owner)
     t.assert(!body.data[0]._creator)
     test.done()

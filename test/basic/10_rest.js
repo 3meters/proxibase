@@ -675,8 +675,8 @@ exports.countWorks = function(test) {
   })
 }
 
-exports.formatDatesWorks = function(test) {
-  t.get('/data/patches?datesToUTC=1',
+exports.formatDatesUtcWorks = function(test) {
+  t.get('/data/patches?utc=1',
   function(err, res, body) {
     t.assert(tipe.isString(body.data[1].createdDate))
     t.assert(tipe.isString(body.data[1].modifiedDate))
