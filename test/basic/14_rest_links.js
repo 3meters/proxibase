@@ -356,7 +356,8 @@ exports.findLinkedComplexWorks = function(test) {
     // Can mix and match count queries with data-fetching queries
     t.assert(body.data.linked)
     body.data.linked.forEach(function(doc) {
-      t.assert(doc.collection === 'message')
+      t.assert(doc.schema === 'message')
+      t.assert(doc.collection === 'messages')
       t.assert(doc.link)
       t.assert(doc.link.type === 'content')
     })

@@ -49,14 +49,13 @@ module.exports = function(profile, cb) {
 
   log('Saving to database ' + dbUri + ' with validation')
 
-  mongo.connect(dbUri, function(err, database) {
+  mongo.connect(dbUri, function(err, oldDb) {
     if (err) return cb(err)
-    db = database
-    db.dropDatabase(function(err) {
+    oldDb.dropDatabase(function(err) {
       if (err) throw err
       mongo.initDb(config.db, function(err, proxdb) {
         if (err) throw err
-        db.close()
+        oldDb.close()
         db = proxdb
         return run(cb)
       })

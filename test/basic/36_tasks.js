@@ -75,6 +75,9 @@ exports.adminCanPostTask = function(test) {
   })
 }
 
+// This can fail due to timeing problems.
+// posting tasks happens asyc, but the call
+// back returns immediately.
 exports.readTasks = function(test) {
   t.get('/admin/tasks?' + adminCred,
   function(err, res, body) {
