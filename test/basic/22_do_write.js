@@ -534,17 +534,7 @@ exports.insertPatchOne = function (test) {
         }
       }, function(err, res, body) {
         t.assert(body.count === 1)
-
-        /* Check inserted action */
-        t.post({
-          uri: '/find/actions?' + adminCred,
-          body: {
-            query: { _entity:testPatchOne._id, event:'insert_entity_patch'}
-          }
-        }, function(err, res, body) {
-          t.assert(body.count === 1)
-          test.done()
-        })
+        test.done()
       })
     })
   })
@@ -618,17 +608,7 @@ exports.insertPatchCustomPublic = function (test) {
             }
           }, function(err, res, body) {
             t.assert(body.count === 1)
-
-            /* Check inserted action */
-            t.post({
-              uri: '/find/actions?' + adminCred,
-              body: {
-                query: { _entity:testPatchCustomPublic._id, event:'insert_entity_patch'}
-              }
-            }, function(err, res, body) {
-              t.assert(body.count === 1)
-              test.done()
-            })
+            test.done()
           })
         })
       })
