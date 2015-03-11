@@ -821,31 +821,6 @@ exports.untrackEntityProximityWipeAll = function(test) {
   })
 }
 
-exports.trackEntityNoBeacons = function(test) {
-  t.post({
-    uri: '/do/trackEntity?' + userCredTom,
-    body: {
-      entityId:testPatchOne._id,
-      actionEvent:'proximity',
-    }
-  }, function(err, res, body) {
-    t.assert(body.info.toLowerCase().indexOf('tracked') > 0)
-
-    /* Check track entity no beacons log action */
-    t.post({
-      uri: '/find/actions?' + adminCred,
-      body: {
-        query:{
-          _entity:testPatchOne._id,
-          event:'entity_proximity'
-        }
-      }
-    }, function(err, res, body) {
-      t.assert(body.count === 1)
-      test.done()
-    })
-  })
-}
 
 /*
  * ----------------------------------------------------------------------------
