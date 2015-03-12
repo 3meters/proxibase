@@ -112,7 +112,7 @@ var beacon1 = {
   bssid: 'Beacon1.' + seed,
   location: {
     lat: lat,
-    lng: lng
+    lng: lng,
   }
 }
 
@@ -120,10 +120,34 @@ var beacon2 = {
   bssid: 'Beacon2.' + seed,
   location: {
     lat: lat + distance,
-    lng: lng
+    lng: lng,
   }
 }
 
+var beacon3 = {
+  bssid: 'Beacon3.' + seed,
+  location: {
+    lat: lat + (2 * distance),
+    lng: lng,
+  }
+}
+
+var beacon4 = {
+  bssid: 'Beacon4.' + seed,
+  location: {
+    lat: lat + (3 * distance),
+    lng: lng,
+  }
+}
+
+exports.getAdminSession = function(test) {
+  testUtil.getAdminSession(function(session) {
+    admin._id = session._owner
+    admin.cred = 'user=' + session._owner +
+        '&session=' + session.key + '&install=' + seed
+    test.done()
+  })
+}
 
 exports.getAdminSession = function(test) {
   testUtil.getAdminSession(function(session) {
@@ -277,11 +301,8 @@ exports.tarzanSendsMessageToRiver = function(test) {
       data: {
         _id: 'me.tarzanToRiver' + seed,
         description: 'Good water, bad crocs',
-        links: [{
-          _to: river._id,
-          type: 'content',
-        }],
       },
+      links: [{_to: river._id, type: 'content'}],
       test: true,
     },
   }, 201, function(err, res, body) {
@@ -303,11 +324,8 @@ exports.janeSendsMessageToPublicRiver = function(test) {
       data: {
         _id: 'me.janeToRiver' + seed,
         description: 'I love swimming',
-        links: [{
-          _to: river._id,
-          type: 'content',
-        }],
       },
+      links: [{_to: river._id, type: 'content'}],
       test: true,
     },
   }, 201, function(err, res, body) {
@@ -340,11 +358,8 @@ exports.tarzanSendsMessageToTreehouse = function(test) {
       data: {
         _id: 'me.tarzanToTreehouse' + seed,
         description: 'Check out my hammock',
-        links: [{
-          _to: treehouse._id,
-          type: 'content',
-        }],
       },
+      links: [{ _to: treehouse._id, type: 'content'}],
       test: true,
     },
   }, 201, function(err, res, body) {
@@ -365,10 +380,7 @@ exports.janeSendsMessageToJanehouse = function(test) {
         _id: 'me.janeToJanehouse' + seed,
         description: 'Checkout my bed',
       },
-      links: [{
-        _to: janehouse._id,
-        type: 'content',
-      }],
+      links: [{_to: janehouse._id, type: 'content'}],
       returnNotifications: true,
     },
   }, 201, function(err, res, body) {
@@ -384,11 +396,8 @@ exports.tarzanSendsMessageToJanehouseAndPartiallyFails = function(test) {
       data: {
         _id: 'me.tarzanToJanehouse' + seed,
         description: 'What is bed?',
-        links: [{
-          _to: janehouse._id,
-          type: 'content',
-        }],
       },
+      links: [{_to: janehouse._id, type: 'content'}],
       test: true,
     },
   }, 202, function(err, res, body) {
@@ -627,16 +636,11 @@ exports.tarzanInvitesJaneToTreehouse = function(test) {
         _id: 'me.tarzanInvite' + seed,
         type: 'root',
         description: 'Check out my treehouse',
-        links: [{
-          _id: 'li.toTreehouseFromTarzanInvite' + seed,
-          _to: treehouse._id,
-          type: 'share',
-        }, {
-          _id: 'li.toJaneFromTarzanInvite' + seed,
-          _to: jane._id,
-          type: 'share',
-        }],
       },
+      links: [
+        {_id: 'li.toTreehouseFromTarzanInvite' + seed, _to: treehouse._id, type: 'share'},
+        {_id: 'li.toJaneFromTarzanInvite' + seed, _to: jane._id, type: 'share', }
+      ],
     },
   }, 201, function(err, res, body) {
     t.get('/data/links/li.toJaneFromTarzanInvite' + seed,
@@ -698,11 +702,8 @@ exports.janeCanNestAMessageOnTarzansTreehouseMessage = function(test) {
     data: {
       _id: 'me.janeMessageOnTarzanMsg' + seed,
       description: 'Trust me, you will like bed',
-      links: [{
-        _to: 'me.tarzanToTreehouse' + seed,
-        type: 'content',
-      }],
     },
+    links: [{_to: 'me.tarzanToTreehouse' + seed, type: 'content'}],
   }
   t.post({
     uri: '/data/messages?' + jane.cred,
@@ -721,8 +722,8 @@ exports.janeCanSendsMessageToTreehouse = function(test) {
       data: {
         _id: 'me.janeToTreehouse' + seed,
         description: 'Hmm, maybe hammock is ok afterall...',
-        links: [{_to: treehouse._id, type: 'content'}]
       },
+      links: [{_to: treehouse._id, type: 'content'}],
     },
   }, 201, function(err, res, body) {
     test.done()
@@ -760,7 +761,7 @@ exports.janeCanDeleteHerMessageToTreehouse = function(test) {
 exports.maryCanCreatePatchAndLinksToAndFromItInOneRestCall = function(test) {
 
   var patch = util.clone(maryhouse)
-  patch.links = [
+  var links = [
     {_from: mary._id, type: 'create'},
     {_from: mary._id, type: 'watch'},
     {_to: jungle._id, type: 'proximity'},
@@ -770,7 +771,7 @@ exports.maryCanCreatePatchAndLinksToAndFromItInOneRestCall = function(test) {
 
   t.post({
     uri: '/data/patches?' + mary.cred,
-    body: {data: patch},
+    body: {data: patch, links: links},
   }, 202, function(err, res, body) {  // 202 means partial success, look at errors
     t.assert(body.data)
     t.assert(body.data.links)
