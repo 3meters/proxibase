@@ -790,6 +790,16 @@ exports.maryCanCreatePatchAndLinksToAndFromItInOneRestCall = function(test) {
 }
 
 
+exports.getTarzanNotifications = function (test) {
+  t.get('/user/getNotifications?limit=20&' + tarzan.cred,
+  function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.count === 3)
+    test.done()
+  })
+}
+
+
 exports.findWithNestedLinks = function(test) {
   t.post({
     uri: '/find/users/' + tarzan._id + ',' + jane._id + ',' + mary._id + '?' + tarzan.cred,
@@ -835,7 +845,7 @@ exports.findWithNestedLinks = function(test) {
 
 // Find messages for patches with new find syntax vs deprecated
 // getEnitiesForEntity syntax
-exports.FindPatchMessagesCompareGetEntities = function(test) {
+exports.findPatchMessagesCompareGetEntities = function(test) {
 
   // Recommended syntax
   t.post({

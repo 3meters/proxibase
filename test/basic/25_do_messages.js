@@ -1978,6 +1978,35 @@ exports.tomCanGetNotificationsForSelf = function (test) {
   })
 }
 
+
+exports.tomCanGetNotificationsForSelfUserApiPost = function (test) {
+  t.post({
+    uri: '/user/getNotifications?' + userCredTom,
+    body: {
+      sort: { modifiedDate: -1 },
+      limit: 2,
+    }
+  },
+  function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.count === 2)
+    test.done()
+  })
+}
+
+
+exports.tomCanGetNotificationsForSelfUserApiGet = function (test) {
+  t.get('/user/getNotifications?' + userCredTom + '&sort[modifiedDate]=-1&limit=3',
+  function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.count === 3)
+    test.done()
+  })
+}
+
+
+
+
 /*
  * ----------------------------------------------------------------------------
  * Sharing
