@@ -77,14 +77,17 @@ exports.cannotPostDocWithMissingDataTag = function(test) {
   })
 }
 
-exports.cannotPostWithMultipleArrayElements = function(test) {
+exports.canPostMultipleDocumentsInArray = function(test) {
   t.post({
     uri: '/data/documents?' + userCred,
     body: {data: [
       { name: 'RestTestMultiDoc0', },
       { name: 'RestTestMultiDoc1', }
     ]}
-  }, 400, function(err, res, body) {
+  }, 201, function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.data.length === 2)
+    t.assert(body.count === 2)
     test.done()
   })
 }
@@ -424,20 +427,24 @@ exports.checkUpdatedDocDeletedThenAddBack = function(test) {
   })
 }
 
-exports.userCannotUpdateNonExistantDoc = function(test) {
+exports.userUpdatesNonExistantDocSucceedsWithZeroCount = function(test) {
   t.post({
     uri: '/data/documents/00005.002?' + userCred,
     body: {data: {name: 'I should not be saved'}}
-  }, 404, function(err, res, body) {
+  }, function(err, res, body) {
+    t.assert(body.data === undefined)
+    t.assert(body.count === 0)
     test.done()
   })
 }
 
-exports.adminCannotUpdateNonExistantDoc = function(test) {
+exports.adminUpdatesNonExistantDocSucceedsWithZeroCount = function(test) {
   t.post({
     uri: '/data/documents/00005.002?' + adminCred,
     body: {data: {name: 'I should should not be saved'}}
-  }, 404, function(err, res, body) {
+  }, function(err, res, body) {
+    t.assert(body.data === undefined)
+    t.assert(body.count === 0)
     test.done()
   })
 }

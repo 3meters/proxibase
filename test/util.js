@@ -89,6 +89,12 @@ function TestRequest() {
     treq.apply(null, arguments)
   }
 
+  // put request
+  function tput(options, statusCode, cb) {
+    options.method = 'put'
+    treq.apply(null, arguments)
+  }
+
   // delete request
   function tdelete(options, statusCode, cb) {
     options.method = 'delete'
@@ -100,6 +106,7 @@ function TestRequest() {
     req: treq,
     get: tget,
     post: tpost,
+    put: tput,
     delete: tdelete,
     del: tdelete,
     ok: tok,

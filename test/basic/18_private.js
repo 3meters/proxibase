@@ -108,46 +108,33 @@ log('Patch locations', {
   maryh: maryhouse.location,
 })
 
-var beacon1 = {
-  bssid: 'Beacon1.' + seed,
-  location: {
-    lat: lat,
-    lng: lng,
-  }
-}
-
-var beacon2 = {
-  bssid: 'Beacon2.' + seed,
-  location: {
-    lat: lat + distance,
-    lng: lng,
-  }
-}
-
-var beacon3 = {
-  bssid: 'Beacon3.' + seed,
-  location: {
-    lat: lat + (2 * distance),
-    lng: lng,
-  }
-}
-
-var beacon4 = {
-  bssid: 'Beacon4.' + seed,
-  location: {
-    lat: lat + (3 * distance),
-    lng: lng,
-  }
-}
-
-exports.getAdminSession = function(test) {
-  testUtil.getAdminSession(function(session) {
-    admin._id = session._owner
-    admin.cred = 'user=' + session._owner +
-        '&session=' + session.key + '&install=' + seed
-    test.done()
-  })
-}
+var beacons = [
+  {
+    bssid: 'Beacon1.' + seed,
+    location: {
+      lat: lat,
+      lng: lng,
+    }
+  }, {
+    bssid: 'Beacon2.' + seed,
+    location: {
+      lat: lat + distance,
+      lng: lng,
+    }
+  }, {
+    bssid: 'Beacon3.' + seed,
+    location: {
+      lat: lat + (2 * distance),
+      lng: lng,
+    }
+  }, {
+    bssid: 'Beacon4.' + seed,
+    location: {
+      lat: lat + (3 * distance),
+      lng: lng,
+    }
+  },
+]
 
 exports.getAdminSession = function(test) {
   testUtil.getAdminSession(function(session) {
@@ -214,24 +201,41 @@ exports.adminCreatePlaces = function(test) {
   })
 }
 
-exports.createBeacons = function(test) {
-
+exports.createManyBeaconsInOnePost = function(test) {
   // Tarzan creates beacons
   t.post({
     uri: '/data/beacons?' + tarzan.cred,
-    body: {data: beacon1},
+    body: {data: beacons},
   }, 201, function (err, res, body) {
-    t.assert(body.count === 1)
-    t.assert(body.data._owner === admin._id)  // Admins own beacons
-    t.assert(body.data._creator === tarzan._id)
-    beacon1 = body.data
-    t.post({
-      uri: '/data/beacons?' + jane.cred,
-      body: {data: beacon2},
-    }, 201, function (err, res, body) {
-      beacon2 = body.data
-      test.done()
+    t.assert(body.data)
+    t.assert(body.data.length === beacons.length)
+    body.data.forEach(function(beacon) {
+      t.assert(beacon._id === 'be.' + beacon.bssid)
+      t.assert(beacon._owner === admin._id)  // Admins own beacons
+      t.assert(beacon._creator === tarzan._id)
     })
+    // Set the module global beacons array to the fully
+    // fleshed-out versions saved on the server
+    beacons = body.data
+    test.done()
+  })
+}
+
+exports.idempotentUpsertManyBeaconsInOnePut = function(test) {
+  // This is exprimental and may change
+  t.put({
+    uri: '/data/beacons?' + tarzan.cred,
+    body: {data: beacons},
+  }, 200, function (err, res, body) {
+    t.assert(body.data)
+    t.assert(body.data.length === beacons.length)
+    body.data.forEach(function(putBeacon, i) {
+      t.assert(putBeacon._id === beacons[i]._id)
+      t.assert(putBeacon.modifiedDate > beacons[i].modifiedDate)
+      beacons[i].modifiedDate = putBeacon.modifiedDate   // this should be the only property that has changed
+    })
+    t.assert(_.isEqual(body.data, beacons))
+    test.done()
   })
 }
 
@@ -765,8 +769,8 @@ exports.maryCanCreatePatchAndLinksToAndFromItInOneRestCall = function(test) {
     {_from: mary._id, type: 'create'},
     {_from: mary._id, type: 'watch'},
     {_to: jungle._id, type: 'proximity'},
-    {_to: beacon1._id, type: 'proximity'},
-    {_to: beacon1._id, type: 'bogus'},      // Will fail
+    {_to: 'be.' + beacons[2].bssid, type: 'proximity'},
+    {_to: 'be.' + beacons[0].bssid, type: 'bogus'},      // Will fail
   ]
 
   t.post({
