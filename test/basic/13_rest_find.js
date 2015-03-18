@@ -12,6 +12,11 @@ var adminCred = ''
 var testUser1 = {}
 var _exports = {}  // For commenting out tests
 var async = require('async')
+var docs = [
+  {name: 'Doc0', type: 'foo'},
+  {name: 'Doc1', type: 'bar'},
+  {name: 'Doc2', type: 'foobar'},
+]
 
 
 exports.getUserSession = function(test) {
@@ -78,8 +83,7 @@ exports.findByNameCaseInsensitive = function(test) {
   })
 }
 
-
-exports.findPassThrough = function(test) {
+exports.findPassQueryThrough = function(test) {
   t.post({
     uri: '/find/users?' + adminCred,
     body: {query:{email: testUser1.email}}
@@ -89,6 +93,65 @@ exports.findPassThrough = function(test) {
     test.done()
   })
 }
+
+
+exports.addSomeSampleData = function(test) {
+  t.post({
+    uri: '/data/documents?' + userCred,
+    body: {data: docs},
+  }, 201, function(err, res, body) {
+    t.assert(body.data.length === 3)
+    docs = body.data // set global vars
+    docs.forEach(function(doc) {
+      t.assert(doc._id)
+    })
+    test.done()
+  })
+}
+
+
+exports.findDocsById = function(test) {
+  t.get('/find/documents/' + docs[0]._id + '?' + userCred,
+  function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.count === 1)
+    t.assert(body.data.name === docs[0].name)
+    test.done()
+  })
+}
+
+exports.findDocsByIdWithQuery = function(test) {
+  t.get('/find/documents/' + docs[0]._id + '?q[type]=cat&' + userCred,
+  function(err, res, body) {
+    t.assert(body.data === null)
+    t.assert(body.count === 0)
+    test.done()
+  })
+}
+
+
+exports.findDocsByMultipleIds = function(test) {
+  t.post({
+    uri: '/find/documents/' + docs[0]._id + ',' + docs[1]._id + '?' + adminCred,
+    body: {},
+  }, function(err, res, body) {
+    t.assert(body.data.length === 2 && body.count === 2)
+    test.done()
+  })
+}
+
+
+exports.findDocsByMultipleIdsWithQuery = function(test) {
+  t.post({
+    uri: '/find/documents/' + docs[0]._id + ',' + docs[1]._id + '?' + adminCred,
+    body: {query: {type: 'bar'}}
+  }, function(err, res, body) {
+    t.assert(body.data.length === 1 && body.count === 1)
+    t.assert(body.data[0].namelc === 'doc1')
+    test.done()
+  })
+}
+
 
 exports.findFieldProjections = function(test) {
   t.post({

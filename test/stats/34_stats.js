@@ -3,6 +3,13 @@
  *     linkStats is a computed collection
  *
  *
+ *     This is outside of basic not because it is not important,
+ *     but because it is much easier to test if the test db is in
+ *     a known state when running the tests.  Since we don't
+ *     rebuild the database between tests, and since it is legal
+ *     for tests to leave random data around, this one needs to be
+ *     run stand-alone.  This is clearly not ideal.
+ *
  *     TODO:  make this test run with a randomly generated seed
  *     for ids so that it can be run concurrently to test the stat
  *     engine under load
