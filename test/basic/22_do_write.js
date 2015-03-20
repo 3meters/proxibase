@@ -977,6 +977,7 @@ exports.getMessagesWithStaleTimestamp = function (test) {
      */
     t.assert(body.data)
     t.assert(body.count === 1)
+    t.assert(body.entity)
     test.done()
   })
 }
@@ -1004,6 +1005,7 @@ exports.noMessagesWithFreshTimestamp = function (test) {
      */
     t.assert(body.data)
     t.assert(body.count === 0)
+    t.assert(!body.entity)
     test.done()
   })
 }
