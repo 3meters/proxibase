@@ -30,30 +30,32 @@
     <exec_method
       type="method"
       name="start"
-      exec="/usr/local/bin/node ./prox.js"
-      timeout_seconds="60"/>
+      exec="/usr/local/prox/bin/prox start"
+      timeout_seconds="5"/>
 
     <exec_method
       type="method"
       name="stop"
-      exec=":kill"
+      exec="/usr/local/prox/bin/prox stop"
       timeout_seconds="60"/>
+
+    <exec_method
+      type="method"
+      name="reset"
+      exec="/usr/local/prox/bin/prox restart"
+      timeout_seconds="60"/>
+
 
     <property_group name="startd" type="framework">
       <propval name="duration" type="astring" value="child"/>
       <propval name="ignore_error" type="astring" value="core,signal"/>
     </property_group>
 
-    <property_group name="application" type="application">
-      <propval name="log" type="astring" value="/var/log/prox/prox.log" />
-    </property_group>
-
-
     <stability value="Evolving"/>
 
     <template>
       <common_name>
-        <loctext xml:lang="C">proxibase service</loctext>
+        <loctext xml:lang="C">Proxibase Service</loctext>
       </common_name>
     </template>
 

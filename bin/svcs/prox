@@ -1,0 +1,92 @@
+#!/bin/bash
+
+#
+# Proxibase service management script
+# Relies on caller having write access to
+#
+#     /var/log/prox/prox.log
+#     /var/log/prox/proxerr.log
+#     /var/run/prox.pid
+#
+
+
+PROX="/usr/local/prox"
+# PROX="/Users/gs/prox"
+PROXLOG="/var/log/prox/prox.log"
+ERRLOG="/var/log/prox/proxerr.log"
+PIDFILE="/var/run/prox.pid"
+
+
+start() {
+
+  PID=`cat $PIDFILE` >/dev/null
+
+  if [ -n "$PID" ]   # -n means non-null
+  then
+    RUNNING=`ps -p $PID | grep $PID`
+    if [ -n "$RUNNING" ]  # check if process is running
+    then
+      echo -e "Proxibase is already running:\n$RUNNING" >&2
+      exit 1
+    fi
+  fi
+
+  # ensure that the caller can write to the pid file
+  if ! echo $PID >$PIDFILE 2>/dev/null
+  then
+    echo "Cannot write to $PIDFILE"
+    exit 1
+  fi
+
+  echo 'Starting proxibase...' >&2
+  nohup node --stack-trace-limit=200 $PROX/prox.js >>$PROXLOG 2>>$ERRLOG &
+
+  # Save the process ID of the newly launched node prox master service
+  NEWPID=$!
+
+  # Wait three seconds and see if it is still alive
+  sleep 3
+  RUNNING=`ps -p $NEWPID | grep $NEWPID` >/dev/null
+  if [ ! -n "$RUNNING" ]
+  then
+    echo -e "Proxibase failed to start. tail -20 $ERRLOG:"
+    tail -20 $ERRLOG
+    exit 1
+  fi
+
+  # Success. Set the new process id
+  echo $NEWPID >$PIDFILE
+  echo "Proxibase started $NEWPID" >&2
+}
+
+
+stop() {
+
+  PID=`cat $PIDFILE` >/dev/null
+
+  if [ -n "$PID" ]
+  then
+    if kill $PID
+    then
+      >$PIDFILE
+    fi
+  fi
+}
+
+
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  restart)
+    stop
+    start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1;
+    ;;
+esac
