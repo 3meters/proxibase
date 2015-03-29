@@ -270,10 +270,12 @@ exports.registerInstallOne = function (test) {
     uri: '/do/registerInstall?' + userCredBob,
     body: {
       install: {
-        registrationId: 'registration_id_testing_user_bob',
+        parseInstallId: 'registration_id_testing_user_bob',
         installId: installId1,
         clientVersionCode: 10,
-        clientVersionName: '0.8.12'
+        clientVersionName: '0.8.12',
+        deviceType: 'android',
+        deviceVersionName: '5.0.0',
       }
     }
   }, function(err, res, body) {
@@ -290,8 +292,8 @@ exports.registerInstallOne = function (test) {
       t.assert(body.data && body.data[0])
       t.assert('in.' + installId1 == body.data[0]._id)  // proves custom genId works
       t.assert(body.data[0].installId)
-      t.assert(body.data[0].registrationId)
-      t.assert(body.data[0].registrationId === 'registration_id_testing_user_bob')
+      t.assert(body.data[0].parseInstallId)
+      t.assert(body.data[0].parseInstallId === 'registration_id_testing_user_bob')
       t.assert(body.data[0].users && body.data[0].users.length === 1)
       t.assert(body.data[0].signinDate)
       test.done()
@@ -304,10 +306,12 @@ exports.registerSecondUserOnInstallOne = function (test) {
     uri: '/do/registerInstall?' + userCredTom,
     body: {
       install: {
-        registrationId: 'registration_id_testing_user_tom',
+        parseInstallId: 'registration_id_testing_user_tom',
         installId: installId1,
         clientVersionCode: 10,
-        clientVersionName: '0.8.12'
+        clientVersionName: '0.8.12',
+        deviceType: 'android',
+        deviceVersionName: '5.0.0',
       }
     }
   }, function(err, res, body) {
@@ -323,8 +327,8 @@ exports.registerSecondUserOnInstallOne = function (test) {
       t.assert(body.count === 1)
       t.assert(body.data && body.data[0])
       t.assert(body.data[0].installId)
-      t.assert(body.data[0].registrationId)
-      t.assert(body.data[0].registrationId === 'registration_id_testing_user_tom')
+      t.assert(body.data[0].parseInstallId)
+      t.assert(body.data[0].parseInstallId === 'registration_id_testing_user_tom')
       t.assert(body.data[0].users.length === 2)
       test.done()
     })
@@ -336,10 +340,12 @@ exports.registerInstallTwo = function (test) {
     uri: '/do/registerInstall?' + userCredBob,
     body: {
       install: {
-        registrationId: 'registration_id_testing_user_bob',
+        parseInstallId: 'registration_id_testing_user_bob',
         installId: installId2,
         clientVersionCode: 10,
-        clientVersionName: '0.8.12'
+        clientVersionName: '0.8.12',
+        deviceType: 'android',
+        deviceVersionName: '5.0.0',
       }
     }
   }, function(err, res, body) {
@@ -355,8 +361,8 @@ exports.registerInstallTwo = function (test) {
       t.assert(body.count === 1)
       t.assert(body.data && body.data[0])
       t.assert(body.data[0].installId)
-      t.assert(body.data[0].registrationId)
-      t.assert(body.data[0].registrationId === 'registration_id_testing_user_bob')
+      t.assert(body.data[0].parseInstallId)
+      t.assert(body.data[0].parseInstallId === 'registration_id_testing_user_bob')
       t.assert(body.data[0].users && body.data[0].users.length === 1)
       t.assert(body.data[0].signinDate)
       test.done()
@@ -369,10 +375,12 @@ exports.registerInstallThree = function (test) {
     uri: '/do/registerInstall?' + userCredAlice,
     body: {
       install: {
-        registrationId: 'registration_id_testing_user_alice',
+        parseInstallId: 'registration_id_testing_user_alice',
         installId: installId3,
         clientVersionCode: 10,
-        clientVersionName: '0.8.12'
+        clientVersionName: '0.8.12',
+        deviceType: 'android',
+        deviceVersionName: '5.0.0',
       }
     }
   }, function(err, res, body) {
@@ -388,8 +396,8 @@ exports.registerInstallThree = function (test) {
       t.assert(body.count === 1)
       t.assert(body.data && body.data[0])
       t.assert(body.data[0].installId)
-      t.assert(body.data[0].registrationId)
-      t.assert(body.data[0].registrationId === 'registration_id_testing_user_alice')
+      t.assert(body.data[0].parseInstallId)
+      t.assert(body.data[0].parseInstallId === 'registration_id_testing_user_alice')
       t.assert(body.data[0].users && body.data[0].users.length === 1)
       t.assert(body.data[0].signinDate)
       test.done()
@@ -959,7 +967,7 @@ exports.getMessagesWithStaleTimestamp = function (test) {
     uri: '/do/getEntitiesForEntity?',
     body: {
       entityId: testPatchCustomPublic._id,
-      where: { activityDate: { $gt: activityDatePatch }},
+      where: { activityDate: { '$gt': activityDatePatch }},
       cursor: {
         linkTypes: ['content'],
         schemas: ['message'],
@@ -987,7 +995,7 @@ exports.noMessagesWithFreshTimestamp = function (test) {
     uri: '/do/getEntitiesForEntity?',
     body: {
       entityId: testPatchCustomPublic._id,
-      where: { activityDate: { $gt: activityDatePatchRefreshed }},
+      where: { activityDate: { '$gt': activityDatePatchRefreshed }},
       cursor: {
         linkTypes: ['content'],
         schemas: ['message'],

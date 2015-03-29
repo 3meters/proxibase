@@ -29,10 +29,12 @@ exports.registerInstallOne = function (test) {
     uri: '/do/registerInstall',
     body: {
       install: {
-        registrationId: 'registration_id_testing_user_anonymous',
+        parseInstallId: 'registration_id_testing_user_anonymous',
         installId: installId1,
         clientVersionCode: 100,
-        clientVersionName: '1.0.0'
+        clientVersionName: '1.0.0',
+        deviceType: 'android',
+        deviceVersionName: '5.0.0',
       }
     }
   }, function(err, res, body) {

@@ -201,10 +201,12 @@ exports.registerInstallOne = function (test) {
     uri: '/do/registerInstall?' + userCredTom,
     body: {
       install: {
-        registrationId: 'registration_id_testing_user_tom',
+        parseInstallId: 'registration_id_testing_user_tom',
         installId: installId1,
         clientVersionCode: 10,
-        clientVersionName: '0.8.12'
+        clientVersionName: '0.8.12',
+        deviceType: 'android',
+        deviceVersionName: '5.0.0',
       }
     }
   }, function(err, res, body) {
@@ -220,8 +222,8 @@ exports.registerInstallOne = function (test) {
       t.assert(body.count === 1)
       t.assert(body.data && body.data[0])
       t.assert(body.data[0].installId)
-      t.assert(body.data[0].registrationId)
-      t.assert(body.data[0].registrationId === 'registration_id_testing_user_tom')
+      t.assert(body.data[0].parseInstallId)
+      t.assert(body.data[0].parseInstallId === 'registration_id_testing_user_tom')
       log('this next assert will fail if the test is run stand-alone')
       t.assert(body.data[0].users.length === 2)
       test.done()
@@ -235,10 +237,12 @@ exports.registerInstallTwo = function (test) {
     body: {
       install: {
         _user: testUserBob._id,
-        registrationId: 'registration_id_testing_user_bob',
+        parseInstallId: 'registration_id_testing_user_bob',
         installId: installId2,
         clientVersionCode: 10,
-        clientVersionName: '0.8.12'
+        clientVersionName: '0.8.12',
+        deviceType: 'android',
+        deviceVersionName: '5.0.0',
       }
     }
   }, function(err, res, body) {
@@ -254,8 +258,8 @@ exports.registerInstallTwo = function (test) {
       t.assert(body.count === 1)
       t.assert(body.data && body.data[0])
       t.assert(body.data[0].installId)
-      t.assert(body.data[0].registrationId)
-      t.assert(body.data[0].registrationId === 'registration_id_testing_user_bob')
+      t.assert(body.data[0].parseInstallId)
+      t.assert(body.data[0].parseInstallId === 'registration_id_testing_user_bob')
       t.assert(body.data[0].users && body.data[0].users.length === 1)
       t.assert(body.data[0].signinDate)
       test.done()
@@ -269,10 +273,12 @@ exports.registerInstallThree = function (test) {
     body: {
       install: {
         _user: testUserAlice._id,
-        registrationId: 'registration_id_testing_user_alice',
+        parseInstallId: 'registration_id_testing_user_alice',
         installId: installId3,
         clientVersionCode: 10,
-        clientVersionName: '0.8.12'
+        clientVersionName: '0.8.12',
+        deviceType: 'android',
+        deviceVersionName: '5.0.0',
       }
     }
   }, function(err, res, body) {
@@ -288,8 +294,8 @@ exports.registerInstallThree = function (test) {
       t.assert(body.count === 1)
       t.assert(body.data && body.data[0])
       t.assert(body.data[0].installId)
-      t.assert(body.data[0].registrationId)
-      t.assert(body.data[0].registrationId === 'registration_id_testing_user_alice')
+      t.assert(body.data[0].parseInstallId)
+      t.assert(body.data[0].parseInstallId === 'registration_id_testing_user_alice')
       t.assert(body.data[0].users && body.data[0].users.length === 1)
       t.assert(body.data[0].signinDate)
       test.done()
@@ -401,9 +407,9 @@ exports.insertCustomPatch = function (test) {
       , bobHit = false
 
     body.notifications.forEach(function(message) {
-      message.registrationIds.forEach(function(registrationId){
-        if (registrationId.indexOf('tom') > 0) tomHit = true
-        if (registrationId.indexOf('bob') > 0 && message.trigger == 'nearby') bobHit = true
+      message.parseInstallIds.forEach(function(parseInstallId){
+        if (parseInstallId.indexOf('tom') > 0) tomHit = true
+        if (parseInstallId.indexOf('bob') > 0 && message.trigger == 'nearby') bobHit = true
       })
     })
     t.assert(!tomHit)
@@ -433,7 +439,7 @@ exports.insertCustomPatchTwo = function (test) {
      */
     t.assert(body.notifications && body.notifications.length == 1)
     t.assert(body.notifications[0].trigger === 'nearby')
-    t.assert(body.notifications[0].registrationIds[0].indexOf('alice') > 0)
+    t.assert(body.notifications[0].parseInstallIds[0].indexOf('alice') > 0)
 
     test.done()
   })
@@ -491,10 +497,10 @@ exports.insertMessage = function (test) {
       , bobHit = false
 
     body.notifications.forEach(function(message) {
-      message.registrationIds.forEach(function(registrationId){
+      message.parseInstallIds.forEach(function(parseInstallId){
         t.assert(message._target === testMessage._id)
-        if (registrationId.indexOf('tom') > 0 && message.trigger == 'own_to') tomHit = true
-        if (registrationId.indexOf('bob') > 0) bobHit = true
+        if (parseInstallId.indexOf('tom') > 0 && message.trigger == 'own_to') tomHit = true
+        if (parseInstallId.indexOf('bob') > 0) bobHit = true
       })
     })
     t.assert(tomHit)

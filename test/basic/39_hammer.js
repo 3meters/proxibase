@@ -160,15 +160,17 @@ exports.runHammer = function(test) {
   }
 
   function registerInstall() {
-    var registrationId = 'registration_id_tom_'// + util.seed()
+    var parseInstallId = 'registration_id_tom_'// + util.seed()
     t.post({
       uri: '/do/registerInstall?' + userTomCred,
       body: {
         install: {
-          registrationId: registrationId,
+          parseInstallId: parseInstallId,
           installId: installId1,
           clientVersionCode: 10,
-          clientVersionName: '0.8.12'
+          clientVersionName: '0.8.12',
+          deviceType: 'android',
+          deviceVersionName: '5.0.0',
         }
       }
     }, function(err, res, body) {
@@ -185,8 +187,8 @@ exports.runHammer = function(test) {
         t.assert(body.data && body.data[0])
         t.assert('in.' + installId1 == body.data[0]._id)  // proves custom genId works
         t.assert(body.data[0].installId)
-        t.assert(body.data[0].registrationId)
-        t.assert(body.data[0].registrationId === registrationId)
+        t.assert(body.data[0].parseInstallId)
+        t.assert(body.data[0].parseInstallId === parseInstallId)
         t.assert(body.data[0].users && body.data[0].users.length >= 1)
         t.assert(body.data[0].signinDate)
         updateBeaconsForInstall()

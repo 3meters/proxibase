@@ -268,10 +268,12 @@ exports.registerInstallOne = function (test) {
     uri: '/do/registerInstall?' + userCredTom,
     body: {
       install: {
-        registrationId: 'registration_id_testing_user_tom',
+        parseInstallId: 'registration_id_testing_user_tom',
         installId: installId1,
         clientVersionCode: 10,
-        clientVersionName: '0.8.12'
+        clientVersionName: '0.8.12',
+        deviceType: 'android',
+        deviceVersionName: '5.0.0',
       }
     }
   }, function(err, res, body) {
@@ -287,8 +289,8 @@ exports.registerInstallOne = function (test) {
       t.assert(body.count === 1)
       t.assert(body.data && body.data[0])
       t.assert(body.data[0].installId)
-      t.assert(body.data[0].registrationId)
-      t.assert(body.data[0].registrationId === 'registration_id_testing_user_tom')
+      t.assert(body.data[0].parseInstallId)
+      t.assert(body.data[0].parseInstallId === 'registration_id_testing_user_tom')
       t.assert(body.data[0].users.length >= 1) // Can be left over users from previous tests
       test.done()
     })
@@ -301,10 +303,12 @@ exports.registerInstallTwo = function (test) {
     body: {
       install: {
         _user: testUserBob._id,
-        registrationId: 'registration_id_testing_user_bob',
+        parseInstallId: 'registration_id_testing_user_bob',
         installId: installId2,
         clientVersionCode: 10,
-        clientVersionName: '0.8.12'
+        clientVersionName: '0.8.12',
+        deviceType: 'android',
+        deviceVersionName: '5.0.0',
       }
     }
   }, function(err, res, body) {
@@ -320,8 +324,8 @@ exports.registerInstallTwo = function (test) {
       t.assert(body.count === 1)
       t.assert(body.data && body.data[0])
       t.assert(body.data[0].installId)
-      t.assert(body.data[0].registrationId)
-      t.assert(body.data[0].registrationId === 'registration_id_testing_user_bob')
+      t.assert(body.data[0].parseInstallId)
+      t.assert(body.data[0].parseInstallId === 'registration_id_testing_user_bob')
       t.assert(body.data[0].users && body.data[0].users.length === 1)
       t.assert(body.data[0].signinDate)
       test.done()
@@ -335,10 +339,12 @@ exports.registerInstallThree = function (test) {
     body: {
       install: {
         _user: testUserAlice._id,
-        registrationId: 'registration_id_testing_user_alice',
+        parseInstallId: 'registration_id_testing_user_alice',
         installId: installId3,
         clientVersionCode: 10,
-        clientVersionName: '0.8.12'
+        clientVersionName: '0.8.12',
+        deviceType: 'android',
+        deviceVersionName: '5.0.0',
       }
     }
   }, function(err, res, body) {
@@ -354,8 +360,8 @@ exports.registerInstallThree = function (test) {
       t.assert(body.count === 1)
       t.assert(body.data && body.data[0])
       t.assert(body.data[0].installId)
-      t.assert(body.data[0].registrationId)
-      t.assert(body.data[0].registrationId === 'registration_id_testing_user_alice')
+      t.assert(body.data[0].parseInstallId)
+      t.assert(body.data[0].parseInstallId === 'registration_id_testing_user_alice')
       t.assert(body.data[0].users && body.data[0].users.length === 1)
       t.assert(body.data[0].signinDate)
       test.done()
@@ -369,10 +375,12 @@ exports.registerInstallFour = function (test) {
     body: {
       install: {
         _user: testUserBecky._id,
-        registrationId: 'registration_id_testing_user_becky',
+        parseInstallId: 'registration_id_testing_user_becky',
         installId: installId4,
         clientVersionCode: 10,
-        clientVersionName: '0.8.12'
+        clientVersionName: '0.8.12',
+        deviceType: 'android',
+        deviceVersionName: '5.0.0',
       }
     }
   }, function(err, res, body) {
@@ -388,8 +396,8 @@ exports.registerInstallFour = function (test) {
       t.assert(body.count === 1)
       t.assert(body.data && body.data[0])
       t.assert(body.data[0].installId)
-      t.assert(body.data[0].registrationId)
-      t.assert(body.data[0].registrationId === 'registration_id_testing_user_becky')
+      t.assert(body.data[0].parseInstallId)
+      t.assert(body.data[0].parseInstallId === 'registration_id_testing_user_becky')
       t.assert(body.data[0].users && body.data[0].users.length === 1)
       t.assert(body.data[0].signinDate)
       test.done()
@@ -403,10 +411,12 @@ exports.registerInstallFive = function (test) {
     body: {
       install: {
         _user: testUserMax._id,
-        registrationId: 'registration_id_testing_user_max',
+        parseInstallId: 'registration_id_testing_user_max',
         installId: installId5,
         clientVersionCode: 10,
-        clientVersionName: '0.8.12'
+        clientVersionName: '0.8.12',
+        deviceType: 'android',
+        deviceVersionName: '5.0.0',
       }
     }
   }, function(err, res, body) {
@@ -422,8 +432,8 @@ exports.registerInstallFive = function (test) {
       t.assert(body.count === 1)
       t.assert(body.data && body.data[0])
       t.assert(body.data[0].installId)
-      t.assert(body.data[0].registrationId)
-      t.assert(body.data[0].registrationId === 'registration_id_testing_user_max')
+      t.assert(body.data[0].parseInstallId)
+      t.assert(body.data[0].parseInstallId === 'registration_id_testing_user_max')
       t.assert(body.data[0].users && body.data[0].users.length === 1)
       t.assert(body.data[0].signinDate)
       test.done()
@@ -437,10 +447,12 @@ exports.registerInstallSix = function (test) {
     body: {
       install: {
         _user: testUserStan._id,
-        registrationId: 'registration_id_testing_user_stan',
+        parseInstallId: 'registration_id_testing_user_stan',
         installId: installId6,
         clientVersionCode: 10,
-        clientVersionName: '0.8.12'
+        clientVersionName: '0.8.12',
+        deviceType: 'android',
+        deviceVersionName: '5.0.0',
       }
     }
   }, function(err, res, body) {
@@ -456,8 +468,8 @@ exports.registerInstallSix = function (test) {
       t.assert(body.count === 1)
       t.assert(body.data && body.data[0])
       t.assert(body.data[0].installId)
-      t.assert(body.data[0].registrationId)
-      t.assert(body.data[0].registrationId === 'registration_id_testing_user_stan')
+      t.assert(body.data[0].parseInstallId)
+      t.assert(body.data[0].parseInstallId === 'registration_id_testing_user_stan')
       t.assert(body.data[0].users && body.data[0].users.length === 1)
       t.assert(body.data[0].signinDate)
       test.done()
@@ -655,13 +667,13 @@ exports.tomInsertsPublicPatch = function (test) {
 
     body.notifications.forEach(function(notification) {
       t.assert(notification._target == testPatchPublic._id)
-      notification.registrationIds.forEach(function(registrationId){
-        if (registrationId.indexOf('tom') > 0) tomHit = true
-        if (registrationId.indexOf('alice') > 0 && notification.trigger == 'nearby') aliceHit = true
-        if (registrationId.indexOf('max') > 0 && notification.trigger == 'nearby') maxHit = true
-        if (registrationId.indexOf('bob') > 0) bobHit = true
-        if (registrationId.indexOf('becky') > 0) beckyHit = true
-        if (registrationId.indexOf('stan') > 0) stanHit = true
+      notification.parseInstallIds.forEach(function(parseInstallId){
+        if (parseInstallId.indexOf('tom') > 0) tomHit = true
+        if (parseInstallId.indexOf('alice') > 0 && notification.trigger == 'nearby') aliceHit = true
+        if (parseInstallId.indexOf('max') > 0 && notification.trigger == 'nearby') maxHit = true
+        if (parseInstallId.indexOf('bob') > 0) bobHit = true
+        if (parseInstallId.indexOf('becky') > 0) beckyHit = true
+        if (parseInstallId.indexOf('stan') > 0) stanHit = true
       })
     })
 
@@ -701,13 +713,13 @@ exports.bobInsertsPrivatePatch = function (test) {
 
     body.notifications.forEach(function(notification) {
       t.assert(notification._target == testPatchPrivate._id)
-      notification.registrationIds.forEach(function(registrationId){
-        if (registrationId.indexOf('tom') > 0) tomHit = true
-        if (registrationId.indexOf('alice') > 0) aliceHit = true
-        if (registrationId.indexOf('max') > 0) maxHit = true
-        if (registrationId.indexOf('bob') > 0) bobHit = true
-        if (registrationId.indexOf('becky') > 0 && notification.trigger == 'nearby') beckyHit = true
-        if (registrationId.indexOf('stan') > 0 && notification.trigger == 'nearby') stanHit = true
+      notification.parseInstallIds.forEach(function(parseInstallId){
+        if (parseInstallId.indexOf('tom') > 0) tomHit = true
+        if (parseInstallId.indexOf('alice') > 0) aliceHit = true
+        if (parseInstallId.indexOf('max') > 0) maxHit = true
+        if (parseInstallId.indexOf('bob') > 0) bobHit = true
+        if (parseInstallId.indexOf('becky') > 0 && notification.trigger == 'nearby') beckyHit = true
+        if (parseInstallId.indexOf('stan') > 0 && notification.trigger == 'nearby') stanHit = true
       })
     })
 
@@ -775,16 +787,16 @@ exports.bobWatchesTomsPublicPatch = function(test) {
 
     body.notifications.forEach(function(notification) {
       t.assert(notification._target == testPatchPublic._id)
-      notification.registrationIds.forEach(function(registrationId){
-        if (registrationId.indexOf('tom') > 0
+      notification.parseInstallIds.forEach(function(parseInstallId){
+        if (parseInstallId.indexOf('tom') > 0
           && notification.type === 'watch'
           && notification.trigger == 'own_to'
           && notification.event === 'watch_entity_patch') tomHit = true
-        if (registrationId.indexOf('alice') > 0) aliceHit = true
-        if (registrationId.indexOf('max') > 0) maxHit = true
-        if (registrationId.indexOf('bob') > 0) bobHit = true
-        if (registrationId.indexOf('becky') > 0) beckyHit = true
-        if (registrationId.indexOf('stan') > 0) stanHit = true
+        if (parseInstallId.indexOf('alice') > 0) aliceHit = true
+        if (parseInstallId.indexOf('max') > 0) maxHit = true
+        if (parseInstallId.indexOf('bob') > 0) bobHit = true
+        if (parseInstallId.indexOf('becky') > 0) beckyHit = true
+        if (parseInstallId.indexOf('stan') > 0) stanHit = true
       })
     })
 
@@ -853,16 +865,16 @@ exports.bobLikesTomsPublicPatchViaRestAPI = function(test) {
 
     body.notifications.forEach(function(notification) {
       t.assert(notification._target == testPatchPublic._id)
-      notification.registrationIds.forEach(function(registrationId){
-        if (registrationId.indexOf('tom') > 0
+      notification.parseInstallIds.forEach(function(parseInstallId){
+        if (parseInstallId.indexOf('tom') > 0
           && notification.type === 'like'
           && notification.trigger == 'own_to'
           && notification.event === 'like_entity_patch') tomHit = true
-        if (registrationId.indexOf('alice') > 0) aliceHit = true
-        if (registrationId.indexOf('max') > 0) maxHit = true
-        if (registrationId.indexOf('bob') > 0) bobHit = true
-        if (registrationId.indexOf('becky') > 0) beckyHit = true
-        if (registrationId.indexOf('stan') > 0) stanHit = true
+        if (parseInstallId.indexOf('alice') > 0) aliceHit = true
+        if (parseInstallId.indexOf('max') > 0) maxHit = true
+        if (parseInstallId.indexOf('bob') > 0) bobHit = true
+        if (parseInstallId.indexOf('becky') > 0) beckyHit = true
+        if (parseInstallId.indexOf('stan') > 0) stanHit = true
       })
     })
 
@@ -933,16 +945,16 @@ exports.beckyRequestsToWatchBobsPrivatePatch = function(test) {
 
     body.notifications.forEach(function(notification) {
       t.assert(notification._target == testPatchPrivate._id)
-      notification.registrationIds.forEach(function(registrationId){
-        if (registrationId.indexOf('tom') > 0) tomHit = true
-        if (registrationId.indexOf('alice') > 0) aliceHit = true
-        if (registrationId.indexOf('max') > 0) maxHit = true
-        if (registrationId.indexOf('bob') > 0
+      notification.parseInstallIds.forEach(function(parseInstallId){
+        if (parseInstallId.indexOf('tom') > 0) tomHit = true
+        if (parseInstallId.indexOf('alice') > 0) aliceHit = true
+        if (parseInstallId.indexOf('max') > 0) maxHit = true
+        if (parseInstallId.indexOf('bob') > 0
           && notification.type === 'watch'
           && notification.trigger == 'own_to'
           && notification.event === 'request_watch_entity') bobHit = true
-        if (registrationId.indexOf('becky') > 0) beckyHit = true
-        if (registrationId.indexOf('stan') > 0) stanHit = true
+        if (parseInstallId.indexOf('becky') > 0) beckyHit = true
+        if (parseInstallId.indexOf('stan') > 0) stanHit = true
       })
     })
 
@@ -1016,16 +1028,16 @@ exports.bobApprovesBeckysRequestToWatchBobsPrivatePatch = function(test) {
 
     body.notifications.forEach(function(notification) {
       t.assert(notification._target == testPatchPrivate._id)
-      notification.registrationIds.forEach(function(registrationId){
-        if (registrationId.indexOf('tom') > 0) tomHit = true
-        if (registrationId.indexOf('alice') > 0) aliceHit = true
-        if (registrationId.indexOf('max') > 0) maxHit = true
-        if (registrationId.indexOf('bob') > 0) bobHit = true
-        if (registrationId.indexOf('becky') > 0
+      notification.parseInstallIds.forEach(function(parseInstallId){
+        if (parseInstallId.indexOf('tom') > 0) tomHit = true
+        if (parseInstallId.indexOf('alice') > 0) aliceHit = true
+        if (parseInstallId.indexOf('max') > 0) maxHit = true
+        if (parseInstallId.indexOf('bob') > 0) bobHit = true
+        if (parseInstallId.indexOf('becky') > 0
           && notification.type === 'watch'
           && notification.trigger == 'own_from'
           && notification.event === 'approve_watch_entity') beckyHit = true
-        if (registrationId.indexOf('stan') > 0) stanHit = true
+        if (parseInstallId.indexOf('stan') > 0) stanHit = true
       })
     })
 
@@ -1204,13 +1216,13 @@ exports.beckyInsertsMessageToTomsPublicPatch = function (test) {
 
     body.notifications.forEach(function(notification) {
       t.assert(notification._target === testMessage._id)
-      notification.registrationIds.forEach(function(registrationId){
-        if (registrationId.indexOf('tom') > 0 && notification.trigger == 'own_to') tomHit = true
-        if (registrationId.indexOf('alice') > 0 && notification.trigger == 'nearby') aliceHit = true
-        if (registrationId.indexOf('max') > 0 && notification.trigger == 'nearby') maxHit = true
-        if (registrationId.indexOf('bob') > 0 && notification.trigger == 'watch_to') bobHit = true
-        if (registrationId.indexOf('becky') > 0) beckyHit = true
-        if (registrationId.indexOf('stan') > 0) stanHit = true
+      notification.parseInstallIds.forEach(function(parseInstallId){
+        if (parseInstallId.indexOf('tom') > 0 && notification.trigger == 'own_to') tomHit = true
+        if (parseInstallId.indexOf('alice') > 0 && notification.trigger == 'nearby') aliceHit = true
+        if (parseInstallId.indexOf('max') > 0 && notification.trigger == 'nearby') maxHit = true
+        if (parseInstallId.indexOf('bob') > 0 && notification.trigger == 'watch_to') bobHit = true
+        if (parseInstallId.indexOf('becky') > 0) beckyHit = true
+        if (parseInstallId.indexOf('stan') > 0) stanHit = true
       })
     })
 
@@ -1328,13 +1340,13 @@ exports.beckyInsertsMessageToTomsPublicPatchMaxPoorAccuracy = function (test) {
 
     body.notifications.forEach(function(notification) {
       t.assert(notification._target === testMessage._id)
-      notification.registrationIds.forEach(function(registrationId){
-        if (registrationId.indexOf('tom') > 0 && notification.trigger == 'own_to') tomHit = true
-        if (registrationId.indexOf('alice') > 0 && notification.trigger == 'nearby') aliceHit = true
-        if (registrationId.indexOf('max') > 0 ) maxHit = true
-        if (registrationId.indexOf('bob') > 0 && notification.trigger == 'watch_to') bobHit = true
-        if (registrationId.indexOf('becky') > 0) beckyHit = true
-        if (registrationId.indexOf('stan') > 0) stanHit = true
+      notification.parseInstallIds.forEach(function(parseInstallId){
+        if (parseInstallId.indexOf('tom') > 0 && notification.trigger == 'own_to') tomHit = true
+        if (parseInstallId.indexOf('alice') > 0 && notification.trigger == 'nearby') aliceHit = true
+        if (parseInstallId.indexOf('max') > 0 ) maxHit = true
+        if (parseInstallId.indexOf('bob') > 0 && notification.trigger == 'watch_to') bobHit = true
+        if (parseInstallId.indexOf('becky') > 0) beckyHit = true
+        if (parseInstallId.indexOf('stan') > 0) stanHit = true
       })
     })
 
@@ -1409,13 +1421,13 @@ exports.beckyInsertsMessageToTomsPublicPatchMaxNotNearby = function (test) {
 
     body.notifications.forEach(function(notification) {
       t.assert(notification._target === testMessage._id)
-      notification.registrationIds.forEach(function(registrationId){
-        if (registrationId.indexOf('tom') > 0 && notification.trigger == 'own_to') tomHit = true
-        if (registrationId.indexOf('alice') > 0 && notification.trigger == 'nearby') aliceHit = true
-        if (registrationId.indexOf('max') > 0) maxHit = true
-        if (registrationId.indexOf('bob') > 0 && notification.trigger == 'watch_to') bobHit = true
-        if (registrationId.indexOf('becky') > 0) beckyHit = true
-        if (registrationId.indexOf('stan') > 0) stanHit = true
+      notification.parseInstallIds.forEach(function(parseInstallId){
+        if (parseInstallId.indexOf('tom') > 0 && notification.trigger == 'own_to') tomHit = true
+        if (parseInstallId.indexOf('alice') > 0 && notification.trigger == 'nearby') aliceHit = true
+        if (parseInstallId.indexOf('max') > 0) maxHit = true
+        if (parseInstallId.indexOf('bob') > 0 && notification.trigger == 'watch_to') bobHit = true
+        if (parseInstallId.indexOf('becky') > 0) beckyHit = true
+        if (parseInstallId.indexOf('stan') > 0) stanHit = true
       })
     })
 
@@ -1482,13 +1494,13 @@ exports.aliceInsertsReplyToBeckysPublicMessage = function (test) {
       , stanHit = false
 
     body.notifications.forEach(function(notification) {
-      notification.registrationIds.forEach(function(registrationId){
-        if (registrationId.indexOf('tom') > 0 && notification.trigger == 'own_to') tomHit = true
-        if (registrationId.indexOf('alice') > 0) aliceHit = true
-        if (registrationId.indexOf('max') > 0 && notification.trigger == 'nearby') maxHit = true
-        if (registrationId.indexOf('bob') > 0 && notification.trigger == 'watch_to') bobHit = true
-        if (registrationId.indexOf('becky') > 0 && notification.trigger == 'own_to') beckyHit = true
-        if (registrationId.indexOf('stan') > 0) stanHit = true
+      notification.parseInstallIds.forEach(function(parseInstallId){
+        if (parseInstallId.indexOf('tom') > 0 && notification.trigger == 'own_to') tomHit = true
+        if (parseInstallId.indexOf('alice') > 0) aliceHit = true
+        if (parseInstallId.indexOf('max') > 0 && notification.trigger == 'nearby') maxHit = true
+        if (parseInstallId.indexOf('bob') > 0 && notification.trigger == 'watch_to') bobHit = true
+        if (parseInstallId.indexOf('becky') > 0 && notification.trigger == 'own_to') beckyHit = true
+        if (parseInstallId.indexOf('stan') > 0) stanHit = true
       })
     })
 
@@ -1592,13 +1604,13 @@ exports.beckyInsertsMessageToBobsPrivatePatch = function (test) {
 
     body.notifications.forEach(function(message) {
       t.assert(message._target === testMessageToPrivate._id)
-      message.registrationIds.forEach(function(registrationId){
-        if (registrationId.indexOf('tom') > 0) tomHit = true
-        if (registrationId.indexOf('alice') > 0 && message.trigger == 'watch_to') aliceHit = true
-        if (registrationId.indexOf('max') > 0) maxHit = true
-        if (registrationId.indexOf('bob') > 0 && message.trigger == 'own_to') bobHit = true
-        if (registrationId.indexOf('becky') > 0) beckyHit = true
-        if (registrationId.indexOf('stan') > 0) stanHit = true
+      message.parseInstallIds.forEach(function(parseInstallId){
+        if (parseInstallId.indexOf('tom') > 0) tomHit = true
+        if (parseInstallId.indexOf('alice') > 0 && message.trigger == 'watch_to') aliceHit = true
+        if (parseInstallId.indexOf('max') > 0) maxHit = true
+        if (parseInstallId.indexOf('bob') > 0 && message.trigger == 'own_to') bobHit = true
+        if (parseInstallId.indexOf('becky') > 0) beckyHit = true
+        if (parseInstallId.indexOf('stan') > 0) stanHit = true
       })
     })
 
@@ -1696,14 +1708,14 @@ exports.bobInsertsReplyToBeckysPrivateMessage = function (test) {
       , stanHit = false
 
     body.notifications.forEach(function(message) {
-      message.registrationIds.forEach(function(registrationId){
-        if (registrationId.indexOf('tom') > 0) tomHit = true
-        if (registrationId.indexOf('alice') > 0 && message.trigger == 'watch_to') aliceHit = true
-        if (registrationId.indexOf('max') > 0) maxHit = true
-        if (registrationId.indexOf('bob') > 0 && message.trigger == 'own_to') bobHit = true
-        if (registrationId.indexOf('becky') > 0 && message.trigger == 'watch_to') beckyWatchHit = true
-        if (registrationId.indexOf('becky') > 0 && message.trigger == 'own_to') beckyOwnHit = true
-        if (registrationId.indexOf('stan') > 0) stanHit = true
+      message.parseInstallIds.forEach(function(parseInstallId){
+        if (parseInstallId.indexOf('tom') > 0) tomHit = true
+        if (parseInstallId.indexOf('alice') > 0 && message.trigger == 'watch_to') aliceHit = true
+        if (parseInstallId.indexOf('max') > 0) maxHit = true
+        if (parseInstallId.indexOf('bob') > 0 && message.trigger == 'own_to') bobHit = true
+        if (parseInstallId.indexOf('becky') > 0 && message.trigger == 'watch_to') beckyWatchHit = true
+        if (parseInstallId.indexOf('becky') > 0 && message.trigger == 'own_to') beckyOwnHit = true
+        if (parseInstallId.indexOf('stan') > 0) stanHit = true
       })
     })
 
@@ -2057,13 +2069,13 @@ exports.beckySharesPrivatePatchWithStan = function(test) {
 
     body.notifications.forEach(function(message) {
       t.assert(message._target === beckySharePatchWithStanId)
-      message.registrationIds.forEach(function(registrationId){
-        if (registrationId.indexOf('tom') > 0) tomHit = true
-        if (registrationId.indexOf('alice') > 0) aliceHit = true
-        if (registrationId.indexOf('max') > 0) maxHit = true
-        if (registrationId.indexOf('bob') > 0) bobHit = true
-        if (registrationId.indexOf('becky') > 0) beckyHit = true
-        if (registrationId.indexOf('stan') > 0 && message.trigger == 'share') stanHit = true
+      message.parseInstallIds.forEach(function(parseInstallId){
+        if (parseInstallId.indexOf('tom') > 0) tomHit = true
+        if (parseInstallId.indexOf('alice') > 0) aliceHit = true
+        if (parseInstallId.indexOf('max') > 0) maxHit = true
+        if (parseInstallId.indexOf('bob') > 0) bobHit = true
+        if (parseInstallId.indexOf('becky') > 0) beckyHit = true
+        if (parseInstallId.indexOf('stan') > 0 && message.trigger == 'share') stanHit = true
       })
     })
 
@@ -2179,13 +2191,13 @@ exports.beckySharesMemberMessageWithNonMemberStan = function(test) {
     body.notifications.forEach(function(message) {
       if (!message.info) {
         t.assert(message._target === beckyShareMessageWithStanId)
-        message.registrationIds.forEach(function(registrationId){
-          if (registrationId.indexOf('tom') > 0) tomHit = true
-          if (registrationId.indexOf('alice') > 0) aliceHit = true
-          if (registrationId.indexOf('max') > 0) maxHit = true
-          if (registrationId.indexOf('bob') > 0) bobHit = true
-          if (registrationId.indexOf('becky') > 0) beckyHit = true
-          if (registrationId.indexOf('stan') > 0 && message.trigger == 'share') stanHit = true
+        message.parseInstallIds.forEach(function(parseInstallId){
+          if (parseInstallId.indexOf('tom') > 0) tomHit = true
+          if (parseInstallId.indexOf('alice') > 0) aliceHit = true
+          if (parseInstallId.indexOf('max') > 0) maxHit = true
+          if (parseInstallId.indexOf('bob') > 0) bobHit = true
+          if (parseInstallId.indexOf('becky') > 0) beckyHit = true
+          if (parseInstallId.indexOf('stan') > 0 && message.trigger == 'share') stanHit = true
         })
       }
     })
@@ -2292,13 +2304,13 @@ exports.beckySharesMemberMessageWithMemberAlice = function(test) {
     body.notifications.forEach(function(message) {
       if (!message.info) {
         t.assert(message._target === beckyShareMessageWithAliceId)
-        message.registrationIds.forEach(function(registrationId){
-          if (registrationId.indexOf('tom') > 0) tomHit = true
-          if (registrationId.indexOf('alice') > 0 && message.trigger == 'share') aliceHit = true
-          if (registrationId.indexOf('max') > 0) maxHit = true
-          if (registrationId.indexOf('bob') > 0) bobHit = true
-          if (registrationId.indexOf('becky') > 0) beckyHit = true
-          if (registrationId.indexOf('stan') > 0) stanHit = true
+        message.parseInstallIds.forEach(function(parseInstallId){
+          if (parseInstallId.indexOf('tom') > 0) tomHit = true
+          if (parseInstallId.indexOf('alice') > 0 && message.trigger == 'share') aliceHit = true
+          if (parseInstallId.indexOf('max') > 0) maxHit = true
+          if (parseInstallId.indexOf('bob') > 0) bobHit = true
+          if (parseInstallId.indexOf('becky') > 0) beckyHit = true
+          if (parseInstallId.indexOf('stan') > 0) stanHit = true
         })
       }
     })
@@ -2405,13 +2417,13 @@ exports.beckySharesPhotoWithNonMemberStan = function(test) {
     body.notifications.forEach(function(message) {
       if (!message.info) {
         t.assert(message._target === beckySharePhotoWithStanId)
-        message.registrationIds.forEach(function(registrationId){
-          if (registrationId.indexOf('tom') > 0) tomHit = true
-          if (registrationId.indexOf('alice') > 0) aliceHit = true
-          if (registrationId.indexOf('max') > 0) maxHit = true
-          if (registrationId.indexOf('bob') > 0) bobHit = true
-          if (registrationId.indexOf('becky') > 0) beckyHit = true
-          if (registrationId.indexOf('stan') > 0 && message.trigger == 'share') stanHit = true
+        message.parseInstallIds.forEach(function(parseInstallId){
+          if (parseInstallId.indexOf('tom') > 0) tomHit = true
+          if (parseInstallId.indexOf('alice') > 0) aliceHit = true
+          if (parseInstallId.indexOf('max') > 0) maxHit = true
+          if (parseInstallId.indexOf('bob') > 0) bobHit = true
+          if (parseInstallId.indexOf('becky') > 0) beckyHit = true
+          if (parseInstallId.indexOf('stan') > 0 && message.trigger == 'share') stanHit = true
         })
       }
     })
@@ -2500,13 +2512,13 @@ exports.beckySharesPhotoWithMemberAlice = function(test) {
     body.notifications.forEach(function(message) {
       if (!message.info) {
         t.assert(message._target === beckySharePhotoWithAliceId)
-        message.registrationIds.forEach(function(registrationId){
-          if (registrationId.indexOf('tom') > 0) tomHit = true
-          if (registrationId.indexOf('alice') > 0 && message.trigger == 'share') aliceHit = true
-          if (registrationId.indexOf('max') > 0) maxHit = true
-          if (registrationId.indexOf('bob') > 0) bobHit = true
-          if (registrationId.indexOf('becky') > 0) beckyHit = true
-          if (registrationId.indexOf('stan') > 0) stanHit = true
+        message.parseInstallIds.forEach(function(parseInstallId){
+          if (parseInstallId.indexOf('tom') > 0) tomHit = true
+          if (parseInstallId.indexOf('alice') > 0 && message.trigger == 'share') aliceHit = true
+          if (parseInstallId.indexOf('max') > 0) maxHit = true
+          if (parseInstallId.indexOf('bob') > 0) bobHit = true
+          if (parseInstallId.indexOf('becky') > 0) beckyHit = true
+          if (parseInstallId.indexOf('stan') > 0) stanHit = true
         })
       }
     })

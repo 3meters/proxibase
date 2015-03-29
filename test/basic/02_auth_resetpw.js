@@ -15,7 +15,7 @@ var _exports = {}                    // for commenting out tests
 
 var validationDate
 var installId = '567'
-var registrationId = '890'
+var parseInstallId = '890'
 var newUserCred
 
 
@@ -53,8 +53,10 @@ exports.canRegisterDevice = function(test) {
     body: {
       install: {
         installId: installId,
-        registrationId: registrationId,
-        _user: user._id
+        parseInstallId: parseInstallId,
+        _user: user._id,
+        deviceType: 'android',
+        deviceVersionName: '5.0.0',
       }
     },
   }, function(err, res, body) {
