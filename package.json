@@ -38,7 +38,6 @@
     "cheerio": "*",
     "factual-api": "*",
     "yelp": "*",
-    "node-gcm": "*",
     "url2png": "*",
     "knox": "*",
     "moment": "*",
@@ -47,7 +46,8 @@
     "durable-json-lint": "*",
     "fuzzy": "*",
     "react": "<0.13",
-    "express-react-views": "*"
+    "express-react-views": "*",
+    "parse": "*"
   },
 
   "repository": "git://github.com:3meters/proxibase",
