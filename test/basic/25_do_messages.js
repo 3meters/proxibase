@@ -415,8 +415,8 @@ exports.registerInstallFive = function (test) {
         installId: installId5,
         clientVersionCode: 10,
         clientVersionName: '0.8.12',
-        deviceType: 'android',
-        deviceVersionName: '5.0.0',
+        deviceType: 'ios',
+        deviceVersionName: '8.0.0',
       }
     }
   }, function(err, res, body) {
@@ -451,8 +451,8 @@ exports.registerInstallSix = function (test) {
         installId: installId6,
         clientVersionCode: 10,
         clientVersionName: '0.8.12',
-        deviceType: 'android',
-        deviceVersionName: '5.0.0',
+        deviceType: 'ios',
+        deviceVersionName: '7.0.0',
       }
     }
   }, function(err, res, body) {
@@ -636,6 +636,9 @@ exports.updateBeaconsInstallSix = function (test) {
 /*
  * ----------------------------------------------------------------------------
  * Messages
+ *
+ * Tom, Alice and Max are near each other.
+ * Bob, Becky and Stan are near each other.
  * ----------------------------------------------------------------------------
  */
 
@@ -657,7 +660,7 @@ exports.tomInsertsPublicPatch = function (test) {
      * Alice and Max get notified because they are nearby. Alice via
      * beacon proximity and Max via location distance.
      */
-    t.assert(body.notifications.length === 1)
+    t.assert(body.notifications.length === 2)
     var tomHit = false
       , aliceHit = false
       , maxHit = false
@@ -665,12 +668,17 @@ exports.tomInsertsPublicPatch = function (test) {
       , beckyHit = false
       , stanHit = false
 
+    var maxNotification
+
     body.notifications.forEach(function(notification) {
-      t.assert(notification._target == testPatchPublic._id)
+      t.assert(notification._target === testPatchPublic._id || notification.targetId === testPatchPublic._id)
       notification.parseInstallIds.forEach(function(parseInstallId){
         if (parseInstallId.indexOf('tom') > 0) tomHit = true
         if (parseInstallId.indexOf('alice') > 0 && notification.trigger == 'nearby') aliceHit = true
-        if (parseInstallId.indexOf('max') > 0 && notification.trigger == 'nearby') maxHit = true
+        if (parseInstallId.indexOf('max') > 0 && notification.trigger == 'nearby') {
+          maxHit = true
+          maxNotification = notification
+        }
         if (parseInstallId.indexOf('bob') > 0) bobHit = true
         if (parseInstallId.indexOf('becky') > 0) beckyHit = true
         if (parseInstallId.indexOf('stan') > 0) stanHit = true
@@ -679,10 +687,15 @@ exports.tomInsertsPublicPatch = function (test) {
 
     t.assert(!tomHit)
     t.assert(aliceHit)
-    t.assert(maxHit)
+    t.assert(maxHit)      // ios 8
     t.assert(!bobHit)
     t.assert(!beckyHit)
     t.assert(!stanHit)
+
+    t.assert(maxNotification.aps)
+    t.assert(maxNotification.aps.alert)
+    t.assert(maxNotification.trigger)
+    t.assert(maxNotification.targetId)
 
     test.done()
   })
@@ -703,7 +716,7 @@ exports.bobInsertsPrivatePatch = function (test) {
     /*
      * Becky and Stan should get nearby notifications.
      */
-    t.assert(body.notifications.length === 1)
+    t.assert(body.notifications.length === 2)
     var tomHit = false
       , aliceHit = false
       , maxHit = false
@@ -711,15 +724,20 @@ exports.bobInsertsPrivatePatch = function (test) {
       , beckyHit = false
       , stanHit = false
 
+    var stanNotification
+
     body.notifications.forEach(function(notification) {
-      t.assert(notification._target == testPatchPrivate._id)
+      t.assert(notification._target === testPatchPrivate._id || notification.targetId === testPatchPrivate._id)
       notification.parseInstallIds.forEach(function(parseInstallId){
         if (parseInstallId.indexOf('tom') > 0) tomHit = true
         if (parseInstallId.indexOf('alice') > 0) aliceHit = true
         if (parseInstallId.indexOf('max') > 0) maxHit = true
         if (parseInstallId.indexOf('bob') > 0) bobHit = true
         if (parseInstallId.indexOf('becky') > 0 && notification.trigger == 'nearby') beckyHit = true
-        if (parseInstallId.indexOf('stan') > 0 && notification.trigger == 'nearby') stanHit = true
+        if (parseInstallId.indexOf('stan') > 0 && notification.trigger == 'nearby') {
+          stanHit = true
+          stanNotification = notification
+        }
       })
     })
 
@@ -728,7 +746,12 @@ exports.bobInsertsPrivatePatch = function (test) {
     t.assert(!maxHit)
     t.assert(!bobHit)
     t.assert(beckyHit)
-    t.assert(stanHit)
+    t.assert(stanHit)     // ios 7
+
+    t.assert(stanNotification.aps)
+    t.assert(stanNotification.aps.alert)
+    t.assert(stanNotification.trigger)
+    t.assert(stanNotification.targetId)
 
     var savedEnt = body.data
     t.assert(savedEnt._owner === testUserBob._id)
@@ -786,7 +809,7 @@ exports.bobWatchesTomsPublicPatch = function(test) {
       , stanHit = false
 
     body.notifications.forEach(function(notification) {
-      t.assert(notification._target == testPatchPublic._id)
+      t.assert(notification._target === testPatchPublic._id || notification.targetId === testPatchPublic._id)
       notification.parseInstallIds.forEach(function(parseInstallId){
         if (parseInstallId.indexOf('tom') > 0
           && notification.type === 'watch'
@@ -864,7 +887,7 @@ exports.bobLikesTomsPublicPatchViaRestAPI = function(test) {
       , stanHit = false
 
     body.notifications.forEach(function(notification) {
-      t.assert(notification._target == testPatchPublic._id)
+      t.assert(notification._target === testPatchPublic._id || notification.targetId === testPatchPublic._id)
       notification.parseInstallIds.forEach(function(parseInstallId){
         if (parseInstallId.indexOf('tom') > 0
           && notification.type === 'like'
@@ -944,7 +967,7 @@ exports.beckyRequestsToWatchBobsPrivatePatch = function(test) {
       , stanHit = false
 
     body.notifications.forEach(function(notification) {
-      t.assert(notification._target == testPatchPrivate._id)
+      t.assert(notification._target === testPatchPrivate._id || notification.targetId === testPatchPrivate._id)
       notification.parseInstallIds.forEach(function(parseInstallId){
         if (parseInstallId.indexOf('tom') > 0) tomHit = true
         if (parseInstallId.indexOf('alice') > 0) aliceHit = true
@@ -1205,7 +1228,7 @@ exports.beckyInsertsMessageToTomsPublicPatch = function (test) {
      * Becky does not get notified because she is the sender.
      * Stan does not get notified because he isn't nearby.
      */
-    t.assert(body.notifications.length === 3)
+    t.assert(body.notifications.length === 4)
 
     var tomHit = false
       , bobHit = false
@@ -1215,7 +1238,7 @@ exports.beckyInsertsMessageToTomsPublicPatch = function (test) {
       , stanHit = false
 
     body.notifications.forEach(function(notification) {
-      t.assert(notification._target === testMessage._id)
+      t.assert(notification._target === testMessage._id || notification.targetId === testMessage._id)
       notification.parseInstallIds.forEach(function(parseInstallId){
         if (parseInstallId.indexOf('tom') > 0 && notification.trigger == 'own_to') tomHit = true
         if (parseInstallId.indexOf('alice') > 0 && notification.trigger == 'nearby') aliceHit = true
@@ -2068,7 +2091,7 @@ exports.beckySharesPrivatePatchWithStan = function(test) {
       , stanHit = false
 
     body.notifications.forEach(function(message) {
-      t.assert(message._target === beckySharePatchWithStanId)
+      t.assert(message._target === beckySharePatchWithStanId || message.targetId === beckySharePatchWithStanId)
       message.parseInstallIds.forEach(function(parseInstallId){
         if (parseInstallId.indexOf('tom') > 0) tomHit = true
         if (parseInstallId.indexOf('alice') > 0) aliceHit = true
@@ -2190,7 +2213,7 @@ exports.beckySharesMemberMessageWithNonMemberStan = function(test) {
 
     body.notifications.forEach(function(message) {
       if (!message.info) {
-        t.assert(message._target === beckyShareMessageWithStanId)
+        t.assert(message._target === beckyShareMessageWithStanId || message.targetId === beckyShareMessageWithStanId)
         message.parseInstallIds.forEach(function(parseInstallId){
           if (parseInstallId.indexOf('tom') > 0) tomHit = true
           if (parseInstallId.indexOf('alice') > 0) aliceHit = true
@@ -2416,7 +2439,7 @@ exports.beckySharesPhotoWithNonMemberStan = function(test) {
 
     body.notifications.forEach(function(message) {
       if (!message.info) {
-        t.assert(message._target === beckySharePhotoWithStanId)
+        t.assert(message._target === beckySharePhotoWithStanId || message.targetId === beckySharePhotoWithStanId)
         message.parseInstallIds.forEach(function(parseInstallId){
           if (parseInstallId.indexOf('tom') > 0) tomHit = true
           if (parseInstallId.indexOf('alice') > 0) aliceHit = true
