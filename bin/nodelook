@@ -1,7 +1,0 @@
-#!/bin/sh
-
-# Look for all running node procs on the box
-# Unix / Linux only
-
-ps axw | grep node | grep -v grep | grep -v nodelook
-
