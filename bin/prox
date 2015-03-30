@@ -6,15 +6,28 @@
 #
 #     /var/log/prox/prox.log
 #     /var/log/prox/proxerr.log
+#     /var/log/prox/old/
 #     /var/run/prox.pid
 #
 
 
 PROX="/usr/local/prox"
-# PROX="/Users/gs/prox"
-PROXLOG="/var/log/prox/prox.log"
-ERRLOG="/var/log/prox/proxerr.log"
 PIDFILE="/var/run/prox.pid"
+LOGDIR="/var/log/prox"
+LOG="$LOGDIR/prox.log"
+ERRLOG="$LOGDIR/proxerr.log"
+OLD="$LOGDIR/old"
+DATE=`date +"%Y.%m.%d-%T"`
+
+
+help() {
+  echo "Usage: $0 {start, stop, restart, look, rotate, bounce, log, errlog, version, help}"
+}
+
+
+version() {
+  grep version $PROX/package.json | sed s/[^0-9\.]//g
+}
 
 
 start() {
@@ -39,7 +52,7 @@ start() {
   fi
 
   echo 'Starting proxibase...' >&2
-  nohup node --stack-trace-limit=200 $PROX/prox.js >>$PROXLOG 2>>$ERRLOG &
+  nohup node --stack-trace-limit=200 $PROX/prox.js >>$LOG 2>>$ERRLOG &
 
   # Save the process ID of the newly launched node prox master service
   NEWPID=$!
@@ -74,6 +87,30 @@ stop() {
 }
 
 
+look() {
+  ps axw | grep node.*prox | grep -v grep | grep -v proxlook
+}
+
+
+rotate() {
+  cp $LOG "$OLD/$DATE.prox.log"
+  echo -e "prox.log rotated $DATE\n" >$LOG
+
+  cp $ERRLOG "$OLD/$DATE.proxerr.log"
+  echo -e "proxerr.log rotated $DATE\n" >$ERRLOG
+}
+
+
+log() {
+  less $LOG
+}
+
+
+errlog() {
+  less $ERRLOG
+}
+
+
 case "$1" in
   start)
     start
@@ -85,8 +122,31 @@ case "$1" in
     stop
     start
     ;;
+  look)
+    look
+    ;;
+  rotate)
+    rotate
+    ;;
+  bounce)
+    stop
+    rotate
+    start
+    ;;
+  log)
+    log
+    ;;
+  errlog)
+    less $ERRLOG
+    ;;
+  version)
+    version
+    ;;
+  help)
+    help
+    ;;
   *)
-    echo "Usage: $0 {start|stop|restart}"
+    help
     exit 1;
     ;;
 esac
