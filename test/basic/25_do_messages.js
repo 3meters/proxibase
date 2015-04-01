@@ -692,8 +692,8 @@ exports.tomInsertsPublicPatch = function (test) {
     t.assert(!beckyHit)
     t.assert(!stanHit)
 
-    t.assert(maxNotification.aps)
-    t.assert(maxNotification.aps.alert)
+    t.assert(maxNotification.alert)
+    t.assert(maxNotification.badge)
     t.assert(maxNotification.trigger)
     t.assert(maxNotification.targetId)
 
@@ -748,8 +748,8 @@ exports.bobInsertsPrivatePatch = function (test) {
     t.assert(beckyHit)
     t.assert(stanHit)     // ios 7
 
-    t.assert(stanNotification.aps)
-    t.assert(stanNotification.aps.alert)
+    t.assert(stanNotification.alert)
+    t.assert(stanNotification.badge)
     t.assert(stanNotification.trigger)
     t.assert(stanNotification.targetId)
 
