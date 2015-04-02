@@ -7,20 +7,20 @@
 
     <single_instance/>
 
-    <dependency name="network" grouping="require_all" restart_on="refresh" type="service">
+    <dependency name="network" grouping="require_all" restart_on="error" type="service">
       <service_fmri value="svc:/milestone/network:default"/>
     </dependency>
 
-    <dependency name="filesystem" grouping="require_all" restart_on="refresh" type="service">
+    <dependency name="filesystem" grouping="require_all" restart_on="error" type="service">
       <service_fmri value="svc:/system/filesystem/local"/>
     </dependency>
 
-    <dependency name="mongodb" grouping="require_all" restart_on="refresh" type="service">
+    <dependency name="mongodb" grouping="require_all" restart_on="error" type="service">
       <service_fmri value="svc:/pkgsrc/mongodb:default"/>
     </dependency>
 
     <method_context working_directory="/usr/local/prox">
-      <method_credential user="admin" group="staff" privileges='basic,net_privaddr'  />
+      <method_credential user="admin" group="staff" privileges="basic,net_privaddr"  />
       <method_environment>
         <envvar name="PATH" value="/home/admin/local/bin:/usr/local/bin:/usr/bin:/usr/sbin:/bin"/>
         <envvar name="HOME" value="/home/admin"/>

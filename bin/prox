@@ -12,13 +12,12 @@
 
 
 PROX="/usr/local/prox"
-PIDFILE="/var/run/prox.pid"
+PIDFILE="/var/prox/prox.pid"
 LOGDIR="/var/log/prox"
 LOG="$LOGDIR/prox.log"
 ERRLOG="$LOGDIR/proxerr.log"
 OLD="$LOGDIR/old"
 DATE=`date +"%Y.%m.%d-%T"`
-USER="admin"
 
 
 help() {
@@ -33,7 +32,7 @@ version() {
 
 start() {
 
-  PID=`cat $PIDFILE` >/dev/null
+  PID=`cat $PIDFILE 2>/dev/null`
 
   if [ -n "$PID" ]   # -n means non-null
   then
@@ -46,23 +45,20 @@ start() {
   fi
 
   # ensure that the caller can write to the pid file
-  if ! >>$PIDFILE 2>/dev/null
+  if ! >>$PIDFILE
   then
-    echo "Cannot write to $PIDFILE"
     exit 1
   fi
 
   # ensure that the caller can write to the log file
-  if ! >>$LOG 2>/dev/null
+  if ! >>$LOG
   then
-    echo "Cannot write to $LOG"
     exit 1
   fi
 
   # ensure that the caller can write to the errlog file
-  if ! >>$ERRLOG 2>/dev/null
+  if ! >>$ERRLOG
   then
-    echo "Cannot write to $ERRLOG"
     exit 1
   fi
 
@@ -74,32 +70,36 @@ start() {
 
   # Wait three seconds and see if it is still alive
   sleep 3
-  RUNNING=`ps -p $NEWPID | grep $NEWPID` >/dev/null
+  RUNNING=`ps -p $NEWPID | grep $NEWPID`
   if [ ! -n "$RUNNING" ]
   then
-    echo -e "Proxibase failed to start. tail -20 $ERRLOG:"
+    echo -e "Proxibase failed to start. tail -50 $ERRLOG:"
     tail -20 $ERRLOG
     exit 1
   fi
 
   # Success. Set the new process id
   echo $NEWPID >$PIDFILE
-  chown $USER $PIDFILE
   echo "Proxibase started $NEWPID" >&2
 }
 
 
 stop() {
 
-  PID=`cat $PIDFILE` >/dev/null
+  PID=`cat $PIDFILE` 2>/dev/null
 
   if [ -n "$PID" ]
   then
-    if kill $PID
+    if kill $PID 2>/dev/null
     then
       >$PIDFILE
-      chown $USER $PIDFILE
+    else
+      echo "Could not kill $PID, stop failed" >&2
+      exit 1
     fi
+  else
+    echo "Could not read process Id from $PIDFILE, stop failed" >&2
+    exit 1
   fi
 }
 
@@ -112,11 +112,9 @@ look() {
 rotate() {
   cp $LOG "$OLD/$DATE.prox.log"
   echo -e "prox.log rotated $DATE\n" >$LOG
-  chown $USER $LOG
 
   cp $ERRLOG "$OLD/$DATE.proxerr.log"
   echo -e "proxerr.log rotated $DATE\n" >$ERRLOG
-  chown $USER $LOG
 }
 
 
