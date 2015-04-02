@@ -12,7 +12,7 @@
 
 
 PROX="/usr/local/prox"
-PIDFILE="/var/prox/prox.pid"
+PIDFILE="/var/run/prox.pid"
 LOGDIR="/var/log/prox"
 LOG="$LOGDIR/prox.log"
 ERRLOG="$LOGDIR/proxerr.log"
