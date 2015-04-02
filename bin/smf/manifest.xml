@@ -19,6 +19,10 @@
       <service_fmri value="svc:/pkgsrc/mongodb:default"/>
     </dependency>
 
+    <dependency name="postfix" grouping="require_all" restart_on="error" type="service">
+      <service_fmri value="svc:/pkgsrc/postfix:default"/>
+    </dependency>
+
     <method_context working_directory="/usr/local/prox">
       <method_credential user="root" group="root" privileges="basic,net_privaddr"  />
       <method_environment>
