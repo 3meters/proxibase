@@ -18,6 +18,7 @@ LOG="$LOGDIR/prox.log"
 ERRLOG="$LOGDIR/proxerr.log"
 OLD="$LOGDIR/old"
 DATE=`date +"%Y.%m.%d-%T"`
+USER="admin"
 
 
 help() {
@@ -45,9 +46,23 @@ start() {
   fi
 
   # ensure that the caller can write to the pid file
-  if ! echo $PID >$PIDFILE 2>/dev/null
+  if ! >>$PIDFILE 2>/dev/null
   then
     echo "Cannot write to $PIDFILE"
+    exit 1
+  fi
+
+  # ensure that the caller can write to the log file
+  if ! >>$LOG 2>/dev/null
+  then
+    echo "Cannot write to $LOG"
+    exit 1
+  fi
+
+  # ensure that the caller can write to the errlog file
+  if ! >>$ERRLOG 2>/dev/null
+  then
+    echo "Cannot write to $ERRLOG"
     exit 1
   fi
 
@@ -69,6 +84,7 @@ start() {
 
   # Success. Set the new process id
   echo $NEWPID >$PIDFILE
+  chown $USER $PIDFILE
   echo "Proxibase started $NEWPID" >&2
 }
 
@@ -82,6 +98,7 @@ stop() {
     if kill $PID
     then
       >$PIDFILE
+      chown $USER $PIDFILE
     fi
   fi
 }
@@ -95,9 +112,11 @@ look() {
 rotate() {
   cp $LOG "$OLD/$DATE.prox.log"
   echo -e "prox.log rotated $DATE\n" >$LOG
+  chown $USER $LOG
 
   cp $ERRLOG "$OLD/$DATE.proxerr.log"
   echo -e "proxerr.log rotated $DATE\n" >$ERRLOG
+  chown $USER $LOG
 }
 
 
