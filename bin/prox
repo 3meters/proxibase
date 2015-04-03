@@ -82,7 +82,7 @@ start() {
   echo $NEWPID >$PIDFILE
 
   # Try to start staging...
-  /usr/local/proxstage/bin/stagestart >/dev/null 2>&1
+  /usr/local/proxstage/bin/stagestart & >/dev/null 2>&1
 
   echo "Proxibase started $NEWPID" >&2
 }
