@@ -540,6 +540,23 @@ exports.statsAltQuerySyntax = function(test) {
   })
 }
 
+// Steamclock
+exports.getInterestingPatches = function(test) {
+  t.get('/patches/interesting',
+  function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.data.length)
+    body.data.forEach(function(patch) {
+      t.assert(patch._id)
+      t.assert(patch.linkedCount)
+      t.assert(patch.linkedCount.from)
+      t.assert(patch.linkedCount.from.messages)
+      t.assert(patch.linkedCount.from.messages.content)
+    })
+    test.done()
+  })
+}
+
 
 exports.statRefsDoNotPopulateForAnonUsers = function(test) {
   t.get({
