@@ -514,9 +514,46 @@ exports.statsAltQuerySyntax = function(test) {
       t.get('/stats/to/users/' + testUser._id + '?type=watch',
       function(err, res, body) {
         t.assert(body.data.count === 2)
-        test.done()
+        // This is the call the android client makes to display most active
+        t.get('/stats/to/patches/from/messages?type=content',
+        function(err, res, body) {
+          t.assert(body.data.length)
+          body.data.forEach(function(patch) {
+            t.assert(patch._id)
+            t.assert(patch.count)
+            t.assert(patch.visibility)
+          })
+          // This is the call the android client makes to display most popular
+          t.get('/stats/to/patches/from/users?type=watch',
+          function(err, res, body) {
+            t.assert(body.data.length)
+            body.data.forEach(function(patch) {
+              t.assert(patch._id)
+              t.assert(patch.count)
+              t.assert(patch.visibility)
+            })
+            test.done()
+          })
+        })
       })
     })
+  })
+}
+
+// Steamclock
+exports.getInterestingPatches = function(test) {
+  t.get('/patches/interesting',
+  function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.data.length)
+    body.data.forEach(function(patch) {
+      t.assert(patch._id)
+      t.assert(patch.linkedCount)
+      t.assert(patch.linkedCount.from)
+      t.assert(patch.linkedCount.from.messages)
+      t.assert(patch.linkedCount.from.messages.content)
+    })
+    test.done()
   })
 }
 
