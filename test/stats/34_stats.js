@@ -552,6 +552,8 @@ exports.getInterestingPatches = function(test) {
       t.assert(patch.linkedCount.from)
       t.assert(patch.linkedCount.from.messages)
       t.assert(patch.linkedCount.from.messages.content)
+      t.assert(patch.linkedCount.from.users)
+      t.assert(util.tipe.isNumber(patch.linkedCount.from.users.watch))
     })
     test.done()
   })
