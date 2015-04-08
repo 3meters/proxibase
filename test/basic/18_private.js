@@ -1060,6 +1060,7 @@ exports.patchesNear = function(test) {
       // Deprecated syntax
       uri: '/patches/near',
       body: {
+        getEntities: true,
         location: location,
         radius: 10000,
         installId: 'todo',
