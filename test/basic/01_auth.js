@@ -22,6 +22,7 @@ var testUser = {
   password: 'foobar',
   photo: {prefix: 'authTestUser.jpg', source:"aircandi.images"},
 }
+var newUser
 var newUserId
 var newUserEmail
 var newUserEmailValidateUrl
@@ -371,7 +372,7 @@ exports.userCannotAddUserViaRest = function(test) {
 }
 
 
-exports.annonymousUserCannotCreateUserViaApiWithoutSecret = function(test) {
+exports.annonUserCannotCreateUserViaApiWithoutSecret = function(test) {
   t.post({
     uri: '/user/create',
     body: {
@@ -390,7 +391,7 @@ exports.annonymousUserCannotCreateUserViaApiWithoutSecret = function(test) {
 }
 
 
-exports.annonymousUserCannotCreateUserViaApiWithWrongSecret = function(test) {
+exports.annonUserCannotCreateUserViaApiWithWrongSecret = function(test) {
   t.post({
     uri: '/user/create',
     body: {
@@ -410,7 +411,7 @@ exports.annonymousUserCannotCreateUserViaApiWithWrongSecret = function(test) {
 }
 
 
-exports.annonymousUserCanCreateUserViaApi = function(test) {
+exports.annonUserCanCreateUserViaApi = function(test) {
   t.post({
     uri: '/user/create',
     body: {
@@ -428,6 +429,7 @@ exports.annonymousUserCanCreateUserViaApi = function(test) {
     t.assert(body.session)
     t.assert(body.session.key)
     t.assert(body.user.validateEmailUrl)
+    newUser = body.user
     newUserId = body.user._id
     newUserEmailValidateUrl = body.user.validateEmailUrl
     newUserCred = 'user=' + body.user._id + '&session=' + body.session.key
@@ -436,11 +438,21 @@ exports.annonymousUserCanCreateUserViaApi = function(test) {
 }
 
 exports.newUserCanSignIn = function(test) {
-  t.get('/data/users?' + newUserCred,
-  function(err, res, body) {
+  t.post({
+    uri: '/auth/signin',
+    body: {
+      email: 'authtest2@3meters.com',
+      password: 'foobar',
+      installId: '123456'
+    }
+  }, function(err, res, body) {
+    t.assert(body.user)
+    t.assert(body.user._id === newUser._id)
     test.done()
   })
 }
+
+
 
 _exports.newUserEmailValidateUrlWorksSlowly = function(test) {
   t.get('/data/users/' + newUserId, function(err, res, body) {
@@ -574,7 +586,7 @@ exports.autoWatchWorks = function(test) {
         t.assert(watchLinks && watchLinks.length === 1)
         link = watchLinks[0]
         // OLD: t.assert(link._owner === awUser._id)
-        t.assert(link._owner === util.adminId) // changed 8/21/04
+        t.assert(link._owner === util.adminId) // changed 8/21/14
         t.del({
           uri: '/data/links/' + link._id + '?' + awCred,
         }, function(err, res, body) {
@@ -592,6 +604,22 @@ exports.autoWatchWorks = function(test) {
   })
 }
 
+exports.userCanSelfLike = function(test) {
+  t.post({
+    uri: '/data/links?' + newUserCred,
+    body: {data: {
+      _to: newUser._id,
+      _from: newUser._id,
+      type: 'like',
+    }}
+  }, 201, function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.data._to === newUser._id)
+    t.assert(body.data._from === newUser._id)
+    t.assert(body.data.type === 'like')
+    test.done()
+  })
+}
 
 exports.userCanSignOut = function(test) {
   t.get('/auth/signout?' + userCred,
@@ -603,3 +631,87 @@ exports.userCanSignOut = function(test) {
   })
 }
 
+// Supported
+exports.userCanSignInWithLinked = function(test) {
+  t.post({
+    uri: '/auth/signin',
+    body: {
+      email: 'authtest4@3meters.com',
+      password: 'foobar',
+      installId: '123456',
+      linked: [{to: 'users', type: 'like', linkFields: '_to,_from,type'}],
+    }
+  }, function(err, res, body) {
+    t.assert(body.session)
+    t.assert(body.credentials)
+    t.assert(body.user)
+    t.assert(body.user._id === newUser._id)
+    t.assert(body.user.linked)
+    t.assert(body.user.linked.length === 1)
+    var linked = body.user.linked[0]
+    t.assert(linked._id === body.user._id)
+    t.assert(linked.link)
+    t.assert(linked.link._to === body.user._id)
+    t.assert(linked.link._from === body.user._id)
+    t.assert(linked.link.type === 'like')
+    test.done()
+  })
+}
+
+
+// Deprecated, only for android client, do not use
+exports.userCanSignInWithGetEntitiesLinksQuery = function(test) {
+  t.post({
+    uri: '/auth/signin',
+    body: {
+      email: 'authtest4@3meters.com',
+      password: 'foobar',
+      installId: '123456',
+      getEntities: true,  // deprecated for legacy android client, do not use
+      links: {shortcuts: true, active: [
+        {links: true, count: true, schema: 'user', type: 'like', direction: 'in' },
+      ]}
+    }
+  }, function(err, res, body) {
+    t.assert(body.session)
+    t.assert(body.credentials)
+    t.assert(body.user)
+    var user = body.user
+    t.assert(user.linksIn)
+    t.assert(user.linksIn.length === 1)
+    var link = user.linksIn[0]
+    t.assert(link._from === newUser._id)
+    t.assert(link.type === 'like')
+    t.assert(link.shortcut)
+    t.assert(link.shortcut.id === newUser._id)
+    t.assert(link.shortcut.schema === 'user')
+    test.done()
+  })
+}
+
+// Note Rob:  This is deprecated, and is only for the android client
+// Note to Jay:  links are not supported here becuase I don't think we
+// need them, and it is work to do so. Let me know if that is not correct.
+exports.annonCanCreateUserWithGetEntities = function(test) {
+  t.post({
+    uri: '/user/create',
+    body: {
+      data: {
+        name: 'AuthTestUser5',
+        email: 'authtest5@3meters.com',
+        password: 'foobar',
+        photo: {prefix: 'authTestUser.jpg', source:"aircandi.images"},
+      },
+      secret: 'larissa',
+      installId: '123456',
+      getEntities: true,
+    }
+  }, function(err, res, body) {
+    t.assert(body.credentials)
+    t.assert(body.user)
+    t.assert(body.user.creator)
+    t.assert(body.user.creator._id)
+    t.assert(body.user.creator.name)
+    test.done()
+  })
+}
