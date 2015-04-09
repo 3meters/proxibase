@@ -464,6 +464,7 @@ exports.getEntsForEntsDoesNotExposePrivateFieldsOfWatchers = function(test) {
   })
 }
 
+
 exports.findWithLinkedDoesNotExposePrivateFieldsOfWatches = function(test) {
   t.post({
     uri: '/find/patches/' + river._id,
@@ -1081,6 +1082,44 @@ exports.patchesNear = function(test) {
       var patchesGe = body.data
       t.assert(patchesGe.length === 4)
       test.done()
+    })
+  })
+}
+
+
+exports.likingAPatchUpdatesActivityDateOfUserAndPatch = function(test) {
+  t.get('/data/users/' + jane._id,
+  function(err, res, body) {
+    t.assert(body.data)
+    var janeOldActivityDate = body.data.activityDate
+    t.get('/data/patches/' + treehouse._id,
+    function(err, res, body) {
+      t.assert(body.data)
+      var treehouseOldActivityDate = body.data.activityDate
+
+      setTimeout(likeTreehouse, 1200)  // activity date window is 1000
+
+      function likeTreehouse() {
+        t.post({
+          uri: '/data/links?' + jane.cred,
+          body: {data: {
+            _to: treehouse._id,
+            _from: jane._id,
+            type: 'like',
+          }}
+        }, 201, function(err, res, body) {
+          t.get('/data/users/' + jane._id,
+          function(err, res, body) {
+            t.assert(body.data.activityDate > janeOldActivityDate)
+            t.get('/data/patches/' + treehouse._id,
+            function(err, res, body) {
+              t.assert(body.data.activityDate > treehouseOldActivityDate)
+              test.done()
+            })
+          })
+        })
+      }
+
     })
   })
 }
