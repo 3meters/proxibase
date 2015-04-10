@@ -873,6 +873,8 @@ exports.noPatchWithFreshTimestamp = function (test) {
    /*
     * Verify that the patch doesn't come back because the where parameter
     * did not pass.
+    *
+    * Change:  verify that that patch's activity date *is* tickled
     */
    t.post({
      uri: '/do/getEntities',
@@ -881,7 +883,7 @@ exports.noPatchWithFreshTimestamp = function (test) {
        where: { activityDate: { $gt: activityDatePatch }}
      }
    }, function(err, res, body) {
-     t.assert(body.count === 0)
+     t.assert(body.count === 1)
      test.done()
    })
 }
