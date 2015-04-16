@@ -168,13 +168,11 @@ var testMessage = {
   _acl: testPatchPublic._id,  // Usually set by client
 }
 
-var testReply = {
+var testResponseMessage = {
   _id : "me.111111.11111.111.111112",
   schema : util.statics.schemaMessage,
-  type : "reply",
+  type : "root",
   description : "Repeat! Repeat!",
-  _root : "me.111111.11111.111.222222",
-  _replyTo: testUserBecky._id,
   _acl: testPatchPublic._id,  // Usually set by client
 }
 
@@ -190,13 +188,11 @@ var testMessageToPrivate = {
   _acl: testPatchPrivate._id,  // Usually set by client
 }
 
-var testReplyToPrivate = {
+var testResponseToPrivate = {
   _id : "me.111111.11111.111.111113",
   schema : util.statics.schemaMessage,
-  type : "reply",
+  type : "root",
   description : "Use the little touch control next to the mini bar",
-  _root : "me.111111.11111.111.222223",
-  _replyTo: testUserBecky._id,
   _acl: testPatchPrivate._id,  // Usually set by client
 }
 
@@ -1233,23 +1229,13 @@ exports.bobApprovesAlicesRequestToWatchBobsPrivatePatch = function(test) {
  *
  * - Stan and Max are not watching or owners of any patches
  *
- * Seed message scenarios: Notified because:
+ * Message scenarios: Notified because:
  * - I own the patch
  *      (Tom gets notified when Becky posts message to patch)
  * - I am watching the patch
  *      (Bob gets notified when Becky or Alice post messages to patch)
  * - I am nearby the patch
  *      (Alice and Max get notified when Becky posts message to patch)
- *
- * Reply message scenarios: Notified because:
- * - I own the message being replied to
- *      (Becky gets notified when Alice replies to Becky message)
- * - I own a patch that has a message that is being replied to
- *      (Tom owns the patch and get notified about Alice's reply to Becky)
- * - I am watching a patch that has a message that is being replied to
- *      (Bob is watching the patch and is notified about Alice's reply to Becky)
- * - I am nearby a patch that has a message that is being replied to
- *      (Max is nearby and gets notified about Alice's reply to Becky)
  *
  * ----------------------------------------------------------------------------
  */
@@ -1527,17 +1513,15 @@ exports.maxMovesNearby = function (test) {
   })
 }
 
-exports.aliceInsertsReplyToBeckysPublicMessage = function (test) {
+exports.aliceInsertsResponseMessageToTomsPublicPatch = function (test) {
 
   t.post({
     uri: '/do/insertEntity?' + userCredAlice,
     body: {
-      entity: testReply,
+      entity: testResponseMessage,
       links: [
          { _to: testPatchPublic._id,          // Toms patch
             type: util.statics.typeContent },
-         { _to: testMessage._id,              // Becky's message Alice is replying to
-            type: util.statics.typeContent }
         ],
       returnNotifications: true,
       activityDateWindow: 0,
@@ -1548,7 +1532,6 @@ exports.aliceInsertsReplyToBeckysPublicMessage = function (test) {
     /*
      * Tom gets notified because he owns the patch.
      * Bob gets notified because he is watching the patch.
-     * Becky gets notified because she owns the message.
      * Max get notified because he is nearby the patch.
      */
 
@@ -1556,7 +1539,7 @@ exports.aliceInsertsReplyToBeckysPublicMessage = function (test) {
      * If not run stand-alone, Alice create in previous test module
      * gets a message because she is watching Tom.
      */
-    t.assert(body.notifications.length === 4)
+    t.assert(body.notifications.length === 3)
 
     var tomHit = false
       , bobHit = false
@@ -1571,7 +1554,7 @@ exports.aliceInsertsReplyToBeckysPublicMessage = function (test) {
         if (parseInstallId.indexOf('alice') > 0) aliceHit = true
         if (parseInstallId.indexOf('max') > 0 && notification.trigger == 'nearby') maxHit = true
         if (parseInstallId.indexOf('bob') > 0 && notification.trigger == 'watch_to') bobHit = true
-        if (parseInstallId.indexOf('becky') > 0 && notification.trigger == 'own_to') beckyHit = true
+        if (parseInstallId.indexOf('becky') > 0) beckyHit = true
         if (parseInstallId.indexOf('stan') > 0) stanHit = true
       })
     })
@@ -1580,7 +1563,7 @@ exports.aliceInsertsReplyToBeckysPublicMessage = function (test) {
     t.assert(!aliceHit)
     t.assert(maxHit)
     t.assert(bobHit)
-    t.assert(beckyHit)
+    t.assert(!beckyHit)
     t.assert(!stanHit)
 
     var savedEnt = body.data
@@ -1593,7 +1576,7 @@ exports.aliceInsertsReplyToBeckysPublicMessage = function (test) {
     t.post({
       uri: '/find/messages?' + userCredAlice,
       body: {
-        query:{ _id:testReply._id }
+        query:{ _id:testResponseMessage._id }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -1604,7 +1587,7 @@ exports.aliceInsertsReplyToBeckysPublicMessage = function (test) {
         body: {
           query: {
             _to: testPatchPublic._id,
-            _from: testReply._id,
+            _from: testResponseMessage._id,
           }
         }
       }, function(err, res, body) {
@@ -1613,33 +1596,17 @@ exports.aliceInsertsReplyToBeckysPublicMessage = function (test) {
         t.assert(link._creator === testUserAlice._id)
         t.assert(link._owner === testUserTom._id)     // strong links to entites are owned by ent owner
 
-        /* Check link to message */
+        /* Check activityDate for patch */
         t.post({
-          uri: '/find/links?' + adminCred,
+          uri: '/find/patches',
           body: {
-            query: {
-              _to: testMessage._id,
-              _from: testReply._id,
-            }
+            query:{ _id:testPatchPublic._id }
           }
         }, function(err, res, body) {
-          t.assert(body && body.data && 1 === body.data.length)
-          var link = body.data[0]
-          t.assert(link._creator === testUserAlice._id)
-          t.assert(link._owner === testUserBecky._id)     // strong links to entites are owned by ent owner
-
-          /* Check activityDate for patch */
-          t.post({
-            uri: '/find/patches',
-            body: {
-              query:{ _id:testPatchPublic._id }
-            }
-          }, function(err, res, body) {
-            t.assert(body.count === 1)
-            t.assert(body.data && body.data[0])
-            t.assert(body.data[0].activityDate >= activityDate)
-            test.done()
-          })
+          t.assert(body.count === 1)
+          t.assert(body.data && body.data[0])
+          t.assert(body.data[0].activityDate >= activityDate)
+          test.done()
         })
       })
     })
@@ -1664,6 +1631,7 @@ exports.beckyInsertsMessageToBobsPrivatePatch = function (test) {
     /*
      * Bob gets notified because he owns the patch.
      * Alice get notified as a member.
+     * Becky DOES NOT get notified as a member because she is the author.
      */
     t.assert(body.notifications.length === 2)
 
@@ -1740,17 +1708,15 @@ exports.beckyInsertsMessageToBobsPrivatePatch = function (test) {
   })
 }
 
-exports.bobInsertsReplyToBeckysPrivateMessage = function (test) {
+exports.bobInsertsResponseToBeckysPrivateMessage = function (test) {
 
   t.post({
     uri: '/do/insertEntity?' + userCredBob,
     body: {
-      entity: testReplyToPrivate,
+      entity: testResponseToPrivate,
       links: [
          { _to: testPatchPrivate._id,                   // Bobs patch
             type: util.statics.typeContent },
-         { _to: testMessageToPrivate._id,               // Reply to Beckys message
-            type: util.statics.typeContent }
         ],
       returnNotifications: true,
       activityDateWindow: 0,
@@ -1760,23 +1726,20 @@ exports.bobInsertsReplyToBeckysPrivateMessage = function (test) {
     t.assert(body.data)
     /*
      * Becky and Alice get notified because they are watching the patch.
-     * Becky gets notified because she is owner of the message being replied to.
-     *
-     * Both notifications come through because they are separate calls.
+     * Bob DOES NOT get notified as the owner of the patch because is the message author.
      */
 
     /*
      * If not run stand-alone, Alice create in previous test module
      * gets a message because she is watching tom.
      */
-    t.assert(body.notifications.length === 2)
+    t.assert(body.notifications.length === 1)
 
     var tomHit = false
       , bobHit = false
       , aliceHit = false
       , maxHit = false
-      , beckyOwnHit = false
-      , beckyWatchHit = false
+      , beckyHit = false
       , stanHit = false
 
     body.notifications.forEach(function(message) {
@@ -1784,9 +1747,8 @@ exports.bobInsertsReplyToBeckysPrivateMessage = function (test) {
         if (parseInstallId.indexOf('tom') > 0) tomHit = true
         if (parseInstallId.indexOf('alice') > 0 && message.trigger == 'watch_to') aliceHit = true
         if (parseInstallId.indexOf('max') > 0) maxHit = true
-        if (parseInstallId.indexOf('bob') > 0 && message.trigger == 'own_to') bobHit = true
-        if (parseInstallId.indexOf('becky') > 0 && message.trigger == 'watch_to') beckyWatchHit = true
-        if (parseInstallId.indexOf('becky') > 0 && message.trigger == 'own_to') beckyOwnHit = true
+        if (parseInstallId.indexOf('bob') > 0) bobHit = true
+        if (parseInstallId.indexOf('becky') > 0 && message.trigger == 'watch_to') beckyHit = true
         if (parseInstallId.indexOf('stan') > 0) stanHit = true
       })
     })
@@ -1795,8 +1757,7 @@ exports.bobInsertsReplyToBeckysPrivateMessage = function (test) {
     t.assert(aliceHit)
     t.assert(!maxHit)
     t.assert(!bobHit)
-    t.assert(beckyOwnHit)
-    t.assert(beckyWatchHit)
+    t.assert(beckyHit)
     t.assert(!stanHit)
 
     var savedEnt = body.data
@@ -1809,7 +1770,7 @@ exports.bobInsertsReplyToBeckysPrivateMessage = function (test) {
     t.post({
       uri: '/find/messages?' + userCredBob,
       body: {
-        query:{ _id:testReplyToPrivate._id }
+        query:{ _id:testResponseToPrivate._id }
       }
     }, function(err, res, body) {
       t.assert(body.count === 1)
@@ -1820,7 +1781,7 @@ exports.bobInsertsReplyToBeckysPrivateMessage = function (test) {
         body: {
           query: {
             _to: testPatchPrivate._id,
-            _from: testReplyToPrivate._id,
+            _from: testResponseToPrivate._id,
           }
         }
       }, function(err, res, body) {
@@ -1829,33 +1790,17 @@ exports.bobInsertsReplyToBeckysPrivateMessage = function (test) {
         t.assert(link._creator === testUserBob._id)
         t.assert(link._owner === testUserBob._id)     // strong links to entites are owned by ent owner
 
-        /* Check link to message */
+        /* Check activityDate for patch */
         t.post({
-          uri: '/find/links?' + adminCred,
+          uri: '/find/patches',
           body: {
-            query: {
-              _to: testMessageToPrivate._id,
-              _from: testReplyToPrivate._id,
-            }
+            query:{ _id:testPatchPrivate._id }
           }
         }, function(err, res, body) {
-          t.assert(body && body.data && 1 === body.data.length)
-          var link = body.data[0]
-          t.assert(link._creator === testUserBob._id)
-          t.assert(link._owner === testUserBecky._id)     // strong links to entites are owned by ent owner
-
-          /* Check activityDate for patch */
-          t.post({
-            uri: '/find/patches',
-            body: {
-              query:{ _id:testPatchPrivate._id }
-            }
-          }, function(err, res, body) {
-            t.assert(body.count === 1)
-            t.assert(body.data && body.data[0])
-            t.assert(body.data[0].activityDate >= activityDate)
-            test.done()
-          })
+          t.assert(body.count === 1)
+          t.assert(body.data && body.data[0])
+          t.assert(body.data[0].activityDate >= activityDate)
+          test.done()
         })
       })
     })
@@ -2062,7 +2007,6 @@ exports.tomCanGetNotificationsForSelf = function (test) {
   })
 }
 
-
 exports.tomCanGetNotificationsForSelfUserApiPost = function (test) {
   t.post({
     uri: '/user/getNotifications?' + userCredTom,
@@ -2078,7 +2022,6 @@ exports.tomCanGetNotificationsForSelfUserApiPost = function (test) {
   })
 }
 
-
 exports.tomCanGetNotificationsForSelfUserApiGet = function (test) {
   t.get('/user/getNotifications?' + userCredTom + '&sort[modifiedDate]=-1&limit=3',
   function(err, res, body) {
@@ -2087,9 +2030,6 @@ exports.tomCanGetNotificationsForSelfUserApiGet = function (test) {
     test.done()
   })
 }
-
-
-
 
 /*
  * ----------------------------------------------------------------------------
