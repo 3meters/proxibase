@@ -29,6 +29,7 @@ var expirationDate
 var activityDate
 var beckyWatchLinkId
 var aliceWatchLinkId
+var activityDateBobsPatch
 
 
 // From sample data in base test database
@@ -239,7 +240,9 @@ exports.getSessions = function (test) {
       userCredBob = 'user=' + session._owner + '&session=' + session.key
       testUtil.getUserSession(testUserAlice, function(session) {
         userCredAlice = 'user=' + session._owner + '&session=' + session.key
-        testUtil.getUserSession(testUserBecky, function(session) {
+        testUtil.getUserSession(testUserBecky, function(session, user) {
+          testUserBecky = user
+          testUserBecky.activityDate = testUserBecky.createdDate
           userCredBecky = 'user=' + session._owner + '&session=' + session.key
           testUtil.getUserSession(testUserMax, function(session) {
             userCredMax = 'user=' + session._owner + '&session=' + session.key
@@ -713,6 +716,7 @@ exports.bobInsertsPrivatePatch = function (test) {
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
+    activityDateBobsPatch = body.data.activityDate // for later checks
     /*
      * Becky and Stan should get nearby notifications.
      */
@@ -941,167 +945,212 @@ exports.bobLikesTomsPublicPatchViaRestAPI = function(test) {
 }
 
 exports.beckyRequestsToWatchBobsPrivatePatch = function(test) {
-  t.post({
-    // Deprecated: use /data/link
-    uri: '/do/insertLink?' + userCredBecky,
-    body: {
-      toId: testPatchPrivate._id,             // Owned by bob
-      fromId: testUserBecky._id,
-      type: util.statics.typeWatch,
-      enabled: false,
-      // actionEvent: 'request_watch_entity',
-      returnNotifications: true,
-      log: true,
-    }
-  }, 201, function(err, res, body) {
-    t.assert(body.count === 1)
-    /*
-     * Bob should get a request alert because he is the patch owner.
-     */
-    t.assert(body.notifications.length == 1)
-    var tomHit = false
-      , aliceHit = false
-      , maxHit = false
-      , bobHit = false
-      , beckyHit = false
-      , stanHit = false
+  var activityDateUser
+  var activityDatePatch
 
-    body.notifications.forEach(function(notification) {
-      t.assert(notification._target === testPatchPrivate._id || notification.targetId === testPatchPrivate._id)
-      notification.parseInstallIds.forEach(function(parseInstallId){
-        if (parseInstallId.indexOf('tom') > 0) tomHit = true
-        if (parseInstallId.indexOf('alice') > 0) aliceHit = true
-        if (parseInstallId.indexOf('max') > 0) maxHit = true
-        if (parseInstallId.indexOf('bob') > 0
-          && notification.type === 'watch'
-          && notification.trigger == 'own_to'
-          && notification.event === 'request_watch_entity') bobHit = true
-        if (parseInstallId.indexOf('becky') > 0) beckyHit = true
-        if (parseInstallId.indexOf('stan') > 0) stanHit = true
-      })
+  /* Stash activityDates */
+  t.get('/data/users/' + testUserBecky._id, function(err, res, body) {
+    activityDateUser = (body.data.activityDate) ? body.data.activityDate : body.data.createdDate
+    t.get('/data/patches/' + testPatchPrivate._id, function(err, res, body) {
+      activityDatePatch = (body.data.activityDate) ? body.data.activityDate : body.data.createdDate
+      setTimeout(execute, 1200)  // activity date window is 1000
     })
+  })
 
-    t.assert(!tomHit)
-    t.assert(!aliceHit)
-    t.assert(!maxHit)
-    t.assert(bobHit)
-    t.assert(!beckyHit)
-    t.assert(!stanHit)
-
-    /* Check watch entity link to entity 2 */
+  function execute() {
     t.post({
-      uri: '/find/links',
+      // Deprecated: use /data/link
+      uri: '/do/insertLink?' + userCredBecky,
       body: {
-        query: {
-          _to: testPatchPrivate._id,
-          _from: testUserBecky._id,
-          type: util.statics.typeWatch
-        }
+        toId: testPatchPrivate._id,             // Owned by bob
+        fromId: testUserBecky._id,
+        type: util.statics.typeWatch,
+        enabled: false,
+        // actionEvent: 'request_watch_entity',
+        returnNotifications: true,
+        log: true,
       }
-    }, function(err, res, body) {
+    }, 201, function(err, res, body) {
       t.assert(body.count === 1)
-      t.assert(body.data[0].enabled === false)
-      beckyWatchLinkId = body.data[0]._id
+      /*
+       * Bob should get a request alert because he is the patch owner.
+       */
+      t.assert(body.notifications.length == 1)
+      var tomHit = false
+        , aliceHit = false
+        , maxHit = false
+        , bobHit = false
+        , beckyHit = false
+        , stanHit = false
 
-      /* Check link entity log action */
+      body.notifications.forEach(function(notification) {
+        t.assert(notification._target === testPatchPrivate._id || notification.targetId === testPatchPrivate._id)
+        notification.parseInstallIds.forEach(function(parseInstallId){
+          if (parseInstallId.indexOf('tom') > 0) tomHit = true
+          if (parseInstallId.indexOf('alice') > 0) aliceHit = true
+          if (parseInstallId.indexOf('max') > 0) maxHit = true
+          if (parseInstallId.indexOf('bob') > 0
+            && notification.type === 'watch'
+            && notification.trigger == 'own_to'
+            && notification.event === 'request_watch_entity') bobHit = true
+          if (parseInstallId.indexOf('becky') > 0) beckyHit = true
+          if (parseInstallId.indexOf('stan') > 0) stanHit = true
+        })
+      })
+
+      t.assert(!tomHit)
+      t.assert(!aliceHit)
+      t.assert(!maxHit)
+      t.assert(bobHit)
+      t.assert(!beckyHit)
+      t.assert(!stanHit)
+
+      /* Check watch entity link to entity 2 */
       t.post({
-        uri: '/find/actions?' + adminCred,
+        uri: '/find/links',
         body: {
-          query:{
-            _entity:testPatchPrivate._id,
-            event:'request_watch_entity',
-            _user: testUserBecky._id,
+          query: {
+            _to: testPatchPrivate._id,
+            _from: testUserBecky._id,
+            type: util.statics.typeWatch
           }
         }
       }, function(err, res, body) {
         t.assert(body.count === 1)
-        test.done()
+        t.assert(body.data[0].enabled === false)
+        beckyWatchLinkId = body.data[0]._id
+
+        /* Check activityDate updated for patch and user */
+        t.get('/data/users/' + testUserBecky._id, function(err, res, body) {
+          t.assert(body.data.activityDate > activityDateUser)
+
+          t.get('/data/patches/' + testPatchPrivate._id, function(err, res, body) {
+            t.assert(body.data.activityDate > activityDatePatch)
+
+            /* Check link entity log action */
+            t.post({
+              uri: '/find/actions?' + adminCred,
+              body: {
+                query:{
+                  _entity:testPatchPrivate._id,
+                  event:'request_watch_entity',
+                  _user: testUserBecky._id,
+                }
+              }
+            }, function(err, res, body) {
+              t.assert(body.count === 1)
+              test.done()
+            })
+          })
+        })
       })
     })
-  })
+  }
 }
 
 exports.bobApprovesBeckysRequestToWatchBobsPrivatePatch = function(test) {
-  t.post({
-    // Deprecated: use /data/link
-    uri: '/do/insertLink?' + userCredBob,
-    body: {
-      linkId: beckyWatchLinkId,
-      toId: testPatchPrivate._id,       // Owned by bob
-      fromId: testUserBecky._id,
-      type: util.statics.typeWatch,
-      enabled: true,
-      // actionEvent: 'approve_watch_entity',
-      returnNotifications: true,
-      debug: false,
-    }
-  }, 201, function(err, res, body) {
-    t.assert(body.count === 1)
-    /*
-     * Becky should get a request alert because she is the requestor.
-     */
-    t.assert(body.notifications.length == 1)
+  var activityDateUser
+  var activityDatePatch
 
-    var tomHit = false
-      , aliceHit = false
-      , maxHit = false
-      , bobHit = false
-      , beckyHit = false
-      , stanHit = false
-
-    body.notifications.forEach(function(notification) {
-      t.assert(notification._target == testPatchPrivate._id)
-      notification.parseInstallIds.forEach(function(parseInstallId){
-        if (parseInstallId.indexOf('tom') > 0) tomHit = true
-        if (parseInstallId.indexOf('alice') > 0) aliceHit = true
-        if (parseInstallId.indexOf('max') > 0) maxHit = true
-        if (parseInstallId.indexOf('bob') > 0) bobHit = true
-        if (parseInstallId.indexOf('becky') > 0
-          && notification.type === 'watch'
-          && notification.trigger == 'own_from'
-          && notification.event === 'approve_watch_entity') beckyHit = true
-        if (parseInstallId.indexOf('stan') > 0) stanHit = true
-      })
+  /* Stash activityDates */
+  t.get('/data/users/' + testUserBecky._id, function(err, res, body) {
+    activityDateUser = (body.data.activityDate) ? body.data.activityDate : body.data.createdDate
+    t.get('/data/patches/' + testPatchPrivate._id, function(err, res, body) {
+      activityDatePatch = (body.data.activityDate) ? body.data.activityDate : body.data.createdDate
+      setTimeout(execute, 1200)  // activity date window is 1000
     })
+  })
 
-    t.assert(!tomHit)
-    t.assert(!aliceHit)
-    t.assert(!maxHit)
-    t.assert(!bobHit)
-    t.assert(beckyHit)
-    t.assert(!stanHit)
-
-
-    /* Check watch entity link to entity 2 */
+  function execute() {
     t.post({
-      uri: '/find/links',
+      // Deprecated: use /data/link
+      uri: '/do/insertLink?' + userCredBob,
       body: {
-        query: {
-          _to: testPatchPrivate._id,
-          _from: testUserBecky._id,
-          type: util.statics.typeWatch
-        }
+        linkId: beckyWatchLinkId,
+        toId: testPatchPrivate._id,       // Owned by bob
+        fromId: testUserBecky._id,
+        type: util.statics.typeWatch,
+        enabled: true,
+        // actionEvent: 'approve_watch_entity',
+        returnNotifications: true,
+        debug: false,
       }
-    }, function(err, res, body) {
+    }, 201, function(err, res, body) {
       t.assert(body.count === 1)
-      t.assert(body.data[0].enabled === true)
+      /*
+       * Becky should get a request alert because she is the requestor.
+       */
+      t.assert(body.notifications.length == 1)
 
-      /* Check link entity log action */
+      var tomHit = false
+        , aliceHit = false
+        , maxHit = false
+        , bobHit = false
+        , beckyHit = false
+        , stanHit = false
+
+      body.notifications.forEach(function(notification) {
+        t.assert(notification._target == testPatchPrivate._id)
+        notification.parseInstallIds.forEach(function(parseInstallId){
+          if (parseInstallId.indexOf('tom') > 0) tomHit = true
+          if (parseInstallId.indexOf('alice') > 0) aliceHit = true
+          if (parseInstallId.indexOf('max') > 0) maxHit = true
+          if (parseInstallId.indexOf('bob') > 0) bobHit = true
+          if (parseInstallId.indexOf('becky') > 0
+            && notification.type === 'watch'
+            && notification.trigger == 'own_from'
+            && notification.event === 'approve_watch_entity') beckyHit = true
+          if (parseInstallId.indexOf('stan') > 0) stanHit = true
+        })
+      })
+
+      t.assert(!tomHit)
+      t.assert(!aliceHit)
+      t.assert(!maxHit)
+      t.assert(!bobHit)
+      t.assert(beckyHit)
+      t.assert(!stanHit)
+
+      /* Check watch entity link to entity 2 */
       t.post({
-        uri: '/find/actions?' + adminCred,
+        uri: '/find/links',
         body: {
-          query:{
-            _entity:testPatchPrivate._id,
-            event:'approve_watch_entity',
-            _user: userCredBecky._id,
+          query: {
+            _to: testPatchPrivate._id,
+            _from: testUserBecky._id,
+            type: util.statics.typeWatch
           }
         }
       }, function(err, res, body) {
         t.assert(body.count === 1)
-        test.done()
+        t.assert(body.data[0].enabled === true)
+
+        /* Check activityDate updated for patch and user */
+        t.get('/data/users/' + testUserBecky._id, function(err, res, body) {
+          t.assert(body.data.activityDate > activityDateUser)
+
+          t.get('/data/patches/' + testPatchPrivate._id, function(err, res, body) {
+            t.assert(body.data.activityDate > activityDatePatch)
+
+            /* Check link entity log action */
+            t.post({
+              uri: '/find/actions?' + adminCred,
+              body: {
+                query:{
+                  _entity:testPatchPrivate._id,
+                  event:'approve_watch_entity',
+                  _user: testUserBecky._id,
+                }
+              }
+            }, function(err, res, body) {
+              t.assert(body.count === 1)
+              test.done()
+            })
+          })
+        })
       })
     })
-  })
+  }
 }
 
 /*
