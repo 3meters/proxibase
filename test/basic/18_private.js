@@ -847,6 +847,24 @@ exports.findWithNestedLinks = function(test) {
   })
 }
 
+exports.findLimitsIgnoredForCount = function(test) {
+  t.post({
+    // Supported syntax
+    uri: '/find/users/' + tarzan._id + '?' + tarzan.cred,
+    body: {
+      refs: true,
+      linked: [
+        {to: 'patches', type: 'watch', limit: 1},
+        {to: 'patches', type: 'watch', limit: 1, count: true},
+      ]
+    }
+  }, function(err, res, body) {
+    t.assert(body.data.linked.length === 1)
+    t.assert(body.data.linkedCount.to.patches.watch === 2) // limit is ignored for counts
+    test.done()
+  })
+}
+
 
 // Find messages for patches with new find syntax vs deprecated
 // getEnitiesForEntity syntax
@@ -1123,3 +1141,6 @@ exports.likingAPatchUpdatesActivityDateOfUserAndPatch = function(test) {
     })
   })
 }
+
+
+
