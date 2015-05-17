@@ -866,6 +866,13 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
     t.assert(body.data.length)
     body.data.forEach(function(patch) {
       t.assert(patch.schema === 'patch')
+      t.assert(patch.name)
+      t.assert(patch.linkedCount)
+      t.assert(patch.linkedCount.from)
+      t.assert(patch.linkedCount.from.users)
+      t.assert(tipe.isDefined(patch.linkedCount.from.users.like))
+      t.assert(tipe.isDefined(patch.linkedCount.from.users.watch))
+      t.assert(tipe.isDefined(patch.linked))
     })
     test.done()
   })
