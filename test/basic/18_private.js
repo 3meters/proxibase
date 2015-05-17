@@ -810,8 +810,8 @@ exports.findWithNestedLinks = function(test) {
     uri: '/find/users/' + tarzan._id + ',' + jane._id + ',' + mary._id + '?' + tarzan.cred,
     body: {refs: 'name,photo',
       linked: [
-        {to: 'patches', type: 'watch', fields: 'name,visibility,photo', linkFields: 'enabled', linked: [
-          {from: 'messages', type: 'content', fields: 'description,photo', linkFields: false},
+        {to: 'patches', type: 'watch', fields: 'name,visibility,photo,schema', linkFields: 'enabled', linked: [
+          {from: 'messages', type: 'content', fields: 'description,photo,schema', linkFields: false},
           {from: 'users', type: 'watch', count: true},
           {from: 'users', type: 'like', count: true},
         ]}
@@ -833,15 +833,39 @@ exports.findWithNestedLinks = function(test) {
         t.assert(patch.owner.name)
         t.assert(patch.owner.photo)
         t.assert(patch.linked)
-        t.assert(patch.linkedCount)
         patch.linked.forEach(function(message) {
           t.assert(message.collection === 'messages')
           t.assert(!message.link)  // excluded
           cMessages++
         })
+        t.assert(patch.linkedCount)
         t.assert(tipe.isDefined(patch.linkedCount.from.users.watch))
         t.assert(tipe.isDefined(patch.linkedCount.from.users.like))
       })
+    })
+    t.assert(cMessages)
+    test.done()
+  })
+}
+
+exports.findWithNestedLinksPromoteLinked = function(test) {
+  t.post({
+    uri: '/find/users/' + tarzan._id + '?' + tarzan.cred,
+    body: {
+      promote: 'linked',
+      refs: 'name,photo,schema',
+      linked: [
+        {to: 'patches', type: 'watch', fields: 'name,visibility,photo,schema', linkFields: 'enabled', linked: [
+          {from: 'messages', type: 'content', fields: 'description,photo', linkFields: false},
+          {from: 'users', type: 'watch', count: true},
+          {from: 'users', type: 'like', count: true},
+        ]}
+      ]
+    },
+  }, function(err, res, body) {
+    t.assert(body.data.length)
+    body.data.forEach(function(patch) {
+      t.assert(patch.schema === 'patch')
     })
     test.done()
   })
@@ -929,7 +953,6 @@ exports.findPatchMessagesCompareGetEntities = function(test) {
         t.assert(message.linksOut[0].shortcut.name === river.name)
         t.assert(message._link)
       })
-
       test.done()
     })
   })
@@ -1137,10 +1160,6 @@ exports.likingAPatchUpdatesActivityDateOfUserAndPatch = function(test) {
           })
         })
       }
-
     })
   })
 }
-
-
-
