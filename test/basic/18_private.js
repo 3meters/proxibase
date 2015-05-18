@@ -874,6 +874,7 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
       t.assert(tipe.isDefined(patch.linkedCount.from.users.watch))
       t.assert(tipe.isDefined(patch.linked))
     })
+    t.assert(body.count === body.data.length)
     test.done()
   })
 }
