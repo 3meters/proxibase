@@ -1,7 +1,7 @@
 {
 
   "name": "proxibase",
-  "version": "1.7.15",
+  "version": "1.7.16",
   "private": true,
   "description": "Proxibase Service",
   "author": {
@@ -26,7 +26,6 @@
     "cookie-parser": "*",
     "cookie-session": "*",
     "body-parser": "*",
-    "bson": "*",
     "mongodb": "<2",
     "lodash": "*",
     "commander": "*",
@@ -37,13 +36,11 @@
     "request": "*",
     "authom": "*",
     "cheerio": "*",
-    "factual-api": "*",
     "yelp": "*",
     "url2png": "*",
     "knox": "*",
     "moment": "*",
     "later": "*",
-    "jade": "*",
     "durable-json-lint": "*",
     "fuzzy": "*",
     "react": "<0.13",
