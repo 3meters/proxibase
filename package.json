@@ -26,6 +26,7 @@
     "cookie-parser": "*",
     "cookie-session": "*",
     "body-parser": "*",
+    "bson": "*",
     "mongodb": "<2",
     "lodash": "*",
     "commander": "*",
