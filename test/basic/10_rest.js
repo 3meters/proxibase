@@ -116,6 +116,8 @@ exports.canAddDoc = function(test) {
     t.assert(doc.modifiedDate)
     t.assert(doc.modifiedIp)
     t.assert(doc.createdDate === doc.modifiedDate)
+    t.assert(doc.schema)
+    t.assert(!doc.collection)  // old system field
     // proves timestamp of _id matches created date
     t.assert(getTimeString(doc._id) === getTimeString(util.genId('do', doc._createdDate)))
     testDoc1._id = doc._id
@@ -308,6 +310,25 @@ exports.findWithRefsDefaultsToName = function(test) {
   })
 }
 
+
+exports.findWithRefsSetToEmptyObjectNestsEntireDocument = function(test) {
+  t.post({
+    uri: '/find/documents?name=' + testDoc1.name + '&' + userCred,
+    body: {
+      refs: {},
+    }
+  }, function(err, res, body) {
+    var doc = body.data[0]
+    t.assert(doc)
+    t.assert(doc._owner && tipe.isObject(doc.owner))
+    t.assert(doc._creator && tipe.isObject(doc.creator))
+    t.assert(doc._modifier && tipe.isObject(doc.modifier))
+    t.assert(doc.owner._id)
+    t.assert(doc.owner.name)
+    t.assert(doc.owner._owner)
+    test.done()
+  })
+}
 
 exports.findWithRefsNestedObjectFieldList = function(test) {
   t.get({

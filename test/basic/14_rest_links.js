@@ -101,7 +101,7 @@ exports.findLinksWithoutDocumentsWorks = function(test) {
 exports.findLinkedFieldProjectionWorks = function(test) {
   var query = {
     uri: '/find/users/' + user1Id + '?' + userCred,
-    body: {linked: {to: {patches: 1}, fields: 'name', linkFields: 'type,enabled'}}
+    body: {linked: {to: {patches: 1}, fields: 'name,schema', linkFields: 'type,enabled'}}
   }
   t.post(query, function(err, res, body) {
     t.assert(body.data.linked)
@@ -110,7 +110,8 @@ exports.findLinkedFieldProjectionWorks = function(test) {
     linked.forEach(function(doc) {
       t.assert(doc._id)
       t.assert(doc.name)
-      t.assert(doc.collection === 'patches')
+      t.assert(!doc.collection) // old property
+      t.assert(doc.schema === 'patch')
       t.assert(doc._owner)
       t.assert(!doc._creator)
       t.assert(doc.link)
@@ -357,7 +358,6 @@ exports.findLinkedComplexWorks = function(test) {
     t.assert(body.data.linked)
     body.data.linked.forEach(function(doc) {
       t.assert(doc.schema === 'message')
-      t.assert(doc.collection === 'messages')
       t.assert(doc.link)
       t.assert(doc.link.type === 'content')
     })
@@ -415,7 +415,6 @@ var query = {
     body.data.forEach(function(patch) {
       patch.links.forEach(function(link) {
         t.assert(link._id)
-        t.assert(link.collection === 'links')
         t.assert(link.schema === 'link')
         t.assert(link.type === 'watch')
         t.assert(link.fromSchema === 'user')

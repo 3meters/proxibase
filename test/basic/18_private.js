@@ -317,7 +317,6 @@ exports.tarzanSendsMessageToRiver = function(test) {
     t.assert(body.data._acl === river._id)      // gets its permissions from river
     t.assert(body.data.links)
     t.assert(body.data.links.length === 1)
-    // t.assert(body.data.notifications)
     test.done()
   })
 }
@@ -629,7 +628,6 @@ exports.tarzanCanNowReadMessagesToJanehouse = function(test) {
   }, function(err, res, body) {
     t.assert(body.data.linked.length === 1)
     t.assert(body.data.linked[0].description)
-    t.assert(body.data.linked[0].collection === 'messages')
     t.assert(!body.data.linked[0].link)  // because no linkFields param
     test.done()
   })
@@ -823,20 +821,20 @@ exports.findWithNestedLinks = function(test) {
     var cMessages = 0
     t.assert(body.data.length === 3)
     body.data.forEach(function(user) {
-      t.assert(user.collection === 'users')
+      t.assert(user.schema === 'user')
       t.assert(user.name)
       t.assert(!user.email)
       t.assert(user.linked)
       user.linked.forEach(function(patch) {
         t.assert(patch._id)
-        t.assert(patch.collection === 'patches')
+        t.assert(patch.schema === 'patch')
         t.assert(patch._owner)
         t.assert(patch.owner)  // ref
         t.assert(patch.owner.name)
         t.assert(patch.owner.photo)
         t.assert(patch.linked)
         patch.linked.forEach(function(message) {
-          t.assert(message.collection === 'messages')
+          t.assert(message.schema === 'message')
           t.assert(!message.link)  // excluded
           cMessages++
         })
@@ -854,11 +852,11 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
   t.post({
     uri: '/find/users/' + tarzan._id + '?' + tarzan.cred,
     body: {
+      refs: {},  // Setting refs to an empty object returns the entire referenced document
       promote: 'linked',
-      refs: 'name,photo,schema',
       linked: [
         {to: 'patches', type: 'watch', fields: 'name,visibility,photo,schema', linkFields: 'enabled', linked: [
-          {from: 'messages', type: 'content', fields: 'description,photo', linkFields: false},
+          {from: 'messages', type: 'content', fields: 'schema,description,photo,_owner', refs: 'name,schema', linkFields: false},
           {from: 'users', type: 'watch', count: true},
           {from: 'users', type: 'like', count: true},
         ]}
@@ -869,12 +867,22 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
     body.data.forEach(function(patch) {
       t.assert(patch.schema === 'patch')
       t.assert(patch.name)
+      t.assert(patch._owner)
+      t.assert(patch.owner)
+      t.assert(patch.owner.name)
+      t.assert(patch.owner.photo)
       t.assert(patch.linkedCount)
       t.assert(patch.linkedCount.from)
       t.assert(patch.linkedCount.from.users)
       t.assert(tipe.isDefined(patch.linkedCount.from.users.like))
       t.assert(tipe.isDefined(patch.linkedCount.from.users.watch))
       t.assert(tipe.isDefined(patch.linked))
+      patch.linked.forEach(function(message) {
+        t.assert(message.schema === 'message')
+        t.assert(message.owner)
+        t.assert(message.owner.name)
+        t.assert(!message.owner.photo)  // refs param for messages overrides outer refs def
+      })
     })
     t.assert(body.count === body.data.length)
     test.done()
@@ -903,7 +911,7 @@ exports.findPatchforMessage = function(test) {
   t.post({
     uri: '/find/messages/me.tarzanToRiver' + seed + '?' + tarzan.cred,
     body: {
-      refs: false,
+      refs: 'schema,name',
       linked: [
         {to: 'patches', type: 'content', limit: 1},
       ]
@@ -988,7 +996,7 @@ exports.findMyPatchesCompareGetEntities = function(test) {
     // Supported syntax
     uri: '/find/users/' + tarzan._id + '?' + tarzan.cred,
     body: {
-      refs: true,
+      refs: 'name,photo,schema',
       linked: [
         {to: 'patches', type: 'watch', limit: 30, fields: 'name,schema,visibility', linked: [
           {to: 'beacons', type: 'proximity', limit: 10},
@@ -1039,7 +1047,6 @@ exports.findMyPatchesCompareGetEntities = function(test) {
       rfind.linked.forEach(function(patch) {
         var cMessagesPerPatch = 0
         t.assert(patch.schema === 'patch')
-        t.assert(patch.collection === 'patches')
         t.assert(patch.linkedCount)
         t.assert(tipe.isNumber(patch.linkedCount.from.messages.content))
         t.assert(tipe.isNumber(patch.linkedCount.from.users.watch))
@@ -1062,7 +1069,6 @@ exports.findMyPatchesCompareGetEntities = function(test) {
       // with the linkedDocument include as a property called shortcut
       rge.forEach(function(patch) {
         t.assert(patch.schema === 'patch')
-        t.assert(patch.collection === 'patches')
         t.assert(patch.linksInCounts)
         t.assert(patch.linksInCounts[0].type === 'content')
         t.assert(patch.linksInCounts[1].type === 'watch')

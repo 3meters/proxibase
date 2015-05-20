@@ -28,7 +28,7 @@ exports.getUserSession = function(test) {
 
 exports.onlyAdminsCanUse = function(test) {
   t.get('/admin/validate?' + userCred, 401, function(err, res, body) {
-   test.done()
+    test.done()
   })
 }
 
