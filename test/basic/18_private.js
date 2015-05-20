@@ -101,12 +101,14 @@ var jungle = {
   }
 }
 
+/*
 log('Patch locations', {
   river: river.location,
   treeh: treehouse.location,
   janeh: janehouse.location,
   maryh: maryhouse.location,
 })
+*/
 
 var beacons = [
   {
@@ -897,6 +899,20 @@ exports.findLimitsIgnoredForCount = function(test) {
   })
 }
 
+exports.findPatchforMessage = function(test) {
+  t.post({
+    uri: '/find/messages/me.tarzanToRiver' + seed + '?' + tarzan.cred,
+    body: {
+      refs: false,
+      linked: [
+        {to: 'patches', type: 'content', limit: 1},
+      ]
+    }
+  }, function(err, res, body) {
+    t.assert(body.data.linked.length === 1)
+    test.done()
+  })
+}
 
 // Find messages for patches with new find syntax vs deprecated
 // getEnitiesForEntity syntax
@@ -1014,8 +1030,6 @@ exports.findMyPatchesCompareGetEntities = function(test) {
       }
     }, function(err, res, body) {
       var rge = body.data
-      // log('find', rfind)
-      // log('getEnts', rge)
 
       // find returns tarzan on top with an array of linked patches.
       // Under each patch is an array of linked entities, of type beacon, place, or message,
