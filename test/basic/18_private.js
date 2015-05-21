@@ -234,6 +234,7 @@ exports.idempotentUpsertManyBeaconsInOnePut = function(test) {
     body.data.forEach(function(putBeacon, i) {
       t.assert(putBeacon._id === beacons[i]._id)
       t.assert(putBeacon.modifiedDate > beacons[i].modifiedDate)
+      t.assert(putBeacon.activityDate === beacons[i].activityDate)
       beacons[i].modifiedDate = putBeacon.modifiedDate   // this should be the only property that has changed
     })
     t.assert(_.isEqual(body.data, beacons))
@@ -1183,7 +1184,20 @@ exports.likingAPatchUpdatesActivityDateOfUserAndPatch = function(test) {
             t.get('/data/patches/' + treehouse._id,
             function(err, res, body) {
               t.assert(body.data.activityDate > treehouseOldActivityDate)
-              test.done()
+              treehouseNewActivityDate = body.data.activityDate
+
+              // Now test that updating a patch does not update its activity date
+              t.post({
+                uri: '/data/patches/' + treehouse._id + '?' + tarzan.cred,
+                body: {data: {description: 'A nice place to swing'}},
+              }, function(err, res, body) {
+                t.get('/data/patches/' + treehouse._id + '?' + tarzan.cred,
+                function(err, res, body) {
+                  t.assert(body.data)
+                  t.assert(body.data.activityDate === treehouseNewActivityDate)
+                  test.done()
+                })
+              })
             })
           })
         })

@@ -489,20 +489,6 @@ exports.updateBeaconsInstallThree = function (test) {
  * ----------------------------------------------------------------------------
  */
 
-// Test removed becasue now you can, see test 50
-_exports.cannotInsertEntityNotLoggedIn = function (test) {
-  t.post({
-    uri: '/do/insertEntity',
-    body: {
-      entity:testPatchOne,
-      beacons:[testBeacon],
-      primaryBeaconId:testBeacon._id,
-    }
-  }, 401, function(err, res, body) {
-    test.done()
-  })
-}
-
 exports.insertPatchOne = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCredTom,
@@ -654,6 +640,7 @@ exports.insertPatchCustomLockedWithNoLinks = function (test) {
     })
   })
 }
+
 
 /*
  * ----------------------------------------------------------------------------
@@ -869,13 +856,7 @@ exports.adminCanDeleteBeaconEntityUserCreated = function (test) {
  * ----------------------------------------------------------------------------
  */
 
-exports.noPatchWithFreshTimestamp = function (test) {
-   /*
-    * Verify that the patch doesn't come back because the where parameter
-    * did not pass.
-    *
-    * Change:  verify that that patch's activity date *is* tickled
-    */
+exports.findsPatchWithFreshTimestamp = function (test) {
    t.post({
      uri: '/do/getEntities',
      body: {
