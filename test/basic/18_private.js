@@ -1157,6 +1157,48 @@ exports.patchesNear = function(test) {
 }
 
 
+
+// Patches near with new and old apis
+exports.patchesNearWithLinks = function(test) {
+
+  var location = {
+      lat: lat,
+      lng: lng,
+      accuracy: 1000,
+      provider: 'fused',
+  }
+
+  t.post({
+    // Supported syntax
+    uri: '/patches/near',
+    body: {
+      location: location,
+      radius: 10000,
+      installId: 'todo',
+      limit: 50,
+      rest: true,   // set to use supported rest Api rather than deprecated getEntities
+      links: [
+        {to: 'beacons', type: 'proximity', limit: 10},
+        {to: 'places', type: 'proxmity', limit: 10},
+        {from: 'messages', type: 'content', limit: 2},
+        {from: 'messages', type: 'content', count: true},
+        {from: 'users', type: 'like', count: true},
+        {from: 'users', type: 'watch', count: true},
+      ]
+    }
+  }, function(err, res, body) {
+    var patches = body.data
+    t.assert(patches)
+    t.assert(patches.length)
+    patches.forEach(function(patch) {
+      t.assert(patch.links)
+      t.assert(patch.linkedCount)
+    })
+    test.done()
+  })
+}
+
+
 exports.likingAPatchUpdatesActivityDateOfUserAndPatch = function(test) {
   t.get('/data/users/' + jane._id,
   function(err, res, body) {
