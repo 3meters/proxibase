@@ -810,13 +810,13 @@ exports.findWithNestedLinks = function(test) {
   t.post({
     uri: '/find/users/' + tarzan._id + ',' + jane._id + ',' + mary._id + '?' + tarzan.cred,
     body: {refs: 'name,photo',
-      linked: [
-        {to: 'patches', type: 'watch', fields: 'name,visibility,photo,schema', linkFields: 'enabled', linked: [
-          {from: 'messages', type: 'content', fields: 'description,photo,schema', linkFields: false},
-          {from: 'users', type: 'watch', count: true},
-          {from: 'users', type: 'like', count: true},
-        ]}
-      ]
+      linked: {to: 'patches', type: 'watch', fields: 'name,visibility,photo,schema', linkFields: 'enabled',
+        linked: {from: 'messages', type: 'content', fields: 'description,photo,schema', linkFields: false},
+        linkCount: [
+          {from: 'users', type: 'watch'},
+          {from: 'users', type: 'like'},
+        ],
+      }
     },
   }, function(err, res, body) {
     var cMessages = 0
@@ -839,9 +839,9 @@ exports.findWithNestedLinks = function(test) {
           t.assert(!message.link)  // excluded
           cMessages++
         })
-        t.assert(patch.linkedCount)
-        t.assert(tipe.isDefined(patch.linkedCount.from.users.watch))
-        t.assert(tipe.isDefined(patch.linkedCount.from.users.like))
+        t.assert(patch.linkCount)
+        t.assert(tipe.isDefined(patch.linkCount.from.users.watch))
+        t.assert(tipe.isDefined(patch.linkCount.from.users.like))
       })
     })
     t.assert(cMessages)
@@ -855,13 +855,13 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
     body: {
       refs: {},  // Setting refs to an empty object returns the entire referenced document
       promote: 'linked',
-      linked: [
-        {to: 'patches', type: 'watch', fields: 'name,visibility,photo,schema', linkFields: 'enabled', linked: [
-          {from: 'messages', type: 'content', fields: 'schema,description,photo,_owner', refs: 'name,schema', linkFields: false},
-          {from: 'users', type: 'watch', count: true},
-          {from: 'users', type: 'like', count: true},
-        ]}
-      ]
+      linked: {to: 'patches', type: 'watch', fields: 'name,visibility,photo,schema', linkFields: 'enabled',
+        linked: {from: 'messages', type: 'content', fields: 'schema,description,photo,_owner', refs: 'name,schema', linkFields: false},
+        linkCount: [
+          {from: 'users', type: 'watch'},
+          {from: 'users', type: 'like'},
+        ],
+      }
     },
   }, function(err, res, body) {
     t.assert(body.data.length)
@@ -872,11 +872,11 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
       t.assert(patch.owner)
       t.assert(patch.owner.name)
       t.assert(patch.owner.photo)
-      t.assert(patch.linkedCount)
-      t.assert(patch.linkedCount.from)
-      t.assert(patch.linkedCount.from.users)
-      t.assert(tipe.isDefined(patch.linkedCount.from.users.like))
-      t.assert(tipe.isDefined(patch.linkedCount.from.users.watch))
+      t.assert(patch.linkCount)
+      t.assert(patch.linkCount.from)
+      t.assert(patch.linkCount.from.users)
+      t.assert(tipe.isDefined(patch.linkCount.from.users.like))
+      t.assert(tipe.isDefined(patch.linkCount.from.users.watch))
       t.assert(tipe.isDefined(patch.linked))
       patch.linked.forEach(function(message) {
         t.assert(message.schema === 'message')
@@ -896,14 +896,12 @@ exports.findLimitsIgnoredForCount = function(test) {
     uri: '/find/users/' + tarzan._id + '?' + tarzan.cred,
     body: {
       refs: true,
-      linked: [
-        {to: 'patches', type: 'watch', limit: 1},
-        {to: 'patches', type: 'watch', limit: 1, count: true},
-      ]
+      linked: {to: 'patches', type: 'watch', limit: 1},
+      linkCount: {to: 'patches', type: 'watch', limit: 1},
     }
   }, function(err, res, body) {
     t.assert(body.data.linked.length === 1)
-    t.assert(body.data.linkedCount.to.patches.watch === 2) // limit is ignored for counts
+    t.assert(body.data.linkCount.to.patches.watch === 2) // limit is ignored for counts
     test.done()
   })
 }
@@ -999,14 +997,18 @@ exports.findMyPatchesCompareGetEntities = function(test) {
     body: {
       refs: 'name,photo,schema',
       linked: [
-        {to: 'patches', type: 'watch', limit: 30, fields: 'name,schema,visibility', linked: [
-          {to: 'beacons', type: 'proximity', limit: 10},
-          {to: 'places', type: 'proximity', fields: 'name,schema,category,photo', limit: 1},
-          {from: 'messages', type: 'content', fields: 'schema,description', limit: 2},
-          {from: 'messages', type: 'content', count: true},
-          {from: 'users', type: 'like', count: true},
-          {from: 'users', type: 'watch', filter: {enabled: true}, count: true},
-        ]}
+        {to: 'patches', type: 'watch', limit: 30, fields: 'name,schema,visibility',
+          linked: [
+            {to: 'beacons', type: 'proximity', limit: 10},
+            {to: 'places', type: 'proximity', fields: 'name,schema,category,photo', limit: 1},
+            {from: 'messages', type: 'content', fields: 'schema,description', limit: 2},
+          ],
+          linkCount: [
+            {from: 'messages', type: 'content'},
+            {from: 'users', type: 'like'},
+            {from: 'users', type: 'watch', filter: {enabled: true}},
+          ]
+        }
       ]
     }
   }, function(err, res, body) {
@@ -1042,16 +1044,16 @@ exports.findMyPatchesCompareGetEntities = function(test) {
 
       // find returns tarzan on top with an array of linked patches.
       // Under each patch is an array of linked entities, of type beacon, place, or message,
-      // and a linkedCount object that counts messages, watches, and likes to the patch
+      // and a linkCount object that counts messages, watches, and likes to the patch
       t.assert(rfind.linked.length === rge.length)
       var cMessagesTot = 0
       rfind.linked.forEach(function(patch) {
         var cMessagesPerPatch = 0
         t.assert(patch.schema === 'patch')
-        t.assert(patch.linkedCount)
-        t.assert(tipe.isNumber(patch.linkedCount.from.messages.content))
-        t.assert(tipe.isNumber(patch.linkedCount.from.users.watch))
-        t.assert(tipe.isNumber(patch.linkedCount.from.users.like))
+        t.assert(patch.linkCount)
+        t.assert(tipe.isNumber(patch.linkCount.from.messages.content))
+        t.assert(tipe.isNumber(patch.linkCount.from.users.watch))
+        t.assert(tipe.isNumber(patch.linkCount.from.users.like))
         t.assert(patch.linked)
         patch.linked.forEach(function(ent) {
           t.assert(ent.schema)
@@ -1104,34 +1106,73 @@ exports.patchesNear = function(test) {
       radius: 10000,
       installId: 'todo',
       limit: 50,
-      rest: true,   // set to use supported rest Api rather than deprecated getEntities
       linked: [
+        {to: 'places', type: 'proxmity', sort: 'modifiedDate', limit: 1},
+        {from: 'messages', type: 'content', sort: '-modifiedDate', limit: 2},
+      ],
+      linkCount: [
+        {from: 'messages', type: 'content'},
+        {from: 'users', type: 'like'},
+        {from: 'users', type: 'watch'},
+        {to: 'beacons', type: 'proximity'},
+        {to: 'places', type: 'proximity'},
+      ],
+      links: [
         {to: 'beacons', type: 'proximity', limit: 10},
-        {to: 'places', type: 'proxmity', limit: 10},
-        {from: 'messages', type: 'content', limit: 2},
-        {from: 'messages', type: 'content', count: true},
-        {from: 'users', type: 'like', count: true},
-        {from: 'users', type: 'watch', count: true},
-      ]
+      ],
     }
   }, function(err, res, body) {
-    var patchesFind = body.data
-    t.assert(patchesFind.length === 4)
-    t.assert(patchesFind[0]._id = river._id)      // sorted by distance from query location
-    t.assert(patchesFind[1]._id = treehouse._id)
-    t.assert(patchesFind[2]._id = janehouse._id)
-    t.assert(patchesFind[3]._id = maryhouse._id)
-    patchesFind.forEach(function(patch) {
+
+    var patches = body.data
+    t.assert(patches.length === 4)
+    t.assert(patches[0]._id = river._id)      // sorted by distance from query location
+    t.assert(patches[1]._id = treehouse._id)
+    t.assert(patches[2]._id = janehouse._id)
+    t.assert(patches[3]._id = maryhouse._id)
+
+    var cBeaconLinks = 0
+    var cPlaceLinks = 0
+    var cLinks = 0
+    var cLinked = 0
+
+    patches.forEach(function(patch) {
+      t.assert(patch.linkCount)
+      var lc = patch.linkCount
+      t.assert(lc.from)
+      t.assert(lc.from.messages)
+      t.assert(tipe.isNumber(lc.from.messages.content))
+      t.assert(lc.from.users)
+      t.assert(tipe.isNumber(lc.from.users.like))
+      t.assert(tipe.isNumber(lc.from.users.watch))
+
+      t.assert(lc.to)
+      t.assert(lc.to.places)
+      t.assert(lc.to.beacons)
+      t.assert(tipe.isNumber(lc.to.places.proximity))
+      t.assert(tipe.isNumber(lc.to.beacons.proximity))
+      cBeaconLinks += patch.linkCount.to.beacons.proximity
+      cPlaceLinks += patch.linkCount.to.places.proximity
+
       t.assert(patch.linked)
-      t.assert(patch.linkedCount.from)
-      t.assert(patch.linkedCount.from.messages)
-      t.assert(patch.linkedCount.from.users)
+      t.assert(tipe.isNumber(patch.linked.length))
+      cLinked += patch.linked.length
+
+      t.assert(patch.links)
+      t.assert(tipe.isNumber(patch.links.length))
+      cLinks += patch.links.length
+
     })
+
+    t.assert(cBeaconLinks)
+    t.assert(cPlaceLinks)
+    t.assert(cLinks)
+    t.assert(cLinked)
+
     t.post({
       // Deprecated syntax
       uri: '/patches/near',
       body: {
-        getEntities: true,
+        rest: false,  // Same as getEntities: true
         location: location,
         radius: 10000,
         installId: 'todo',
@@ -1151,50 +1192,20 @@ exports.patchesNear = function(test) {
     }, function(err, res, body) {
       var patchesGe = body.data
       t.assert(patchesGe.length === 4)
+      var cLinksIn = 0, cLinksOut = 0, cLinksInCounts = 0, cLinksOutCounts = 0
+      patchesGe.forEach(function(patch) {
+        t.assert(patch._id)
+        if (patch.linksIn) cLinksIn += patch.linksIn.length
+        if (patch.linksOut) cLinksOut += patch.linksOut.length
+        if (patch.linksInCounts) cLinksInCounts += patch.linksInCounts
+        if (patch.linksOutCounts) cLinksOutCounts += patch.linksOutCounts
+      })
+      t.assert(cLinksIn)
+      t.assert(cLinksOut)
+      t.assert(cLinksInCounts)
+      t.assert(cLinksOutCounts)
       test.done()
     })
-  })
-}
-
-
-
-// Patches near with new and old apis
-exports.patchesNearWithLinks = function(test) {
-
-  var location = {
-      lat: lat,
-      lng: lng,
-      accuracy: 1000,
-      provider: 'fused',
-  }
-
-  t.post({
-    // Supported syntax
-    uri: '/patches/near',
-    body: {
-      location: location,
-      radius: 10000,
-      installId: 'todo',
-      limit: 50,
-      rest: true,   // set to use supported rest Api rather than deprecated getEntities
-      links: [
-        {to: 'beacons', type: 'proximity', limit: 10},
-        {to: 'places', type: 'proxmity', limit: 10},
-        {from: 'messages', type: 'content', limit: 2},
-        {from: 'messages', type: 'content', count: true},
-        {from: 'users', type: 'like', count: true},
-        {from: 'users', type: 'watch', count: true},
-      ]
-    }
-  }, function(err, res, body) {
-    var patches = body.data
-    t.assert(patches)
-    t.assert(patches.length)
-    patches.forEach(function(patch) {
-      t.assert(patch.links)
-      t.assert(patch.linkedCount)
-    })
-    test.done()
   })
 }
 

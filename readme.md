@@ -54,7 +54,7 @@ Find:
       sort: nameExpr,
       count: boolean,                     // returns no records, only count, limit and skip are ignored
       countBy:  string                    // returns count of collection grouped by field or fields
-      linked|links [{
+      linked|links|linkCount [{
         from: nameExpr                    // returns links from this document
         to: nameExpr                      // returns links to this document
         sort: nameExpr,                   // applies to link fields, not document fields
@@ -62,10 +62,11 @@ Find:
         limit: number,                    // links limit
         filter: queryExpr,                // link filter
         fields: nameExpr,                 // link fields for links query, doc fields for linked query
-        count: boolean,                   // return count of qualifying links, ignores skip and limit
         linkFields: boolean || name Expr, // (linked only) true or {} to include entire link
         linkedFilter: queryExpr,          // (linked only) filter outer query by linked document properties
         linked: [linkQuery],              // (linked only) linked queries can be infinitely nested
+        links: [linkQuery],               // (linked only) linked queries can be infinitely nested
+        linkCount: [linkQuery]            // (linked only) linked queries can be infinitely nested
       }]
     }
 
@@ -99,8 +100,26 @@ linked results are returned as so:
         }
       ]
 
+
+
 Under each linkedDoc is a link property containing the link itself.  The sort, skip, limit, and filter properties apply to the link, not the linked document, to support paging.  Calling links rather than liked with the same parameters returns an array of links themselves rather than the linked documents. See tests basic/14* and basic/18* for examples.
 
+Links are returned as an array under the links property
+
+linkCount are returned as a object map by direction and type, both of which are required
+
+    linkCount: {
+      to: {
+        messages: {
+          type: {
+            create: 5,
+          },
+          type: {
+            watch: 4,
+          },
+        },
+      },
+    }
 
 ## Users and Admins
 Each user account has a role.  The only valid roles are 'user', the default, and 'admin'.  When the server starts it checks for a user with _id 00000.000000.00000.000.00000.  If it does not exist the server creates the user with 

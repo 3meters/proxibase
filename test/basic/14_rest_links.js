@@ -56,6 +56,7 @@ exports.findLinkedWorks = function(test) {
     body: {linked: {to: {patches: 1}, linkFields:1 }},
   }
   t.post(query, function(err, res, body) {
+    t.assert(body.data)
     t.assert(body.data.linked)
     var linked = body.data.linked
     var cWatch = 0
@@ -267,17 +268,17 @@ exports.findLinkedPagingWorksWithFilter = function(test) {
 exports.findLinkedCountWorks = function(test) {
   var query = {
     uri: '/find/patches/' + patch1Id + '?' + userCred,
-    body: {linked: [
-      {to: 'places,beacons,documents', type: 'proximity', count: true},
-      {from: {users: 1}, type: 'watch', count: 1},
-      {from: {users: 1}, type: 'create', count: 1},
-      {from: {messages: 1}, type: 'content', count: 1},
+    body: {linkCount: [
+      {to: 'places,beacons,documents', type: 'proximity'},
+      {from: {users: 1}, type: 'watch'},
+      {from: {users: 1}, type: 'create'},
+      {from: {messages: 1}, type: 'content'},
     ]},
   }
   t.post(query, function(err, res, body) {
     t.assert(!body.data.linked)
-    var lc = body.data.linkedCount
-    t.assert(lc.to)
+    var lc = body.data.linkCount
+    t.assert(lc && lc.to)
     t.assert(tipe.isDefined(lc.to.places.proximity))
     t.assert(tipe.isDefined(lc.to.beacons.proximity))
     t.assert(tipe.isDefined(lc.to.documents.proximity))
@@ -321,11 +322,11 @@ exports.findLinkedAcceptsArrays = function(test) {
 exports.mustSpecifyTypeForLinkCount = function(test) {
   var query = {
     uri: '/find/patches/' + patch1Id + '?' + userCred,
-    body: {linked: {from: 'messages', count: true}},
+    body: {linkCount: {from: 'messages'}},
   }
   t.post(query, 400, function(err, res, body) {
     t.assert(body.error)
-    t.assert(body.error.code === 400.13)
+    t.assert(body.error.code === 400)
     test.done()
   })
 }
@@ -334,17 +335,22 @@ exports.mustSpecifyTypeForLinkCount = function(test) {
 exports.findLinkedComplexWorks = function(test) {
   var query = {
     uri: '/find/patches/' + patch1Id + '?' + userCred,
-    body: {linked: [
-      {to: 'places,beacons', type: 'proximity', count: true},
-      {from: 'users', type: 'watch', count: true},
-      {from: 'users', type: 'create', count: true},
-      {from: 'messages', type: 'content', count: true},
-      {from: 'messages', type: 'content', linkFields: {}},  // get documents not count
-    ]}
+    body: {
+      linkCount: [
+        {to: 'places,beacons', type: 'proximity'},
+        {from: 'users', type: 'watch'},
+        {from: 'users', type: 'create'},
+        {from: 'messages', type: 'content'},
+      ],
+      linked: [
+        {from: 'messages', type: 'content', linkFields: {}},  // get documents not count
+      ],
+      links: {to: 'beacons', type: 'proximity'}
+    }
   }
   t.post(query, function(err, res, body) {
-    t.assert(body.data.linkedCount)
-    var lc = body.data.linkedCount
+    t.assert(body.data.linkCount)
+    var lc = body.data.linkCount
     t.assert(tipe.isDefined(lc.to.places.proximity))
     t.assert(tipe.isDefined(lc.to.beacons.proximity))
     t.assert(tipe.isDefined(lc.from.users.watch))
@@ -360,6 +366,12 @@ exports.findLinkedComplexWorks = function(test) {
       t.assert(doc.schema === 'message')
       t.assert(doc.link)
       t.assert(doc.link.type === 'content')
+    })
+    t.assert(body.data.links)
+    t.assert(body.data.links.length)
+    body.data.links.forEach(function(link) {
+      t.assert(link.toSchema === 'beacon')
+      t.assert(link._from === patch1Id)
     })
     test.done()
   })
