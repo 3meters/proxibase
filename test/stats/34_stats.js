@@ -540,20 +540,29 @@ exports.statsAltQuerySyntax = function(test) {
   })
 }
 
-// Steamclock
+// Interesting patches
 exports.getInterestingPatches = function(test) {
-  t.get('/patches/interesting',
-  function(err, res, body) {
+  t.post({
+    uri: '/patches/interesting',
+    body: {
+      limit: 30,
+      linkCount: [
+        {from: 'messages', type: 'content'},
+        {from: 'users', type: 'like'},
+        {from: 'users', type: 'watch'},
+      ]
+    }
+  }, function(err, res, body) {
     t.assert(body.data)
-    t.assert(body.data.length)
+    t.assert(body.data.length === 30)
     body.data.forEach(function(patch) {
       t.assert(patch._id)
-      t.assert(patch.linkedCount)
-      t.assert(patch.linkedCount.from)
-      t.assert(patch.linkedCount.from.messages)
-      t.assert(patch.linkedCount.from.messages.content)
-      t.assert(patch.linkedCount.from.users)
-      t.assert(util.tipe.isNumber(patch.linkedCount.from.users.watch))
+      t.assert(patch.linkCount)
+      t.assert(patch.linkCount.from)
+      t.assert(patch.linkCount.from.messages)
+      t.assert(patch.linkCount.from.messages.content)
+      t.assert(patch.linkCount.from.users)
+      t.assert(util.tipe.isNumber(patch.linkCount.from.users.watch))
     })
     test.done()
   })
