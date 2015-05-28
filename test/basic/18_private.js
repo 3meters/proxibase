@@ -92,6 +92,7 @@ var maryhouse = {
   },
 }
 
+// Jungle is a place, not a patch
 var jungle = {
   _id: 'pl.jungle' + seed,
   name: 'Jungle' + seed,
@@ -297,6 +298,8 @@ exports.tarzanWatchesRiver = function(test) {
       type: 'watch',
     }},
   }, 201, function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.data._id)
     test.done()
   })
 }
@@ -855,8 +858,8 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
     body: {
       refs: {},  // Setting refs to an empty object returns the entire referenced document
       promote: 'linked',
-      linked: {to: 'patches', type: 'watch', fields: 'name,visibility,photo,schema', linkFields: 'enabled',
-        linked: {from: 'messages', type: 'content', fields: 'schema,description,photo,_owner', refs: 'name,schema', linkFields: false},
+      linked: {to: 'patches', type: 'watch', limit: 1, sort: '_id', fields: 'name,visibility,photo,schema', linkFields: 'enabled',
+        linked: {from: 'messages', type: 'content', limit: 1, fields: 'schema,description,photo,_owner', refs: 'name,schema', linkFields: false},
         linkCount: [
           {from: 'users', type: 'watch'},
           {from: 'users', type: 'like'},
@@ -865,6 +868,7 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
     },
   }, function(err, res, body) {
     t.assert(body.data.length)
+    var cMoreMessages = 0
     body.data.forEach(function(patch) {
       t.assert(patch.schema === 'patch')
       t.assert(patch.name)
@@ -878,6 +882,10 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
       t.assert(tipe.isDefined(patch.linkCount.from.users.like))
       t.assert(tipe.isDefined(patch.linkCount.from.users.watch))
       t.assert(tipe.isDefined(patch.linked))
+      if (patch.moreLinked) {
+        t.assert(patch.moreLinkedQueries.length)  // queries that have unfetched documents
+        cMoreMessages++
+      }
       patch.linked.forEach(function(message) {
         t.assert(message.schema === 'message')
         t.assert(message.owner)
@@ -885,6 +893,8 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
         t.assert(!message.owner.photo)  // refs param for messages overrides outer refs def
       })
     })
+    t.assert(cMoreMessages)
+    t.assert(body.more)
     t.assert(body.count === body.data.length)
     test.done()
   })

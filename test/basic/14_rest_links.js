@@ -155,6 +155,7 @@ exports.findLinkedFilterWorks = function(test) {
   })
 }
 
+
 exports.findLinkedFilterDocsWorks = function(test) {
   var query = {
     uri: '/find/users/' + user1Id + '?' + userCred,
@@ -226,6 +227,7 @@ exports.findLinkedPagingWorks = function(test) {
   t.post(query, function(err, res, body) {
     var patchLinked = body.data.linked
     t.assert(5 === patchLinked.length)
+    t.assert(body.data.moreLinked)  // under data, not body
     var lastLinkId = patchLinked[4].link._id
     var lastPatchId = patchLinked[4]._id
     var query = {
@@ -235,8 +237,22 @@ exports.findLinkedPagingWorks = function(test) {
     t.post(query, function(err, res, body) {
       var patchLinked = body.data.linked
       t.assert(5 === patchLinked.length)
+      t.assert(!body.data.moreLinked)  // under data, not body
       t.assert(lastLinkId > patchLinked[0].link._id)
-      test.done()
+      var query = {
+        uri: '/find/users/' + user1Id + '?' + userCred,
+        body: {linkCount: [
+          {to: "patches", type: "watch"},
+          {to: "patches", type: "create"},
+        ]}
+      }
+      t.post(query, function(err, res, body) {
+        t.assert(body.data)
+        t.assert(body.data.linkCount)
+        t.assert(body.data.linkCount.to.patches.create === 5)
+        t.assert(body.data.linkCount.to.patches.watch === 5)
+        test.done()
+      })
     })
   })
 }
@@ -326,7 +342,7 @@ exports.mustSpecifyTypeForLinkCount = function(test) {
   }
   t.post(query, 400, function(err, res, body) {
     t.assert(body.error)
-    t.assert(body.error.code === 400)
+    t.assert(body.error.code === 400.1)
     test.done()
   })
 }
@@ -418,23 +434,31 @@ var query = {
 
 exports.findLinksReturnsLinksNotDocuments = function(test) {
 var query = {
-    uri: '/find/patches?links[from][users]=1&links[type]=watch&refs=name&' + userCred,
+    uri: '/find/patches?limit=20&links[from][users]=1&links[limit]=1&refs=name' + userCred,
   }
   t.get(query, function(err, res, body) {
     t.assert(body.data)
     t.assert(body.data.length)
-    var cWatchLinks = 0
+    var cCreateLinks = 0
+    var cMoreLinks = 0
     body.data.forEach(function(patch) {
+      if (patch.moreLinks) {
+        cMoreLinks++
+        // doc.moreLinksQueries is an array of selectors into the links collection
+        // that have additional documents that were not returned due to the limit
+        t.assert(patch.moreLinksQueries && patch.moreLinksQueries.length)
+      }
       patch.links.forEach(function(link) {
         t.assert(link._id)
         t.assert(link.schema === 'link')
-        t.assert(link.type === 'watch')
+        t.assert(link.type === 'create')
         t.assert(link.fromSchema === 'user')
         t.assert(link.toSchema === 'patch')
-        cWatchLinks++
+        cCreateLinks++
       })
     })
-    t.assert(cWatchLinks > 10)
+    t.assert(cCreateLinks > 10, cCreateLinks)
+    t.assert(cMoreLinks, cMoreLinks)
     test.done()
   })
 }
