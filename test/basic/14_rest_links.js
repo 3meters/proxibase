@@ -222,12 +222,12 @@ exports.findLinkedSortWorks = function(test) {
 exports.findLinkedPagingWorks = function(test) {
   var query = {
     uri: '/find/users/' + user1Id + '?' + userCred,
-    body: {linked: {to: {patches: 1}, limit: 5, sort: '-_id', linkFields:1}}
+    body: {linked: {to: {patches: 1}, limit: 5, sort: '-_id', more: true, linkFields:1}}
   }
   t.post(query, function(err, res, body) {
     var patchLinked = body.data.linked
     t.assert(5 === patchLinked.length)
-    t.assert(body.data.moreLinked)  // under data, not body
+    t.assert(body.data.moreLinked)
     var lastLinkId = patchLinked[4].link._id
     var lastPatchId = patchLinked[4]._id
     var query = {
@@ -418,12 +418,13 @@ var query = {
     var cLinked = 0
     body.data.forEach(function(patch) {
       t.assert(patch.linked)
+      t.assert(patch.owner)  // refs work on patch
       patch.linked.forEach(function(doc) {
         cLinked++
         t.assert(doc.link)
         t.assert(doc.link.type === 'watch')
         t.assert(doc._owner)
-        t.assert(doc.owner)  // refs work on doc
+        t.assert(!doc.owner)  // refs not specified on linked user
       })
     })
     t.assert(cLinked > 10)
@@ -434,7 +435,7 @@ var query = {
 
 exports.findLinksReturnsLinksNotDocuments = function(test) {
 var query = {
-    uri: '/find/patches?limit=20&links[from][users]=1&links[limit]=1&refs=name' + userCred,
+    uri: '/find/patches?limit=20&links[from][users]=1&links[limit]=1&links[more]=1&refs=name' + userCred,
   }
   t.get(query, function(err, res, body) {
     t.assert(body.data)
@@ -442,12 +443,7 @@ var query = {
     var cCreateLinks = 0
     var cMoreLinks = 0
     body.data.forEach(function(patch) {
-      if (patch.moreLinks) {
-        cMoreLinks++
-        // doc.moreLinksQueries is an array of selectors into the links collection
-        // that have additional documents that were not returned due to the limit
-        t.assert(patch.moreLinksQueries && patch.moreLinksQueries.length)
-      }
+      if (patch.moreLinks) cMoreLinks++
       patch.links.forEach(function(link) {
         t.assert(link._id)
         t.assert(link.schema === 'link')

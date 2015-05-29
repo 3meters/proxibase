@@ -46,7 +46,7 @@ exports.findWithLimitNotSignedIn = function(test) {
   var limit = 2
   t.post({
     uri: '/find/patches',
-    body: {limit: limit}
+    body: {limit: limit, more: true}
   }, function(err, res, body) {
     t.assert(body && body.data)
     t.assert(body.data instanceof Array)

@@ -814,7 +814,7 @@ exports.findWithNestedLinks = function(test) {
     uri: '/find/users/' + tarzan._id + ',' + jane._id + ',' + mary._id + '?' + tarzan.cred,
     body: {refs: 'name,photo',
       linked: {to: 'patches', type: 'watch', fields: 'name,visibility,photo,schema', linkFields: 'enabled',
-        linked: {from: 'messages', type: 'content', fields: 'description,photo,schema', linkFields: false},
+        linked: {from: 'messages', refs: 'name', type: 'content', fields: 'description,photo,schema', linkFields: false},
         linkCount: [
           {from: 'users', type: 'watch'},
           {from: 'users', type: 'like'},
@@ -829,16 +829,17 @@ exports.findWithNestedLinks = function(test) {
       t.assert(user.name)
       t.assert(!user.email)
       t.assert(user.linked)
+      t.assert(user.owner.name)
       user.linked.forEach(function(patch) {
         t.assert(patch._id)
         t.assert(patch.schema === 'patch')
         t.assert(patch._owner)
-        t.assert(patch.owner)  // ref
-        t.assert(patch.owner.name)
-        t.assert(patch.owner.photo)
+        t.assert(!patch.owner)  // refs do not cascade
         t.assert(patch.linked)
         patch.linked.forEach(function(message) {
           t.assert(message.schema === 'message')
+          t.assert(message.owner)  // refs can be speced at any level
+          t.assert(!message.owner.name)
           t.assert(!message.link)  // excluded
           cMessages++
         })
@@ -856,10 +857,9 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
   t.post({
     uri: '/find/users/' + tarzan._id + '?' + tarzan.cred,
     body: {
-      refs: {},  // Setting refs to an empty object returns the entire referenced document
       promote: 'linked',
-      linked: {to: 'patches', type: 'watch', limit: 1, sort: '_id', fields: 'name,visibility,photo,schema', linkFields: 'enabled',
-        linked: {from: 'messages', type: 'content', limit: 1, fields: 'schema,description,photo,_owner', refs: 'name,schema', linkFields: false},
+      linked: {to: 'patches', type: 'watch', limit: 1, sort: '_id', more: true, fields: 'name,visibility,photo,schema', linkFields: 'enabled', refs: {},
+        linked: {from: 'messages', type: 'content', limit: 1, more: true, fields: 'schema,description,photo,_owner', refs: 'name,schema', linkFields: false},
         linkCount: [
           {from: 'users', type: 'watch'},
           {from: 'users', type: 'like'},
@@ -868,6 +868,7 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
     },
   }, function(err, res, body) {
     t.assert(body.data.length)
+    t.assert(body.more)
     var cMoreMessages = 0
     body.data.forEach(function(patch) {
       t.assert(patch.schema === 'patch')
@@ -883,7 +884,6 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
       t.assert(tipe.isDefined(patch.linkCount.from.users.watch))
       t.assert(tipe.isDefined(patch.linked))
       if (patch.moreLinked) {
-        t.assert(patch.moreLinkedQueries.length)  // queries that have unfetched documents
         cMoreMessages++
       }
       patch.linked.forEach(function(message) {
@@ -894,13 +894,12 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
       })
     })
     t.assert(cMoreMessages)
-    t.assert(body.more)
     t.assert(body.count === body.data.length)
     test.done()
   })
 }
 
-exports.findLimitsIgnoredForCount = function(test) {
+exports.findLinkCountDisallowsLimit = function(test) {
   t.post({
     // Supported syntax
     uri: '/find/users/' + tarzan._id + '?' + tarzan.cred,
@@ -909,9 +908,7 @@ exports.findLimitsIgnoredForCount = function(test) {
       linked: {to: 'patches', type: 'watch', limit: 1},
       linkCount: {to: 'patches', type: 'watch', limit: 1},
     }
-  }, function(err, res, body) {
-    t.assert(body.data.linked.length === 1)
-    t.assert(body.data.linkCount.to.patches.watch === 2) // limit is ignored for counts
+  }, 400, function(err, res, body) {
     test.done()
   })
 }

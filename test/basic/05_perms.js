@@ -276,7 +276,7 @@ exports.ownerAccessCollectionsWork = function(test) {
         t.assert(body.data && body.data.length === 1)
         t.assert(tipe.isArray(body.sort))
         t.assert(body.count === 1)
-        t.assert(body.more === false)
+        t.assert(!body.more) // More is now optional, set by caller
         t.assert(body.skip === 0)
         t.assert(tipe.isNumber(body.limit))
         t.assert(body.limit > 0)
