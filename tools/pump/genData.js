@@ -108,7 +108,7 @@ function genUsers() {
 }
 
 
-function genEntities(user, iUser, schemaName, count, linkedEnts, linkSpecs, makeCreateLinks) {
+function genEntities(user, iUser, schemaName, count, linkedEnts, linkSpecs) {
 
   var schema = db.safeSchemas[schemaName]
   var clName = schema.collection
@@ -155,16 +155,6 @@ function genEntities(user, iUser, schemaName, count, linkedEnts, linkSpecs, make
         links.push(link)
       })
 
-      // Optionally add a create link from the user
-      if (makeCreateLinks) {
-        links.push({
-          _id:    testUtil.genId('link', links.length),
-          _to:    newEnt._id,
-          _from:  user._id,
-          type:   'create',
-          _creator:  user._id,
-        })
-      }
     }
   }
 }
@@ -199,7 +189,11 @@ function saveAll(cb) {
       var user = (row._creator)
         ? {_id: row._creator, role: 'user'}
         : util.adminUser
-      collection.safeInsert(row, {user: user, ip: '127.0.0.1'}, function(err) {
+      if (user._id === util.adminUser._id && clName === 'users') {
+        row._creator = row._id
+        row._modifier = row._id
+      }
+      collection.safeInsert(row, {user: user, ip: '127.0.0.1'}, function(err, saved) {
         return cb(err)
       })
     }

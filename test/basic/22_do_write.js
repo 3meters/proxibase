@@ -857,16 +857,26 @@ exports.adminCanDeleteBeaconEntityUserCreated = function (test) {
  */
 
 exports.findsPatchWithFreshTimestamp = function (test) {
-   t.post({
+  t.post({
+    uri: '/data/links?' + userCredTom,
+    body: {data: {
+      _from: testUserTom._id,
+      _to: testPatchCustomPublic._id,
+      type: 'like',
+    }},
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.post({
      uri: '/do/getEntities',
      body: {
        entityIds: [testPatchCustomPublic._id],
        where: { activityDate: { $gt: activityDatePatch }}
      }
-   }, function(err, res, body) {
+    }, function(err, res, body) {
      t.assert(body.count === 1)
      test.done()
-   })
+    })
+  })
 }
 
 exports.insertMessage = function (test) {
