@@ -102,12 +102,8 @@ exports.adminCanRefresh = function(test) {
 
 // Relies on default sample data
 exports.statsCountContentMessagesToPatchesViaPost = function(test) {
-  t.post({
-    uri: '/stats/to/patches/from/messages',
-    body: {
-      type: 'content'
-    },
-  }, function(err, res, body) {
+  t.get('/stats/to/patches/from/messages?type=content&limit=100',
+  function(err, res, body) {
     var count = (body.data && body.data.length)
     t.assert(count)
     t.assert(count === cPatches)
@@ -484,45 +480,26 @@ exports.staticsUpdateOnIncrementalRefresh = function(test) {
   })
 }
 
-// For steamclock
-exports.statsAltQuerySyntax = function(test) {
-  // Query the underlying collections using mongodb map reduce format
-  // Shows what is going on beneath the covers, but not recommended
-  t.get('/stats/to?query[_id._to]=' + testUser._id + '&query[_id.type]=watch',
+// Android trending and popular queries
+exports.statsAndroid = function(test) {
+  t.get('/stats/to/patches/from/messages?type=content',
   function(err, res, body) {
-    t.assert(body.data.length === 1) // returns an arry
-    t.assert(body.data[0].count === 2)
-    // Query the stats using regular find syntax
-    t.get('/stats/to/users/' + testUser._id + '?q[type]=watch',
+    t.assert(body.data.length)
+    body.data.forEach(function(patch) {
+      t.assert(patch._id)
+      t.assert(patch.count)
+      t.assert(patch.visibility)
+    })
+    // This is the call the android client makes to display most popular
+    t.get('/stats/to/patches/from/users?type=watch',
     function(err, res, body) {
-      t.assert(body.data.count === 2)  // returns an object
-      // Query using shortcuts for stats category properties type and day
-      // Recommended syntax
-      t.get('/stats/to/users/' + testUser._id + '?type=watch',
-      function(err, res, body) {
-        t.assert(body.data.count === 2)
-        // This is the call the android client makes to display most active
-        t.get('/stats/to/patches/from/messages?type=content',
-        function(err, res, body) {
-          t.assert(body.data.length)
-          body.data.forEach(function(patch) {
-            t.assert(patch._id)
-            t.assert(patch.count)
-            t.assert(patch.visibility)
-          })
-          // This is the call the android client makes to display most popular
-          t.get('/stats/to/patches/from/users?type=watch',
-          function(err, res, body) {
-            t.assert(body.data.length)
-            body.data.forEach(function(patch) {
-              t.assert(patch._id)
-              t.assert(patch.count)
-              t.assert(patch.visibility)
-            })
-            test.done()
-          })
-        })
+      t.assert(body.data.length)
+      body.data.forEach(function(patch) {
+        t.assert(patch._id)
+        t.assert(patch.count)
+        t.assert(patch.visibility)
       })
+      test.done()
     })
   })
 }
@@ -538,13 +515,13 @@ exports.getInterestingPatches = function(test) {
         {from: 'messages', type: 'content'},
         {from: 'users', type: 'like'},
         {from: 'users', type: 'watch'},
-      ]
+      ],
+      log: true,
     }
   }, function(err, res, body) {
     t.assert(body.data)
     t.assert(body.data.length === 5)
-    log('WARNING: paging not working')
-    // t.assert(body.more)
+    t.assert(body.more)
     body.data.forEach(function(patch) {
       t.assert(patch._id)
       t.assert(patch.linkCount)
@@ -565,15 +542,28 @@ exports.getInterestingPatches = function(test) {
           {from: 'messages', type: 'content'},
           {from: 'users', type: 'like'},
           {from: 'users', type: 'watch'},
-        ]
+        ],
+        log: true,
       }
     }, function(err, res, body) {
       t.assert(body.data)
       t.assert(body.data.length === 5)
-//      t.assert(body.more)
-//      t.assert(_.isEqual(lastPatch, body.data[0]))  //
+      t.assert(body.more)
+      t.assert(lastPatch._id === body.data[0]._id, lastPatch)  // Paging works
       test.done()
     })
+  })
+}
+
+
+exports.interestingDoesNotSupportExcludeIds = function(test) {
+  t.post({
+    uri: '/patches/interesting',
+    body: {
+      excludeIds: ['pa.foo', 'pa.bar']
+    },
+  }, 400, function(err, res, body) {
+    test.done()
   })
 }
 
@@ -591,7 +581,7 @@ exports.statRefsDoNotPopulateForAnonUsers = function(test) {
 
 exports.statsCountToPatchesTypeWatch = function(test) {
   t.get({
-    uri: '/stats/to/patches?query[type]=watch&log=1',
+    uri: '/stats/to/patches?type=watch&log=1',
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)
     body.data.forEach(function(doc) {
