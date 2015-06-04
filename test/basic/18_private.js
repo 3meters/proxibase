@@ -622,6 +622,26 @@ exports.tarzanCannotAcceptHisOwnRequestOnJanesBehalf = function(test) {
 }
 
 
+exports.janeCanCountWatchRequests = function(test) {
+  t.post({
+    uri: '/find/patches/' + janehouse._id + '?' + jane.cred,
+    body: {
+      linkCount: [
+        {from: 'users', type: 'like'},
+        {from: 'users', type: 'watch', enabled: true},
+      ],
+    }
+  }, function(err, res, body) {
+    t.assert(body && body.data && !body.data.length)
+    var patch = body.data
+    t.assert(patch._id === janehouse._id)
+    t.assert(patch.linkCount.from.users.like === 0)
+    t.assert(patch.linkCount.from.users.watch.enabled === 0)
+    t.assert(patch.linkCount.from.users.watch.disabled === 1)
+    test.done()
+  })
+}
+
 exports.janeAcceptsTarzansRequest = function(test) {
   t.post({
     uri: '/data/links/' + tarzanWatchesJanehouse._id + '?' + jane.cred,
