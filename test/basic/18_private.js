@@ -1257,6 +1257,34 @@ exports.patchesNear = function(test) {
 }
 
 
+exports.tarzanCanLikeAndUnlikeQuickly = function(test) {
+  var riverLike = {
+    _from: tarzan._id,
+    _to: river._id,
+    type: 'like',
+  }
+  t.post({
+    uri: '/data/links?' + tarzan.cred,
+    body: {data: riverLike},
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data)
+    t.assert(body.data._id)
+    t.delete({uri: '/data/links/' + body.data._id + '?' + tarzan.cred},
+    function(err, res, body) {
+      t.assert(body.count === 1)
+      t.post({
+        uri: '/data/links?' + tarzan.cred,
+        body: {data: riverLike},
+      }, 201, function(err, res, body) {
+        t.assert(body.count === 1)
+        test.done()
+      })
+    })
+  })
+}
+
+
 exports.likingAPatchUpdatesActivityDateOfUserAndPatch = function(test) {
   t.get('/data/users/' + jane._id,
   function(err, res, body) {

@@ -32,6 +32,8 @@ module.exports = {
       max: 1000,
       join: 1000,
     },
+    serverOps: {},                      // Override Mongodb.Server options
+    dbOps: {},                          // Override Mongodb.Db options
   },
   maxWorkers: 1,                        // default 1. Values > 1 exercise clustering. -1 means one worker per cpu core.
   ignoreTasks: false,                   // default false, if true skip autostart of recurring tasks on startup
