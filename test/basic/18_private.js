@@ -907,6 +907,7 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
     },
   }, function(err, res, body) {
     t.assert(body.data.length)
+    t.assert(body.parentCount === 1)
     t.assert(body.more)
     var cMoreMessages = 0
     body.data.forEach(function(patch) {
