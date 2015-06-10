@@ -2913,6 +2913,7 @@ exports.removeMessageFromPatch = function(test) {
       // actionEvent: 'remove'
     }
   }, function(err, res, body) {
+    t.assert(!err)
     t.assert(body.info.indexOf('success') > 0)
 
     /* Check removed entity */
