@@ -63,7 +63,7 @@ start() {
   fi
 
   echo 'Starting proxibase...' >&2
-  nohup node --stack-size=4000 --stack-trace-limit=200 $PROX/prox.js >>$LOG 2>>$ERRLOG &
+  nohup node --stack-trace-limit=200 $PROX/prox.js >>$LOG 2>>$ERRLOG &
 
   # Save the process ID of the newly launched node prox master service
   NEWPID=$!
@@ -80,9 +80,6 @@ start() {
 
   # Success. Set the new process id
   echo $NEWPID >$PIDFILE
-
-  # Try to start staging...
-  /usr/local/proxstage/bin/stagestart >/dev/null &
 
   echo "Proxibase started $NEWPID" >&2
 }

@@ -939,20 +939,6 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
   })
 }
 
-exports.findLinkCountDisallowsLimit = function(test) {
-  t.post({
-    // Supported syntax
-    uri: '/find/users/' + tarzan._id + '?' + tarzan.cred,
-    body: {
-      refs: true,
-      linked: {to: 'patches', type: 'watch', limit: 1},
-      linkCount: {to: 'patches', type: 'watch', limit: 1},
-    }
-  }, 400, function(err, res, body) {
-    test.done()
-  })
-}
-
 exports.findPatchforMessage = function(test) {
   t.post({
     uri: '/find/messages/me.tarzanToRiver' + seed + '?' + tarzan.cred,
