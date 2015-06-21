@@ -13,20 +13,13 @@ old
 *.csv
 ~*
 
-/assets/img/thumbnails/*.png
-
 /keys/prod
 
 !package.json
 !categories.json
 !categories_patch.json
 !catmap*.json
-!/assets/
-!/assets/prox.log
-!/assets/proxerr.log
 
-/test/oauth/*.html
-/perf.csv
 /proxibase.sublime-project
 /proxibase.sublime-workspace
 .idea
