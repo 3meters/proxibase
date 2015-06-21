@@ -897,7 +897,7 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
     uri: '/find/users/' + tarzan._id + '?' + tarzan.cred,
     body: {
       promote: 'linked',
-      linked: {to: 'patches', type: 'watch', limit: 1, sort: '_id', more: true, fields: 'name,visibility,photo,schema', linkFields: 'enabled', refs: {},
+      linked: {to: 'patches', type: 'watch', limit: 2, sort: '_id', more: true, fields: 'name,visibility,photo,schema', linkFields: 'enabled', refs: {},
         linked: {from: 'messages', type: 'content', limit: 1, more: true, fields: 'schema,description,photo,_owner', refs: 'name,schema', linkFields: false},
         linkCount: [
           {from: 'users', type: 'watch'},
@@ -916,7 +916,7 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
       t.assert(patch._owner)
       t.assert(patch.owner)
       t.assert(patch.owner.name)
-      t.assert(patch.owner.photo)
+      if (patch._owner != util.adminId) t.assert(patch.owner.photo)
       t.assert(patch.linkCount)
       t.assert(patch.linkCount.from)
       t.assert(patch.linkCount.from.users)
@@ -1106,8 +1106,7 @@ exports.findMyPatchesCompareGetEntities = function(test) {
       rge.forEach(function(patch) {
         t.assert(patch.schema === 'patch')
         t.assert(patch.linksInCounts)
-        t.assert(patch.linksInCounts[0].type === 'content')
-        t.assert(patch.linksInCounts[1].type === 'watch')
+        t.assert(patch.linksInCounts.some(function(count) { return count.type === 'watch' }))
         t.assert(patch.linksIn)
         patch.linksIn.forEach(function(link) {
           t.assert(link._id.match(/^li\./))

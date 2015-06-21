@@ -22,6 +22,7 @@ module.exports = {
     },
   },
   log: 1,                               // 0-3 higher numbers mean more log output
+  logDir: '/var/log/prox',              // Directory containing log files
   fullStackTrace: 0,                    // Set to 1 to include full stack traces
   requestLog: 0,                        // create a json-formated log of all requests, accepts file name
   db: {

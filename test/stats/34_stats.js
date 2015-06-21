@@ -166,22 +166,22 @@ exports.addSomeTestData = function(test) {
   }]
 
   var newLinks = [{
-    _id: 'li.140101.statTest.01',
+    _id: 'li.990101.statTest.01',
     _to: patch1Id,
     _from: 'me.statTest.1',
     type: 'content',
   }, {
-    _id: 'li.140101.statTest.02',
+    _id: 'li.990101.statTest.02',
     _to: patch1Id,
     _from: 'me.statTest.2',
     type: 'content',
   }, {
-    _id: 'li.140101.statTest.03',
+    _id: 'li.990101.statTest.03',
     _to: patch1Id,
     _from: 'me.statTest.3',
     type: 'content',
   }, {
-    _id: 'li.140101.statTest.04',
+    _id: 'li.990101.statTest.04',
     _to: 'be.statTest.10',
     _from: patch1Id,
     type: 'proximity',
@@ -215,12 +215,13 @@ exports.refreshWorks = function(test) {
     t.assert(body.from)
     t.assert(body.from.cmd)
     t.assert(body.from.results)
-    t.get('/find/tos?query[_id.fromSchema]=message&q[_id.day]=140101&q[_id.type]=content&sort=-value',
+    // t.assert(false)
+    t.get('/find/tos?query[_id.fromSchema]=message&q[_id.day]=990101&q[_id.type]=content&sort=-value',
     function(err, res, body) {
       t.assert(body.data.length)
       // refresh picked up our new links and created a summary record for them.
       t.assert(body.data.some(function(stat) {
-        return stat._id.day === '140101'
+        return stat._id.day === '990101'
             && stat._id._to === patch1Id
             && stat.value === 3
       }))
@@ -229,7 +230,7 @@ exports.refreshWorks = function(test) {
         t.assert(body.data.length)
         // refresh picked up our new links and created a summary record for them.
         t.assert(body.data.some(function(stat) {
-          return stat._id.day === '140101'
+          return stat._id.day === '990101'
               && stat._id._from === patch1Id
               && stat.value === 1
         }))
@@ -253,29 +254,29 @@ exports.addSomeMoreTestData = function(test) {
   }]
 
   var newLinks = [{
-    _id: 'li.140101.statTest.05',
+    _id: 'li.990101.statTest.05',
     _to: patch1Id,
     _from: 'me.statTest.4',
     type: 'content',
   }, {
-    _id: 'li.140101.statTest.06',
+    _id: 'li.990101.statTest.06',
     _to: patch1Id,
     _from: 'me.statTest.5',
     type: 'content',
   }, {
-    _id: 'li.140101.statTest.07',
+    _id: 'li.990101.statTest.07',
     _to: patch1Id,
     _from: 'me.statTest.6',
     type: 'content',
   }, {
-    _id: 'li.140101.statTest.08',
+    _id: 'li.990101.statTest.08',
     _to: patch1Id,
     _from: testUser._id,
     type: 'watch',
   }]
 
   var newLinks2 = [{
-    _id: 'li.140101.statTest.09',
+    _id: 'li.990101.statTest.09',
     _to: patch1Id,
     _from: testUser2._id,
     type: 'watch',
@@ -314,7 +315,7 @@ exports.refreshWorksWithIncrementalReduce = function(test) {
         query: {
           '_id._to': patch1Id,
           '_id.fromSchema': 'message',
-          '_id.day': '140101',
+          '_id.day': '990101',
           '_id.type': 'content',
         },
         // sort: '-value,-_id.day',
@@ -329,18 +330,18 @@ exports.refreshWorksWithIncrementalReduce = function(test) {
 }
 
 exports.refreshWorksWithDeleteWatchLink = function(test) {
-  t.get('/find/tos?query[_id._to]=' + patch1Id + '&query[_id.type]=watch&q[_id.day]=140101',
+  t.get('/find/tos?query[_id._to]=' + patch1Id + '&query[_id.type]=watch&q[_id.day]=990101',
   function(err, res, body) {
     t.assert(body.data.length === 1)
     var stat = body.data[0]
     t.assert(stat.value === 2)
     t.del({
-      uri: '/data/links/li.140101.statTest.09?' + adminCred ,
+      uri: '/data/links/li.990101.statTest.09?' + adminCred ,
     }, function(err, res, body) {
       t.assert(body.count === 1)
       t.get('/stats/refresh?' + adminCred,
       function(err, res, body) {
-        t.get('/find/tos?query[_id._to]=' + patch1Id + '&query[_id.type]=watch&q[_id.day]=140101',
+        t.get('/find/tos?query[_id._to]=' + patch1Id + '&query[_id.type]=watch&q[_id.day]=990101',
         function(err, res, body) {
           t.assert(body.data.length === 1)
           var stat = body.data[0]
@@ -355,15 +356,13 @@ exports.refreshWorksWithDeleteWatchLink = function(test) {
 exports.createThenDeleteOfWatchLinkBetweenRefreshesWorks = function(test) {
 
   var watchLink = {
-    //_id: 'li.140101.statTest.10',
+    _id: 'li.990101.statTest.10',
     _to: patch1Id,
     _from: user3Id,
     fromSchema: 'user',
     toSchema: 'patch',
     type: 'watch',
   }
-
-  watchLink._id = db.links.genId(watchLink)
 
   t.post({
     uri: '/data/links?' + adminCred,
@@ -416,6 +415,7 @@ exports.staticsUpdateOnRefresh = function(test) {
     uri: '/data/links?' + userCred,
     body: {
       data: {
+        _id: 'li.990101.statTest.11',
         _from: testUser._id,
         _to: testUser._id,
         type: 'watch'
@@ -455,6 +455,7 @@ exports.staticsUpdateOnIncrementalRefresh = function(test) {
     uri: '/data/links?' + adminCred,
     body: {
       data: {
+        _id: 'li.990101.statTest.12',
         _from: admin._id,
         _to: testUser._id,
         type: 'watch'
