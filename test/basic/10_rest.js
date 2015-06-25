@@ -332,11 +332,10 @@ exports.findWithRefsSetToEmptyObjectNestsEntireDocument = function(test) {
 
 exports.findWithRefsNestedObjectFieldList = function(test) {
   t.get({
-    uri: '/data/documents?name=' + testDoc1.name + '&refs=_id,name,email,photo&' + userCred
+    uri: '/data/documents?name=' + testDoc1.name + '&refs=_id,name,photo&' + userCred
   }, function(err, res, body) {
     var doc = body.data[0]
     t.assert(doc.owner && doc.owner._id && doc.owner.name)
-    t.assert(!doc.owner.email)  // included in list, but private
     t.assert(!doc.owner.role)   // not included in list
     t.assert(doc.creator && doc.creator._id && doc.creator.name)
     t.assert(doc.creator && doc.creator.photo && doc.creator.photo.prefix)
