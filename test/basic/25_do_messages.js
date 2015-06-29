@@ -2301,6 +2301,7 @@ exports.beckySharesMemberMessageWithMemberAlice = function(test) {
 
     t.assert(body.count === 1)
     t.assert(body.data)
+    t.assert(body.data._acl && body.data._acl.length)
     /*
      * Stan gets notified as the recipient.
      */
@@ -2761,6 +2762,7 @@ exports.stanGetsShareMessageFromBecky = function (test) {
   })
 }
 
+
 exports.aliceGetsShareMessageFromBecky = function (test) {
   t.post({
     uri: '/do/getEntities?' + userCredAlice,
@@ -2828,6 +2830,7 @@ exports.aliceGetsShareMessageFromBecky = function (test) {
     })
   })
 }
+
 
 /*
  * ----------------------------------------------------------------------------

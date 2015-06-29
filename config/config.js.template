@@ -39,8 +39,23 @@ module.exports = {
     serverOps: {},                      // Override Mongodb.Server options
     dbOps: {},                          // Override Mongodb.Db options
   },
+  state: {                              // Bootstrap state vars.  If vars already exist in the db no-op.
+    clientMinVersions: {
+      'com_aircandi_aruba': 1,
+      'com_aircandi_catalina': 1,
+    },
+    'task.calcStats': {
+      key: "task.calcStats",
+      name: "calcStats",
+      schedule: {schedules: [{s: [38]}]},
+      module: "utils",
+      method: "calcStats",
+      args: [],
+      enabled: true,
+    },
+  },
   maxWorkers: 1,                        // default 1. Values > 1 exercise clustering. -1 means one worker per cpu core.
-  ignoreTasks: false,                   // default false, if true skip autostart of recurring tasks on startup
+  ignoreTasks: true,                    // default true, if false autostart of recurring tasks on startup
   doNotRestart: false,                  // default false, if true do not restart dead workers, necessay for most tests.
   sendNotifications: false,             // default false, enable push notifications to android and iPhone clients
   sendMail: false,                      // default false, true to send emails or filename for logging
