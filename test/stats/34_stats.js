@@ -556,6 +556,30 @@ exports.getInterestingPatches = function(test) {
   })
 }
 
+// Interesting patches sorts by count of messages
+exports.getInterestingPatches = function(test) {
+  t.post({
+    uri: '/patches/interesting',
+    body: {
+      limit: 1000,
+      more: true,
+      linkCount: [
+        {from: 'messages', type: 'content'},
+        {from: 'users', type: 'like'},
+        {from: 'users', type: 'watch'},
+      ],
+      log: true,
+    }
+  }, function(err, res, body) {
+    t.assert(body.data && body.data.length)
+    var cMessages = Infinity
+    body.data.forEach(function(patch) {
+      t.assert(patch.count <= cMessages)
+      cMessages = patch.count
+    })
+    test.done()
+  })
+}
 
 exports.interestingDoesNotSupportExcludeIds = function(test) {
   t.post({
