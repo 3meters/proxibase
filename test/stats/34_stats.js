@@ -143,10 +143,22 @@ exports.addSomeTestData = function(test) {
     _id: patch1Id,
     name: 'statsTestPatch1',
     visibility: 'public',
+    // adding watch links here, otherwise they will be added automatically
+    links: [{
+      _id: 'li.990101.statTest.08',
+      _from: testUser._id,
+      type: 'watch',
+    }],
   }, {
     _id: patch2Id,
     name: 'statsTestPatch2',
     visibility: 'private',
+    // adding watch links here, otherwise they will be added automatically
+    links: [{
+      _id: 'li.990101.statTest.09',
+      _from: testUser._id,
+      type: 'watch',
+    }],
   }]
 
   var newMsgs = [{
@@ -268,15 +280,10 @@ exports.addSomeMoreTestData = function(test) {
     _to: patch1Id,
     _from: 'me.statTest.6',
     type: 'content',
-  }, {
-    _id: 'li.990101.statTest.08',
-    _to: patch1Id,
-    _from: testUser._id,
-    type: 'watch',
-  }]
+  }, ]
 
   var newLinks2 = [{
-    _id: 'li.990101.statTest.09',
+    _id: 'li.990101.statTest.10',
     _to: patch1Id,
     _from: testUser2._id,
     type: 'watch',
@@ -286,7 +293,7 @@ exports.addSomeMoreTestData = function(test) {
     assert(!err, err)
     db.links.safeInsert(newLinks, {user: testUser}, function(err, savedLinks, meta) {
       assert(!err, err)
-      assert(savedLinks.length === 4)
+      assert(savedLinks.length === 3)
       assert(!meta.errors)
       db.links.safeInsert(newLinks2, {user: testUser2}, function(err, savedLinks) {
         assert(!err, err)
@@ -336,7 +343,7 @@ exports.refreshWorksWithDeleteWatchLink = function(test) {
     var stat = body.data[0]
     t.assert(stat.value === 2)
     t.del({
-      uri: '/data/links/li.990101.statTest.09?' + adminCred ,
+      uri: '/data/links/li.990101.statTest.10?' + adminCred ,
     }, function(err, res, body) {
       t.assert(body.count === 1)
       t.get('/stats/refresh?' + adminCred,
@@ -356,7 +363,7 @@ exports.refreshWorksWithDeleteWatchLink = function(test) {
 exports.createThenDeleteOfWatchLinkBetweenRefreshesWorks = function(test) {
 
   var watchLink = {
-    _id: 'li.990101.statTest.10',
+    _id: 'li.990101.statTest.11',
     _to: patch1Id,
     _from: user3Id,
     fromSchema: 'user',
@@ -415,7 +422,7 @@ exports.staticsUpdateOnRefresh = function(test) {
     uri: '/data/links?' + userCred,
     body: {
       data: {
-        _id: 'li.990101.statTest.11',
+        _id: 'li.990101.statTest.12',
         _from: testUser._id,
         _to: testUser._id,
         type: 'watch'
@@ -455,7 +462,7 @@ exports.staticsUpdateOnIncrementalRefresh = function(test) {
     uri: '/data/links?' + adminCred,
     body: {
       data: {
-        _id: 'li.990101.statTest.12',
+        _id: 'li.990101.statTest.13',
         _from: admin._id,
         _to: testUser._id,
         type: 'watch'

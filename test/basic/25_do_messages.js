@@ -1904,10 +1904,10 @@ exports.nonMemberStanCanGetMembersForBobsPrivatePatch = function (test) {
 
   function(err, res, body) {
     /*
-     * Should see two watchers (Becky and Alice)
+     * Should see three watchers (Becky and Alice, plus Bob's autowatch)
      */
     t.assert(body.data)
-    t.assert(body.count === 2)
+    t.assert(body.count === 3)
     test.done()
   })
 }

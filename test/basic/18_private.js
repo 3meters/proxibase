@@ -253,12 +253,13 @@ exports.createPatches = function(test) {
     t.assert(body.count === 1)
     t.assert(body.data.visibility === 'public')  // proves default
 
-    // Confirm that the create links were automatically created
+    // Confirm that the create and watch links were automatically created
     t.get('/data/links?q[_to]=' + river._id + '&q[_from]=' + tarzan._id + '&' + tarzan.cred,
     function(err, res, body) {
       t.assert(body.data)
-      t.assert(body.data.length === 1)
+      t.assert(body.data.length === 2)
       t.assert(body.data[0].type === 'create')
+      t.assert(body.data[1].type === 'watch')
 
       // Tarzan creates private treehouse patch
       t.post({
@@ -298,17 +299,16 @@ exports.createPatches = function(test) {
   })
 }
 
-exports.tarzanWatchesRiver = function(test) {
+exports.tarzanAutoWatchedRiver = function(test) {
   t.post({
-    uri: '/data/links?' + tarzan.cred,
-    body: {data: {
+    uri: '/find/links?' + tarzan.cred,
+    body: {query: {
       _to: river._id,
       _from: tarzan._id,
       type: 'watch',
     }},
-  }, 201, function(err, res, body) {
-    t.assert(body.data)
-    t.assert(body.data._id)
+  }, 200, function(err, res, body) {
+    t.assert(body.data.length === 1)
     test.done()
   })
 }
@@ -636,7 +636,7 @@ exports.janeCanCountWatchRequests = function(test) {
     var patch = body.data
     t.assert(patch._id === janehouse._id)
     t.assert(patch.linkCount.from.users.like === 0)
-    t.assert(patch.linkCount.from.users.watch.enabled === 0)
+    t.assert(patch.linkCount.from.users.watch.enabled === 1)
     t.assert(patch.linkCount.from.users.watch.disabled === 1)
     test.done()
   })
@@ -801,7 +801,7 @@ exports.maryCanCreatePatchAndLinksToAndFromItInOneRestCall = function(test) {
   var patch = util.clone(maryhouse)
   var links = [
     {_from: mary._id, type: 'like'},
-    {_from: mary._id, type: 'watch'},
+    // {_from: mary._id, type: 'watch'},  // watch link is created by the service
     {_to: jungle._id, type: 'proximity'},
     {_to: 'be.' + beacons[2].bssid, type: 'proximity'},
     {_to: 'be.' + beacons[0].bssid, type: 'bogus'},      // Will fail

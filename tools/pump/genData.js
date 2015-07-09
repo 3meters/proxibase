@@ -68,11 +68,11 @@ function run(cb) {
   genUsers()
 
   users.forEach(function(user, iUser) {
-    genEntities(user, iUser, 'patch', options.ppu, [user], [{from: 'watch'}], true)
-    genEntities(user, iUser, 'beacon', options.bpp, user.ents.patches, [{from: 'proximity'}], false)
-    genEntities(user, iUser, 'place', options.ppp, user.ents.patches, [{from: 'proximity'}], false)
-    genEntities(user, iUser, 'message', options.mpp, user.ents.patches, [{to: 'content'}], true)
-    genEntities(user, iUser, 'applink', options.app, user.ents.patches, [{to: 'content'}], false)
+    genEntities(user, iUser, 'patch', options.ppu, [users], [])
+    genEntities(user, iUser, 'beacon', options.bpp, user.ents.patches, [{from: 'proximity'}])
+    genEntities(user, iUser, 'place', options.ppp, user.ents.patches, [{from: 'proximity'}])
+    genEntities(user, iUser, 'message', options.mpp, user.ents.patches, [{to: 'content'}])
+    genEntities(user, iUser, 'applink', options.app, user.ents.patches, [{to: 'content'}])
   })
 
   // Unpack the entities stashed under each user
@@ -193,17 +193,13 @@ function saveAll(cb) {
         row._creator = row._id
         row._modifier = row._id
       }
-      collection.safeInsert(row, {user: user, ip: '127.0.0.1'}, function(err, saved) {
-        return cb(err)
-      })
+      collection.safeInsert(row, {user: user, ip: '127.0.0.1'}, cb)
     }
   }
 
   function finish(err) {
-    if (err) return cb(err)
-    db.close(function(err) {
-      if (err) return cb(err)
-      cb()
+    db.close(function(dbCloseErr) {
+      cb(err||dbCloseErr)
     })
   }
 }

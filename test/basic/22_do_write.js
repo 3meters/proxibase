@@ -1169,7 +1169,9 @@ exports.deletePatch = function (test) {
             }
           }
         }, function(err, res, body) {
-          t.assert(body.count === 0)
+          t.assert(body.count === 1)
+            // now we auto watch, so delete gets an unwatch event
+            t.assert(body.data[0].event === 'unwatch_entity_patch')
             test.done()
         })
       })

@@ -22,4 +22,6 @@ cli
   .option('-d, --database <database>', 'database name [proxTest]', String, 'proxTest')
   .parse(process.argv)
 
-genData(cli)
+genData(cli, function(err) {
+  if (err) throw err
+})

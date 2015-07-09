@@ -649,6 +649,12 @@ exports.deleteNonExistantRecordSucceedsWithZeroCount = function(test) {
   })
 }
 
+exports.deleteWithNoIdFailsWithError = function(test) {
+  t.del({uri: '/data/beacons?' + adminCred}, 404, function(err, res, body) {
+    test.done()
+  })
+}
+
 exports.sortsDescendingByModifiedDateByDefault = function(test) {
   t.get('/data/beacons',
   function(err, res, body) {
