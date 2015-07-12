@@ -61,7 +61,7 @@ exports.getUserSession = function(test) {
 
 exports.cannotCreateStatsAsUser = function(test) {
   t.get({
-    uri: '/stats/to/refresh?' + userCred
+    uri: '/stats/refresh?' + userCred
   }, 403, function(err, res, body){
     test.done()
   })
@@ -84,28 +84,7 @@ exports.welcome = function(test) {
   })
 }
 
-exports.adminCanRefreshTos = function(test) {
-  t.get({
-    uri: '/stats/to/refresh?' + adminCred
-  }, function(err, res, body){
-    t.assert(body)
-    t.assert(body.cmd)
-    t.assert(body.results)
-    test.done()
-  })
-}
-
-exports.adminCanRefreshFroms = function(test) {
-  t.get({
-    uri: '/stats/from/refresh?' + adminCred
-  }, function(err, res, body){
-    t.assert(body.cmd)
-    t.assert(body.results)
-    test.done()
-  })
-}
-
-exports.adminCanRefreshAll = function(test) {
+exports.adminCanRefresh = function(test) {
   t.get({
     uri: '/stats/refresh?' + adminCred
   }, function(err, res, body){
@@ -123,12 +102,8 @@ exports.adminCanRefreshAll = function(test) {
 
 // Relies on default sample data
 exports.statsCountContentMessagesToPatchesViaPost = function(test) {
-  t.post({
-    uri: '/stats/to/patches/from/messages',
-    body: {
-      type: 'content'
-    },
-  }, function(err, res, body) {
+  t.get('/stats/to/patches/from/messages?type=content&limit=100',
+  function(err, res, body) {
     var count = (body.data && body.data.length)
     t.assert(count)
     t.assert(count === cPatches)
@@ -168,10 +143,22 @@ exports.addSomeTestData = function(test) {
     _id: patch1Id,
     name: 'statsTestPatch1',
     visibility: 'public',
+    // adding watch links here, otherwise they will be added automatically
+    links: [{
+      _id: 'li.990101.statTest.08',
+      _from: testUser._id,
+      type: 'watch',
+    }],
   }, {
     _id: patch2Id,
     name: 'statsTestPatch2',
     visibility: 'private',
+    // adding watch links here, otherwise they will be added automatically
+    links: [{
+      _id: 'li.990101.statTest.09',
+      _from: testUser._id,
+      type: 'watch',
+    }],
   }]
 
   var newMsgs = [{
@@ -191,22 +178,22 @@ exports.addSomeTestData = function(test) {
   }]
 
   var newLinks = [{
-    _id: 'li.140101.statTest.01',
+    _id: 'li.990101.statTest.01',
     _to: patch1Id,
     _from: 'me.statTest.1',
     type: 'content',
   }, {
-    _id: 'li.140101.statTest.02',
+    _id: 'li.990101.statTest.02',
     _to: patch1Id,
     _from: 'me.statTest.2',
     type: 'content',
   }, {
-    _id: 'li.140101.statTest.03',
+    _id: 'li.990101.statTest.03',
     _to: patch1Id,
     _from: 'me.statTest.3',
     type: 'content',
   }, {
-    _id: 'li.140101.statTest.04',
+    _id: 'li.990101.statTest.04',
     _to: 'be.statTest.10',
     _from: patch1Id,
     type: 'proximity',
@@ -214,12 +201,15 @@ exports.addSomeTestData = function(test) {
 
   db.patches.safeInsert(newPatches, {user: testUser}, function(err, savedPatches) {
     assert(!err, err)
+    assert(savedPatches.length, savedPatches)
     db.messages.safeInsert(newMsgs, {user: testUser}, function(err, savedMsgs) {
       assert(!err, err)
+      assert(savedMsgs.length, savedMsgs)
       db.beacons.safeInsert(newBeacons, {user: testUser}, function(err, savedBeacons) {
         assert(!err, err)
         db.links.safeInsert(newLinks, {user: testUser}, function(err, savedLinks) {
           assert(!err, err)
+          assert(savedLinks.length)
           test.done()
         })
       })
@@ -237,12 +227,13 @@ exports.refreshWorks = function(test) {
     t.assert(body.from)
     t.assert(body.from.cmd)
     t.assert(body.from.results)
-    t.get('/find/tos?query[_id.fromSchema]=message&q[_id.day]=140101&q[_id.type]=content&sort=-value',
+    // t.assert(false)
+    t.get('/find/tos?query[_id.fromSchema]=message&q[_id.day]=990101&q[_id.type]=content&sort=-value',
     function(err, res, body) {
       t.assert(body.data.length)
       // refresh picked up our new links and created a summary record for them.
       t.assert(body.data.some(function(stat) {
-        return stat._id.day === '140101'
+        return stat._id.day === '990101'
             && stat._id._to === patch1Id
             && stat.value === 3
       }))
@@ -251,7 +242,7 @@ exports.refreshWorks = function(test) {
         t.assert(body.data.length)
         // refresh picked up our new links and created a summary record for them.
         t.assert(body.data.some(function(stat) {
-          return stat._id.day === '140101'
+          return stat._id.day === '990101'
               && stat._id._from === patch1Id
               && stat.value === 1
         }))
@@ -275,29 +266,24 @@ exports.addSomeMoreTestData = function(test) {
   }]
 
   var newLinks = [{
-    _id: 'li.140101.statTest.05',
+    _id: 'li.990101.statTest.05',
     _to: patch1Id,
     _from: 'me.statTest.4',
     type: 'content',
   }, {
-    _id: 'li.140101.statTest.06',
+    _id: 'li.990101.statTest.06',
     _to: patch1Id,
     _from: 'me.statTest.5',
     type: 'content',
   }, {
-    _id: 'li.140101.statTest.07',
+    _id: 'li.990101.statTest.07',
     _to: patch1Id,
     _from: 'me.statTest.6',
     type: 'content',
-  }, {
-    _id: 'li.140101.statTest.08',
-    _to: patch1Id,
-    _from: testUser._id,
-    type: 'watch',
-  }]
+  }, ]
 
   var newLinks2 = [{
-    _id: 'li.140101.statTest.09',
+    _id: 'li.990101.statTest.10',
     _to: patch1Id,
     _from: testUser2._id,
     type: 'watch',
@@ -307,7 +293,7 @@ exports.addSomeMoreTestData = function(test) {
     assert(!err, err)
     db.links.safeInsert(newLinks, {user: testUser}, function(err, savedLinks, meta) {
       assert(!err, err)
-      assert(savedLinks.length === 4)
+      assert(savedLinks.length === 3)
       assert(!meta.errors)
       db.links.safeInsert(newLinks2, {user: testUser2}, function(err, savedLinks) {
         assert(!err, err)
@@ -319,46 +305,50 @@ exports.addSomeMoreTestData = function(test) {
 }
 
 
-exports.refreshTosWorksWithIncrementalReduce = function(test) {
+exports.refreshWorksWithIncrementalReduce = function(test) {
   t.get({
-    uri: '/stats/to/refresh?' + adminCred
+    uri: '/stats/refresh?' + adminCred
   }, function(err, res, body){
     t.assert(body)
-    t.assert(body.cmd)
-    t.assert(body.results)
-    t.get('/find/tos?q[_id.fromSchema]=message&sort=-value,-_id.day&limit=1000',
-    function(err, res, body) {
-      t.assert(body.data.length)
-
+    t.assert(body.to)
+    t.assert(body.to.cmd)
+    t.assert(body.to.results)
+    t.assert(body.from)
+    t.assert(body.from.cmd)
+    t.assert(body.from.results)
+    t.post({
+      uri: '/find/tos',
+      body: {
+        query: {
+          '_id._to': patch1Id,
+          '_id.fromSchema': 'message',
+          '_id.day': '990101',
+          '_id.type': 'content',
+        },
+        // sort: '-value,-_id.day',
+      }
+    }, function(err, res, body) {
+      t.assert(body.data.length === 1)
       // refresh picked up our new links and created a summary record for them.
-      t.assert(body.data.some(function(stat) {
-        return stat._id.day === '140101'
-            && stat._id._to === patch1Id
-            && stat._id.type === 'content'
-            && stat.value === 6  // proves messages 4, 5, and 6 were reduced into the same record as 1, 2, and 3
-      }))
-
-      if (dbProfile.mpp <= 6) t.assert(body.data[0]._id.day === '140101') // we should sort to the top
-      else t.assert(body.data[cPatches]._id.day = '140101') // we should sort to the bottom
-
+      t.assert(body.data[0].value === 6) // proves messages 4, 5, and 6 were reduced into the same record as 1, 2, and 3
       test.done()
     })
   })
 }
 
 exports.refreshWorksWithDeleteWatchLink = function(test) {
-  t.get('/find/tos?query[_id._to]=' + patch1Id + '&query[_id.type]=watch&q[_id.day]=140101',
+  t.get('/find/tos?query[_id._to]=' + patch1Id + '&query[_id.type]=watch&q[_id.day]=990101',
   function(err, res, body) {
     t.assert(body.data.length === 1)
     var stat = body.data[0]
     t.assert(stat.value === 2)
     t.del({
-      uri: '/data/links/li.140101.statTest.09?' + adminCred ,
+      uri: '/data/links/li.990101.statTest.10?' + adminCred ,
     }, function(err, res, body) {
       t.assert(body.count === 1)
-      t.get('/stats/to/refresh?' + adminCred,
+      t.get('/stats/refresh?' + adminCred,
       function(err, res, body) {
-        t.get('/find/tos?query[_id._to]=' + patch1Id + '&query[_id.type]=watch&q[_id.day]=140101',
+        t.get('/find/tos?query[_id._to]=' + patch1Id + '&query[_id.type]=watch&q[_id.day]=990101',
         function(err, res, body) {
           t.assert(body.data.length === 1)
           var stat = body.data[0]
@@ -373,15 +363,13 @@ exports.refreshWorksWithDeleteWatchLink = function(test) {
 exports.createThenDeleteOfWatchLinkBetweenRefreshesWorks = function(test) {
 
   var watchLink = {
-    //_id: 'li.140101.statTest.10',
+    _id: 'li.990101.statTest.11',
     _to: patch1Id,
     _from: user3Id,
     fromSchema: 'user',
     toSchema: 'patch',
     type: 'watch',
   }
-
-  watchLink._id = db.links.genId(watchLink)
 
   t.post({
     uri: '/data/links?' + adminCred,
@@ -396,7 +384,7 @@ exports.createThenDeleteOfWatchLinkBetweenRefreshesWorks = function(test) {
         uri: '/data/links/' + watchLink._id + '?' + adminCred,
       }, function(err, res, body) {
         t.assert(body.count === 1)
-        t.get('/stats/to/refresh?' + adminCred,
+        t.get('/stats/refresh?' + adminCred,
         function(err, res, body) {
           t.get('/find/tos?query[_id._to]=' + patch1Id + '&query[_id.type]=watch',
           function(err, res, body) {
@@ -434,6 +422,7 @@ exports.staticsUpdateOnRefresh = function(test) {
     uri: '/data/links?' + userCred,
     body: {
       data: {
+        _id: 'li.990101.statTest.12',
         _from: testUser._id,
         _to: testUser._id,
         type: 'watch'
@@ -441,9 +430,10 @@ exports.staticsUpdateOnRefresh = function(test) {
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
-    t.get('/stats/to/refresh?' + adminCred, function(err, res, body) {
-      t.assert(body.cmd)
-      t.assert(body.results)
+    t.get('/stats/refresh?' + adminCred, function(err, res, body) {
+      t.assert(body.to)
+      t.assert(body.to.cmd)
+      t.assert(body.to.results)
       t.get({
         uri: '/find/tos?query[_id._to]=' + testUser._id + '&' + userCred
       }, function(err, res2, body) {
@@ -472,6 +462,7 @@ exports.staticsUpdateOnIncrementalRefresh = function(test) {
     uri: '/data/links?' + adminCred,
     body: {
       data: {
+        _id: 'li.990101.statTest.13',
         _from: admin._id,
         _to: testUser._id,
         type: 'watch'
@@ -479,9 +470,9 @@ exports.staticsUpdateOnIncrementalRefresh = function(test) {
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
-    t.get('/stats/to/refresh?' + adminCred, function(err, res, body) {
-      t.assert(body.cmd)
-      t.assert(body.results)
+    t.get('/stats/refresh?' + adminCred, function(err, res, body) {
+      t.assert(body.to)
+      t.assert(body.from)
       t.get({
         uri: '/find/tos?query[_id._to]=' + testUser._id + '&' + userCred
       }, function(err, res2, body) {
@@ -497,45 +488,26 @@ exports.staticsUpdateOnIncrementalRefresh = function(test) {
   })
 }
 
-// For steamclock
-exports.statsAltQuerySyntax = function(test) {
-  // Query the underlying collections using mongodb map reduce format
-  // Shows what is going on beneath the covers, but not recommended
-  t.get('/stats/to?query[_id._to]=' + testUser._id + '&query[_id.type]=watch',
+// Android trending and popular queries
+exports.statsAndroid = function(test) {
+  t.get('/stats/to/patches/from/messages?type=content',
   function(err, res, body) {
-    t.assert(body.data.length === 1) // returns an arry
-    t.assert(body.data[0].count === 2)
-    // Query the stats using regular find syntax
-    t.get('/stats/to/users/' + testUser._id + '?q[type]=watch',
+    t.assert(body.data.length)
+    body.data.forEach(function(patch) {
+      t.assert(patch._id)
+      t.assert(patch.count)
+      t.assert(patch.visibility)
+    })
+    // This is the call the android client makes to display most popular
+    t.get('/stats/to/patches/from/users?type=watch',
     function(err, res, body) {
-      t.assert(body.data.count === 2)  // returns an object
-      // Query using shortcuts for stats category properties type and day
-      // Recommended syntax
-      t.get('/stats/to/users/' + testUser._id + '?type=watch',
-      function(err, res, body) {
-        t.assert(body.data.count === 2)
-        // This is the call the android client makes to display most active
-        t.get('/stats/to/patches/from/messages?type=content',
-        function(err, res, body) {
-          t.assert(body.data.length)
-          body.data.forEach(function(patch) {
-            t.assert(patch._id)
-            t.assert(patch.count)
-            t.assert(patch.visibility)
-          })
-          // This is the call the android client makes to display most popular
-          t.get('/stats/to/patches/from/users?type=watch',
-          function(err, res, body) {
-            t.assert(body.data.length)
-            body.data.forEach(function(patch) {
-              t.assert(patch._id)
-              t.assert(patch.count)
-              t.assert(patch.visibility)
-            })
-            test.done()
-          })
-        })
+      t.assert(body.data.length)
+      body.data.forEach(function(patch) {
+        t.assert(patch._id)
+        t.assert(patch.count)
+        t.assert(patch.visibility)
       })
+      test.done()
     })
   })
 }
@@ -545,16 +517,19 @@ exports.getInterestingPatches = function(test) {
   t.post({
     uri: '/patches/interesting',
     body: {
-      limit: 30,
+      limit: 5,
+      more: true,
       linkCount: [
         {from: 'messages', type: 'content'},
         {from: 'users', type: 'like'},
         {from: 'users', type: 'watch'},
-      ]
+      ],
+      log: true,
     }
   }, function(err, res, body) {
     t.assert(body.data)
-    t.assert(body.data.length === 30)
+    t.assert(body.data.length === 5)
+    t.assert(body.more)
     body.data.forEach(function(patch) {
       t.assert(patch._id)
       t.assert(patch.linkCount)
@@ -564,6 +539,62 @@ exports.getInterestingPatches = function(test) {
       t.assert(patch.linkCount.from.users)
       t.assert(util.tipe.isNumber(patch.linkCount.from.users.watch))
     })
+    var lastPatch = body.data[4]
+    t.post({
+      uri: '/patches/interesting',
+      body: {
+        limit: 5,
+        skip: 4,  // requery the last patch from the first query
+        more: true,
+        linkCount: [
+          {from: 'messages', type: 'content'},
+          {from: 'users', type: 'like'},
+          {from: 'users', type: 'watch'},
+        ],
+        log: true,
+      }
+    }, function(err, res, body) {
+      t.assert(body.data)
+      t.assert(body.data.length === 5)
+      t.assert(body.more)
+      t.assert(lastPatch._id === body.data[0]._id, lastPatch)  // Paging works
+      test.done()
+    })
+  })
+}
+
+// Interesting patches sorts by count of messages
+exports.getInterestingPatches = function(test) {
+  t.post({
+    uri: '/patches/interesting',
+    body: {
+      limit: 1000,
+      more: true,
+      linkCount: [
+        {from: 'messages', type: 'content'},
+        {from: 'users', type: 'like'},
+        {from: 'users', type: 'watch'},
+      ],
+      log: true,
+    }
+  }, function(err, res, body) {
+    t.assert(body.data && body.data.length)
+    var cMessages = Infinity
+    body.data.forEach(function(patch) {
+      t.assert(patch.count <= cMessages)
+      cMessages = patch.count
+    })
+    test.done()
+  })
+}
+
+exports.interestingDoesNotSupportExcludeIds = function(test) {
+  t.post({
+    uri: '/patches/interesting',
+    body: {
+      excludeIds: ['pa.foo', 'pa.bar']
+    },
+  }, 400, function(err, res, body) {
     test.done()
   })
 }
@@ -582,7 +613,7 @@ exports.statRefsDoNotPopulateForAnonUsers = function(test) {
 
 exports.statsCountToPatchesTypeWatch = function(test) {
   t.get({
-    uri: '/stats/to/patches?query[type]=watch&log=1',
+    uri: '/stats/to/patches?type=watch&log=1',
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)
     body.data.forEach(function(doc) {
@@ -592,19 +623,6 @@ exports.statsCountToPatchesTypeWatch = function(test) {
       t.assert(doc.rank)
     })
     t.assert(body.query['tos.aggregate'])  // output of the log param is the mongdb agregation query
-    test.done()
-  })
-}
-
-exports.statsFilterOnCategory = function(test) {
-  t.get({
-    uri: '/stats/to/patches?q[_category]=testCategory&log=1'
-  }, function(err, res, body) {
-    t.assert(body.data && body.data.length)
-    body.data.forEach(function(doc) {
-      t.assert(doc.category)
-      t.assert(doc.category.id === 'testCategory')
-    })
     test.done()
   })
 }
@@ -621,6 +639,7 @@ exports.statsFilterOnName = function(test) {
 exports.statsCountCreatedLinksFromUsers = function(test) {
   t.get({
     uri: '/stats/from/users?type=create',
+    // uri: '/stats/to/patches?type=create',
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)
     body.data.forEach(function(doc) {
@@ -684,29 +703,7 @@ exports.statsRemovePatchDropsFromStats= function(test) {
   })
 }
 
-exports.adminCanRebuildTos = function(test) {
-  t.get({
-    uri: '/stats/to/rebuild?' + adminCred
-  }, function(err, res, body) {
-    t.assert(body)
-    t.assert(body.cmd)
-    t.assert(body.results)
-    test.done()
-  })
-}
-
-exports.adminCanRebuildFroms = function(test) {
-  t.get({
-    uri: '/stats/from/rebuild?' + adminCred
-  }, function(err, res, body) {
-    t.assert(body)
-    t.assert(body.cmd)
-    t.assert(body.results)
-    test.done()
-  })
-}
-
-exports.adminCanRebuildAll = function(test) {
+exports.adminCanRebuild = function(test) {
   t.get({
     uri: '/stats/rebuild?' + adminCred
   }, function(err, res, body) {

@@ -68,11 +68,11 @@ function run(cb) {
   genUsers()
 
   users.forEach(function(user, iUser) {
-    genEntities(user, iUser, 'patch', options.ppu, [user], [{from: 'watch'}], true)
-    genEntities(user, iUser, 'beacon', options.bpp, user.ents.patches, [{from: 'proximity'}], false)
-    genEntities(user, iUser, 'place', options.ppp, user.ents.patches, [{from: 'proximity'}], false)
-    genEntities(user, iUser, 'message', options.mpp, user.ents.patches, [{to: 'content'}], true)
-    genEntities(user, iUser, 'applink', options.app, user.ents.patches, [{to: 'content'}], false)
+    genEntities(user, iUser, 'patch', options.ppu, [users], [])
+    genEntities(user, iUser, 'beacon', options.bpp, user.ents.patches, [{from: 'proximity'}])
+    genEntities(user, iUser, 'place', options.ppp, user.ents.patches, [{from: 'proximity'}])
+    genEntities(user, iUser, 'message', options.mpp, user.ents.patches, [{to: 'content'}])
+    genEntities(user, iUser, 'applink', options.app, user.ents.patches, [{to: 'content'}])
   })
 
   // Unpack the entities stashed under each user
@@ -108,7 +108,7 @@ function genUsers() {
 }
 
 
-function genEntities(user, iUser, schemaName, count, linkedEnts, linkSpecs, makeCreateLinks) {
+function genEntities(user, iUser, schemaName, count, linkedEnts, linkSpecs) {
 
   var schema = db.safeSchemas[schemaName]
   var clName = schema.collection
@@ -155,16 +155,6 @@ function genEntities(user, iUser, schemaName, count, linkedEnts, linkSpecs, make
         links.push(link)
       })
 
-      // Optionally add a create link from the user
-      if (makeCreateLinks) {
-        links.push({
-          _id:    testUtil.genId('link', links.length),
-          _to:    newEnt._id,
-          _from:  user._id,
-          type:   'create',
-          _creator:  user._id,
-        })
-      }
     }
   }
 }
@@ -199,17 +189,17 @@ function saveAll(cb) {
       var user = (row._creator)
         ? {_id: row._creator, role: 'user'}
         : util.adminUser
-      collection.safeInsert(row, {user: user, ip: '127.0.0.1'}, function(err) {
-        return cb(err)
-      })
+      if (user._id === util.adminUser._id && clName === 'users') {
+        row._creator = row._id
+        row._modifier = row._id
+      }
+      collection.safeInsert(row, {user: user, ip: '127.0.0.1'}, cb)
     }
   }
 
   function finish(err) {
-    if (err) return cb(err)
-    db.close(function(err) {
-      if (err) return cb(err)
-      cb()
+    db.close(function(dbCloseErr) {
+      cb(err||dbCloseErr)
     })
   }
 }

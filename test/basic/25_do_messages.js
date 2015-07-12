@@ -1904,10 +1904,10 @@ exports.nonMemberStanCanGetMembersForBobsPrivatePatch = function (test) {
 
   function(err, res, body) {
     /*
-     * Should see two watchers (Becky and Alice)
+     * Should see three watchers (Becky and Alice, plus Bob's autowatch)
      */
     t.assert(body.data)
-    t.assert(body.count === 2)
+    t.assert(body.count === 3)
     test.done()
   })
 }
@@ -2301,6 +2301,7 @@ exports.beckySharesMemberMessageWithMemberAlice = function(test) {
 
     t.assert(body.count === 1)
     t.assert(body.data)
+    t.assert(body.data._acl && body.data._acl.length)
     /*
      * Stan gets notified as the recipient.
      */
@@ -2761,6 +2762,7 @@ exports.stanGetsShareMessageFromBecky = function (test) {
   })
 }
 
+
 exports.aliceGetsShareMessageFromBecky = function (test) {
   t.post({
     uri: '/do/getEntities?' + userCredAlice,
@@ -2828,6 +2830,7 @@ exports.aliceGetsShareMessageFromBecky = function (test) {
     })
   })
 }
+
 
 /*
  * ----------------------------------------------------------------------------
@@ -2913,6 +2916,7 @@ exports.removeMessageFromPatch = function(test) {
       // actionEvent: 'remove'
     }
   }, function(err, res, body) {
+    t.assert(!err)
     t.assert(body.info.indexOf('success') > 0)
 
     /* Check removed entity */

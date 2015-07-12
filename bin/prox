@@ -81,9 +81,6 @@ start() {
   # Success. Set the new process id
   echo $NEWPID >$PIDFILE
 
-  # Try to start staging...
-  /usr/local/proxstage/bin/stagestart >/dev/null &
-
   echo "Proxibase started $NEWPID" >&2
 }
 

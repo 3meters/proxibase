@@ -253,53 +253,62 @@ exports.createPatches = function(test) {
     t.assert(body.count === 1)
     t.assert(body.data.visibility === 'public')  // proves default
 
-    // Tarzan creates private treehouse patch
-    t.post({
-      uri: '/data/patches?' + tarzan.cred,
-      body: {data: treehouse},
-    }, 201, function (err, res, body) {
-      t.assert(body.count === 1)
-      t.assert(body.data.visibility === 'private')
+    // Confirm that the create and watch links were automatically created
+    t.get('/data/links?q[_to]=' + river._id + '&q[_from]=' + tarzan._id + '&' + tarzan.cred,
+    function(err, res, body) {
+      t.assert(body.data)
+      t.assert(body.data.length === 2)
+      t.assert(body.data[0].type === 'create')
+      t.assert(body.data[1].type === 'watch')
 
-      // Jane creates private janehouse patch
+      // Tarzan creates private treehouse patch
       t.post({
-        uri: '/data/patches?' + jane.cred,
-        body: {data: janehouse},
+        uri: '/data/patches?' + tarzan.cred,
+        body: {data: treehouse},
       }, 201, function (err, res, body) {
         t.assert(body.count === 1)
         t.assert(body.data.visibility === 'private')
 
-        // Tarzan can find and edit the patch he created
-        t.get('/data/patches/' + river._id + '?' + tarzan.cred,
-        function(err, res, body) {
-          t.assert(body.data && body.data._id)
+        // Jane creates private janehouse patch
+        t.post({
+          uri: '/data/patches?' + jane.cred,
+          body: {data: janehouse},
+        }, 201, function (err, res, body) {
           t.assert(body.count === 1)
-          t.assert(body.canEdit === true)
+          t.assert(body.data.visibility === 'private')
 
-          // Tarzan can find but not edit the patch Jane created
-          t.get('/data/patches/' + janehouse._id + '?' + tarzan.cred,
+          // Tarzan can find and edit the patch he created
+          t.get('/data/patches/' + river._id + '?' + tarzan.cred,
           function(err, res, body) {
             t.assert(body.data && body.data._id)
-            t.assert(body.canEdit === false)
-            test.done()
+            t.assert(body.count === 1)
+            t.assert(body.canEdit === true)
+
+            // Tarzan can find but not edit the patch Jane created
+            t.get('/data/patches/' + janehouse._id + '?' + tarzan.cred,
+            function(err, res, body) {
+              t.assert(body.data && body.data._id)
+              t.assert(body.canEdit === false)
+              test.done()
+            })
           })
+
         })
       })
     })
   })
 }
 
-exports.tarzanWatchesRiver = function(test) {
+exports.tarzanAutoWatchedRiver = function(test) {
   t.post({
-    uri: '/data/links?' + tarzan.cred,
-    body: {data: {
+    uri: '/find/links?' + tarzan.cred,
+    body: {query: {
       _to: river._id,
       _from: tarzan._id,
       type: 'watch',
     }},
-  }, 201, function(err, res, body) {
-    t.assert(body.data)
-    t.assert(body.data._id)
+  }, 200, function(err, res, body) {
+    t.assert(body.data.length === 1)
     test.done()
   })
 }
@@ -613,6 +622,26 @@ exports.tarzanCannotAcceptHisOwnRequestOnJanesBehalf = function(test) {
 }
 
 
+exports.janeCanCountWatchRequests = function(test) {
+  t.post({
+    uri: '/find/patches/' + janehouse._id + '?' + jane.cred,
+    body: {
+      linkCount: [
+        {from: 'users', type: 'like'},
+        {from: 'users', type: 'watch', enabled: true},
+      ],
+    }
+  }, function(err, res, body) {
+    t.assert(body && body.data && !body.data.length)
+    var patch = body.data
+    t.assert(patch._id === janehouse._id)
+    t.assert(patch.linkCount.from.users.like === 0)
+    t.assert(patch.linkCount.from.users.watch.enabled === 1)
+    t.assert(patch.linkCount.from.users.watch.disabled === 1)
+    test.done()
+  })
+}
+
 exports.janeAcceptsTarzansRequest = function(test) {
   t.post({
     uri: '/data/links/' + tarzanWatchesJanehouse._id + '?' + jane.cred,
@@ -771,8 +800,8 @@ exports.maryCanCreatePatchAndLinksToAndFromItInOneRestCall = function(test) {
 
   var patch = util.clone(maryhouse)
   var links = [
-    {_from: mary._id, type: 'create'},
-    {_from: mary._id, type: 'watch'},
+    {_from: mary._id, type: 'like'},
+    // {_from: mary._id, type: 'watch'},  // watch link is created by the service
     {_to: jungle._id, type: 'proximity'},
     {_to: 'be.' + beacons[2].bssid, type: 'proximity'},
     {_to: 'be.' + beacons[0].bssid, type: 'bogus'},      // Will fail
@@ -803,7 +832,17 @@ exports.getTarzanNotifications = function (test) {
   t.get('/user/getNotifications?limit=20&' + tarzan.cred,
   function(err, res, body) {
     t.assert(body.data)
-    t.assert(body.count === 3)
+    t.assert(body.count === 4)
+    test.done()
+  })
+}
+
+exports.getTarzanNotificationsPaging = function (test) {
+  t.get('/user/getNotifications?limit=2&more=true&' + tarzan.cred,
+  function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.count === 2)
+    t.assert(body.more)
     test.done()
   })
 }
@@ -858,7 +897,7 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
     uri: '/find/users/' + tarzan._id + '?' + tarzan.cred,
     body: {
       promote: 'linked',
-      linked: {to: 'patches', type: 'watch', limit: 1, sort: '_id', more: true, fields: 'name,visibility,photo,schema', linkFields: 'enabled', refs: {},
+      linked: {to: 'patches', type: 'watch', limit: 2, sort: '_id', more: true, fields: 'name,visibility,photo,schema', linkFields: 'enabled', refs: {},
         linked: {from: 'messages', type: 'content', limit: 1, more: true, fields: 'schema,description,photo,_owner', refs: 'name,schema', linkFields: false},
         linkCount: [
           {from: 'users', type: 'watch'},
@@ -868,6 +907,7 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
     },
   }, function(err, res, body) {
     t.assert(body.data.length)
+    t.assert(body.parentCount === 1)
     t.assert(body.more)
     var cMoreMessages = 0
     body.data.forEach(function(patch) {
@@ -876,7 +916,7 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
       t.assert(patch._owner)
       t.assert(patch.owner)
       t.assert(patch.owner.name)
-      t.assert(patch.owner.photo)
+      if (patch._owner != util.adminId) t.assert(patch.owner.photo)
       t.assert(patch.linkCount)
       t.assert(patch.linkCount.from)
       t.assert(patch.linkCount.from.users)
@@ -895,20 +935,6 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
     })
     t.assert(cMoreMessages)
     t.assert(body.count === body.data.length)
-    test.done()
-  })
-}
-
-exports.findLinkCountDisallowsLimit = function(test) {
-  t.post({
-    // Supported syntax
-    uri: '/find/users/' + tarzan._id + '?' + tarzan.cred,
-    body: {
-      refs: true,
-      linked: {to: 'patches', type: 'watch', limit: 1},
-      linkCount: {to: 'patches', type: 'watch', limit: 1},
-    }
-  }, 400, function(err, res, body) {
     test.done()
   })
 }
@@ -1080,8 +1106,7 @@ exports.findMyPatchesCompareGetEntities = function(test) {
       rge.forEach(function(patch) {
         t.assert(patch.schema === 'patch')
         t.assert(patch.linksInCounts)
-        t.assert(patch.linksInCounts[0].type === 'content')
-        t.assert(patch.linksInCounts[1].type === 'watch')
+        t.assert(patch.linksInCounts.some(function(count) { return count.type === 'watch' }))
         t.assert(patch.linksIn)
         patch.linksIn.forEach(function(link) {
           t.assert(link._id.match(/^li\./))
@@ -1217,6 +1242,34 @@ exports.patchesNear = function(test) {
 }
 
 
+exports.tarzanCanLikeAndUnlikeQuickly = function(test) {
+  var riverLike = {
+    _from: tarzan._id,
+    _to: river._id,
+    type: 'like',
+  }
+  t.post({
+    uri: '/data/links?' + tarzan.cred,
+    body: {data: riverLike},
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data)
+    t.assert(body.data._id)
+    t.delete({uri: '/data/links/' + body.data._id + '?' + tarzan.cred},
+    function(err, res, body) {
+      t.assert(body.count === 1)
+      t.post({
+        uri: '/data/links?' + tarzan.cred,
+        body: {data: riverLike},
+      }, 201, function(err, res, body) {
+        t.assert(body.count === 1)
+        test.done()
+      })
+    })
+  })
+}
+
+
 exports.likingAPatchUpdatesActivityDateOfUserAndPatch = function(test) {
   t.get('/data/users/' + jane._id,
   function(err, res, body) {
@@ -1265,3 +1318,5 @@ exports.likingAPatchUpdatesActivityDateOfUserAndPatch = function(test) {
     })
   })
 }
+
+

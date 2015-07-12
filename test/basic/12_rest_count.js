@@ -38,7 +38,7 @@ exports.countByDeliversSomeResults = function(test) {
     body.data.forEach(function(agg) {
       t.assert(agg._owner)
       if (0 === agg._owner.indexOf(testUserIdPrefix)) {
-        t.assert(agg.countBy)  // Testing the expected value is hard
+        t.assert(agg.count)  // Testing the expected value is hard
       }
     })
     test.done()
@@ -59,7 +59,7 @@ exports.countByMultipleFieldsReturnsResults = function(test) {
         case 'like':
         case 'watch':
         case 'create':
-          t.assert(elm.countBy)
+          t.assert(elm.count)
           break
         default:
           t.assert(false, 'Unexpected type ' + elm.type)

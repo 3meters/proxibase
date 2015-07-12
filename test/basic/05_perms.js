@@ -356,15 +356,28 @@ exports.userPublicFields = function(test) {
     t.assert(body && body.data)
     var users = body.data
     t.assert(users.length === 5)
+    var whiteFields = {
+      _id: 0, _owner: 0 ,_creator: 0 ,_modifier: 0 ,name: 0 ,photo: 0 ,
+      createdDate: 0 ,photo: 0 ,activityDate: 0 ,modifiedDate: 0 ,schema: 0
+    }
+    var blackFields = {email: 0, role: 0, phone: 0, collection: 0}
     users.forEach(function(user) {
       t.assert(user._id)
       t.assert(util.adminId !== user._id)
       t.assert(util.anonId !== user._id)
-      t.assert(user.schema)
-      t.assert(user.name)
-      t.assert(!user.email) // non-public field
-      t.assert(!user.role)  // non-public field
+      for (var key in whiteFields) {
+        if (user[key]) whiteFields[key]++
+      }
+      for (var key in blackFields) {
+        if (user[key]) blackFields[key]++
+      }
     })
+    for (var key in whiteFields) {
+      t.assert(whiteFields[key], key)
+    }
+    for (var key in blackFields) {
+      t.assert(!blackFields[key], key)
+    }
     test.done()
   })
 }
