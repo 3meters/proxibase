@@ -13,6 +13,7 @@ var userCred
 var userId
 var adminSession
 var adminCred
+var adminId
 var documentsSchemaId = 5  // will break if we change schemaIds
 var testDoc1 = {
   name: 'Test Rest Doc 1',
@@ -51,6 +52,7 @@ exports.getUserSession = function(test) {
     userSession = session
     userCred = 'user=' + session._owner + '&session=' + session.key
     testUtil.getAdminSession(function(session) {
+      adminId = session._owner
       adminSession = session
       adminCred = 'user=' + session._owner + '&session=' + session.key
       test.done()
@@ -650,8 +652,39 @@ exports.deleteNonExistantRecordSucceedsWithZeroCount = function(test) {
 }
 
 exports.deleteWithNoIdFailsWithError = function(test) {
-  t.del({uri: '/data/beacons?' + adminCred}, 404, function(err, res, body) {
+  t.del({uri: '/data/beacons?' + adminCred}, 400, function(err, res, body) {
+    t.assert(body.error)
+    t.assert(body.error.code === 400.1)  // missing required, used to be not found
     test.done()
+  })
+}
+
+exports.canDeleteLinkUsing__to__from_typeQuery = function(test) {
+  var linkId
+  t.post({
+    uri: '/data/links?' + userCred,
+    body: {
+      data: {
+        _to: adminId,
+        _from: userId,
+        type: 'like'
+      }
+    }
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data)
+    var linkId = body.data._id
+    t.assert(linkId)
+    t.delete({uri: '/data/links?query[_to]=' + adminId + '&query[_from]=' + userId +
+        '&query[type]=like&' + userCred},
+    function(err, res, body) {
+      t.assert(body.count === 1)
+      t.get('/data/links/' + linkId + '?' + userCred,
+      function(err, res, body) {
+        t.assert(body.count === 0)
+        test.done()
+      })
+    })
   })
 }
 
