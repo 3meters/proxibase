@@ -828,11 +828,32 @@ exports.maryCanCreatePatchAndLinksToAndFromItInOneRestCall = function(test) {
 }
 
 
+exports.maryCanSendMessageToPublicPatch = function(test) {
+  t.post({
+    uri: '/data/messages?' + mary.cred,
+    body: {
+      data: {
+        description:  'Hi Tarzan, can I come swimming too?',
+        links: [{
+          _to: river._id,
+          type: 'content'
+        }],
+      },
+    },
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data.links && body.data.links.length)
+    t.assert(body.data.links[0]._from === body.data._id)
+    test.done()
+  })
+}
+
+
 exports.getTarzanNotifications = function (test) {
   t.get('/user/getNotifications?limit=20&' + tarzan.cred,
   function(err, res, body) {
     t.assert(body.data)
-    t.assert(body.count === 4)
+    t.assert(body.count === 5)
     test.done()
   })
 }
@@ -1320,3 +1341,43 @@ exports.likingAPatchUpdatesActivityDateOfUserAndPatch = function(test) {
 }
 
 
+exports.deleteUserEraseOwnedWorks = function(test) {
+
+  // Count mary's patches and messages
+  t.get('/data/patches/count?q[_owner]=' + mary._id + '&' + mary.cred,
+  function(err, res, body) {
+    t.assert(body.count === 1)   // Mary has made one patch
+    var cPatches = body.count
+    t.get('/data/messages/count?q[_owner]=' + mary._id + '&' + mary.cred,
+    function(err, res, body) {
+      t.assert(body.count === 1)
+      var cMessages = body.count  // Mary has sent one message
+
+      // Custom app api that erases owned patches and messages
+      t.del({uri: '/user/' + mary._id + '?erase=true&' + mary.cred},
+      function(err, res, body) {
+        t.assert(body.count === 1)
+
+        // Erased is an object that tells how many owned entities were deleted
+        t.assert(body.erased)
+        t.assert(body.erased.patches === cPatches)
+        t.assert(body.erased.messages === cMessages)
+
+        // Now confirm that Mary and all her patches and messages are gone
+        t.get('/data/users/' + mary._id + '?' + admin.cred,
+        function(err, res, body) {
+          t.assert(body.count === 0)  // mary is gone
+          t.get('/data/patches?query[_owner]=' + mary._id + '&' + admin.cred,
+          function(err, res, body) {
+            t.assert(body.count === 0)  // mary's patches are gone
+            t.get('/data/messages?q[_owner]=' + mary._id + '&' + admin.cred,
+            function(err, res, body) {
+              t.assert(body.count === 0) // mary's messages are gone
+              test.done()
+            })
+          })
+        })
+      })
+    })
+  })
+}
