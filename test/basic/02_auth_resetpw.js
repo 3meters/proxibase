@@ -54,7 +54,6 @@ exports.canRegisterDevice = function(test) {
       install: {
         installId: installId,
         parseInstallId: parseInstallId,
-        _user: user._id,
         deviceType: 'android',
         deviceVersionName: '5.0.0',
       }
@@ -63,6 +62,18 @@ exports.canRegisterDevice = function(test) {
     t.assert(body.info)
     t.assert(body.count)
     test.done()
+  })
+}
+
+exports.installIdValidatedOnEachRequest = function(test) {
+  t.get('/?' + userCred + '&install=' + installId,
+  function(err, res, body) {
+    t.assert(body.installId === installId)
+    t.get('/?' + userCred + '&install=bogusInstallId',
+    function(err, res, body) {
+      t.assert(body.installId === undefined)   // not an error, res.installId is undefined
+      test.done()
+    })
   })
 }
 
