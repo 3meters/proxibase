@@ -47,7 +47,6 @@ cli
   .option('-g, --generate', 'generate a fresh template test db from code')
   .option('-l, --log <file>', 'Test server log file [' + logFile + ']')
   .option('-d, --disconnected', 'skip tests that require internet connectivity')
-  .option('-p, --perf', 'Run perf tests. Requires configperf.js')
   .option('-m, --multi <instances>', 'Run mulitiple instances of the tests concurrently')
   .option('-i, --interval <interval>', 'Milliseconds to wait between starting multiple instances')
   .parse(process.argv)
@@ -58,10 +57,6 @@ if (cli.all) tests = allTests
 if (cli.test) tests = [cli.test]
 if (cli.log) logFile = cli.log
 if (cli.disconnected) testUtil.disconnected = true
-if (cli.perf) {
-  configFile = 'configperf.js',
-  dbProfile = constants.dbProfile.perfTest
-}
 
 testUtil.dbProfile = dbProfile
 
@@ -107,7 +102,8 @@ function ensureDb(ops, cb) {
   var templateName = dbName + 'Template'
 
   db = new mongo.Db(dbName, new mongo.Server(host, port), dbOps)
-  db.open(function(err, db) {
+  db.open(function(err) {
+    if (err) throw err
 
     // Drop template database if directed to by command line flag then run again
     if (cli.generate) {
@@ -148,9 +144,9 @@ function ensureDb(ops, cb) {
           if (!templateExists) {
             log('Creating new template database ' + templateName)
             ops.database = templateName
-            genData(ops, function(err) {
+            genData(_.cloneDeep(ops), function(err) {
               if (err) throw err
-              // Now try again with the template database in patch
+              // Now try again with the template database in place
               ops.database = dbName
               return ensureDb(ops, cb)
             })
@@ -164,6 +160,7 @@ function ensureDb(ops, cb) {
               log('Database copied in ' + dbtimer.read() + ' seconds')
               // Run the mongosafe init command so that the mongosafe methods are
               // available directly to the tests
+              config.db.database = dbName
               mongo.initDb(config.db, function(err, safeDb) {
                 if (err) throw err
                 cb(null, safeDb)
@@ -242,8 +239,7 @@ function runTests() {
   if (cli.none) return finish()
   log('\nTesting: ' + serverUri)
   log('Tests: ' + tests)
-  if (cli.perf) runPerf()
-  else if (cli.multi) runMulti()
+  if (cli.multi) runMulti()
   else reporter.run(tests, false, finish)
 }
 
@@ -278,77 +274,6 @@ function runMulti() {
       })
     }, i * interval)
   }
-}
-
-
-function runPerf() {
-  var cTests = 0
-  var conf = config.perfTest
-  var processes = []
-  log('\nPerf Tests\n==========')
-  log('Tests: ' + conf.tests)
-  log('Duration: ' + conf.seconds + ' seconds')
-  log('Processes: ' + conf.processes)
-  log('Hammers per process: ' + conf.hammers)
-  log()
-  conf.tests.push(conf.hammers) // Add last parameter
-  var start = timer.read()
-
-  // async fork starter
-  function fork(i) {
-    if (!i--) return
-    log('Forking perf process ' + i)
-    var ps = child_process.fork('./perf.js', conf.tests, {silent: true})
-    ps.stdout.on('data', function(data) {
-      if (Buffer.isBuffer(data)) data = data.toString()
-      if (data.indexOf('✔') > -1) cTests++
-    })
-    ps.stderr.on('data', function(data) {
-      if (Buffer.isBuffer(data)) data = data.toString()
-      process.stderr.write(data)
-    })
-    processes.push(ps)
-    // give the frist proc a little longer to warm up
-    setTimeout(function(){fork(i)}, (i === conf.processes - 1) ? 200 : 10)
-  }
-
-  // Start the kill switch timer
-  setTimeout(stop, conf.seconds * 1000)
-
-  // Kick off
-  fork(conf.processes)
-
-  var teasing = true
-  setTimeout(tease, 2000)
-
-  function tease() {
-    if (!teasing) return
-    util.print('.')
-    setTimeout(tease, 2000)
-  }
-
-  function stop() {
-    teasing = false
-    var time = timer.read() - start
-    processes.forEach(function(ps) { ps.kill() })
-    var logFile = fs.readFileSync('./testServer.log', 'utf8')
-    var cRes = 0, position = 0, resTag = 'Res: '
-    while(true) {
-      position = logFile.indexOf(resTag, position)
-      if (position < 0) break
-      cRes++
-      position += resTag.length
-    }
-    log('\n\nPerf results\n============')
-    log('Time: ' + Math.round(time))
-    log('Tests: ' + cTests)
-    log('Tests/sec: ' + Math.floor((cTests * 100) / time) / 100)
-    log('Requests: ', cRes)
-    log('Requests/sec: ' + Math.floor((cRes * 100) / time) / 100)
-    log()
-    finish()
-  }
-
 }
 
 

@@ -54,7 +54,6 @@ exports.canRegisterDevice = function(test) {
       install: {
         installId: installId,
         parseInstallId: parseInstallId,
-        _user: user._id,
         deviceType: 'android',
         deviceVersionName: '5.0.0',
       }
@@ -63,6 +62,27 @@ exports.canRegisterDevice = function(test) {
     t.assert(body.info)
     t.assert(body.count)
     test.done()
+  })
+}
+
+exports.updateInstall = function(test) {
+  t.get('/?' + userCred + '&install=' + installId + '&ll=47.534,-122.17' +
+      '&beacons[0]=be.01:02:03:04:05:06&beacons[1]=be.02:02:03:04:05:06',
+  function(err, res, body) {
+    t.assert(body.install)
+    t.assert(body.install.installId === installId)
+    t.assert(body.install._id === 'in.' + installId)
+    t.assert(body.install.location)
+    t.assert(body.install.location.lat === 47.534)
+    t.assert(body.install.location.lng === -122.17)
+    t.assert(body.install.beacons)
+    t.assert(body.install.beacons.length === 2)
+    t.assert(body.install.beacons[0] === 'be.01:02:03:04:05:06')
+    t.get('/?' + userCred + '&install=bogusInstallId&ll=50,-124',
+    function(err, res, body) {
+      t.assert(!body.install)   // not an error, res.installId is undefined
+      test.done()
+    })
   })
 }
 
