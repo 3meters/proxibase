@@ -65,13 +65,22 @@ exports.canRegisterDevice = function(test) {
   })
 }
 
-exports.installIdValidatedOnEachRequest = function(test) {
-  t.get('/?' + userCred + '&install=' + installId,
+exports.updateInstall = function(test) {
+  t.get('/?' + userCred + '&install=' + installId + '&ll=47.534,-122.17' +
+      '&beacons[0]=be.01:02:03:04:05:06&beacons[1]=be.02:02:03:04:05:06',
   function(err, res, body) {
-    t.assert(body.installId === installId)
-    t.get('/?' + userCred + '&install=bogusInstallId',
+    t.assert(body.install)
+    t.assert(body.install.installId === installId)
+    t.assert(body.install._id === 'in.' + installId)
+    t.assert(body.install.location)
+    t.assert(body.install.location.lat === 47.534)
+    t.assert(body.install.location.lng === -122.17)
+    t.assert(body.install.beacons)
+    t.assert(body.install.beacons.length === 2)
+    t.assert(body.install.beacons[0] === 'be.01:02:03:04:05:06')
+    t.get('/?' + userCred + '&install=bogusInstallId&ll=50,-124',
     function(err, res, body) {
-      t.assert(body.installId === undefined)   // not an error, res.installId is undefined
+      t.assert(!body.install)   // not an error, res.installId is undefined
       test.done()
     })
   })
