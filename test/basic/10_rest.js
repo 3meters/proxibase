@@ -762,9 +762,7 @@ exports.formatDatesUtcWorks = function(test) {
   })
 }
 
-/* Test commented out temporarily by Jayma. */
-
-_exports.readTimeoutWorks = function(test) {
+exports.readTimeoutWorks = function(test) {
   t.post({
     uri: '/data/documents?' + userCred,
     body: {data: bigDoc}
