@@ -654,7 +654,7 @@ exports.tomInsertsPublicPatch = function (test) {
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data._id)
-    activityDate = body.data.modifiedDate  // For later checks
+    activityDate = body.data.activityDate  // For later checks
     /*
      * Alice and Max get notified because they are nearby. Alice via
      * beacon proximity and Max via location distance.

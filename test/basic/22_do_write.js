@@ -562,7 +562,7 @@ exports.insertPatchCustomPublic = function (test) {
       t.assert(body.count === 1)
 
       /* Used in later test */
-      activityDatePatch = body.data[0].modifiedDate
+      activityDatePatch = body.data[0].activityDate
       modifiedDatePatch = body.data[0].modifiedDate
 
       /* Check inserted beacon */
@@ -602,7 +602,7 @@ exports.insertPatchCustomPublic = function (test) {
             }
           }, function(err, res, body) {
             t.assert(body.count === 1)
-            test.done()
+            setTimeout(function() { test.done() }, 1000) // Sleep past the default activityDateUpdate window
           })
         })
       })
@@ -856,6 +856,8 @@ exports.adminCanDeleteBeaconEntityUserCreated = function (test) {
  * ----------------------------------------------------------------------------
  */
 
+// Liking a patch will update its activityDate only if the current
+// time is past the default activity date window of 1000ms
 exports.findsPatchWithFreshTimestamp = function (test) {
   t.post({
     uri: '/data/links?' + userCredTom,
@@ -1031,7 +1033,7 @@ exports.insertLink = function (test) {
 
 exports.deleteMessage = function (test) {
   t.del({
-    uri: '/data/messages/' + testMessage._id + '?' + adminCred
+    uri: '/data/messages/' + testMessage._id + '?' + userCredBob
   }, function(err, res, body) {
     t.assert(body.count === 1)
 
@@ -1059,22 +1061,17 @@ exports.deleteMessage = function (test) {
         }
       }, function(err, res, body) {
         t.assert(body.count === 0)
-        /* Check delete post entity log actions */
+        /* Check action log for message entity */
         t.post({
           uri: '/find/actions?' + adminCred,
           body: {
-            query:{
-              $and: [
-                { event: { $ne: 'delete_entity_message' }},
-                { $or: [
-                  { _entity: testMessage._id },
-                  { _toEntity: testMessage._id },
-                ]},
-              ]
-            }
+            query: {_entity: testMessage._id },
+            sort: '_id',
           }
         }, function(err, res, body) {
-          t.assert(body.count === 0)
+          t.assert(body.count === 2)
+          t.assert(body.data[0].event === 'insert_entity_message')
+          t.assert(body.data[1].event === 'delete_entity_message')
           test.done()
         })
       })
@@ -1158,20 +1155,20 @@ exports.deletePatch = function (test) {
         t.post({
           uri: '/find/actions?' + adminCred,
           body: {
-            query:{
-              $and: [
-                { event: { $ne: 'delete_entity_patch' }},
-                { $or: [
-                  { _entity: testPatchOne._id },
-                  { _toEntity: testPatchOne._id },
-                ]},
-              ]
-            }
+            query:{ _entity: testPatchOne._id },
+            sort: '_id',
           }
         }, function(err, res, body) {
-          t.assert(body.count === 1)
-            // now we auto watch, so delete gets an unwatch event
-            t.assert(body.data[0].event === 'unwatch_entity_patch')
+          t.assert(body.count === 5)
+            // The watch action is recorded before the insert action because
+            // of an autowatch trigger on patches fires after the patch has
+            // been created, but before the patch action logging code fires.
+            // It looks strange, but is harmless.
+            t.assert(body.data[0].event === 'watch_entity_patch')
+            t.assert(body.data[1].event === 'insert_entity_patch')
+            t.assert(body.data[2].event === 'update_entity_patch')
+            t.assert(body.data[3].event === 'unwatch_entity_patch')
+            t.assert(body.data[4].event === 'delete_entity_patch')
             test.done()
         })
       })
