@@ -191,6 +191,47 @@ exports.createUsers = function(test) {
   })
 }
 
+var _install = {
+  clientVersionCode: 80,
+  clientVersionName: '0.1.0',
+  deviceType: 'ios',
+  deviceVersionName: '1.0.0',
+}
+
+exports.registerInstalls = function(test) {
+  var install = _.extend({
+    _user: tarzan._id,
+    parseInstallId: 'registration_id_testing_user_tarzan',
+    installId: 'installId_tarzan',
+  }, _install)
+  t.post({
+    uri: '/do/registerInstall?' + tarzan.cred,
+    body: {install: install},
+  }, function(err, res, body) {
+    install = _.extend({
+      _user: jane._id,
+      parseInstallId: 'registration_id_testing_user_jane',
+      installId: 'installId_jane',
+    }, _install)
+    t.post({
+      uri: '/do/registerInstall?' + jane.cred,
+      body: {install: install},
+    }, function(err, res, body) {
+      install = _.extend({
+        _user: jane._id,
+        parseInstallId: 'registration_id_testing_user_mary',
+        installId: 'installId_mary',
+      }, _install)
+      t.post({
+        uri: '/do/registerInstall?' + mary.cred,
+        body: {install: install},
+      }, function(err, res, body) {
+        test.done()
+      })
+    })
+  })
+}
+
 exports.adminCreatePlaces = function(test) {
 
   // Admin creates the Jungle
@@ -299,16 +340,18 @@ exports.createPatches = function(test) {
   })
 }
 
-exports.tarzanAutoWatchedRiver = function(test) {
+exports.tarzanAutoWatchedAndAutoCreatedRiver = function(test) {
   t.post({
     uri: '/find/links?' + tarzan.cred,
     body: {query: {
       _to: river._id,
       _from: tarzan._id,
-      type: 'watch',
     }},
   }, 200, function(err, res, body) {
-    t.assert(body.data.length === 1)
+    t.assert(body.data.length === 2)
+    t.assert(body.data[0].type === 'create')
+    t.assert(body.data[1].type === 'watch')
+    t.assert(body.data[1].enabled === true)
     test.done()
   })
 }
@@ -345,9 +388,15 @@ exports.janeSendsMessageToPublicRiver = function(test) {
       },
       links: [{_to: river._id, type: 'content'}],
       test: true,
+      log: true,
     },
   }, 201, function(err, res, body) {
     t.assert(body.data)
+    t.assert(body.notifications)
+    t.assert(body.notifications.length === 1)
+    t.assert(body.notifications[0].parseInstallIds)
+    t.assert(body.notifications[0].parseInstallIds.length)
+    t.assert(body.notifications[0].parseInstallIds[0].indexOf('tarzan') >= 0)
     test.done()
   })
 }
@@ -383,6 +432,7 @@ exports.tarzanSendsMessageToTreehouse = function(test) {
   }, 201, function(err, res, body) {
     t.assert(body.data)
     t.assert(body.data._acl === treehouse._id)
+    t.assert(body.notifications && body.notifications.length === 0)
     test.done()
   })
 }
@@ -399,7 +449,7 @@ exports.janeSendsMessageToJanehouse = function(test) {
         description: 'Checkout my bed',
       },
       links: [{_to: janehouse._id, type: 'content'}],
-      returnNotifications: true,
+      test: true,
     },
   }, 201, function(err, res, body) {
     test.done()
@@ -424,6 +474,7 @@ exports.tarzanSendsMessageToJanehouseAndPartiallyFails = function(test) {
     t.assert(body.errors)
     t.assert(body.errors[0].type === 'insertLink')
     t.assert(body.errors[0].error.code === 401) // bad auth, tarzan is not watching janehouse
+    t.assert(!body.notifications)  // because the link itself was never created
     test.done()
   })
 }
@@ -568,12 +619,18 @@ var tarzanWatchesJanehouse = {
 exports.tarzanRequestsToWatchJanehouse = function(test) {
   t.post({
     uri: '/data/links?' + tarzan.cred,
-    body: {data: tarzanWatchesJanehouse},
+    body: {
+      data: tarzanWatchesJanehouse,
+      test: true
+    },
   }, 201, function(err, res, body) {
     t.assert(body.data)
     tarzanWatchesJanehouse = body.data
     t.assert(jane._id === tarzanWatchesJanehouse._owner)
     t.assert(tarzanWatchesJanehouse.enabled === false)
+    t.assert(body.notifications)
+    t.assert(body.notifications.length === 1)
+    t.assert(body.notifications[0].parseInstallIds[0].indexOf('jane' >= 0))
     test.done()
   })
 }
@@ -645,8 +702,10 @@ exports.janeCanCountWatchRequests = function(test) {
 exports.janeAcceptsTarzansRequest = function(test) {
   t.post({
     uri: '/data/links/' + tarzanWatchesJanehouse._id + '?' + jane.cred,
-    body: {data: {enabled: true}},
+    body: {data: {enabled: true}, test: true},
   }, function(err, res, body) {
+    t.assert(body.notifications && body.notifications.length === 1)
+    t.assert(body.notifications[0].parseInstallIds[0].indexOf('tarzan') >= 0)
     test.done()
   })
 }
@@ -679,8 +738,11 @@ exports.tarzanInvitesJaneToTreehouse = function(test) {
         {_id: 'li.toTreehouseFromTarzanInvite' + seed, _to: treehouse._id, type: 'share'},
         {_id: 'li.toJaneFromTarzanInvite' + seed, _to: jane._id, type: 'share', }
       ],
+      test: true,
     },
   }, 201, function(err, res, body) {
+    t.assert(body.notifications && body.notifications.length === 1)
+    t.assert(body.notifications[0].parseInstallIds[0].indexOf('jane') >= 0)
     t.get('/data/links/li.toJaneFromTarzanInvite' + seed,
     function(err, res, body) {
       t.assert(body.data)
@@ -703,12 +765,15 @@ exports.janeAcceptsTarzanInviteByCreatingAWatchLink = function(test) {
         _to: treehouse._id,
         _from: jane._id,
         type: 'watch',
-      }
+      },
+      test: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.data)
     // enabled because we recognized the existing share link, meaning an invitation
     t.assert(body.data.enabled === true)
+    t.assert(body.notifications && body.notifications.length === 1)
+    t.assert(body.notifications[0].parseInstallIds[0].indexOf('tarzan') >= 0)
     test.done()
   })
 }
@@ -742,6 +807,7 @@ exports.janeCanNestAMessageOnTarzansTreehouseMessage = function(test) {
       description: 'Trust me, you will like bed',
     },
     links: [{_to: 'me.tarzanToTreehouse' + seed, type: 'content'}],
+    test: true,
   }
   t.post({
     uri: '/data/messages?' + jane.cred,
@@ -749,6 +815,7 @@ exports.janeCanNestAMessageOnTarzansTreehouseMessage = function(test) {
   }, 201, function(err, res, body) {
     t.assert(body.count)
     t.assert(body.data._acl === 'pa.treehouse' + seed)  // the message's grandparent, not parent
+    t.assert(!body.notifications) // We currently do not notifiy for nested content
     test.done()
   })
 }
@@ -762,8 +829,11 @@ exports.janeCanSendsMessageToTreehouse = function(test) {
         description: 'Hmm, maybe hammock is ok afterall...',
       },
       links: [{_to: treehouse._id, type: 'content'}],
+      test: true,
     },
   }, 201, function(err, res, body) {
+    t.assert(body.notifications && body.notifications.length === 1)
+    t.assert(body.notifications[0].parseInstallIds[0].indexOf('tarzan') >= 0)
     test.done()
   })
 }
@@ -775,10 +845,12 @@ exports.janeCanEditHerMessageToTreehouse = function(test) {
       data: {
         description: 'On second thought, hammock sucks',
       },
+      test: true,
     },
   }, function(err, res, body) {
     t.assert(body.data)
     t.assert(body.data.description === 'On second thought, hammock sucks')
+    t.assert(!body.notificaions)  // no alert on content updates
     test.done()
   })
 }
@@ -788,9 +860,10 @@ exports.janeCanDeleteHerMessageToTreehouse = function(test) {
     uri: '/data/messages/me.janeToTreehouse' + seed + '?' + jane.cred,
   }, function(err, res, body) {
     t.assert(body.count === 1)
-    t.get('/data/links?query[_from]=me.janeToTreehouse' + seed + '&query[_to]=' + treehouse._id + '&' + jane.cred,
+    t.get('/data/links?query[_from]=me.janeToTreehouse' + seed + '&query[_to]=' + treehouse._id + '&q[test]=1&' + jane.cred,
     function(err, res, body) {
       t.assert(body.count === 0)
+      t.assert(!body.notifications)
       test.done()
     })
   })
@@ -809,7 +882,7 @@ exports.maryCanCreatePatchAndLinksToAndFromItInOneRestCall = function(test) {
 
   t.post({
     uri: '/data/patches?' + mary.cred,
-    body: {data: patch, links: links},
+    body: {data: patch, links: links, test: true},
   }, 202, function(err, res, body) {  // 202 means partial success, look at errors
     t.assert(body.data)
     t.assert(body.data.links)
@@ -823,6 +896,7 @@ exports.maryCanCreatePatchAndLinksToAndFromItInOneRestCall = function(test) {
     })
     t.assert(body.errors)
     t.assert(body.errors.length === 1)
+    t.assert(body.notifications && body.notifications.length === 0)   // nearby notifications not yet working for rest api
     test.done()
   })
 }
@@ -833,17 +907,20 @@ exports.maryCanSendMessageToPublicPatch = function(test) {
     uri: '/data/messages?' + mary.cred,
     body: {
       data: {
-        description:  'Hi Tarzan, can I come swimming too?',
+        description: 'Hi Tarzan, can I come swimming too?',
         links: [{
           _to: river._id,
           type: 'content'
         }],
       },
+      test: true,
     },
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data.links && body.data.links.length)
     t.assert(body.data.links[0]._from === body.data._id)
+    t.assert(body.notifications && body.notifications.length === 1)
+    t.assert(body.notifications[0].parseInstallIds[0].indexOf('tarzan') >= 0)
     test.done()
   })
 }
@@ -868,6 +945,48 @@ exports.getTarzanNotificationsPaging = function (test) {
   })
 }
 
+exports.janeGetsSuspicious = function(test) {
+  t.post({
+    uri: '/data/links/?' + jane.cred,
+    body: {
+      data: {
+        _to: river._id,
+        _from: jane._id,
+        type: 'watch',
+      },
+      test: true,
+    },
+  }, 201, function(err, res, body) {
+    t.assert(body.data && body.data.enabled === true)  // becuase river is public
+    t.assert(body.notifications && body.notifications.length === 1)
+    t.assert(body.notifications[0].parseInstallIds[0].indexOf('tarzan') >= 0)
+    test.done()
+  })
+}
+
+exports.marySlipsUp = function(test) {
+  t.post({
+    uri: '/data/messages?' + mary.cred,
+    body: {
+      data: {
+        description: 'Wow Tarzan, nice loin-cloth',
+        links: [{
+          _to: river._id,
+          type: 'content'
+        }],
+      },
+      test: true,
+    },
+  }, 201, function(err, res, body) {
+    t.assert(body.count === 1)
+    t.assert(body.data && body.data.links && body.data.links.length)
+    t.assert(body.data.links[0]._from === body.data._id)
+    t.assert(body.notifications && body.notifications.length === 2)
+    t.assert(body.notifications[0].parseInstallIds[0].indexOf('tarzan') >= 0)
+    t.assert(body.notifications[1].parseInstallIds[0].indexOf('jane') >= 0)  // Busted!
+    test.done()
+  })
+}
 
 exports.findWithNestedLinks = function(test) {
   t.post({
@@ -1306,12 +1425,18 @@ exports.likingAPatchUpdatesActivityDateOfUserAndPatch = function(test) {
       function likeTreehouse() {
         t.post({
           uri: '/data/links?' + jane.cred,
-          body: {data: {
-            _to: treehouse._id,
-            _from: jane._id,
-            type: 'like',
-          }}
+          body: {
+            data: {
+              _to: treehouse._id,
+              _from: jane._id,
+              type: 'like',
+            },
+            test: true,
+            log: true,
+          }
         }, 201, function(err, res, body) {
+          t.assert(body.notifications && body.notifications.length === 1)
+          t.assert(body.notifications[0].parseInstallIds[0].indexOf('tarzan') >= 0)
           t.get('/data/users/' + jane._id,
           function(err, res, body) {
             t.assert(body.data.activityDate > janeOldActivityDate)
@@ -1323,12 +1448,13 @@ exports.likingAPatchUpdatesActivityDateOfUserAndPatch = function(test) {
               // Now test that updating a patch does not update its activity date
               t.post({
                 uri: '/data/patches/' + treehouse._id + '?' + tarzan.cred,
-                body: {data: {description: 'A nice place to swing'}},
+                body: {data: {description: 'A nice place to swing'}, test: true},
               }, function(err, res, body) {
                 t.get('/data/patches/' + treehouse._id + '?' + tarzan.cred,
                 function(err, res, body) {
                   t.assert(body.data)
                   t.assert(body.data.activityDate === treehouseNewActivityDate)
+                  t.assert(!body.notifications)  // Updates to content do not trigger notifications
                   test.done()
                 })
               })
@@ -1350,8 +1476,8 @@ exports.deleteUserEraseOwnedWorks = function(test) {
     var cPatches = body.count
     t.get('/data/messages/count?q[_owner]=' + mary._id + '&' + mary.cred,
     function(err, res, body) {
-      t.assert(body.count === 1)
-      var cMessages = body.count  // Mary has sent one message
+      t.assert(body.count === 2)
+      var cMessages = body.count  // Mary has sent two messages
 
       // Custom app api that erases owned patches and messages
       t.del({uri: '/user/' + mary._id + '?erase=true&' + mary.cred},
