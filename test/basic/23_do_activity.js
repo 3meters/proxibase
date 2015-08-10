@@ -394,15 +394,17 @@ exports.insertCustomPatch = function (test) {
       entity: testPatchCustom,    // custom patch
       beacons: [testBeacon],
       primaryBeaconId: testBeacon._id,
-      returnNotifications: true,
+      test: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data._id)
     /*
-     * Bob and Tom should get a nearby notification since they see the beacon.
+     * Bob should get a nearby notification since he sees the beacon.
+     * Tom should not because he performed the action itself
      */
-    t.assert(body.notifications.length == 1)
+    t.assert(body.notifications)
+    t.assert(body.notifications.length === 1)
     var tomHit = false
       , bobHit = false
 
@@ -426,7 +428,7 @@ exports.insertCustomPatchTwo = function (test) {
       entity: testPatchCustomTwo,    // custom patch
       beacons: [testBeacon2],
       primaryBeaconId: testBeacon2._id,
-      returnNotifications: true,
+      test: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
@@ -483,7 +485,8 @@ exports.insertMessage = function (test) {
         _to: testPatchCustom._id,          // Tom's patch
         type: util.statics.typeContent
       }],
-      returnNotifications: true,
+      test: true,
+      log: true,
       activityDateWindow: 0,
     }
   }, 201, function(err, res, body) {

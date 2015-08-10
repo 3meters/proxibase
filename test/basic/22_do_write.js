@@ -494,7 +494,7 @@ exports.insertPatchOne = function (test) {
     uri: '/do/insertEntity?' + userCredTom,
     body: {
       entity: testPatchOne,
-      returnNotifications: true,
+      test: true,
     },
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
@@ -541,7 +541,7 @@ exports.insertPatchCustomPublic = function (test) {
       entity: testPatchCustomPublic,
       beacons: [testBeacon],
       primaryBeaconId: testBeacon._id,
-      returnNotifications: true,
+      test: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
@@ -615,7 +615,7 @@ exports.insertPatchCustomLockedWithNoLinks = function (test) {
     uri: '/do/insertEntity?' + userCredTom,
     body: {
       entity: testPatchCustomLocked,
-      returnNotifications: true,
+      test: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
@@ -687,20 +687,7 @@ exports.trackEntityProximity = function(test) {
         t.assert(body.count === 1)
         t.assert(body.data[0].proximity.primary === true)
         t.assert(body.data[0].proximity.signal === testBeacon2.signal)
-
-        /* Check track entity log action */
-        t.post({
-          uri: '/find/actions?' + adminCred,
-          body: {
-            query:{
-              _entity:trackingLink._id,
-              event:'link_proximity'
-            }
-          }
-        }, function(err, res, body) {
-          t.assert(body.count === 1)
-          test.done()
-        })
+        test.done()
       })
     })
   })
@@ -772,20 +759,7 @@ exports.trackEntityProximityAgain = function(test) {
         t.assert(body.count === 1)
         t.assert(body.data[0].proximity.primary === true)
         t.assert(body.data[0].proximity.signal === testBeacon2.signal)
-
-        /* Check track entity log action */
-        t.post({
-          uri: '/find/actions?' + adminCred,
-          body: {
-            query:{
-              _entity:trackingLink._id,
-              event:'link_proximity'
-            }
-          }
-        }, function(err, res, body) {
-          t.assert(body.count === 1)
-          test.done()
-        })
+        test.done()
       })
     })
   })
@@ -1061,19 +1035,7 @@ exports.deleteMessage = function (test) {
         }
       }, function(err, res, body) {
         t.assert(body.count === 0)
-        /* Check action log for message entity */
-        t.post({
-          uri: '/find/actions?' + adminCred,
-          body: {
-            query: {_entity: testMessage._id },
-            sort: '_id',
-          }
-        }, function(err, res, body) {
-          t.assert(body.count === 2)
-          t.assert(body.data[0].event === 'insert_entity_message')
-          t.assert(body.data[1].event === 'delete_entity_message')
-          test.done()
-        })
+        test.done()
       })
     })
   })
@@ -1150,27 +1112,7 @@ exports.deletePatch = function (test) {
         }
       }, function(err, res, body) {
         t.assert(body.count === 0)
-
-        /* Check delete entity log actions */
-        t.post({
-          uri: '/find/actions?' + adminCred,
-          body: {
-            query:{ _entity: testPatchOne._id },
-            sort: '_id',
-          }
-        }, function(err, res, body) {
-          t.assert(body.count === 5)
-            // The watch action is recorded before the insert action because
-            // of an autowatch trigger on patches fires after the patch has
-            // been created, but before the patch action logging code fires.
-            // It looks strange, but is harmless.
-            t.assert(body.data[0].event === 'watch_entity_patch')
-            t.assert(body.data[1].event === 'insert_entity_patch')
-            t.assert(body.data[2].event === 'update_entity_patch')
-            t.assert(body.data[3].event === 'unwatch_entity_patch')
-            t.assert(body.data[4].event === 'delete_entity_patch')
-            test.done()
-        })
+        test.done()
       })
     })
   })

@@ -411,7 +411,7 @@ exports.findAndMergeDupes = function(test) {
           _to: quoin._id,
           type: 'content',
         }],
-        returnNotifications: true,
+        test: true,
         activityDateWindow: 0,
       }
     }, 201, function(err, res, body) {
