@@ -98,7 +98,7 @@ var jungle = {
   name: 'Jungle' + seed,
   location: {
     lat: lat,
-    lng: lng
+    lng: lng,
   }
 }
 
@@ -196,6 +196,7 @@ var _install = {
   clientVersionName: '0.1.0',
   deviceType: 'ios',
   deviceVersionName: '1.0.0',
+  locationDate: util.now(),
 }
 
 exports.registerInstalls = function(test) {
@@ -203,6 +204,7 @@ exports.registerInstalls = function(test) {
     _user: tarzan._id,
     parseInstallId: 'registration_id_testing_user_tarzan',
     installId: 'installId_tarzan',
+    location: treehouse.location,
   }, _install)
   t.post({
     uri: '/do/registerInstall?' + tarzan.cred,
@@ -212,6 +214,7 @@ exports.registerInstalls = function(test) {
       _user: jane._id,
       parseInstallId: 'registration_id_testing_user_jane',
       installId: 'installId_jane',
+      location: janehouse.location,
     }, _install)
     t.post({
       uri: '/do/registerInstall?' + jane.cred,
@@ -221,6 +224,7 @@ exports.registerInstalls = function(test) {
         _user: jane._id,
         parseInstallId: 'registration_id_testing_user_mary',
         installId: 'installId_mary',
+        location: maryhouse.location,
       }, _install)
       t.post({
         uri: '/do/registerInstall?' + mary.cred,
@@ -241,6 +245,7 @@ exports.adminCreatePlaces = function(test) {
   }, 201, function (err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data._owner === admin._id)
+    t.assert(!body.notifications)  // because jungle is a place, not a patch
     test.done()
   })
 }
@@ -289,10 +294,18 @@ exports.createPatches = function(test) {
   // Tarzan creates public river patch
   t.post({
     uri: '/data/patches?' + tarzan.cred,
-    body: {data: river},
+    body: {data: river, test: true},
   }, 201, function (err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data.visibility === 'public')  // proves default
+
+    // Check nearby notifcations for patch creation
+    t.assert(body.notifications && body.notifications.length === 1)
+    var parseIds = body.notifications[0].parseInstallIds
+    t.assert(parseIds)
+    t.assert(parseIds.some(function(id) { return id.indexOf('jane') >= 0 }))
+    t.assert(parseIds.some(function(id) { return id.indexOf('mary') >= 0 }))
+    t.assert(!parseIds.some(function(id) { return id.indexOf('tarzan') >= 0 }))  // Tarzan created, don't notifiy
 
     // Confirm that the create and watch links were automatically created
     t.get('/data/links?q[_to]=' + river._id + '&q[_from]=' + tarzan._id + '&' + tarzan.cred,
@@ -896,7 +909,9 @@ exports.maryCanCreatePatchAndLinksToAndFromItInOneRestCall = function(test) {
     })
     t.assert(body.errors)
     t.assert(body.errors.length === 1)
-    t.assert(body.notifications && body.notifications.length === 0)   // nearby notifications not yet working for rest api
+    t.assert(body.notifications && body.notifications.length === 1)
+    t.assert(body.notifications[0].parseInstallIds)
+    t.assert(body.notifications[0].parseInstallIds.length === 2)  // To tazan and jane
     test.done()
   })
 }
