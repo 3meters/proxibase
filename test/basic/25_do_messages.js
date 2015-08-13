@@ -716,7 +716,7 @@ exports.bobInsertsPrivatePatch = function (test) {
     /*
      * Becky and Stan should get nearby notifications.
      */
-    t.assert(body.notifications.length === 2)
+    t.assert(body.notifications.length === 3)
     var tomHit = 0
       , aliceHit = 0
       , maxHit = 0
@@ -743,7 +743,10 @@ exports.bobInsertsPrivatePatch = function (test) {
 
     t.assert(tomHit === 0)
     t.assert(aliceHit === 0)
-    t.assert(maxHit === 0)
+    t.assert(maxHit === 1)   // This was zero prior to 1.10.1, not because Max was not nearby,
+                             // but because the test neglected to pass in the location of the
+                             // patch as a top-level parameter, even though it was recorded as
+                             // the location of the patch
     t.assert(bobHit === 0)
     t.assert(beckyHit === 1)
     t.assert(stanHit === 1)     // ios 7
