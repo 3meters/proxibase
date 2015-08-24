@@ -1489,32 +1489,55 @@ exports.deleteUserEraseOwnedWorks = function(test) {
   function(err, res, body) {
     t.assert(body.count === 1)   // Mary has made one patch
     var cPatches = body.count
+
     t.get('/data/messages/count?q[_owner]=' + mary._id + '&' + mary.cred,
     function(err, res, body) {
       t.assert(body.count === 2)
       var cMessages = body.count  // Mary has sent two messages
 
-      // Custom app api that erases owned patches and messages
-      t.del({uri: '/user/' + mary._id + '?erase=true&' + mary.cred},
+      t.get('/data/sessions/count?q[_owner]=' + mary._id + '&' + admin.cred,
       function(err, res, body) {
         t.assert(body.count === 1)
+        var cSessions = body.count  // Mary has an active session
 
-        // Erased is an object that tells how many owned entities were deleted
-        t.assert(body.erased)
-        t.assert(body.erased.patches === cPatches)
-        t.assert(body.erased.messages === cMessages)
-
-        // Now confirm that Mary and all her patches and messages are gone
-        t.get('/data/users/' + mary._id + '?' + admin.cred,
+        t.get('/data/installs/count?q[_user]=' + mary._id + '&' + admin.cred,
         function(err, res, body) {
-          t.assert(body.count === 0)  // mary is gone
-          t.get('/data/patches?query[_owner]=' + mary._id + '&' + admin.cred,
+          t.assert(body.count === 1)
+          var cInstalls = body.count  // Mary has an active session
+
+          // Custom app api that erases owned patches and messages
+          t.del({uri: '/user/' + mary._id + '?erase=true&' + mary.cred},
           function(err, res, body) {
-            t.assert(body.count === 0)  // mary's patches are gone
-            t.get('/data/messages?q[_owner]=' + mary._id + '&' + admin.cred,
+            t.assert(body.count === 1)
+
+            // Erased is an object that tells how many owned entities were deleted
+            t.assert(body.erased)
+            t.assert(body.erased.patches === cPatches)
+            t.assert(body.erased.messages === cMessages)
+            t.assert(body.erased.sessions === cSessions)
+            t.assert(body.erased.installs === cInstalls)
+
+            // Now confirm that Mary and all her patches and messages are gone
+            t.get('/data/users/' + mary._id + '?' + admin.cred,
             function(err, res, body) {
-              t.assert(body.count === 0) // mary's messages are gone
-              test.done()
+              t.assert(body.count === 0)  // mary is gone
+              t.get('/data/patches?query[_owner]=' + mary._id + '&' + admin.cred,
+              function(err, res, body) {
+                t.assert(body.count === 0)  // mary's patches are gone
+                t.get('/data/messages?q[_owner]=' + mary._id + '&' + admin.cred,
+                function(err, res, body) {
+                  t.assert(body.count === 0) // mary's messages are gone
+                  t.get('/data/installs?q[_user]=' + mary._id + '&' + admin.cred,
+                  function(err, res, body) {
+                    t.assert(body.count === 0) // mary's installs are gone
+                    t.get('/data/sessions?q[_owner]=' + mary._id + '&' + admin.cred,
+                    function(err, res, body) {
+                      t.assert(body.count === 0) // mary's installs are gone
+                      test.done()
+                    })
+                  })
+                })
+              })
             })
           })
         })
