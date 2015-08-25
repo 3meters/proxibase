@@ -154,7 +154,7 @@ exports.createUsers = function(test) {
     body: {
       data: tarzan,
       secret: 'larissa',
-      installId: seed,
+      installId: 'in.' + tarzan._id,
     }
   }, function(err, res, body) {
     t.assert(body.user && body.user._id)
@@ -166,7 +166,7 @@ exports.createUsers = function(test) {
       body: {
         data: jane,
         secret: 'larissa',
-        installId: seed,
+        installId: 'in.' + jane._id,
       }
     }, function(err, res, body) {
       t.assert(body.user && body.user._id)
@@ -178,7 +178,7 @@ exports.createUsers = function(test) {
         body: {
           data: mary,
           secret: 'larissa',
-          installId: seed,
+          installId: 'in.' + mary._id,
         }
       }, function(err, res, body) {
         t.assert(body.user && body.user._id)
@@ -203,7 +203,7 @@ exports.registerInstalls = function(test) {
   var install = _.extend({
     _user: tarzan._id,
     parseInstallId: 'registration_id_testing_user_tarzan',
-    installId: 'installId_tarzan',
+    installId: 'in.' + tarzan._id,
     location: treehouse.location,
   }, _install)
   t.post({
@@ -213,7 +213,7 @@ exports.registerInstalls = function(test) {
     install = _.extend({
       _user: jane._id,
       parseInstallId: 'registration_id_testing_user_jane',
-      installId: 'installId_jane',
+      installId: 'in.' + jane._id,
       location: janehouse.location,
     }, _install)
     t.post({
@@ -223,7 +223,7 @@ exports.registerInstalls = function(test) {
       install = _.extend({
         _user: jane._id,
         parseInstallId: 'registration_id_testing_user_mary',
-        installId: 'installId_mary',
+        installId: 'in.' + mary._id,
         location: maryhouse.location,
       }, _install)
       t.post({
@@ -237,7 +237,6 @@ exports.registerInstalls = function(test) {
 }
 
 exports.adminCreatePlaces = function(test) {
-
   // Admin creates the Jungle
   t.post({
     uri: '/data/places?' + admin.cred,
@@ -346,7 +345,6 @@ exports.createPatches = function(test) {
               test.done()
             })
           })
-
         })
       })
     })
@@ -588,8 +586,8 @@ exports.getEntitiesForEntsReadsMessagesToPublicPatches = function(test) {
 
 
 exports.findLinkedReadsMessagesToPublicPatches = function(test) {
+  // Supported rest find with a post
   t.post({
-    // Supported
     uri: '/find/patches/' + river._id,
     body: {
       linked: [{from: 'messages', type: 'content'}]
@@ -1278,120 +1276,140 @@ exports.findMyPatchesCompareGetEntities = function(test) {
 // Patches near with new and old apis
 exports.patchesNear = function(test) {
 
-  var location = {
-      lat: lat,
-      lng: lng,
-      accuracy: 1000,
+  t.get('/data/installs?q[_user]=' + tarzan._id + '&' + admin.cred,
+  function(err, res, body) {
+    t.assert(body.count === 1)
+    var locTarzan = body.data[0].location
+    t.assert(locTarzan)
+    t.assert(locTarzan.lat === treehouse.location.lat)
+    t.assert(locTarzan.lng === treehouse.location.lng)
+
+    var location = {
+      lat: treehouse.location.lat + distance,   // tarzan has moved
+      lng: treehouse.location.lng + distance,
+      accuracy: 20,
       provider: 'fused',
-  }
-
-  t.post({
-    // Supported syntax
-    uri: '/patches/near',
-    body: {
-      location: location,
-      radius: 10000,
-      installId: 'todo',
-      limit: 50,
-      linked: [
-        {to: 'places', type: 'proxmity', sort: 'modifiedDate', limit: 1},
-        {from: 'messages', type: 'content', sort: '-modifiedDate', limit: 2},
-      ],
-      linkCount: [
-        {from: 'messages', type: 'content'},
-        {from: 'users', type: 'like'},
-        {from: 'users', type: 'watch'},
-        {to: 'beacons', type: 'proximity'},
-        {to: 'places', type: 'proximity'},
-      ],
-      links: [
-        {to: 'beacons', type: 'proximity', limit: 10},
-      ],
     }
-  }, function(err, res, body) {
 
-    var patches = body.data
-    t.assert(patches.length === 4)
-    t.assert(patches[0]._id = river._id)      // sorted by distance from query location
-    t.assert(patches[1]._id = treehouse._id)
-    t.assert(patches[2]._id = janehouse._id)
-    t.assert(patches[3]._id = maryhouse._id)
-
-    var cBeaconLinks = 0
-    var cPlaceLinks = 0
-    var cLinks = 0
-    var cLinked = 0
-
-    patches.forEach(function(patch) {
-      t.assert(patch.linkCount)
-      var lc = patch.linkCount
-      t.assert(lc.from)
-      t.assert(lc.from.messages)
-      t.assert(tipe.isNumber(lc.from.messages.content))
-      t.assert(lc.from.users)
-      t.assert(tipe.isNumber(lc.from.users.like))
-      t.assert(tipe.isNumber(lc.from.users.watch))
-
-      t.assert(lc.to)
-      t.assert(lc.to.places)
-      t.assert(lc.to.beacons)
-      t.assert(tipe.isNumber(lc.to.places.proximity))
-      t.assert(tipe.isNumber(lc.to.beacons.proximity))
-      cBeaconLinks += patch.linkCount.to.beacons.proximity
-      cPlaceLinks += patch.linkCount.to.places.proximity
-
-      t.assert(patch.linked)
-      t.assert(tipe.isNumber(patch.linked.length))
-      cLinked += patch.linked.length
-
-      t.assert(patch.links)
-      t.assert(tipe.isNumber(patch.links.length))
-      cLinks += patch.links.length
-
-    })
-
-    t.assert(cBeaconLinks)
-    t.assert(cPlaceLinks)
-    t.assert(cLinks)
-    t.assert(cLinked)
-
+    // Supported syntax
     t.post({
-      // Deprecated syntax
-      uri: '/patches/near',
+      uri: '/patches/near?' + tarzan.cred,
       body: {
-        rest: false,  // Same as getEntities: true
         location: location,
         radius: 10000,
-        installId: 'todo',
+        install: 'in.' + tarzan._id,  // either install or installId will work
         limit: 50,
-        links: {shortcuts: true, active: [
-          {links: true, count: true, schema: 'beacon', type: 'proximity', limit: 10, direction: 'out' },
-          {links: true, count: true, schema: 'place', type: 'proximity', limit: 1, direction: 'out' },
-          {links: true, count: true, schema: 'message', type: 'content', limit: 2, direction: 'both' },
-          {where: { _from: 'us.130820.80231.131.599884' },
-            links: true, count: true, schema: 'user', type: 'watch', limit: 1, direction: 'in' },
-          {where: { _from: 'us.130820.80231.131.599884' },
-            links: true, count: true, schema: 'user', type: 'like', limit: 1, direction: 'in' },
-          {where: { _creator: 'us.130820.80231.131.599884' },
-            links: true, count: true, schema: 'message', type: 'content', limit: 1, direction: 'in' }
-        ]},
-      },
+        linked: [
+          {to: 'places', type: 'proxmity', sort: 'modifiedDate', limit: 1},
+          {from: 'messages', type: 'content', sort: '-modifiedDate', limit: 2},
+        ],
+        linkCount: [
+          {from: 'messages', type: 'content'},
+          {from: 'users', type: 'like'},
+          {from: 'users', type: 'watch'},
+          {to: 'beacons', type: 'proximity'},
+          {to: 'places', type: 'proximity'},
+        ],
+        links: [
+          {to: 'beacons', type: 'proximity', limit: 10},
+        ],
+      }
     }, function(err, res, body) {
-      var patchesGe = body.data
-      t.assert(patchesGe.length === 4)
-      var cLinksIn = 0, cLinksOut = 0, cLinksInCounts = 0, cLinksOutCounts = 0
-      patchesGe.forEach(function(patch) {
-        t.assert(patch._id)
-        if (patch.linksIn) cLinksIn += patch.linksIn.length
-        if (patch.linksOut) cLinksOut += patch.linksOut.length
-        if (patch.linksInCounts) cLinksInCounts += patch.linksInCounts
-        if (patch.linksOutCounts) cLinksOutCounts += patch.linksOutCounts
+
+      var patches = body.data
+      t.assert(patches.length === 4)
+      t.assert(patches[0]._id = river._id)      // sorted by distance from query location
+      t.assert(patches[1]._id = treehouse._id)
+      t.assert(patches[2]._id = janehouse._id)
+      t.assert(patches[3]._id = maryhouse._id)
+
+      var cBeaconLinks = 0
+      var cPlaceLinks = 0
+      var cLinks = 0
+      var cLinked = 0
+
+      patches.forEach(function(patch) {
+        t.assert(patch.linkCount)
+        var lc = patch.linkCount
+        t.assert(lc.from)
+        t.assert(lc.from.messages)
+        t.assert(tipe.isNumber(lc.from.messages.content))
+        t.assert(lc.from.users)
+        t.assert(tipe.isNumber(lc.from.users.like))
+        t.assert(tipe.isNumber(lc.from.users.watch))
+
+        t.assert(lc.to)
+        t.assert(lc.to.places)
+        t.assert(lc.to.beacons)
+        t.assert(tipe.isNumber(lc.to.places.proximity))
+        t.assert(tipe.isNumber(lc.to.beacons.proximity))
+        cBeaconLinks += patch.linkCount.to.beacons.proximity
+        cPlaceLinks += patch.linkCount.to.places.proximity
+
+        t.assert(patch.linked)
+        t.assert(tipe.isNumber(patch.linked.length))
+        cLinked += patch.linked.length
+
+        t.assert(patch.links)
+        t.assert(tipe.isNumber(patch.links.length))
+        cLinks += patch.links.length
+
       })
-      t.assert(cLinksIn)
-      t.assert(cLinksOut)
-      t.assert(cLinksInCounts)
-      t.assert(cLinksOutCounts)
-      test.done()
+
+      t.assert(cBeaconLinks)
+      t.assert(cPlaceLinks)
+      t.assert(cLinks)
+      t.assert(cLinked)
+
+      // Check to see that running a near query updated Tarzan's install
+      // record to a new location
+      t.get('/data/installs?q[_user]=' + tarzan._id + '&' + admin.cred,
+      function(err, res, body) {
+        t.assert(body.count === 1)
+        var locTarzanNew = body.data[0].location
+        t.assert(locTarzanNew)
+        t.assert(locTarzanNew.lat === location.lat)
+        t.assert(locTarzanNew.lng === location.lng)
+
+        // Deprecated syntax
+        t.post({
+          uri: '/patches/near',
+          body: {
+            rest: false,  // Same as getEntities: true
+            location: location,
+            radius: 10000,
+            installId: 'in.' + tarzan._id,
+            limit: 50,
+            links: {shortcuts: true, active: [
+              {links: true, count: true, schema: 'beacon', type: 'proximity', limit: 10, direction: 'out' },
+              {links: true, count: true, schema: 'place', type: 'proximity', limit: 1, direction: 'out' },
+              {links: true, count: true, schema: 'message', type: 'content', limit: 2, direction: 'both' },
+              {where: { _from: 'us.130820.80231.131.599884' },
+                links: true, count: true, schema: 'user', type: 'watch', limit: 1, direction: 'in' },
+              {where: { _from: 'us.130820.80231.131.599884' },
+                links: true, count: true, schema: 'user', type: 'like', limit: 1, direction: 'in' },
+              {where: { _creator: 'us.130820.80231.131.599884' },
+                links: true, count: true, schema: 'message', type: 'content', limit: 1, direction: 'in' }
+            ]},
+          },
+        }, function(err, res, body) {
+          var patchesGe = body.data
+          t.assert(patchesGe.length === 4)
+          var cLinksIn = 0, cLinksOut = 0, cLinksInCounts = 0, cLinksOutCounts = 0
+          patchesGe.forEach(function(patch) {
+            t.assert(patch._id)
+            if (patch.linksIn) cLinksIn += patch.linksIn.length
+            if (patch.linksOut) cLinksOut += patch.linksOut.length
+            if (patch.linksInCounts) cLinksInCounts += patch.linksInCounts
+            if (patch.linksOutCounts) cLinksOutCounts += patch.linksOutCounts
+          })
+          t.assert(cLinksIn)
+          t.assert(cLinksOut)
+          t.assert(cLinksInCounts)
+          t.assert(cLinksOutCounts)
+          test.done()
+        })
+      })
     })
   })
 }
