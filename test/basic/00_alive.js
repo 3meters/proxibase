@@ -93,17 +93,6 @@ exports.speakSpanishToMe = function(test) {
   })
 }
 
-// Test echo
-exports.echo = function(test) {
-  var rBody = {foo: {bar: {baz: 'foo'}}}
-  t.post({
-    uri: '/echo',
-    body: rBody
-  }, function(err, res, body) {
-    t.assert(body.foo.bar.baz === rBody.foo.bar.baz)
-    test.done()
-  })
-}
 
 // Make sure public database read works
 exports.canReadPublicData = function(test) {
