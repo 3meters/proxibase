@@ -399,7 +399,6 @@ exports.janeSendsMessageToPublicRiver = function(test) {
       },
       links: [{_to: river._id, type: 'content'}],
       test: true,
-      log: true,
     },
   }, 201, function(err, res, body) {
     t.assert(body.data)
@@ -628,21 +627,37 @@ var tarzanWatchesJanehouse = {
 }
 
 exports.tarzanRequestsToWatchJanehouse = function(test) {
-  t.post({
-    uri: '/data/links?' + tarzan.cred,
-    body: {
-      data: tarzanWatchesJanehouse,
-      test: true
-    },
-  }, 201, function(err, res, body) {
-    t.assert(body.data)
-    tarzanWatchesJanehouse = body.data
-    t.assert(jane._id === tarzanWatchesJanehouse._owner)
-    t.assert(tarzanWatchesJanehouse.enabled === false)
-    t.assert(body.notifications)
-    t.assert(body.notifications.length === 1)
-    t.assert(body.notifications[0].parseInstallIds[0].indexOf('jane' >= 0))
-    test.done()
+  t.get('/find/users/' + jane._id + '?' + tarzan._id,
+  function (err, res, body) {
+    var recentJane = body.data
+    t.assert(recentJane)
+    t.assert(recentJane.notifiedDate)  // This should be advanced
+    t.post({
+      uri: '/data/links?' + tarzan.cred,
+      body: {
+        data: tarzanWatchesJanehouse,
+        test: true
+      },
+    }, 201, function(err, res, body) {
+      t.assert(body.data)
+      tarzanWatchesJanehouse = body.data
+      t.assert(jane._id === tarzanWatchesJanehouse._owner)
+      t.assert(tarzanWatchesJanehouse.enabled === false)
+      t.assert(body.notifications)
+      t.assert(body.notifications.length === 1)
+      t.assert(body.notifications[0].parseInstallIds[0].indexOf('jane' >= 0))
+      // Now make sure Jane's notifiedDate was updated.  We use this to prevent shelling
+      // her with unimportant notifications
+      t.get('/find/users/' + jane._id + '?' + tarzan._id,
+      function (err, res, body) {
+        var nowJane = body.data
+        t.assert(nowJane)
+        t.assert(nowJane.notifiedDate > recentJane.notifiedDate)  // Proves we know we notified Jane
+        t.assert(nowJane.notifiedDate > nowJane.activityDate)
+        t.assert(nowJane.notifiedDate > nowJane.modifiedDate)
+        test.done()
+      })
+    })
   })
 }
 
@@ -995,8 +1010,8 @@ exports.marySlipsUp = function(test) {
     t.assert(body.data && body.data.links && body.data.links.length)
     t.assert(body.data.links[0]._from === body.data._id)
     t.assert(body.notifications && body.notifications.length === 2)
-    t.assert(body.notifications[0].parseInstallIds[0].indexOf('tarzan') >= 0)
-    t.assert(body.notifications[1].parseInstallIds[0].indexOf('jane') >= 0)  // Busted!
+    t.assert(body.notifications[0].parseInstallIds.some(function(pid) {return pid.indexOf('tarzan') >= 0}))
+    t.assert(body.notifications[1].parseInstallIds.some(function(pid) {return pid.indexOf('jane') >= 0}))  // Busted!
     test.done()
   })
 }
@@ -1465,7 +1480,6 @@ exports.likingAPatchUpdatesActivityDateOfUserAndPatch = function(test) {
               type: 'like',
             },
             test: true,
-            log: true,
           }
         }, 201, function(err, res, body) {
           t.assert(body.notifications && body.notifications.length === 1)

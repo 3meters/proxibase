@@ -58,7 +58,7 @@ exports.findWithLimitNotSignedIn = function(test) {
 }
 
 
-exports.findById = function(test) {
+exports.findUsersById = function(test) {
   t.post({
     uri: '/find/users?' + adminCred,
     body: {query: {_id: {$in: [constants.uid1]}}}
@@ -215,3 +215,26 @@ exports.findNext = function(test) {
     })
   })
 }
+
+
+exports.findById = function(test) {
+  t.get('/find/byid/' + util.adminId,
+  function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.data._id === util.adminId)
+    test.done()
+  })
+}
+
+
+exports.findByIds = function(test) {
+  t.get('/find/byid/' + util.adminId + ',' + util.anonId,
+  function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.data.length === 2)
+    t.assert(body.count === 2)
+    test.done()
+  })
+}
+
+
