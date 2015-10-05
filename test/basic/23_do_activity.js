@@ -401,7 +401,6 @@ exports.insertCustomPatch = function (test) {
     t.assert(body.data && body.data._id)
     /*
      * Bob should get a nearby notification since he sees the beacon.
-     * Tom should not because he performed the action itself
      */
     t.assert(body.notifications)
     t.assert(body.notifications.length === 1)
@@ -411,7 +410,7 @@ exports.insertCustomPatch = function (test) {
     body.notifications.forEach(function(message) {
       message.parseInstallIds.forEach(function(parseInstallId){
         if (parseInstallId.indexOf('tom') > 0) tomHit = true
-        if (parseInstallId.indexOf('bob') > 0 && message.trigger == 'nearby') bobHit = true
+        if (parseInstallId.indexOf('bob') > 0 && message.notification.trigger == 'nearby') bobHit = true
       })
     })
     t.assert(!tomHit)
@@ -440,7 +439,7 @@ exports.insertCustomPatchTwo = function (test) {
      * Bob should not get a message because he is the source.
      */
     t.assert(body.notifications && body.notifications.length == 1)
-    t.assert(body.notifications[0].trigger === 'nearby')
+    t.assert(body.notifications[0].notification.trigger === 'nearby')
     t.assert(body.notifications[0].parseInstallIds[0].indexOf('alice') > 0)
 
     test.done()
@@ -493,7 +492,7 @@ exports.insertMessage = function (test) {
     t.assert(body.count === 1)
     t.assert(body.data)
     /*
-     * Tom should get a notification message because he owns the patch
+     * Tom should get a notification message because he autowatches the patch
      */
     t.assert(body.notifications && body.notifications.length == 1)
     var tomHit = false
@@ -501,8 +500,8 @@ exports.insertMessage = function (test) {
 
     body.notifications.forEach(function(message) {
       message.parseInstallIds.forEach(function(parseInstallId){
-        t.assert(message._target === testMessage._id)
-        if (parseInstallId.indexOf('tom') > 0 && message.trigger == 'own_to') tomHit = true
+        t.assert(message.notification._target === testMessage._id)
+        if (parseInstallId.indexOf('tom') > 0) tomHit = true
         if (parseInstallId.indexOf('bob') > 0) bobHit = true
       })
     })

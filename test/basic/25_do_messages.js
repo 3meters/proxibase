@@ -342,8 +342,8 @@ exports.registerInstallThree = function (test) {
         installId: installId3,
         clientVersionCode: 10,
         clientVersionName: '0.8.12',
-        deviceType: 'android',
-        deviceVersionName: '5.0.0',
+        deviceType: 'ios',
+        deviceVersionName: '8.0.0',
       }
     }
   }, function(err, res, body) {
@@ -669,9 +669,10 @@ exports.tomInsertsPublicPatch = function (test) {
 
     var maxNotification
 
-    body.notifications.forEach(function(notification) {
+    body.notifications.forEach(function(message) {
+      var notification = message.notification
       t.assert(notification._target === testPatchPublic._id || notification.targetId === testPatchPublic._id)
-      notification.parseInstallIds.forEach(function(parseInstallId){
+      message.parseInstallIds.forEach(function(parseInstallId){
         if (parseInstallId.indexOf('tom') > 0) tomHit++
         if (parseInstallId.indexOf('alice') > 0 && notification.trigger == 'nearby') aliceHit++
         if (parseInstallId.indexOf('max') > 0 && notification.trigger == 'nearby') {
@@ -726,9 +727,10 @@ exports.bobInsertsPrivatePatch = function (test) {
 
     var stanNotification
 
-    body.notifications.forEach(function(notification) {
+    body.notifications.forEach(function(message) {
+      var notification = message.notification
       t.assert(notification._target === testPatchPrivate._id || notification.targetId === testPatchPrivate._id)
-      notification.parseInstallIds.forEach(function(parseInstallId){
+      message.parseInstallIds.forEach(function(parseInstallId){
         if (parseInstallId.indexOf('tom') > 0) tomHit++
         if (parseInstallId.indexOf('alice') > 0) aliceHit++
         if (parseInstallId.indexOf('max') > 0) maxHit++
@@ -810,9 +812,10 @@ exports.bobWatchesTomsPublicPatch = function(test) {
       , beckyHit = 0
       , stanHit = 0
 
-    body.notifications.forEach(function(notification) {
+    body.notifications.forEach(function(message) {
+      var notification = message.notification
       t.assert(notification._target === testPatchPublic._id || notification.targetId === testPatchPublic._id)
-      notification.parseInstallIds.forEach(function(parseInstallId){
+      message.parseInstallIds.forEach(function(parseInstallId){
         if (parseInstallId.indexOf('tom') > 0
           && notification.type === 'watch'
           && notification.trigger == 'own_to'
@@ -874,9 +877,10 @@ exports.bobLikesTomsPublicPatchViaRestAPI = function(test) {
       , beckyHit = 0
       , stanHit = 0
 
-    body.notifications.forEach(function(notification) {
+    body.notifications.forEach(function(message) {
+      var notification = message.notification
       t.assert(notification._target === testPatchPublic._id || notification.targetId === testPatchPublic._id)
-      notification.parseInstallIds.forEach(function(parseInstallId){
+      message.parseInstallIds.forEach(function(parseInstallId){
         if (parseInstallId.indexOf('tom') > 0
           && notification.type === 'like'
           && notification.trigger == 'own_to'
@@ -953,9 +957,10 @@ exports.beckyRequestsToWatchBobsPrivatePatch = function(test) {
         , beckyHit = 0
         , stanHit = 0
 
-      body.notifications.forEach(function(notification) {
+      body.notifications.forEach(function(message) {
+        var notification = message.notification
         t.assert(notification._target === testPatchPrivate._id || notification.targetId === testPatchPrivate._id)
-        notification.parseInstallIds.forEach(function(parseInstallId){
+        message.parseInstallIds.forEach(function(parseInstallId){
           if (parseInstallId.indexOf('tom') > 0) tomHit++
           if (parseInstallId.indexOf('alice') > 0) aliceHit++
           if (parseInstallId.indexOf('max') > 0) maxHit++
@@ -1045,9 +1050,10 @@ exports.bobApprovesBeckysRequestToWatchBobsPrivatePatch = function(test) {
         , beckyHit = 0
         , stanHit = 0
 
-      body.notifications.forEach(function(notification) {
+      body.notifications.forEach(function(message) {
+        var notification = message.notification
         t.assert(notification._target == testPatchPrivate._id)
-        notification.parseInstallIds.forEach(function(parseInstallId){
+        message.parseInstallIds.forEach(function(parseInstallId){
           if (parseInstallId.indexOf('tom') > 0) tomHit++
           if (parseInstallId.indexOf('alice') > 0) aliceHit++
           if (parseInstallId.indexOf('max') > 0) maxHit++
@@ -1146,7 +1152,6 @@ exports.bobApprovesAlicesRequestToWatchBobsPrivatePatch = function(test) {
       fromId: testUserAlice._id,
       type: util.statics.typeWatch,
       enabled: true,
-      // actionEvent: 'approve_watch_entity',
       test: true,
       log: true,
     }
@@ -1202,14 +1207,14 @@ exports.beckyInsertsMessageToTomsPublicPatch = function (test) {
     t.assert(body.count === 1)
     t.assert(body.data)
     /*
-     * Tom gets notified because he owns the patch.
+     * Tom gets notified because he autowatched the patch.
      * Bob gets notified because he is watching the patch.
      * Alice is near the patch but does not get notified.
      * Max is near the patch with good accuracy, but does not get notified
      * Becky does not get notified because she is the sender.
      * Stan does not get notified because he isn't nearby.
      */
-    t.assert(body.notifications.length === 2)
+    t.assert(body.notifications.length === 1)
 
     var tomHit = 0
       , bobHit = 0
@@ -1218,10 +1223,11 @@ exports.beckyInsertsMessageToTomsPublicPatch = function (test) {
       , beckyHit = 0
       , stanHit = 0
 
-    body.notifications.forEach(function(notification) {
+    body.notifications.forEach(function(message) {
+      var notification = message.notification
       t.assert(notification._target === testMessage._id || notification.targetId === testMessage._id)
-      notification.parseInstallIds.forEach(function(parseInstallId){
-        if (parseInstallId.indexOf('tom') > 0 && notification.trigger == 'own_to') tomHit++
+      message.parseInstallIds.forEach(function(parseInstallId){
+        if (parseInstallId.indexOf('tom') > 0 && notification.trigger == 'watch_to') tomHit++
         if (parseInstallId.indexOf('alice') > 0 && notification.trigger == 'nearby') aliceHit++
         if (parseInstallId.indexOf('max') > 0 && notification.trigger == 'nearby') maxHit++
         if (parseInstallId.indexOf('bob') > 0 && notification.trigger == 'watch_to') bobHit++
@@ -1326,14 +1332,14 @@ exports.beckyInsertsMessageToTomsPublicPatchMaxPoorAccuracy = function (test) {
     t.assert(body.count === 1)
     t.assert(body.data)
     /*
-     * Tom gets notified because he owns the patch.
+     * Tom gets notified because he autowatches the patch.
      * Bob gets notified because he is watching the patch.
      * Alice does not gets notified because she is nearby the patch.
      * Max does *not* get notified because he is nearby the patch but location accuracy is poor.
      * Becky does not get notified because she is the sender.
      * Stan does not get notified because he isn't nearby.
      */
-    t.assert(body.notifications.length === 2)
+    t.assert(body.notifications.length === 1)
 
     var tomHit = 0
       , bobHit = 0
@@ -1342,10 +1348,11 @@ exports.beckyInsertsMessageToTomsPublicPatchMaxPoorAccuracy = function (test) {
       , beckyHit = 0
       , stanHit = 0
 
-    body.notifications.forEach(function(notification) {
+    body.notifications.forEach(function(message) {
+      var notification = message.notification
       t.assert(notification._target === testMessage._id)
-      notification.parseInstallIds.forEach(function(parseInstallId){
-        if (parseInstallId.indexOf('tom') > 0 && notification.trigger == 'own_to') tomHit++
+      message.parseInstallIds.forEach(function(parseInstallId){
+        if (parseInstallId.indexOf('tom') > 0 && notification.trigger == 'watch_to') tomHit++
         if (parseInstallId.indexOf('alice') > 0 && notification.trigger == 'nearby') aliceHit++
         if (parseInstallId.indexOf('max') > 0 ) maxHit++
         if (parseInstallId.indexOf('bob') > 0 && notification.trigger == 'watch_to') bobHit++
@@ -1407,14 +1414,14 @@ exports.beckyInsertsMessageToTomsPublicPatchMaxNotNearby = function (test) {
     t.assert(body.count === 1)
     t.assert(body.data)
     /*
-     * Tom gets notified because he owns the patch.
+     * Tom gets notified because he autowatch the patch.
      * Bob gets notified because he is watching the patch.
      * Alice does not get notified even thought she is near the patch.
      * Max does *not* get notified because he is *not* nearby the patch.
      * Becky does not get notified because she is the sender.
      * Stan does not get notified because he isn't nearby.
      */
-    t.assert(body.notifications.length === 2)
+    t.assert(body.notifications.length === 1)
 
     var tomHit = 0
       , bobHit = 0
@@ -1423,10 +1430,11 @@ exports.beckyInsertsMessageToTomsPublicPatchMaxNotNearby = function (test) {
       , beckyHit = 0
       , stanHit = 0
 
-    body.notifications.forEach(function(notification) {
+    body.notifications.forEach(function(message) {
+      var notification = message.notification
       t.assert(notification._target === testMessage._id)
-      notification.parseInstallIds.forEach(function(parseInstallId){
-        if (parseInstallId.indexOf('tom') > 0 && notification.trigger == 'own_to') tomHit++
+      message.parseInstallIds.forEach(function(parseInstallId){
+        if (parseInstallId.indexOf('tom') > 0 && notification.trigger == 'watch_to') tomHit++
         if (parseInstallId.indexOf('alice') > 0 && notification.trigger == 'nearby') aliceHit++
         if (parseInstallId.indexOf('max') > 0) maxHit++
         if (parseInstallId.indexOf('bob') > 0 && notification.trigger == 'watch_to') bobHit++
@@ -1482,10 +1490,10 @@ exports.aliceInsertsResponseMessageToTomsPublicPatch = function (test) {
      */
 
     /*
-     * If not run stand-alone, Alice create in previous test module
+     * If not run stand-alone, Alice created in previous test module
      * gets a message because she is watching Tom.
      */
-    t.assert(body.notifications.length === 2)
+    t.assert(body.notifications.length === 1)
 
     var tomHit = 0
       , bobHit = 0
@@ -1494,9 +1502,10 @@ exports.aliceInsertsResponseMessageToTomsPublicPatch = function (test) {
       , beckyHit = 0
       , stanHit = 0
 
-    body.notifications.forEach(function(notification) {
-      notification.parseInstallIds.forEach(function(parseInstallId){
-        if (parseInstallId.indexOf('tom') > 0 && notification.trigger == 'own_to') tomHit++
+    body.notifications.forEach(function(message) {
+      var notification = message.notification
+      message.parseInstallIds.forEach(function(parseInstallId){
+        if (parseInstallId.indexOf('tom') > 0 && notification.trigger == 'watch_to') tomHit++
         if (parseInstallId.indexOf('alice') > 0) aliceHit++
         if (parseInstallId.indexOf('max') > 0 && notification.trigger == 'nearby') maxHit++
         if (parseInstallId.indexOf('bob') > 0 && notification.trigger == 'watch_to') bobHit++
@@ -1575,11 +1584,11 @@ exports.beckyInsertsMessageToBobsPrivatePatch = function (test) {
     t.assert(body.count === 1)
     t.assert(body.data)
     /*
-     * Bob gets notified because he owns the patch.
+     * Bob gets notified because he autowatches the patch.
      * Alice get notified as a member.
      * Becky DOES NOT get notified as a member because she is the author.
      */
-    t.assert(body.notifications.length === 2)
+    t.assert(body.notifications.length === 2)  // alice is ios, bob is android
 
     var tomHit = 0
       , bobHit = 0
@@ -1589,12 +1598,14 @@ exports.beckyInsertsMessageToBobsPrivatePatch = function (test) {
       , stanHit = 0
 
     body.notifications.forEach(function(message) {
-      t.assert(message._target === testMessageToPrivate._id)
+      var notification = message.notification
+      t.assert(notification._target === testMessageToPrivate._id ||
+          notification.targetId === testMessageToPrivate._id)
       message.parseInstallIds.forEach(function(parseInstallId){
         if (parseInstallId.indexOf('tom') > 0) tomHit++
-        if (parseInstallId.indexOf('alice') > 0 && message.trigger == 'watch_to') aliceHit++
+        if (parseInstallId.indexOf('alice') > 0 && notification.trigger == 'watch_to') aliceHit++
         if (parseInstallId.indexOf('max') > 0) maxHit++
-        if (parseInstallId.indexOf('bob') > 0 && message.trigger == 'own_to') bobHit++
+        if (parseInstallId.indexOf('bob') > 0 && notification.trigger == 'watch_to') bobHit++
         if (parseInstallId.indexOf('becky') > 0) beckyHit++
         if (parseInstallId.indexOf('stan') > 0) stanHit++
       })
@@ -1656,97 +1667,116 @@ exports.beckyInsertsMessageToBobsPrivatePatch = function (test) {
 
 exports.bobInsertsResponseToBeckysPrivateMessage = function (test) {
 
+  // Alice mutes her watch link to testPatchPrivate
   t.post({
-    uri: '/do/insertEntity?' + userCredBob,
-    body: {
-      entity: testResponseToPrivate,
-      links: [
-         { _to: testPatchPrivate._id,                   // Bobs patch
-            type: util.statics.typeContent },
-        ],
-      test: true,
-      activityDateWindow: 0,
-    }
-  }, 201, function(err, res, body) {
-    t.assert(body.count === 1)
+    uri: '/data/links/' + aliceWatchLinkId + '?' + userCredAlice,
+    body: { data: {mute: true}},
+  }, function(err, res, body) {
     t.assert(body.data)
-    /*
-     * Becky and Alice get notified because they are watching the patch.
-     * Bob DOES NOT get notified as the owner of the patch because is the message author.
-     */
-
-    /*
-     * If not run stand-alone, Alice create in previous test module
-     * gets a message because she is watching tom.
-     */
-    t.assert(body.notifications.length === 1)
-
-    var tomHit = 0
-      , bobHit = 0
-      , aliceHit = 0
-      , maxHit = 0
-      , beckyHit = 0
-      , stanHit = 0
-
-    body.notifications.forEach(function(message) {
-      message.parseInstallIds.forEach(function(parseInstallId){
-        if (parseInstallId.indexOf('tom') > 0) tomHit++
-        if (parseInstallId.indexOf('alice') > 0 && message.trigger == 'watch_to') aliceHit++
-        if (parseInstallId.indexOf('max') > 0) maxHit++
-        if (parseInstallId.indexOf('bob') > 0) bobHit++
-        if (parseInstallId.indexOf('becky') > 0 && message.trigger == 'watch_to') beckyHit++
-        if (parseInstallId.indexOf('stan') > 0) stanHit++
-      })
-    })
-
-    t.assert(tomHit === 0)
-    t.assert(aliceHit === 1)
-    t.assert(maxHit === 0)
-    t.assert(bobHit === 0)
-    t.assert(beckyHit === 1)
-    t.assert(stanHit === 0)
-
-    var savedEnt = body.data
-    t.assert(savedEnt._owner === testUserBob._id)
-    t.assert(savedEnt._creator === testUserBob._id)
-    t.assert(savedEnt._modifier === testUserBob._id)
-    var activityDate = body.date
-
-    /* Check insert */
+    t.assert(body.data._to === testPatchPrivate._id)
+    t.assert(body.data.mute)
     t.post({
-      uri: '/find/messages?' + userCredBob,
+      uri: '/do/insertEntity?' + userCredBob,
       body: {
-        query:{ _id:testResponseToPrivate._id }
+        entity: testResponseToPrivate,
+        links: [
+           { _to: testPatchPrivate._id,                   // Bobs patch
+              type: util.statics.typeContent },
+          ],
+        test: true,
+        activityDateWindow: 0,
       }
-    }, function(err, res, body) {
+    }, 201, function(err, res, body) {
       t.assert(body.count === 1)
+      t.assert(body.data)
+      /*
+       * Becky and Alice get notified because they are watching the patch.
+       * Bob DOES NOT get notified as the owner of the patch because is the message author.
+       */
 
-      /* Check link to patch */
-      t.post({
-        uri: '/find/links?' + adminCred,
-        body: {
-          query: {
-            _to: testPatchPrivate._id,
-            _from: testResponseToPrivate._id,
+      /*
+       * If not run stand-alone, Alice create in previous test module
+       * gets a message because she is watching tom.
+       */
+      t.assert(body.notifications.length === 2)
+
+      var tomHit = 0
+        , bobHit = 0
+        , aliceHit = 0
+        , maxHit = 0
+        , beckyHit = 0
+        , stanHit = 0
+
+      body.notifications.forEach(function(message) {
+        var notification = message.notification
+        message.parseInstallIds.forEach(function(parseInstallId){
+          if (parseInstallId.indexOf('tom') > 0) tomHit++
+          if (parseInstallId.indexOf('alice') > 0 && notification.trigger == 'watch_to') {
+            aliceHit++
+            // Alice muted her watch link earlier in the test.  She has an ios install.
+            // See the mini spec here:  https://github.com/3meters/proxibase/issues/347
+            t.assert(notification.priority === 2)
+            t.assert(notification["sound-x"])
+            t.assert(notification["alert-x"])
+            t.assert(!notification.sound)
+            t.assert(!notification.notification)
           }
+          if (parseInstallId.indexOf('max') > 0) maxHit++
+          if (parseInstallId.indexOf('bob') > 0) bobHit++
+          if (parseInstallId.indexOf('becky') > 0 && notification.trigger == 'watch_to') beckyHit++
+          if (parseInstallId.indexOf('stan') > 0) stanHit++
+        })
+      })
+
+      t.assert(tomHit === 0)
+      t.assert(aliceHit === 1)
+      t.assert(maxHit === 0)
+      t.assert(bobHit === 0)
+      t.assert(beckyHit === 1)
+      t.assert(stanHit === 0)
+
+      var savedEnt = body.data
+      t.assert(savedEnt._owner === testUserBob._id)
+      t.assert(savedEnt._creator === testUserBob._id)
+      t.assert(savedEnt._modifier === testUserBob._id)
+      var activityDate = body.date
+
+      /* Check insert */
+      t.post({
+        uri: '/find/messages?' + userCredBob,
+        body: {
+          query:{ _id:testResponseToPrivate._id }
         }
       }, function(err, res, body) {
-        t.assert(body && body.data && 1 === body.data.length)
-        var link = body.data[0]
-        t.assert(link._creator === testUserBob._id)
-        t.assert(link._owner === testUserBob._id)     // strong links to entites are owned by ent owner
+        t.assert(body.count === 1)
 
-        /* Check activityDate for patch */
+        /* Check link to patch */
         t.post({
-          uri: '/find/patches',
+          uri: '/find/links?' + adminCred,
           body: {
-            query:{ _id:testPatchPrivate._id }
+            query: {
+              _to: testPatchPrivate._id,
+              _from: testResponseToPrivate._id,
+            }
           }
         }, function(err, res, body) {
-          t.assert(body.count === 1)
-          t.assert(body.data && body.data[0])
-          t.assert(body.data[0].activityDate >= activityDate)
-          test.done()
+          t.assert(body && body.data && 1 === body.data.length)
+          var link = body.data[0]
+          t.assert(link._creator === testUserBob._id)
+          t.assert(link._owner === testUserBob._id)     // strong links to entites are owned by ent owner
+
+          /* Check activityDate for patch */
+          t.post({
+            uri: '/find/patches',
+            body: {
+              query:{ _id:testPatchPrivate._id }
+            }
+          }, function(err, res, body) {
+            t.assert(body.count === 1)
+            t.assert(body.data && body.data[0])
+            t.assert(body.data[0].activityDate >= activityDate)
+            test.done()
+          })
         })
       })
     })
@@ -2028,14 +2058,15 @@ exports.beckySharesPrivatePatchWithStan = function(test) {
       , stanHit = 0
 
     body.notifications.forEach(function(message) {
-      t.assert(message._target === beckySharePatchWithStanId || message.targetId === beckySharePatchWithStanId)
+      var notification = message.notification
+      t.assert(notification._target === beckySharePatchWithStanId || notification.targetId === beckySharePatchWithStanId)
       message.parseInstallIds.forEach(function(parseInstallId){
         if (parseInstallId.indexOf('tom') > 0) tomHit++
         if (parseInstallId.indexOf('alice') > 0) aliceHit++
         if (parseInstallId.indexOf('max') > 0) maxHit++
         if (parseInstallId.indexOf('bob') > 0) bobHit++
         if (parseInstallId.indexOf('becky') > 0) beckyHit++
-        if (parseInstallId.indexOf('stan') > 0 && message.trigger == 'share') stanHit++
+        if (parseInstallId.indexOf('stan') > 0 && notification.trigger == 'share') stanHit++
       })
     })
 
@@ -2149,15 +2180,16 @@ exports.beckySharesMemberMessageWithNonMemberStan = function(test) {
       , stanHit = 0
 
     body.notifications.forEach(function(message) {
+      var notification = message.notification
       if (!message.info) {
-        t.assert(message._target === beckyShareMessageWithStanId || message.targetId === beckyShareMessageWithStanId)
+        t.assert(notification._target === beckyShareMessageWithStanId || notification.targetId === beckyShareMessageWithStanId)
         message.parseInstallIds.forEach(function(parseInstallId){
           if (parseInstallId.indexOf('tom') > 0) tomHit++
           if (parseInstallId.indexOf('alice') > 0) aliceHit++
           if (parseInstallId.indexOf('max') > 0) maxHit++
           if (parseInstallId.indexOf('bob') > 0) bobHit++
           if (parseInstallId.indexOf('becky') > 0) beckyHit++
-          if (parseInstallId.indexOf('stan') > 0 && message.trigger == 'share') stanHit++
+          if (parseInstallId.indexOf('stan') > 0 && notification.trigger == 'share') stanHit++
         })
       }
     })
@@ -2225,6 +2257,7 @@ exports.beckySharesMemberMessageWithNonMemberStan = function(test) {
   })
 }
 
+
 exports.beckySharesMemberMessageWithMemberAlice = function(test) {
   t.post({
     uri: '/do/insertEntity?' + userCredBecky,
@@ -2263,11 +2296,12 @@ exports.beckySharesMemberMessageWithMemberAlice = function(test) {
       , stanHit = 0
 
     body.notifications.forEach(function(message) {
-      if (!message.info) {
-        t.assert(message._target === beckyShareMessageWithAliceId)
+      var notification = message.notification
+      if (!notification.info) {
+        t.assert(notification.targetId === beckyShareMessageWithAliceId)
         message.parseInstallIds.forEach(function(parseInstallId){
           if (parseInstallId.indexOf('tom') > 0) tomHit++
-          if (parseInstallId.indexOf('alice') > 0 && message.trigger == 'share') aliceHit++
+          if (parseInstallId.indexOf('alice') > 0 && notification.trigger == 'share') aliceHit++
           if (parseInstallId.indexOf('max') > 0) maxHit++
           if (parseInstallId.indexOf('bob') > 0) bobHit++
           if (parseInstallId.indexOf('becky') > 0) beckyHit++
@@ -2376,15 +2410,16 @@ exports.beckySharesPhotoWithNonMemberStan = function(test) {
       , stanHit = 0
 
     body.notifications.forEach(function(message) {
-      if (!message.info) {
-        t.assert(message._target === beckySharePhotoWithStanId || message.targetId === beckySharePhotoWithStanId)
+      var notification = message.notification
+      if (!notification.info) {
+        t.assert(notification._target === beckySharePhotoWithStanId || notification.targetId === beckySharePhotoWithStanId)
         message.parseInstallIds.forEach(function(parseInstallId){
           if (parseInstallId.indexOf('tom') > 0) tomHit++
           if (parseInstallId.indexOf('alice') > 0) aliceHit++
           if (parseInstallId.indexOf('max') > 0) maxHit++
           if (parseInstallId.indexOf('bob') > 0) bobHit++
           if (parseInstallId.indexOf('becky') > 0) beckyHit++
-          if (parseInstallId.indexOf('stan') > 0 && message.trigger == 'share') stanHit++
+          if (parseInstallId.indexOf('stan') > 0 && notification.trigger == 'share') stanHit++
         })
       }
     })
@@ -2471,11 +2506,12 @@ exports.beckySharesPhotoWithMemberAlice = function(test) {
       , stanHit = 0
 
     body.notifications.forEach(function(message) {
+      var notification = message.notification
       if (!message.info) {
-        t.assert(message._target === beckySharePhotoWithAliceId)
+        t.assert(notification.targetId === beckySharePhotoWithAliceId)
         message.parseInstallIds.forEach(function(parseInstallId){
           if (parseInstallId.indexOf('tom') > 0) tomHit++
-          if (parseInstallId.indexOf('alice') > 0 && message.trigger == 'share') aliceHit++
+          if (parseInstallId.indexOf('alice') > 0 && notification.trigger == 'share') aliceHit++
           if (parseInstallId.indexOf('max') > 0) maxHit++
           if (parseInstallId.indexOf('bob') > 0) bobHit++
           if (parseInstallId.indexOf('becky') > 0) beckyHit++

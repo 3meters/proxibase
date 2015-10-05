@@ -300,11 +300,11 @@ exports.createPatches = function(test) {
 
     // Check nearby notifcations for patch creation
     t.assert(body.notifications && body.notifications.length === 1)
-    var parseIds = body.notifications[0].parseInstallIds
-    t.assert(parseIds)
-    t.assert(parseIds.some(function(id) { return id.indexOf('jane') >= 0 }))
-    t.assert(parseIds.some(function(id) { return id.indexOf('mary') >= 0 }))
-    t.assert(!parseIds.some(function(id) { return id.indexOf('tarzan') >= 0 }))  // Tarzan created, don't notifiy
+    var parseInstallIds = body.notifications[0].parseInstallIds
+    t.assert(parseInstallIds)
+    t.assert(parseInstallIds.some(function(id) { return id.indexOf('jane') >= 0 }))
+    t.assert(parseInstallIds.some(function(id) { return id.indexOf('mary') >= 0 }))
+    t.assert(!parseInstallIds.some(function(id) { return id.indexOf('tarzan') >= 0 }))  // Tarzan created, don't notifiy
 
     // Confirm that the create and watch links were automatically created
     t.get('/data/links?q[_to]=' + river._id + '&q[_from]=' + tarzan._id + '&' + tarzan.cred,
@@ -699,7 +699,7 @@ exports.tarzanCannotAcceptHisOwnRequestOnJanesBehalf = function(test) {
   t.post({
     uri: '/data/links/' + tarzanWatchesJanehouse._id + '?' + tarzan.cred,
     body: {data: {enabled: true}},
-  }, 401, function(err, res, body) {
+  }, 403, function(err, res, body) {
     test.done()
   })
 }
@@ -1009,9 +1009,9 @@ exports.marySlipsUp = function(test) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data.links && body.data.links.length)
     t.assert(body.data.links[0]._from === body.data._id)
-    t.assert(body.notifications && body.notifications.length === 2)
+    t.assert(body.notifications && body.notifications.length === 1)
+    t.assert(body.notifications[0].parseInstallIds.some(function(pid) {return pid.indexOf('jane') >= 0}))  // Busted!
     t.assert(body.notifications[0].parseInstallIds.some(function(pid) {return pid.indexOf('tarzan') >= 0}))
-    t.assert(body.notifications[1].parseInstallIds.some(function(pid) {return pid.indexOf('jane') >= 0}))  // Busted!
     test.done()
   })
 }
@@ -1422,6 +1422,9 @@ exports.patchesNear = function(test) {
           t.assert(cLinksOut)
           t.assert(cLinksInCounts)
           t.assert(cLinksOutCounts)
+          // TODO: note this was done anonymously from tarzan's device,
+          // Check to make sure that his install record was updated even
+          // though he was not signed in.
           test.done()
         })
       })
