@@ -1,6 +1,18 @@
 /**
- *  Private patches tests
+ *  Patchr basic use test
+ *
+ *  If this test passes the clients should work reasonably well in
+ *  our main cases.
+ *
+ *  To run stand-alone:
+ *
+ *     cd $SRC/test
+ *     node test -t /basic/18*
+ *
+ *  Safe to run concurrently simulating real use
+ *
  */
+
 
 var async = require('async')
 var util = require('proxutils')
@@ -16,6 +28,8 @@ var photo = {
   prefix: 'picture.jpg',
   source: 'aircandi.users'
 }
+var _exports = {}  // For commenting out tests
+
 
 // Generate a random location on earth based on seeds 1 and 2
 // This is so that the test can be run concurrently and not
@@ -25,8 +39,6 @@ var lat = ((Number(seed) % 179) - 89) + (Number(seed2) / base)
 var lng = ((Number(seed2) % 359) - 179) + (Number(seed) / base)
 var distance = 0.0001 // distance between patches in lat / lng increments, should be 100 meters or so
 
-
-var _exports = {}  // For commenting out tests
 
 var tarzan = {
   _id: 'us.tarzan' + seed,
@@ -102,14 +114,11 @@ var jungle = {
   }
 }
 
-/*
-log('Patch locations', {
-  river: river.location,
-  treeh: treehouse.location,
-  janeh: janehouse.location,
-  maryh: maryhouse.location,
-})
-*/
+// Set by tests
+var linkTarzanWatchesRiver = {}
+var linkTarzanWatchesTreehouse = {}
+var linkJaneWatchesRiver = {}
+
 
 var beacons = [
   {
@@ -139,6 +148,7 @@ var beacons = [
   },
 ]
 
+
 exports.getAdminSession = function(test) {
   testUtil.getAdminSession(function(session) {
     admin._id = session._owner
@@ -147,6 +157,7 @@ exports.getAdminSession = function(test) {
     test.done()
   })
 }
+
 
 exports.createUsers = function(test) {
   t.post({
@@ -191,18 +202,19 @@ exports.createUsers = function(test) {
   })
 }
 
+
 var _install = {
   clientVersionCode: 80,
-  clientVersionName: '0.1.0',
+  clientVersionName: '1.0.0',
   deviceType: 'ios',
-  deviceVersionName: '1.0.0',
+  deviceVersionName: '8.0.0',
   locationDate: util.now(),
 }
 
 exports.registerInstalls = function(test) {
   var install = _.extend({
     _user: tarzan._id,
-    parseInstallId: 'registration_id_testing_user_tarzan',
+    parseInstallId: 'tarzanParseId',
     installId: 'in.' + tarzan._id,
     location: treehouse.location,
   }, _install)
@@ -212,7 +224,7 @@ exports.registerInstalls = function(test) {
   }, function(err, res, body) {
     install = _.extend({
       _user: jane._id,
-      parseInstallId: 'registration_id_testing_user_jane',
+      parseInstallId: 'janeParseId',
       installId: 'in.' + jane._id,
       location: janehouse.location,
     }, _install)
@@ -222,7 +234,7 @@ exports.registerInstalls = function(test) {
     }, function(err, res, body) {
       install = _.extend({
         _user: jane._id,
-        parseInstallId: 'registration_id_testing_user_mary',
+        parseInstallId: 'maryParseId',
         installId: 'in.' + mary._id,
         location: maryhouse.location,
       }, _install)
@@ -236,6 +248,7 @@ exports.registerInstalls = function(test) {
   })
 }
 
+
 exports.adminCreatePlaces = function(test) {
   // Admin creates the Jungle
   t.post({
@@ -248,6 +261,7 @@ exports.adminCreatePlaces = function(test) {
     test.done()
   })
 }
+
 
 exports.createManyBeaconsInOnePost = function(test) {
   // Tarzan creates beacons
@@ -269,6 +283,7 @@ exports.createManyBeaconsInOnePost = function(test) {
   })
 }
 
+
 exports.idempotentUpsertManyBeaconsInOnePut = function(test) {
   // This is exprimental and may change
   t.put({
@@ -288,6 +303,7 @@ exports.idempotentUpsertManyBeaconsInOnePut = function(test) {
   })
 }
 
+
 exports.createPatches = function(test) {
 
   // Tarzan creates public river patch
@@ -302,48 +318,50 @@ exports.createPatches = function(test) {
     t.assert(body.notifications && body.notifications.length === 1)
     var parseInstallIds = body.notifications[0].parseInstallIds
     t.assert(parseInstallIds)
-    t.assert(parseInstallIds.some(function(id) { return id.indexOf('jane') >= 0 }))
-    t.assert(parseInstallIds.some(function(id) { return id.indexOf('mary') >= 0 }))
-    t.assert(!parseInstallIds.some(function(id) { return id.indexOf('tarzan') >= 0 }))  // Tarzan created, don't notifiy
+    t.assert(parseInstallIds.indexOf('janeParseId') >= 0)
+    t.assert(parseInstallIds.indexOf('maryParseId') >= 0)
+    t.assert(parseInstallIds.indexOf('tarzanParseId') < 0)  // Tarzan created, don't notifiy
 
-    // Confirm that the create and watch links were automatically created
-    t.get('/data/links?q[_to]=' + river._id + '&q[_from]=' + tarzan._id + '&' + tarzan.cred,
-    function(err, res, body) {
-      t.assert(body.data)
-      t.assert(body.data.length === 2)
-      t.assert(body.data[0].type === 'create')
-      t.assert(body.data[1].type === 'watch')
+    // Confirm that the watch link was created automatically
+    t.assert(body.data.links)
+    t.assert(body.data.links.length === 1)
+    // Module global
+    linkTarzanWatchesRiver = body.data.links[0]
+    t.assert(linkTarzanWatchesRiver.type === 'watch')
+    t.assert(linkTarzanWatchesRiver.enabled === true)
 
-      // Tarzan creates private treehouse patch
+    // Tarzan creates private treehouse patch
+    t.post({
+      uri: '/data/patches?' + tarzan.cred,
+      body: {data: treehouse, test: true},
+    }, 201, function (err, res, body) {
+      t.assert(body.count === 1)
+      t.assert(body.data.visibility === 'private')
+      t.assert(body.data.links && body.data.links.length === 1)
+      // Module global
+      linkTarzanWatchesTreehouse = body.data.links[0]
+
+      // Jane creates private janehouse patch
       t.post({
-        uri: '/data/patches?' + tarzan.cred,
-        body: {data: treehouse},
+        uri: '/data/patches?' + jane.cred,
+        body: {data: janehouse, test: true},
       }, 201, function (err, res, body) {
         t.assert(body.count === 1)
         t.assert(body.data.visibility === 'private')
 
-        // Jane creates private janehouse patch
-        t.post({
-          uri: '/data/patches?' + jane.cred,
-          body: {data: janehouse},
-        }, 201, function (err, res, body) {
+        // Tarzan can find and edit the patch he created
+        t.get('/data/patches/' + river._id + '?' + tarzan.cred,
+        function(err, res, body) {
+          t.assert(body.data && body.data._id)
           t.assert(body.count === 1)
-          t.assert(body.data.visibility === 'private')
+          t.assert(body.canEdit === true)
 
-          // Tarzan can find and edit the patch he created
-          t.get('/data/patches/' + river._id + '?' + tarzan.cred,
+          // Tarzan can find but not edit the patch Jane created
+          t.get('/data/patches/' + janehouse._id + '?' + tarzan.cred,
           function(err, res, body) {
             t.assert(body.data && body.data._id)
-            t.assert(body.count === 1)
-            t.assert(body.canEdit === true)
-
-            // Tarzan can find but not edit the patch Jane created
-            t.get('/data/patches/' + janehouse._id + '?' + tarzan.cred,
-            function(err, res, body) {
-              t.assert(body.data && body.data._id)
-              t.assert(body.canEdit === false)
-              test.done()
-            })
+            t.assert(body.canEdit === false)
+            test.done()
           })
         })
       })
@@ -351,6 +369,13 @@ exports.createPatches = function(test) {
   })
 }
 
+
+// When a user creates a patch we create a watch link for her.
+// This is returned in the insert call in a links array.  We
+// also create a create link for all entities, patches and messages,
+// but those are not returned in the response since they are just
+// extra bits that are of no use to the client.  This test confirms
+// that both links were created.
 exports.tarzanAutoWatchedAndAutoCreatedRiver = function(test) {
   t.post({
     uri: '/find/links?' + tarzan.cred,
@@ -366,6 +391,7 @@ exports.tarzanAutoWatchedAndAutoCreatedRiver = function(test) {
     test.done()
   })
 }
+
 
 exports.tarzanSendsMessageToRiver = function(test) {
   t.post({
@@ -384,6 +410,8 @@ exports.tarzanSendsMessageToRiver = function(test) {
     t.assert(body.data._acl === river._id)      // gets its permissions from river
     t.assert(body.data.links)
     t.assert(body.data.links.length === 1)
+    t.assert(body.data.links[0].type === 'content')
+    t.assert(body.notifications.length === 0)   // Tarzan is the only watcher
     test.done()
   })
 }
@@ -405,14 +433,13 @@ exports.janeSendsMessageToPublicRiver = function(test) {
     t.assert(body.notifications)
     t.assert(body.notifications.length === 1)
     t.assert(body.notifications[0].parseInstallIds)
-    t.assert(body.notifications[0].parseInstallIds.length)
-    t.assert(body.notifications[0].parseInstallIds[0].indexOf('tarzan') >= 0)
+    t.assert(body.notifications[0].parseInstallIds.indexOf('tarzanParseId') >= 0)
     test.done()
   })
 }
 
 
-exports.messagesToPublicRiverAreVisibleToAnon = function(test) {
+exports.messagesToPublicRiverAreVisibleToAnonUser = function(test) {
   t.post({
     uri: '/find/patches/' + river._id,
     body: {linked: {from: 'messages', type: 'content'}},
@@ -479,12 +506,12 @@ exports.tarzanSendsMessageToJanehouseAndPartiallyFails = function(test) {
       test: true,
     },
   }, 202, function(err, res, body) {
-    t.assert(body.data)   // the message was created and saved
-    t.assert(body.data.links.length === 0)   // but it was not linked to Janehouse
+    t.assert(body.data && body.data._id)          // the message was created and saved
+    t.assert(body.data.links.length === 0)        // but it was not linked to Janehouse
     t.assert(body.errors)
     t.assert(body.errors[0].type === 'insertLink')
-    t.assert(body.errors[0].error.code === 401) // bad auth, tarzan is not watching janehouse
-    t.assert(!body.notifications)  // because the link itself was never created
+    t.assert(body.errors[0].error.code === 401)   // bad auth, tarzan is not watching janehouse
+    t.assert(!body.notifications)                 // because the link itself was never created
     test.done()
   })
 }
@@ -556,13 +583,14 @@ exports.findWithLinkedDoesNotExposePrivateFieldsOfWatches = function(test) {
     t.assert(watchLinks.length)
     watchLinks.forEach(function(user) {
       t.assert(user.name)
-      t.assert(!user.email)
+      t.assert(!user.email)   // private field
       t.assert(user.link)
       t.assert(user.link.type === 'watch')
     })
     test.done()
   })
 }
+
 
 exports.getEntitiesForEntsReadsMessagesToPublicPatches = function(test) {
   t.post({
@@ -619,7 +647,8 @@ exports.tarzanCannotInviteHimselfToJanehouse = function(test) {
   })
 }
 
-var tarzanWatchesJanehouse = {
+
+var linkTarzanWatchesJanehouse = {
   _id: 'li.tarzanWatchesJaneHouse' + seed,
   _from: tarzan._id,
   _to: janehouse._id,
@@ -631,23 +660,24 @@ exports.tarzanRequestsToWatchJanehouse = function(test) {
   function (err, res, body) {
     var recentJane = body.data
     t.assert(recentJane)
-    t.assert(recentJane.notifiedDate)  // This should be advanced
+    t.assert(recentJane.notifiedDate)  // This should be advanced when Jane is notified
     t.post({
       uri: '/data/links?' + tarzan.cred,
       body: {
-        data: tarzanWatchesJanehouse,
+        data: linkTarzanWatchesJanehouse,
         test: true
       },
     }, 201, function(err, res, body) {
       t.assert(body.data)
-      tarzanWatchesJanehouse = body.data
-      t.assert(jane._id === tarzanWatchesJanehouse._owner)
-      t.assert(tarzanWatchesJanehouse.enabled === false)
+      linkTarzanWatchesJanehouse = body.data
+      t.assert(jane._id === linkTarzanWatchesJanehouse._owner)
+      t.assert(linkTarzanWatchesJanehouse.enabled === false)  // Because Janehouse is private
       t.assert(body.notifications)
       t.assert(body.notifications.length === 1)
       t.assert(body.notifications[0].parseInstallIds[0].indexOf('jane' >= 0))
-      // Now make sure Jane's notifiedDate was updated.  We use this to prevent shelling
-      // her with unimportant notifications
+
+      // Test that Jane's notifiedDate was updated.  We can use this to
+      // prevent shelling her with too many notifications at a time
       t.get('/find/users/' + jane._id + '?' + tarzan._id,
       function (err, res, body) {
         var nowJane = body.data
@@ -697,8 +727,8 @@ exports.tarzanCannotReadJanesMessagesYetUsingRest = function(test) {
 
 exports.tarzanCannotAcceptHisOwnRequestOnJanesBehalf = function(test) {
   t.post({
-    uri: '/data/links/' + tarzanWatchesJanehouse._id + '?' + tarzan.cred,
-    body: {data: {enabled: true}},
+    uri: '/data/links/' + linkTarzanWatchesJanehouse._id + '?' + tarzan.cred,
+    body: {data: {enabled: true}, test: true},
   }, 403, function(err, res, body) {
     test.done()
   })
@@ -725,13 +755,14 @@ exports.janeCanCountWatchRequests = function(test) {
   })
 }
 
+
 exports.janeAcceptsTarzansRequest = function(test) {
   t.post({
-    uri: '/data/links/' + tarzanWatchesJanehouse._id + '?' + jane.cred,
+    uri: '/data/links/' + linkTarzanWatchesJanehouse._id + '?' + jane.cred,
     body: {data: {enabled: true}, test: true},
   }, function(err, res, body) {
     t.assert(body.notifications && body.notifications.length === 1)
-    t.assert(body.notifications[0].parseInstallIds[0].indexOf('tarzan') >= 0)
+    t.assert(body.notifications[0].parseInstallIds.indexOf('tarzanParseId') >= 0)
     test.done()
   })
 }
@@ -751,6 +782,7 @@ exports.tarzanCanNowReadMessagesToJanehouse = function(test) {
   })
 }
 
+
 exports.tarzanInvitesJaneToTreehouse = function(test) {
   t.post({
     uri: '/data/messages?' + tarzan.cred,
@@ -768,11 +800,11 @@ exports.tarzanInvitesJaneToTreehouse = function(test) {
     },
   }, 201, function(err, res, body) {
     t.assert(body.notifications && body.notifications.length === 1)
-    t.assert(body.notifications[0].parseInstallIds[0].indexOf('jane') >= 0)
+    t.assert(body.notifications[0].parseInstallIds[0] === 'janeParseId')
     t.get('/data/links/li.toJaneFromTarzanInvite' + seed,
     function(err, res, body) {
       t.assert(body.data)
-      t.assert(jane._id === body.data._owner)
+      t.assert(jane._id === body.data._owner)   // the owner of the to entity owns the link,
       t.get('/data/links/li.toTreehouseFromTarzanInvite' + seed,
       function(err, res, body) {
         t.assert(body.data)
@@ -782,6 +814,7 @@ exports.tarzanInvitesJaneToTreehouse = function(test) {
     })
   })
 }
+
 
 exports.janeAcceptsTarzanInviteByCreatingAWatchLink = function(test) {
   t.post({
@@ -796,15 +829,17 @@ exports.janeAcceptsTarzanInviteByCreatingAWatchLink = function(test) {
     }
   }, 201, function(err, res, body) {
     t.assert(body.data)
-    // enabled because we recognized the existing share link, meaning an invitation
+    // Even though treehouse is private this link is created with enabled set to true
+    // Because we recognized the existing share link, meaning she had a pending invitation
     t.assert(body.data.enabled === true)
     t.assert(body.notifications && body.notifications.length === 1)
-    t.assert(body.notifications[0].parseInstallIds[0].indexOf('tarzan') >= 0)
+    t.assert(body.notifications[0].parseInstallIds[0] === 'tarzanParseId')
     test.done()
   })
 }
 
-exports.janeCannotSeeTreehouseMessagesWithFind = function(test) {
+
+exports.janeCannotSeeTreehouseMessagesFromOthersUsingFind = function(test) {
   t.get('/find/messages?' + jane.cred,
   function(err, res, body) {
     t.assert(body.count)
@@ -816,13 +851,16 @@ exports.janeCannotSeeTreehouseMessagesWithFind = function(test) {
   })
 }
 
+
 exports.janeCanSeeTreehouseMessagesViaFindOne = function(test) {
-  t.get('/find/messages/' + 'me.tarzanToTreehouse' + seed + '?' + jane.cred,
+  t.get('/find/messages/me.tarzanToTreehouse' + seed + '?' + jane.cred,
   function(err, res, body) {
-    t.assert(body.data)
+    t.assert(body.data && body.data._id)
+    t.assert(body.count === 1)
     test.done()
   })
 }
+
 
 // We don't nest messages in the current client ui, but this tests proves
 // that the security model still works if we ever decide to
@@ -840,13 +878,14 @@ exports.janeCanNestAMessageOnTarzansTreehouseMessage = function(test) {
     body: janeMessageOnMessage,
   }, 201, function(err, res, body) {
     t.assert(body.count)
-    t.assert(body.data._acl === 'pa.treehouse' + seed)  // the message's grandparent, not parent
-    t.assert(!body.notifications) // We currently do not notifiy for nested content
+    t.assert(body.data._acl === 'pa.treehouse' + seed)  // The message's grandparent, not parent
+    t.assert(!body.notifications)                       // We currently do not notifiy for nested content
     test.done()
   })
 }
 
-exports.janeCanSendsMessageToTreehouse = function(test) {
+
+exports.janeCanSendMessageToTreehouse = function(test) {
   t.post({
     uri: '/data/messages?' + jane.cred,
     body: {
@@ -859,10 +898,11 @@ exports.janeCanSendsMessageToTreehouse = function(test) {
     },
   }, 201, function(err, res, body) {
     t.assert(body.notifications && body.notifications.length === 1)
-    t.assert(body.notifications[0].parseInstallIds[0].indexOf('tarzan') >= 0)
+    t.assert(body.notifications[0].parseInstallIds[0] === 'tarzanParseId')
     test.done()
   })
 }
+
 
 exports.janeCanEditHerMessageToTreehouse = function(test) {
   t.post({
@@ -876,32 +916,34 @@ exports.janeCanEditHerMessageToTreehouse = function(test) {
   }, function(err, res, body) {
     t.assert(body.data)
     t.assert(body.data.description === 'On second thought, hammock sucks')
-    t.assert(!body.notificaions)  // no alert on content updates
+    t.assert(!body.notificaions)    // no alert on content updates
     test.done()
   })
 }
+
 
 exports.janeCanDeleteHerMessageToTreehouse = function(test) {
   t.del({
     uri: '/data/messages/me.janeToTreehouse' + seed + '?' + jane.cred,
   }, function(err, res, body) {
     t.assert(body.count === 1)
-    t.get('/data/links?query[_from]=me.janeToTreehouse' + seed + '&query[_to]=' + treehouse._id + '&q[test]=1&' + jane.cred,
+    t.get('/data/links?query[_from]=me.janeToTreehouse' + seed + '&query[_to]=' +
+        treehouse._id + '&q[test]=1&' + jane.cred,
     function(err, res, body) {
       t.assert(body.count === 0)
-      t.assert(!body.notifications)
+      t.assert(!body.notifications)  // No alerts on link delete
       test.done()
     })
   })
 }
+
 
 exports.maryCanCreatePatchAndLinksToAndFromItInOneRestCall = function(test) {
 
   var patch = util.clone(maryhouse)
   var links = [
     {_from: mary._id, type: 'like'},
-    // {_from: mary._id, type: 'watch'},  // watch link is created by the service
-    {_to: jungle._id, type: 'proximity'},
+    {_to: jungle._id, type: 'proximity'},  // Jungle is a place, not a patch
     {_to: 'be.' + beacons[2].bssid, type: 'proximity'},
     {_to: 'be.' + beacons[0].bssid, type: 'bogus'},      // Will fail
   ]
@@ -921,10 +963,11 @@ exports.maryCanCreatePatchAndLinksToAndFromItInOneRestCall = function(test) {
       t.assert(link._id.indexOf('li.' === 0))
     })
     t.assert(body.errors)
-    t.assert(body.errors.length === 1)
+    t.assert(body.errors.length === 1)  // The link with the bogus type failed
     t.assert(body.notifications && body.notifications.length === 1)
     t.assert(body.notifications[0].parseInstallIds)
-    t.assert(body.notifications[0].parseInstallIds.length === 2)  // To tazan and jane
+    t.assert(body.notifications[0].parseInstallIds.length === 2)       // To tazan and jane
+    t.assert(body.notifications[0].notification.trigger === 'nearby')  // New patche created nearby
     test.done()
   })
 }
@@ -963,6 +1006,7 @@ exports.getTarzanNotifications = function (test) {
   })
 }
 
+
 exports.getTarzanNotificationsPaging = function (test) {
   t.get('/user/getNotifications?limit=2&more=true&' + tarzan.cred,
   function(err, res, body) {
@@ -973,7 +1017,8 @@ exports.getTarzanNotificationsPaging = function (test) {
   })
 }
 
-exports.janeGetsSuspicious = function(test) {
+
+exports.janeWatchesPublicPatchRiver = function(test) {
   t.post({
     uri: '/data/links/?' + jane.cred,
     body: {
@@ -985,12 +1030,14 @@ exports.janeGetsSuspicious = function(test) {
       test: true,
     },
   }, 201, function(err, res, body) {
-    t.assert(body.data && body.data.enabled === true)  // becuase river is public
+    t.assert(body.data && body.data.enabled === true)   // becuase river is public
+    linkJaneWatchesRiver = body.data                    // module global
     t.assert(body.notifications && body.notifications.length === 1)
-    t.assert(body.notifications[0].parseInstallIds[0].indexOf('tarzan') >= 0)
+    t.assert(body.notifications[0].parseInstallIds[0] === 'tarzanParseId')  // Tarzan is watching his own patch river
     test.done()
   })
 }
+
 
 exports.marySlipsUp = function(test) {
   t.post({
@@ -1010,11 +1057,171 @@ exports.marySlipsUp = function(test) {
     t.assert(body.data && body.data.links && body.data.links.length)
     t.assert(body.data.links[0]._from === body.data._id)
     t.assert(body.notifications && body.notifications.length === 1)
-    t.assert(body.notifications[0].parseInstallIds.some(function(pid) {return pid.indexOf('jane') >= 0}))  // Busted!
-    t.assert(body.notifications[0].parseInstallIds.some(function(pid) {return pid.indexOf('tarzan') >= 0}))
+    var note = body.notifications[0]
+    t.assert(note.parseInstallIds.indexOf('janeParseId') >= 0)  // Busted!
+    t.assert(note.parseInstallIds.indexOf('tarzanParseId') >= 0)
+    t.assert(note.notification)
+    t.assert(note.notification.alert)
+    t.assert(note.notification.sound)
+    t.assert(note.notification.priority === 1)
     test.done()
   })
 }
+
+
+exports.tarzanMutesHisRiverPatch = function(test) {
+  t.post({
+    uri: '/data/links/' + linkTarzanWatchesRiver._id + '?' + tarzan.cred,
+    body: {data: {mute: true}, test: true},
+  }, function(err, res, body) {
+    t.assert(body.data && body.data.mute)
+    test.done()
+  })
+}
+
+
+exports.maryWatchesTarzansMutedPublicRiver = function(test) {
+  t.post({
+    uri: '/data/links/?' + mary.cred,
+    body: {data: {_to: river._id, _from: mary._id, type: 'watch'}, test: true},
+  }, 201, function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.notifications.length === 1)  // Tarzan has muted his public patch river
+    t.assert(body.notifications[0].parseInstallIds[0] === 'tarzanParseId')
+    t.assert(body.notifications[0].notification.priority === 2)  // Tarzan receives muted notification
+    t.del({uri: '/data/links/' + body.data._id + '?' + mary.cred},
+    function(err, res, body) {
+      t.assert(body.count === 1)
+      test.done()
+    })
+  })
+}
+
+
+exports.maryLikesTarzansMutedPublicRiver = function(test) {
+  t.post({
+    uri: '/data/links/?' + mary.cred,
+    body: {data: {_to: river._id, _from: mary._id, type: 'like'}, test: true},
+  }, 201, function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.notifications.length === 1)  // Tarzan has muted his public patch river
+    t.assert(body.notifications[0].parseInstallIds[0] === 'tarzanParseId')
+    t.assert(body.notifications[0].notification.priority === 2)  // Tarzan receives muted notification
+    t.del({uri: '/data/links/' + body.data._id + '?' + mary.cred},
+    function(err, res, body) {
+      t.assert(body.count === 1)
+      test.done()
+    })
+  })
+}
+
+
+// Jane's watch link to river is owned by tarzan, but she can still mute it
+exports.janeMutesTarzansRiver = function(test) {
+  t.post({
+    uri: '/data/links/' + linkJaneWatchesRiver._id + '?' + jane.cred,
+    body: {data: {mute: true}, test: true},
+  }, function(err, res, body) {
+    t.assert(body.data && body.data.mute)
+    test.done()
+  })
+}
+
+
+exports.marySendsMessageToMutedRiver = function(test) {
+  t.post({
+    uri: '/data/messages?' + mary.cred,
+    body: {
+      data: {
+        description: 'Sorry Jane!',
+        links: [{
+          _to: river._id,
+          type: 'content',
+        }]},
+      test: true,
+    },
+  }, 201, function(err, res, body) {
+    t.assert(body.data)
+    maryMessage = body.data
+    t.assert(body.notifications && body.notifications.length === 1)
+    t.assert(body.notifications[0].parseInstallIds.length === 2)  // Tarzan and Jane
+    var notification = body.notifications[0].notification
+    t.assert(notification)
+    t.assert(notification.priority === 2)         // muted
+    t.assert(notification["sound-x"])             // Muted alert for ios see
+    t.assert(notification["alert-x"])             // https://github.com/3meters/proxibase/issues/347
+    t.assert(!notification.alert)
+    t.assert(!notification.sound)
+
+    // Now Jane likes mary's message
+    t.post({
+      uri: '/data/links?' + jane.cred,
+      body: {data: {_to: maryMessage._id, _from: jane._id, type: 'like'}, test: true},
+    }, 201, function(err, res, body) {
+      t.assert(body.data)
+      t.assert(body.notifications.length === 1)
+      t.assert(body.notifications[0].parseInstallIds[0] === 'maryParseId')
+      t.assert(body.notifications[0].notification.priority === 2)
+      test.done()
+    })
+  })
+}
+
+
+exports.janeUnmutesRiver = function(test) {
+  t.post({
+    uri: '/data/links/' + linkJaneWatchesRiver._id + '?' + jane.cred,
+    body: {data: {mute: false}, test: true},
+  }, function(err, res, body) {
+    t.assert(body.data && body.data.mute === false)
+    test.done()
+  })
+}
+
+
+exports.likingAPrivatePatchNotifiesPatchOwner = function(test) {
+  t.post({
+    uri: '/data/links?' + jane.cred,
+    body: {data: {_to: treehouse._id, _from: jane._id, type: 'like'}, test: true}
+  }, 201, function(err, res, body) {
+    var likeLink = body.data
+    t.assert(likeLink)
+    t.assert(body.notifications.length === 1)
+    t.assert(body.notifications[0].parseInstallIds[0] === 'tarzanParseId')
+    t.assert(body.notifications[0].notification.priority === 2)     // likes are always pri 2
+    t.del({uri: '/data/links/' + likeLink._id + '?' + jane.cred},   // unlike
+    function(err, res, body) {
+      t.assert(body.count === 1)
+      test.done()
+    })
+  })
+}
+
+
+exports.tarzanUnwatchesTreehouse = function(test) {
+  t.del({uri: '/data/links/' + linkTarzanWatchesTreehouse._id + '?' + tarzan.cred},
+  function(err, res, body) {
+    t.assert(body.count === 1)
+    test.done()
+  })
+}
+
+
+exports.likingAnUnWatchedPatchDoesNotNotifyPatchOwner = function(test) {
+  t.post({
+    uri: '/data/links?' + jane.cred,
+    body: {data: {_to: treehouse._id, _from: jane._id, type: 'like'}, test: true}
+  }, 201, function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.notifications.length === 0)  // No notifications: tarzan has unwatched treehouse
+    t.del({uri: '/data/links/' + body.data._id + '?' + jane.cred}, // cleanup
+    function(err, res, body) {
+      t.assert(body.count === 1)
+      test.done()
+    })
+  })
+}
+
 
 exports.findWithNestedLinks = function(test) {
   t.post({
@@ -1059,6 +1266,7 @@ exports.findWithNestedLinks = function(test) {
     test.done()
   })
 }
+
 
 exports.findWithNestedLinksPromoteLinked = function(test) {
   t.post({
@@ -1107,6 +1315,7 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
   })
 }
 
+
 exports.findPatchforMessage = function(test) {
   t.post({
     uri: '/find/messages/me.tarzanToRiver' + seed + '?' + tarzan.cred,
@@ -1121,6 +1330,7 @@ exports.findPatchforMessage = function(test) {
     test.done()
   })
 }
+
 
 // Find messages for patches with new find syntax vs deprecated
 // getEnitiesForEntity syntax
@@ -1441,7 +1651,7 @@ exports.tarzanCanLikeAndUnlikeQuickly = function(test) {
   }
   t.post({
     uri: '/data/links?' + tarzan.cred,
-    body: {data: riverLike},
+    body: {data: riverLike, test: true},
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
@@ -1451,7 +1661,7 @@ exports.tarzanCanLikeAndUnlikeQuickly = function(test) {
       t.assert(body.count === 1)
       t.post({
         uri: '/data/links?' + tarzan.cred,
-        body: {data: riverLike},
+        body: {data: riverLike, test: true},
       }, 201, function(err, res, body) {
         t.assert(body.count === 1)
         test.done()
@@ -1474,28 +1684,24 @@ exports.likingAPatchUpdatesActivityDateOfUserAndPatch = function(test) {
       setTimeout(likeTreehouse, 1200)  // activity date window is 1000
 
       function likeTreehouse() {
+
         t.post({
           uri: '/data/links?' + jane.cred,
-          body: {
-            data: {
-              _to: treehouse._id,
-              _from: jane._id,
-              type: 'like',
-            },
-            test: true,
-          }
+          body: {data: {_to: treehouse._id, _from: jane._id, type: 'like', }, test: true, }
         }, 201, function(err, res, body) {
-          t.assert(body.notifications && body.notifications.length === 1)
-          t.assert(body.notifications[0].parseInstallIds[0].indexOf('tarzan') >= 0)
+
+          // Test that Jane's activity date was updated
           t.get('/data/users/' + jane._id,
           function(err, res, body) {
             t.assert(body.data.activityDate > janeOldActivityDate)
             t.get('/data/patches/' + treehouse._id,
+
+            // Test the treehouse's activity date was updated
             function(err, res, body) {
               t.assert(body.data.activityDate > treehouseOldActivityDate)
               treehouseNewActivityDate = body.data.activityDate
 
-              // Now test that updating a patch does not update its activity date
+              // Test that updating a patch does not update its activity date
               t.post({
                 uri: '/data/patches/' + treehouse._id + '?' + tarzan.cred,
                 body: {data: {description: 'A nice place to swing'}, test: true},
@@ -1527,8 +1733,8 @@ exports.deleteUserEraseOwnedWorks = function(test) {
 
     t.get('/data/messages/count?q[_owner]=' + mary._id + '&' + mary.cred,
     function(err, res, body) {
-      t.assert(body.count === 2)
-      var cMessages = body.count  // Mary has sent two messages
+      t.assert(body.count === 3)
+      var cMessages = body.count  // Mary has sent 3 messages
 
       t.get('/data/sessions/count?q[_owner]=' + mary._id + '&' + admin.cred,
       function(err, res, body) {
