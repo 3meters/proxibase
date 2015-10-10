@@ -309,6 +309,18 @@ exports.changingPasswordsCreatesNewSession = function(test) {
   })
 }
 
+exports.adminCanChangePassword = function(test) {
+  t.post({
+    uri: '/user/changepw?' + adminCred,
+    body: {
+      userId: testUser._id,
+      newPassword: 'newpassword2',
+    },
+  }, function(err, res, body) {
+    test.done()
+  })
+}
+
 exports.userCannotChangeRoles = function(test) {
   t.post({
     uri: '/data/users/' + testUser._id + '?' + userCred,
@@ -352,7 +364,7 @@ exports.userCanChangeOwnEmailViaRest = function(test) {
 exports.userCanSignInWithNewEmail = function(test) {
   t.post({
     uri: '/auth/signin',
-    body: {email: 'authtest3@3meters.com', password: 'newpassword', installId: '123456'}
+    body: {email: 'authtest3@3meters.com', password: 'newpassword2', installId: '123456'}
   }, function(err, res, body) {
     t.assert(body.session)
     userCred = 'user=' + body.session._owner + '&session=' + body.session.key
