@@ -602,6 +602,7 @@ exports.getEntitiesForEntsReadsMessagesToPublicPatches = function(test) {
         linkTypes: ['content'],
         direction: 'in',
       },
+      test: true,
     },
   }, function(err, res, body) {
     t.assert(body.count === 2)
@@ -1225,7 +1226,8 @@ exports.likingAnUnWatchedPatchDoesNotNotifyPatchOwner = function(test) {
 
 exports.findWithNestedLinks = function(test) {
   t.post({
-    uri: '/find/users/' + tarzan._id + ',' + jane._id + ',' + mary._id + '?' + tarzan.cred,
+    // uri: '/find/users/' + tarzan._id + ',' + jane._id + ',' + mary._id + '?' + tarzan.cred,
+    uri: '/find/users/' + jane._id + '?' + tarzan.cred,
     body: {refs: 'name,photo',
       linked: {to: 'patches', type: 'watch', fields: 'name,visibility,photo,schema', linkFields: 'enabled',
         linked: {from: 'messages', refs: 'name', type: 'content', fields: 'description,photo,schema', linkFields: false},
@@ -1237,30 +1239,29 @@ exports.findWithNestedLinks = function(test) {
     },
   }, function(err, res, body) {
     var cMessages = 0
-    t.assert(body.data.length === 3)
-    body.data.forEach(function(user) {
-      t.assert(user.schema === 'user')
-      t.assert(user.name)
-      t.assert(!user.email)
-      t.assert(user.linked)
-      t.assert(user.owner.name)
-      user.linked.forEach(function(patch) {
-        t.assert(patch._id)
-        t.assert(patch.schema === 'patch')
-        t.assert(patch._owner)
-        t.assert(!patch.owner)  // refs do not cascade
-        t.assert(patch.linked)
-        patch.linked.forEach(function(message) {
-          t.assert(message.schema === 'message')
-          t.assert(message.owner)  // refs can be speced at any level
-          t.assert(!message.owner.name)
-          t.assert(!message.link)  // excluded
-          cMessages++
-        })
-        t.assert(patch.linkCount)
-        t.assert(tipe.isDefined(patch.linkCount.from.users.watch))
-        t.assert(tipe.isDefined(patch.linkCount.from.users.like))
+    t.assert(body.data)
+    var user = body.data
+    t.assert(user.schema === 'user')
+    t.assert(user.name)
+    t.assert(!user.email)
+    t.assert(user.linked)
+    t.assert(user.owner.name)
+    user.linked.forEach(function(patch) {
+      t.assert(patch._id)
+      t.assert(patch.schema === 'patch')
+      t.assert(patch._owner)
+      t.assert(!patch.owner)  // refs do not cascade
+      t.assert(patch.linked)
+      patch.linked.forEach(function(message) {
+        t.assert(message.schema === 'message')
+        t.assert(message.owner)  // refs can be speced at any level
+        t.assert(!message.owner.name)
+        t.assert(!message.link)  // excluded
+        cMessages++
       })
+      t.assert(patch.linkCount)
+      t.assert(tipe.isDefined(patch.linkCount.from.users.watch))
+      t.assert(tipe.isDefined(patch.linkCount.from.users.like))
     })
     t.assert(cMessages)
     test.done()
@@ -1598,7 +1599,7 @@ exports.patchesNear = function(test) {
 
         // Deprecated syntax
         t.post({
-          uri: '/patches/near',
+          uri: '/patches/near?',
           body: {
             rest: false,  // Same as getEntities: true
             location: location,

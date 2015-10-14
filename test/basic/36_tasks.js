@@ -108,7 +108,7 @@ var task1 = {
   schedule: sched1,
   module:   'utils',
   method:   'db.documents.safeInsert',
-  args:     [{name: 'testTaskDoc1'}, {asAdmin: true}]
+  args:     [{name: 'testTaskDoc1'}, {asAdmin: true, tag: 'recurringTask 1'}]
 }
 
 
@@ -158,10 +158,11 @@ exports.updateTaskWorks = function(test) {
 exports.stopTask = function(test) {
   t.get('/admin/tasks/' + task1.key + '/stop?' + adminCred,
   function(err, res, body) {
-    db.documents.safeFind({name: 'testTaskDoc'}, {asAdmin: true}, function(err, docs) { // get both 1s and 2s
+    var dbOps = {asAdmin: true, tag: 'tasktest'}
+    db.documents.safeFind({name: 'testTaskDoc'}, dbOps, function(err, docs) { // get both 1s and 2s
       var cDocs = docs.length
       setTimeout(function() {
-        db.documents.safeFind({name: 'testTaskDoc'}, {asAdmin: true}, function(err, docs) {
+        db.documents.safeFind({name: 'testTaskDoc'}, dbOps, function(err, docs) {
           t.assert(cDocs === docs.length) // No new documents have been added since we stopped task1
           test.done()
         })
@@ -278,7 +279,8 @@ function isDocGeneratorRunning(docName, cb) {
   var dbOps = {
     asAdmin: true,
     name: docName,
-    count: true
+    count: true,
+    tag: 'tasktest',
   }
   db.documents.safeFind({}, dbOps, function(err, count) {
     if (err) throw err

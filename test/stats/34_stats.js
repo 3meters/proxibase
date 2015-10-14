@@ -199,15 +199,19 @@ exports.addSomeTestData = function(test) {
     type: 'proximity',
   }]
 
-  db.patches.safeInsert(newPatches, {user: testUser}, function(err, savedPatches) {
+  var dbOps = {
+    user: testUser,
+    tag: 'statsTest',
+  }
+  db.patches.safeInsert(newPatches, dbOps, function(err, savedPatches) {
     assert(!err, err)
     assert(savedPatches.length, savedPatches)
-    db.messages.safeInsert(newMsgs, {user: testUser}, function(err, savedMsgs) {
+    db.messages.safeInsert(newMsgs, dbOps, function(err, savedMsgs) {
       assert(!err, err)
       assert(savedMsgs.length, savedMsgs)
-      db.beacons.safeInsert(newBeacons, {user: testUser}, function(err, savedBeacons) {
+      db.beacons.safeInsert(newBeacons, dbOps, function(err, savedBeacons) {
         assert(!err, err)
-        db.links.safeInsert(newLinks, {user: testUser}, function(err, savedLinks) {
+        db.links.safeInsert(newLinks, dbOps, function(err, savedLinks) {
           assert(!err, err)
           assert(savedLinks.length)
           test.done()
@@ -289,13 +293,18 @@ exports.addSomeMoreTestData = function(test) {
     type: 'watch',
   }]
 
-  db.messages.safeInsert(newMsgs, {user: testUser}, function(err, savedMsgs) {
+  var dbOps = {
+    user: testUser,
+    tag: 'statsTest',
+  }
+  db.messages.safeInsert(newMsgs, dbOps, function(err, savedMsgs) {
     assert(!err, err)
-    db.links.safeInsert(newLinks, {user: testUser}, function(err, savedLinks, meta) {
+    db.links.safeInsert(newLinks, dbOps, function(err, savedLinks, meta) {
       assert(!err, err)
       assert(savedLinks.length === 3)
       assert(!meta.errors)
-      db.links.safeInsert(newLinks2, {user: testUser2}, function(err, savedLinks) {
+      dbOps.user = testUser2
+      db.links.safeInsert(newLinks2, dbOps, function(err, savedLinks) {
         assert(!err, err)
         assert(savedLinks.length === 1)
         test.done()

@@ -175,7 +175,6 @@ var testBeacon = {
   name: 'Test Beacon Label',
   ssid: 'Test Beacon',
   bssid: '11:11:11:11:11:11',
-  signal: -80,
   location: {
     lat:testLatitude,
     lng:testLongitude,
@@ -190,7 +189,6 @@ var testBeacon2 = {
   name: 'Test Beacon Label 2',
   ssid: 'Test Beacon 2',
   bssid: '22:22:22:22:22:22',
-  signal: -85,
   location: {
     lat:testLatitude,
     lng:testLongitude,
@@ -205,7 +203,6 @@ var testBeacon3 = {
   name: 'Test Beacon Label 3',
   ssid: 'Test Beacon 3',
   bssid: '33:33:33:33:33:33',
-  signal: -95,
   location: {
     lat:testLatitude,
     lng:testLongitude,
@@ -214,27 +211,27 @@ var testBeacon3 = {
     geometry:[testLongitude, testLatitude]
   },
 }
+
 var testLink = {
-  _to : testBeacon3._id,
-  _from : 'pa.111111.11111.111.111111',
-  type: 'proximity',
-  proximity: {
-    primary: true,
-    signal: -100
-  }
+  _to : testMessage._id,
+  _from : testUserTom._id,
+  type: 'like',
 }
+
 var testLocation = {
   lat : testLatitude,
   lng : testLongitude,
   altitude : 100,
   accuracy : 50.0
 }
+
 var testLocation2 = {
   lat : testLatitude2,
   lng : testLongitude2,
   altitude : 12,
   accuracy : 30.0
 }
+
 var testLocation3 = {
   lat : 46.15,
   lng : -121.1,
@@ -540,7 +537,6 @@ exports.insertPatchCustomPublic = function (test) {
     body: {
       entity: testPatchCustomPublic,
       beacons: [testBeacon],
-      primaryBeaconId: testBeacon._id,
       test: true,
     }
   }, 201, function(err, res, body) {
@@ -584,7 +580,6 @@ exports.insertPatchCustomPublic = function (test) {
             query:{
               _to:testBeacon._id,
               _from:testPatchCustomPublic._id,
-              'proximity.primary':true
             }
           }
         }, function(err, res, body) {
@@ -652,13 +647,11 @@ exports.trackEntityProximity = function(test) {
   t.post({
     uri: '/do/trackEntity?' + userCredTom,
     body: {
-      entityId:testPatchOne._id,
-      beacons:[testBeacon, testBeacon2, testBeacon3],
-      primaryBeaconId:testBeacon2._id,
-      actionEvent:'proximity',
+      entityId: testPatchOne._id,
+      beacons: [testBeacon, testBeacon2, testBeacon3],
     }
   }, function(err, res, body) {
-    t.assert(body.info.toLowerCase().indexOf('tracked') > 0)
+    t.assert(body.info.toLowerCase().indexOf('tracked') >= 0)
 
     /* Check track entity proximity links from entity 1 */
     t.post({
@@ -666,7 +659,7 @@ exports.trackEntityProximity = function(test) {
       body: {
         query:{
           _from:testPatchOne._id,
-          type:util.statics.typeProximity
+          type: 'proximity',
         }
       }
     }, function(err, res, body) {
@@ -679,14 +672,11 @@ exports.trackEntityProximity = function(test) {
           query:{
             _to:testBeacon2._id,
             _from:testPatchOne._id,
-            type:util.statics.typeProximity
+            type:'proximity',
           }
         }
       }, function(err, res, body) {
-        trackingLink = body.data[0]
         t.assert(body.count === 1)
-        t.assert(body.data[0].proximity.primary === true)
-        t.assert(body.data[0].proximity.signal === testBeacon2.signal)
         test.done()
       })
     })
@@ -699,10 +689,9 @@ exports.untrackEntityProximity = function(test) {
     body: {
       entityId:testPatchOne._id,
       beacons:[testBeacon, testBeacon2, testBeacon3],
-      actionEvent:'proximity_minus',
     }
   }, function(err, res, body) {
-    t.assert(body.info.indexOf('untracked') > 0)
+    t.assert(body.info.indexOf('Untracked') >= 0)
 
     /* Check untrack entity proximity links from entity 1 */
     t.post({
@@ -710,7 +699,7 @@ exports.untrackEntityProximity = function(test) {
       body: {
         query:{
           _from:testPatchOne._id,
-          type:util.statics.typeProximity
+          type:'proximity',
         }
       }
     }, function(err, res, body) {
@@ -726,11 +715,10 @@ exports.trackEntityProximityAgain = function(test) {
     body: {
       entityId:testPatchOne._id,
       beacons:[testBeacon, testBeacon2, testBeacon3],
-      primaryBeaconId:testBeacon2._id,
       actionEvent:'proximity',
     }
   }, function(err, res, body) {
-    t.assert(body.info.toLowerCase().indexOf('tracked') > 0)
+    t.assert(body.info.toLowerCase().indexOf('tracked') >= 0)
 
     /* Check track entity proximity links from entity 1 */
     t.post({
@@ -757,35 +745,9 @@ exports.trackEntityProximityAgain = function(test) {
       }, function(err, res, body) {
         trackingLink = body.data[0]
         t.assert(body.count === 1)
-        t.assert(body.data[0].proximity.primary === true)
-        t.assert(body.data[0].proximity.signal === testBeacon2.signal)
+        t.assert(body.data[0].signal === testBeacon2.signal)
         test.done()
       })
-    })
-  })
-}
-
-exports.untrackEntityProximityWipeAll = function(test) {
-  t.post({
-    uri: '/do/untrackEntity?' + userCredTom,
-    body: {
-      entityId:testPatchOne._id,
-    }
-  }, function(err, res, body) {
-    t.assert(body.info.indexOf('untracked') > 0)
-
-    /* Check untrack entity proximity links from entity 1 */
-    t.post({
-      uri: '/find/links',
-      body: {
-        query:{
-          _from:testPatchOne._id,
-          type:util.statics.typeProximity
-        }
-      }
-    }, function(err, res, body) {
-      t.assert(body.count === 0)
-      test.done()
     })
   })
 }

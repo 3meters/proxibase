@@ -193,7 +193,7 @@ function saveAll(cb) {
         row._creator = row._id
         row._modifier = row._id
       }
-      collection.safeInsert(row, {user: user, ip: '127.0.0.1'}, cb)
+      collection.safeInsert(row, {user: user, ip: '127.0.0.1', tag: 'genData'}, cb)
     }
   }
 

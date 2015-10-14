@@ -246,12 +246,14 @@ exports.adminCanDeleteOthersRecords = function(test) {
 }
 
 
-exports.userCannotReadSysCollections = function(test) {
+exports.userCannotReadSystemCollections = function(test) {
   t.get('/data/patches?' + user1Cred, 200, function(err, res) {
-    t.get('/data/actions?' + user1Cred, 401, function(err, res) {
-      t.get('/data/installs?' + user1Cred, 401, function(err, res) {
-        t.get('/data/sessions?' + user1Cred, 401, function(err, res) {
-          test.done()
+    t.get('/data/documents?' + user1Cred, 200, function(err, res) {
+      t.get('/data/sysvars?' + user1Cred, 401, function(err, res) {
+        t.get('/data/installs?' + user1Cred, 401, function(err, res) {
+          t.get('/data/sessions?' + user1Cred, 401, function(err, res) {
+            test.done()
+          })
         })
       })
     })
