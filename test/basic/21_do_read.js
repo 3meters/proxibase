@@ -117,7 +117,6 @@ exports.getEntitiesMaximum = function (test) {
         active: [
           { type:statics.typeProximity, schema:statics.schemaBeacon, links: true, count: true, direction: 'both' },
           { type:statics.typeProximity, schema:statics.schemaPlace, links: true, count: true, direction: 'both' },
-          { type:statics.typeContent, schema:statics.schemaApplink, links: true, count: true, direction: 'both' },
           { type:statics.typeContent, schema:statics.schemaMessage, links: true, count: true, direction: 'both' },
           { type:statics.typeWatch, schema:statics.schemaUser, links: true, count: true, direction: 'both' },
           { type:statics.typeCreate, schema:statics.schemaUser, links: true, count: true, direction: 'both' },
@@ -128,9 +127,9 @@ exports.getEntitiesMaximum = function (test) {
     t.assert(body.data && body.data[0])
     var record = body.data[0]
     t.assert(record.linksIn && record.linksIn.length)
-    t.assert(record.linksIn && record.linksIn.length === dbProfile.mpp + dbProfile.app + 2)  // user create and user watch
+    t.assert(record.linksIn && record.linksIn.length === dbProfile.mpp + 2)  // user create and user watch
     t.assert(record.linksOut && record.linksOut.length === dbProfile.bpp + dbProfile.ppp)
-    t.assert(record.linksInCounts && record.linksInCounts.length === 4)
+    t.assert(record.linksInCounts && record.linksInCounts.length === 3)
     t.assert(record.linksOutCounts && record.linksOutCounts.length === 2)
     test.done()
   })
@@ -175,7 +174,6 @@ exports.getEntitiesAndLinkedEntitiesByUser = function (test) {
         loadWhere: { _creator: constants.uid1 },
         active: [
           { type:statics.typeProximity, schema:statics.schemaBeacon },
-          { type:statics.typeContent, schema:statics.schemaApplink },
           { type:statics.typeWatch, schema:statics.schemaUser },
         ]},
     }

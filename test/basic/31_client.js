@@ -92,7 +92,7 @@ exports.canSetVersionAsAdmin = function(test) {
 //
 exports.canRefreshVersionViaDatabaseAndGetOnClient = function(test) {
   t.post({
-    uri: '/data/sysvars/sy.clientMinVersions?' + adminCred,
+    uri: '/data/sys/sy.clientMinVersions?' + adminCred,
     body: {data: {data: {
       'com_aircandi_aruba': 96,
       'com_aircandi_catalina': 100,

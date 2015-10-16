@@ -115,32 +115,6 @@ var testMessage2 = {
   name : "Testing message entity 2",
 }
 
-var testApplink = {
-  schema: util.statics.schemaApplink,
-  name: "Applink",
-  photo: {
-    prefix:"https://graph.facebook.com/143970268959049/picture?type=large",
-    source:"facebook",
-  },
-  appId: "143970268959049",
-  origin: "facebook",
-  validatedDate: 1369167109174.0,
-  popularity: 100,
-}
-
-var testApplink2 = {
-  schema: util.statics.schemaApplink,
-  name: "Applink New",
-  photo: {
-    prefix:"https://graph.facebook.com/143970268959049/picture?type=large",
-    source:"facebook",
-  },
-  appId: "143970268959049",
-  origin: "facebook",
-  validatedDate: 1369167109174.0,
-  popularity: 100
-}
-
 var testBeacon = {
   _id : 'be.11:11:11:11:11:11',
   schema : util.statics.schemaBeacon,
@@ -447,34 +421,6 @@ exports.insertCustomPatchTwo = function (test) {
 }
 
 
-exports.cannotUpdateApplinksforLockedPatchOwnedByAnotherUser = function(test) {
-  t.post({
-    uri: '/do/replaceEntitiesForEntity?' + userCredTom,  // patch is owned by Bob
-    body: {
-      entityId: testPatchCustomTwo._id,
-      entities: [
-        util.clone(testApplink),
-        util.clone(testApplink),
-        util.clone(testApplink)],
-      schema: util.statics.schemaApplink,
-      activityDateWindow: 0,
-      verbose: true,
-    }
-  }, 401, function(err, res, body) {
-    t.assert(401.6 === body.error.code)
-
-    /* Now have bob unlock it */
-    t.post({
-      uri: '/data/patches/' + testPatchCustomTwo._id + '?' + userCredBob,
-      body: {data: {locked: false}},
-    }, function(err, res, body) {
-      t.assert(false === body.data.locked)
-      test.done()
-    })
-  })
-}
-
-
 exports.insertMessage = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCredBob,
@@ -539,127 +485,6 @@ exports.insertMessage = function (test) {
   })
 }
 
-
-/*
- * ----------------------------------------------------------------------------
- * Add and replace entity set
- * ----------------------------------------------------------------------------
- */
-
-exports.addEntitySet = function (test) {
-  t.post({
-    uri: '/do/replaceEntitiesForEntity?' + userCredTom,
-    body: {
-      entityId: testPatchCustom._id,
-      entities: [
-        util.clone(testApplink),
-        util.clone(testApplink),
-        util.clone(testApplink)],
-      schema: util.statics.schemaApplink,
-      activityDateWindow: 0,
-    }
-  }, 200, function(err, res, body) {
-    t.assert(body.info.indexOf('replaced') > 0)
-    var activityDate = body.date
-
-    /* Check for three links */
-    t.post({
-      uri: '/find/links',
-      body: {
-        query: { _to: testPatchCustom._id, type: util.statics.typeContent, fromSchema: util.statics.schemaApplink }
-      }
-    }, function(err, res, body) {
-      t.assert(body.count === 3)
-
-      /* Check for three applinks */
-      t.post({
-        uri: '/find/applinks',
-        body: {
-          query: { name:'Applink' }
-        }
-      }, function(err, res, body) {
-        t.assert(body.count === 3)
-
-        /* Check activityDate and _applinkModifier for patch */
-        t.post({
-          uri: '/find/patches',
-          body: {
-            query:{ _id: testPatchCustom._id }
-          }
-        }, function(err, res, body) {
-          t.assert(body.count === 1)
-          t.assert(body.data && body.data[0])
-          t.assert(body.data[0].activityDate >= activityDate)
-          // skipping until we figure out applinks on patches rather than places
-          // t.assert(body.data[0]._applinkModifier === testUserTom._id)
-          test.done()
-        })
-      })
-    })
-  })
-}
-
-exports.replaceEntitySet = function (test) {
-  t.post({
-    uri: '/do/replaceEntitiesForEntity?' + userCredTom,
-    body: {
-      entityId: testPatchCustom._id,
-      entities: [
-        util.clone(testApplink2),
-        util.clone(testApplink2),
-        util.clone(testApplink2)],
-      schema: util.statics.schemaApplink,
-      activityDateWindow: 0,
-      verbose: true,
-    }
-  }, 200, function(err, res, body) {
-    t.assert(body.info.indexOf('replaced') > 0)
-    var activityDate = body.date
-
-    /* Confirm new links */
-    t.post({
-      uri: '/find/links',
-      body: {
-        query: { _to: testPatchCustom._id, type: util.statics.typeContent, fromSchema: util.statics.schemaApplink }
-      }
-    }, function(err, res, body) {
-      t.assert(body.count === 3)
-
-      /* Confirm new applinks */
-      t.post({
-        uri: '/find/applinks',
-        body: {
-          query: { name:'Applink New' }
-        }
-      }, function(err, res, body) {
-        t.assert(body.count === 3)
-
-        /* Confirm old applinks are gone */
-        t.post({
-          uri: '/find/applinks',
-          body: {
-            query: { name:'Applink' }
-          }
-        }, function(err, res, body) {
-          t.assert(body.count === 0)
-
-          /* Check activityDate for patch */
-          t.post({
-            uri: '/find/patches',
-            body: {
-              query:{ _id: testPatchCustom._id }
-            }
-          }, function(err, res, body) {
-            t.assert(body.count === 1)
-            t.assert(body.data && body.data[0])
-            t.assert(body.data[0].activityDate >= activityDate)
-            test.done()
-          })
-        })
-      })
-    })
-  })
-}
 
 /*
  * ----------------------------------------------------------------------------

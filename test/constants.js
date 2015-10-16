@@ -12,7 +12,6 @@ var
   uid2 = _schemas.user.id + '.' + timeStamp + '.000002',                     // Dev user
   bssid = '00:00:00:00:00:01',
   beaconId = _schemas.beacon.id + '.' + bssid,
-  applinkId = _schemas.applink.id + '.' + timeStamp + '.000001',
   patchId = _schemas.patch.id + '.' + timeStamp + '.000001',
   placeId = _schemas.place.id + '.' + timeStamp + '.000001',
   messageId = _schemas.message.id + '.' + timeStamp + '.000001',
@@ -30,7 +29,6 @@ var
       bpp: 5,   // beacons per patch
       ppp: 1,   // places per patch
       mpp: 5,   // messages per patch
-      app: 5,   // applinks per patch
       database: 'smokeData',
     },
     perfTest: {
@@ -39,7 +37,6 @@ var
       bpp: 5,
       ppp: 1,
       mpp: 5,
-      app: 5,
       database: 'perf',
     },
   }
@@ -106,15 +103,6 @@ defaultDoc.place = {
   }
 }
 
-defaultDoc.applink = {
-  _id: applinkId,
-  type: 'website',
-  name: "My applink",
-  appId: "http://www.google.com",
-  appUrl: "http://www.google.com",
-  origin: 'aircandi'  // user-created
-}
-
 defaultDoc.message = {
   _id: messageId,
   name: 'Message',
@@ -137,7 +125,6 @@ module.exports = {
   linkId: linkId,
   bssid: bssid,
   beaconId: beaconId,
-  applinkId: applinkId,
   patchId: patchId,
   placeId: placeId,
   latitude: latitude,

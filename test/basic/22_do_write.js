@@ -144,30 +144,6 @@ var testMessage = {
     source:"aircandi.images",
   },
 }
-var testApplink = {
-  schema: util.statics.schemaApplink,
-  name: "Applink",
-  photo: {
-    prefix:"https://graph.facebook.com/143970268959049/picture?type=large",
-    source:"facebook",
-  },
-  appId: "143970268959049",
-  origin: "facebook",
-  validatedDate: 1369167109174.0,
-  popularity: 100
-}
-var testApplink2 = {
-  schema: util.statics.schemaApplink,
-  name: "Applink New",
-  photo: {
-    prefix:"https://graph.facebook.com/143970268959049/picture?type=large",
-    source:"facebook",
-  },
-  appId: "143970268959049",
-  origin: "facebook",
-  validatedDate: 1369167109174.0,
-  popularity: 100,
-}
 
 var testBeacon = {
   _id : 'be.11:11:11:11:11:11',

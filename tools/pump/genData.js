@@ -17,7 +17,6 @@ var options = {       // Default options
   bpp: 5,             // Beacons per patch
   ppp: 1,             // Places per patch
   mpp: 5,             // Messages per patch
-  app: 5,             // Applinks per patch
   database: '',       // Database name
 }
 
@@ -72,7 +71,6 @@ function run(cb) {
     genEntities(user, iUser, 'beacon', options.bpp, user.ents.patches, [{from: 'proximity'}])
     genEntities(user, iUser, 'place', options.ppp, user.ents.patches, [{from: 'proximity'}])
     genEntities(user, iUser, 'message', options.mpp, user.ents.patches, [{to: 'content'}])
-    genEntities(user, iUser, 'applink', options.app, user.ents.patches, [{to: 'content'}])
   })
 
   // Unpack the entities stashed under each user

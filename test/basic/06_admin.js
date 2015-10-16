@@ -97,10 +97,6 @@ exports.addSomeTestData = function(test) {
     _id: 'me.gctest.orphanMessage1',
   }
 
-  var orphanApplink1 = {
-    _id: 'ap.gctest.orphanApplink1',
-  }
-
   var links = [goodLink, badLink1, badLink2, badLink3, badLink4]
 
   db.collection('users').insert([user1, user2], function(err) {
@@ -110,10 +106,7 @@ exports.addSomeTestData = function(test) {
       assert(result && result.length === 5, result)
       db.collection('messages').insert(orphanMessage1, function(err, result) {
         assert(!err, err)
-        db.collection('applinks').insert(orphanApplink1, function(err, result) {
-          assert(!err, err)
-          test.done()
-        })
+        test.done()
       })
     })
   })
@@ -155,9 +148,8 @@ exports.moveBadLinksToTrash = function(test) {
 exports.findOrphanedEnts = function(test) {
   t.get('/admin/gcentities?' + adminCred, function(err, res, body) {
     t.assert(body.orphans)
-    t.assert(body.orphans.applinks.length = 1)
     t.assert(body.orphans.messages.length = 1)
-    t.assert(body.count === 2)
+    t.assert(body.count === 1)
     t.assert(body.movedToTrash === 0)
     test.done()
   })
@@ -166,8 +158,8 @@ exports.findOrphanedEnts = function(test) {
 exports.moveBadEntsToTrash = function(test) {
   t.get('/admin/gcentities/remove?' + adminCred, function(err, res, body) {
     t.assert(body.orphans)
-    t.assert(body.count === 2)
-    t.assert(body.movedToTrash === 2)
+    t.assert(body.count === 1)
+    t.assert(body.movedToTrash === 1)
     db.collection('messages').find({_id: /^me\.gctest/}).toArray(function(err, links) {
       t.assert(!err, err)
       t.assert(links.length === 0)

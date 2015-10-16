@@ -20,6 +20,8 @@ var luckyStrikeLoc = {
   lng: -122.201373,
 }
 
+var savedPlace = null
+
 // Get user and admin sessions and store the credentials in module globals
 exports.getSessions = function(test) {
   testUtil.getUserSession(function(session) {
@@ -32,31 +34,14 @@ exports.getSessions = function(test) {
   })
 }
 
-
-exports.suggestPlacesFoursquare = function(test) {
-
-  if (disconnected) return skip(test)
-
-  t.post({
-    uri: '/suggest/places?' + userCred,
-    body: {
-      provider: 'foursquare',
-      location: luckyStrikeLoc,
-      input: 'lucky',
-      timeout: 15000,
-      limit: 10,
-      log: true,
-    }
-  }, 200, function(err, res, body) {
-    var places = body.data
-    t.assert(places && places.length > 5)
-    var hitCount = 0
-    places.forEach(function(place){
-      if (0 === place.name.indexOf('Lucky Strike')) hitCount++
-    })
-    t.assert(hitCount >= 1)
-    test.done()
-  })
+// Place suggest query
+var luckyPlaceQuery = {
+  provider: 'google',
+  location: luckyStrikeLoc,
+  input: 'lucky',
+  sensor: true,
+  limit: 10,
+  log: true,
 }
 
 exports.suggestPlacesGoogle = function(test) {
@@ -65,124 +50,68 @@ exports.suggestPlacesGoogle = function(test) {
 
   t.post({
     uri: '/suggest/places?' + userCred,
-    body: {
-      provider: 'google',
-      location: luckyStrikeLoc,
-      input: 'lucky',
-      sensor: true,
-      limit: 10,
-      log: true,
-    }
-  }, 200, function(err, res, body) {
+    body: luckyPlaceQuery,
+  }, function(err, res, body) {
+    var foundPlace = null
     var places = body.data
     t.assert(places && places.length)
     t.assert(places.length <= 5) // 4 if lucky is in db and 5 otherwise
     var hitCount = 0
-    places.forEach(function(place){
-      t.assert(place.score)
-      if (0 === place.name.indexOf('Lucky Strike')) hitCount++
-    })
-    t.assert(1 === hitCount)
-    test.done()
-  })
-}
-
-
-// Populate our db using a near query, then test our built-in suggest provider
-// in following tests
-exports.getPlacesNear = function(test) {
-
-  if (disconnected) return skip(test)
-
-  t.post({
-    uri: '/places/near?' + userCred,
-    body: {
-      location: luckyStrikeLoc,
-      limit: 50,
-      refresh: true,
-      // radius: 500,
-      log: true,
-    }
-  }, 200, function(err, res, body) {
-    var places = body.data
-    t.assert(50 === places.length)
-
-    var lastDistance = 0
     places.forEach(function(place) {
-      t.assert(place.location)
-      // places should be sorted by distance from original location, close enough is ok
-      var distance = util.haversine(luckyStrikeLoc.lat, luckyStrikeLoc.lng,
-        place.location.lat, place.location.lng)
-      /*
-      log(distance + ' ' + place.name + ' ' + Object.keys(place.provider).join(' ') +
-        ' ' + place.location.lat + ' ' + place.location.lng + ' ' + place.location.accuracy)
-      */
-      if (place.location.accuracy < 100) {
-        t.assert((distance >= lastDistance || ((distance - lastDistance) < lastDistance / 2)),
-            {distance: distance, lastDistance: lastDistance, place: place})
-        lastDistance = distance
+      if (0 === place.name.indexOf('Lucky Strike')) {
+        foundPlace = place
+        return
       }
     })
-
-    t.assert(places.some(function(place) {
-      return place.name.match(/^McCormick/)
-    }))
-
-    test.done()
+    t.assert(foundPlace)
+    t.assert(!foundPlace._id)        // Does not exist in our database yet
+    t.assert(foundPlace.synthetic)   // same
+    // Delete properties returned from suggest that are not saved to our db by the client
+    delete foundPlace.reason
+    delete foundPlace.score
+    delete foundPlace.synthetic
+    t.post({
+      uri: '/data/places?' + userCred,
+      body: {data: foundPlace}
+    }, 201, function(err, res, body) {
+      t.assert(body.count === 1)
+      t.assert(body.data._id)
+      savedPlace = body.data
+      test.done()
+    })
   })
 }
 
-exports.suggestPlaceRegex = function(test) {
+
+// TODO:  Run the same suggest query again.  We should get back the place that we
+// inserted in the db.  It should alreay have an _id, but otherwise it should look
+// just like found place
+exports.suggestPlaceGoogleAgain = function(test) {
 
   if (disconnected) return skip(test)
 
   t.post({
     uri: '/suggest/places?' + userCred,
-    body: {
-      location: luckyStrikeLoc,
-      input: 'schmi',                         // initial exact match of third word in name
-      fts: false,                             // turn off full text search
-      limit: 10,
-      log: true,
-    }
-  }, 200, function(err, res, body) {
-    t.assert(body.data.length === 1)
-    t.assert(body.data[0].name.indexOf('McCormick') === 0)
-    test.done()
-  })
-}
-
-exports.suggestPlacesFts = function(test) {
-
-  if (disconnected) return skip(test)
-
-  t.get('/suggest/places?input=lucky&ll=47.616658,-122.201373&regex=0',  // turn off regex search
-  function(err, res, body) {
-    t.assert(body.data.length === 1)
-    t.assert(body.data[0].name.indexOf('Lucky') === 0)
-    test.done()
-  })
-}
-exports.suggestPatchesRegex = function(test) {
-
-  if (disconnected) return skip(test)
-
-  t.post({
-    uri: '/suggest/patches?' + userCred,
-    body: {
-      input: '3',                         // initial exact match of third word in name
-      fts: false,                             // turn off full text search
-      limit: 10,
-      log: true,
-    }
-  }, 200, function(err, res, body) {
-    t.assert(body.data.length)
-    body.data.forEach(function(patch) {
-      t.assert(patch.name.indexOf('3') >= 0)
+    body: luckyPlaceQuery,
+  }, function(err, res, body) {
+    var foundPlace = null
+    var places = body.data
+    t.assert(places && places.length)
+    t.assert(places.length >= 5) // 4 if lucky is in db and 5 otherwise
+    var hitCount = 0
+    places.forEach(function(place) {
+      if (0 === place.name.indexOf('Lucky Strike')) {
+        foundPlace = place
+        return
+      }
     })
+    // Since we cached the place in our db on the last query
+    // subsequent calls should return our cached copy, not googles copy
+    t.assert(foundPlace._id === savedPlace._id)
     test.done()
   })
 }
+
 
 exports.suggestPatchesFts = function(test) {
 
