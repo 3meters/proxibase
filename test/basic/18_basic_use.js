@@ -1224,11 +1224,12 @@ exports.likingAnUnWatchedPatchDoesNotNotifyPatchOwner = function(test) {
 }
 
 
+
 exports.findWithNestedLinks = function(test) {
   t.post({
     // uri: '/find/users/' + tarzan._id + ',' + jane._id + ',' + mary._id + '?' + tarzan.cred,
     uri: '/find/users/' + jane._id + '?' + tarzan.cred,
-    body: {refs: 'name,photo',
+    body: {refs: 'name,schema,photo',
       linked: {to: 'patches', type: 'watch', fields: 'name,visibility,photo,schema', linkFields: 'enabled',
         linked: {from: 'messages', refs: 'name', type: 'content', fields: 'description,photo,schema', linkFields: false},
         linkCount: [
@@ -1785,5 +1786,170 @@ exports.deleteUserEraseOwnedWorks = function(test) {
         })
       })
     })
+  })
+}
+
+
+exports.addLotsOfPatchesNearby = function(test) {
+  var patches = []
+  for (var i = 0; i < 50; i++) {
+    var nudge = distance * i
+    var patch = {
+      name: 'testPatch_' + seed + '_' + i,
+      location: {
+        lat: lat + nudge,
+        lng: lng + nudge,
+      },
+      photo: photo,
+    }
+    patches.push(patch)
+  }
+  async.eachSeries(patches, postPatch, function(err) {
+    t.assert(!err)
+    test.done()
+  })
+  function postPatch(patch, next) {
+    t.post({
+      uri: '/data/patches?' + jane.cred,
+      body: {data: patch},
+    }, 201, function(err, res, body) {
+      t.assert(body.data && body.data._id)
+      next()
+    })
+  }
+}
+
+
+exports.addLotsOfMessagesToAPatch = function(test) {
+  var messages = []
+  for (var i = 0; i < 100; i++) {
+    var message = {
+      description: 'Test message ' + seed + '_' + i,
+      links: [{_to: treehouse._id, type: 'content'}],
+    }
+    messages.push(message)
+  }
+  t.assert(messages.length === 100)
+  async.eachSeries(messages, postMessage, function(err) {
+    t.assert(!err)
+    test.done()
+  })
+  function postMessage(msg, next) {
+    var poster
+    switch (i % 2) {
+      case 0: poster = tarzan; break;
+      case 1: poster = jane; break;
+    }
+    t.post({
+      uri: '/data/messages?' + poster.cred,
+      body: {data: msg},
+    }, 201, function(err, res, body) {
+      t.assert(body.data)
+      t.assert(body.data._id)
+      t.assert(body.data._owner === poster._id)
+      t.assert(body.data.links)
+      t.assert(body.data.links.length === 1)
+      next()
+    })
+  }
+}
+
+
+exports.iosPatchesNearbyQuery = function(test) {
+  t.post({
+    uri: '/patches/near?' + jane.cred,
+    body: {
+      location: { lat: treehouse.location.lat, lng: treehouse.location.lng },
+      skip: 0,
+      radius: 10000,
+      linked:
+       [ { to: 'places',
+           fields: '_id,name,photo,schema,type',
+           type: 'proximity' },
+         { fields: '_id,name,photo,schema,type',
+           from: 'users',
+           type: 'create' } ],
+      more: false,
+      limit: 50,
+      links:
+       [ { from: 'users',
+           fields: '_id,type,schema',
+           filter: { _from: jane._id },
+           type: 'like' },
+         { from: 'users',
+           fields: '_id,type,enabled,mute,schema',
+           filter: { _from: jane._id},
+           type: 'watch' },
+         { limit: 1,
+           from: 'messages',
+           fields: '_id,type,schema',
+           filter: { _creator: jane._id},
+           type: 'content' } ],
+      rest: true,
+      linkCount:
+       [ { from: 'messages', type: 'content' },
+         { from: 'users', type: 'like' },
+         { enabled: true, from: 'users', type: 'watch' } ],
+    },
+  }, function(err, res, body) {
+    t.assert(body.data && body.data.length === 50)
+    test.done()
+  })
+}
+
+
+exports.iosPatchDetailQuery = function(test) {
+  t.post({
+    uri: '/find/patches/' + treehouse._id + '?' + jane.cred,
+    body: {
+      promote: 'linked',
+      linked: {
+         limit: 50,
+         from: 'messages',
+         links: [{
+           from: 'users',
+           fields: '_id,type,schema',
+           filter: {_from: jane._id},
+           type: 'like'
+         }],
+         skip: 0,
+         linkCount: [{from: 'users', type: 'like'}],
+         linked: [{
+            limit: 1,
+            to: 'patches',
+            fields: '_id,name,photo,schema,type',
+            type: 'content',
+          },{
+            fields: '_id,name,photo,schema,type',
+            from: 'users',
+            type: 'create'
+          },{
+            limit: 1,
+            to: 'messages',
+            linked: [{
+              fields: '_id,name,photo,schema,type',
+              from: 'users',
+              type: 'create'
+            }],
+            type: 'share',
+          }, {
+            linkCount: [
+              {enabled: true, from: 'users', type: 'watch'},
+              {from: 'messages', type: 'content' }
+            ],
+            limit: 1,
+            to: 'patches',
+            type: 'share'
+          }, {
+            to: 'users', limit: 5, type: 'share'
+          }],
+         more: true,
+         type: 'content'
+      },
+    }
+  }, function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.data.length === 50)
+    test.done()
   })
 }

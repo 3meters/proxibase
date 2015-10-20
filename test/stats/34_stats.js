@@ -84,6 +84,7 @@ exports.welcome = function(test) {
   })
 }
 
+
 exports.adminCanRefresh = function(test) {
   t.get({
     uri: '/stats/refresh?' + adminCred
@@ -713,9 +714,8 @@ exports.statsRemovePatchDropsFromStats= function(test) {
 }
 
 exports.adminCanRebuild = function(test) {
-  t.get({
-    uri: '/stats/rebuild?' + adminCred
-  }, function(err, res, body) {
+  t.get('/stats/rebuild?' + adminCred,
+  function(err, res, body) {
     t.assert(body)
     t.assert(body.to)
     t.assert(body.to.cmd)
