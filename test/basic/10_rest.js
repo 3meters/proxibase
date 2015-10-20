@@ -294,6 +294,7 @@ exports.findWithRefs = function(test) {
   t.get({
     uri: '/data/documents?name=' + testDoc1.name + '&refs=name&' + userCred
   }, function(err, res, body) {
+    t.assert(body.data && body.data.length)
     var doc = body.data[0]
     t.assert(/^Test User/.test(doc.owner))
     t.assert(/^Test User/.test(doc.creator))
@@ -307,6 +308,7 @@ exports.findWithRefsDefaultsToName = function(test) {
   t.get({
     uri: '/data/documents?name=' + testDoc1.name + '&refs=1&' + userCred
   }, function(err, res, body) {
+    t.assert(body.data && body.data.length)
     var doc = body.data[0]
     t.assert(doc._owner && tipe.isString(doc.owner))
     t.assert(doc._creator && tipe.isString(doc.creator))
@@ -323,6 +325,7 @@ exports.findWithRefsSetToEmptyObjectNestsEntireDocument = function(test) {
       refs: {},
     }
   }, function(err, res, body) {
+    t.assert(body.data && body.data.length)
     var doc = body.data[0]
     t.assert(doc)
     t.assert(doc._owner && tipe.isObject(doc.owner))
@@ -339,6 +342,7 @@ exports.findWithRefsNestedObjectFieldList = function(test) {
   t.get({
     uri: '/data/documents?name=' + testDoc1.name + '&refs=_id,name,photo&' + userCred
   }, function(err, res, body) {
+    t.assert(body.data && body.data.length)
     var doc = body.data[0]
     t.assert(doc.owner && doc.owner._id && doc.owner.name)
     t.assert(!doc.owner.role)   // not included in list
@@ -355,7 +359,7 @@ exports.refOnLinksDontShowDataYouCannotSee = function(test) {
   t.get({
     uri: '/find/links?refs=name,email,role&sort[modifiedDate]=1&limit=5&' + userCred
   }, function(err, res, body) {
-    t.assert(body.data)
+    t.assert(body.data && body.data.length)
     body.data.forEach(function(link) {
       t.assert(link.to)
       t.assert(link.to.name)
@@ -370,11 +374,12 @@ exports.refOnLinksDontShowDataYouCannotSee = function(test) {
   })
 }
 
+
 exports.refOnLinksWorkSingleFieldSyntax = function(test) {
   t.get({
     uri: '/find/links?refs=name&sort[modifiedDate]=1&limit=5&' + adminCred
   }, function(err, res, body) {
-    t.assert(body.data)
+    t.assert(body.data && body.data.length)
     body.data.forEach(function(link) {
       t.assert(tipe.isString(link.to))
       t.assert(tipe.isString(link.from))
@@ -382,6 +387,81 @@ exports.refOnLinksWorkSingleFieldSyntax = function(test) {
     test.done()
   })
 }
+
+
+exports.refsWithMixedSignatureWorks = function(test) {
+  t.get({
+    uri: '/find/links?refs[_owner]=name,photo,schema&refs[_modifier]=name&sort[modifiedDate]=1&limit=5&' + adminCred
+  }, function(err, res, body) {
+    t.assert(body.data && body.data.length)
+    body.data.forEach(function(link) {
+      t.assert(!link.to)
+      t.assert(!link.from)
+      t.assert(tipe.isObject(link.owner))
+      t.assert(tipe.isString(link.owner.name))
+      t.assert(tipe.isObject(link.owner.photo))
+      t.assert(tipe.isString(link.owner.schema))
+      t.assert(tipe.isString(link.modifier))  // If you only specify a single field you will get it, not a nested object
+    })
+    test.done()
+  })
+}
+
+
+exports.refsQueryUsingPostWorks = function(test) {
+  t.post({
+    uri: '/find/links?' + adminCred,
+    body: {
+      sort: 'modifiedDate',
+      limit: 5,
+      refs: {
+        _owner: 'name,photo,schema',
+        _modifier: {name: 1, photo: true},  // alt sytax
+        _to: {},   // empty object means return all fields
+        _from: 1,   // true means return just the name as a top level string
+      }
+    }
+  }, function(err, res, body) {
+    t.assert(body.data && body.data.length)
+    body.data.forEach(function(link) {
+      t.assert(tipe.isObject(link.to))
+      t.assert(link.to.name)                // nested object with all fields
+      t.assert(link.to._owner)
+      t.assert(tipe.isString(link.from))    // top level string, not object
+      t.assert(tipe.isObject(link.owner))
+      t.assert(tipe.isString(link.owner.name))
+      t.assert(tipe.isObject(link.owner.photo))
+      t.assert(tipe.isString(link.owner.schema))
+      t.assert(tipe.isObject(link.modifier))
+      t.assert(tipe.isString(link.modifier.name))
+      t.assert(tipe.isObject(link.modifier.photo))
+      t.assert(tipe.isUndefined(link.modifier.schema))
+    })
+    test.done()
+  })
+}
+
+
+exports.refsQueryWithUnknowMixedSignatureFails = function(test) {
+t.post({
+    uri: '/find/links?' + adminCred,
+    body: {
+      sort: 'modifiedDate',
+      limit: 5,
+      refs: {
+        _owner: 'name,photo,schema',
+        _modifier: {name: 1, photo: true},  // alt sytax
+        _to: {},   // empty object means return all fields
+        _from: 1,   // true means return just the name as a top level string
+        name: 1,    // not a valid ref field
+      }
+    }
+  }, 400, function(err, res, body) {
+    t.assert(body.error)
+    test.done()
+  })
+}
+
 
 exports.updateDoc = function(test) {
   t.post({

@@ -5,7 +5,7 @@
 var util = require('proxutils')
 var log = util.log
 var testUtil = require('../util')
-var qs = require('qs')
+var qs = require('querystring')
 var db = testUtil.db
 var t = testUtil.treq
 var userSession
@@ -103,7 +103,9 @@ exports.addSomeTestData = function(test) {
     assert(!err, err)
     db.collection('links').insert(links, function(err, result) {
       assert(!err, err)
-      assert(result && result.ops && result.ops.length === 5, result)
+      assert(result)
+      if (result.ops) t.assert(result.ops.length === 5, util.inspect(result)) // Version 2.x mongodb driver
+      else t.assert(result.length === 5)  // Version 1.x mongodb driver
       db.collection('messages').insert(orphanMessage1, function(err, result) {
         assert(!err, err)
         test.done()
@@ -127,7 +129,7 @@ exports.moveBadLinksToTrash = function(test) {
     t.assert(body.badLinks)
     t.assert(body.badLinks.length === 4)
     t.assert(body.count === 4)
-    t.assert(body.movedToTrash === 4)
+    t.assert(body.movedToTrash === 4, util.inspect(body))
     db.collection('links').find({_id: /^li\.gctest/}).toArray(function(err, links) {
       assert(!err, err)
       assert(links.length === 1, {links: links})
@@ -178,7 +180,8 @@ exports.moveBadEntsToTrash = function(test) {
 exports.cleanup = function(test) {
   db.collection('links').remove({_id: /^li.gctest/}, function(err, r) {
     assert(!err, err)
-    assert(r.result.n === 1, r.result)
+    if (tipe.isObject(r)) assert(r.result.n === 1, r.result)
+    else assert(r === 1)  // mongodb 1.x driver
     test.done()
   })
 }

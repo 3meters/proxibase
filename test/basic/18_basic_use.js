@@ -571,11 +571,7 @@ exports.findWithLinkedDoesNotExposePrivateFieldsOfWatches = function(test) {
   t.post({
     uri: '/find/patches/' + river._id,
     body: {
-      linked: {
-        from: 'users',
-        filter: {type: 'watch'},
-        linkFields: {},
-      }
+      linked: {from: 'users', type: 'watch', linkFields: {}}
     },
   }, function(err, res, body) {
     t.assert(body.data)
@@ -713,12 +709,7 @@ exports.tarzanCannotReadJanesMessagesYet = function(test) {
 exports.tarzanCannotReadJanesMessagesYetUsingRest = function(test) {
   t.post({
     uri: '/find/patches/' + janehouse._id + '?' + tarzan.cred,
-    body: {
-      linked: {
-        from: 'messages',
-        filter: {type: 'messages'},
-      }
-    },
+    body: {linked: {from: 'messages', type: 'messages'}},
   }, function(err, res, body) {
     t.assert(body.data.linked.length === 0)
     test.done()
@@ -1227,11 +1218,11 @@ exports.likingAnUnWatchedPatchDoesNotNotifyPatchOwner = function(test) {
 
 exports.findWithNestedLinks = function(test) {
   t.post({
-    // uri: '/find/users/' + tarzan._id + ',' + jane._id + ',' + mary._id + '?' + tarzan.cred,
     uri: '/find/users/' + jane._id + '?' + tarzan.cred,
-    body: {refs: 'name,schema,photo',
+    body: {
       linked: {to: 'patches', type: 'watch', fields: 'name,visibility,photo,schema', linkFields: 'enabled',
-        linked: {from: 'messages', refs: 'name', type: 'content', fields: 'description,photo,schema', linkFields: false},
+        refs: {_owner: '_id,name,schema,photo'},
+        linked: {from: 'messages', type: 'content', fields: 'description,photo,schema', linkFields: false, refs: {_owner: 'name'}},
         linkCount: [
           {from: 'users', type: 'watch'},
           {from: 'users', type: 'like'},
@@ -1246,17 +1237,21 @@ exports.findWithNestedLinks = function(test) {
     t.assert(user.name)
     t.assert(!user.email)
     t.assert(user.linked)
-    t.assert(user.owner.name)
     user.linked.forEach(function(patch) {
       t.assert(patch._id)
       t.assert(patch.schema === 'patch')
       t.assert(patch._owner)
-      t.assert(!patch.owner)  // refs do not cascade
+      t.assert(patch.owner)
+      t.assert(patch.owner._id)
+      t.assert(patch.owner.name)
+      t.assert(patch.owner.photo)
+      t.assert(patch.owner.schema)
+      t.assert(!patch.modifier)  // not specified in refs
       t.assert(patch.linked)
       patch.linked.forEach(function(message) {
         t.assert(message.schema === 'message')
-        t.assert(message.owner)  // refs can be speced at any level
-        t.assert(!message.owner.name)
+        // A ref with a single field spec promotes the field value, not a nested obj
+        t.assert(tipe.isString(message.owner))  // The name pointed to by the _owner
         t.assert(!message.link)  // excluded
         cMessages++
       })
@@ -1288,13 +1283,19 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
     t.assert(body.parentCount === 1)
     t.assert(body.more)
     var cMoreMessages = 0
+    t.assert(body.parentEntity)
+    t.assert(body.parentEntity._id === tarzan._id)
+    t.assert(body.parentEntity.name)
+    t.assert(body.parentEntity.schema === 'user')
+    t.assert(body.parentEntity.photo)
+
     body.data.forEach(function(patch) {
       t.assert(patch.schema === 'patch')
       t.assert(patch.name)
       t.assert(patch._owner)
       t.assert(patch.owner)
       t.assert(patch.owner.name)
-      if (patch._owner != util.adminId) t.assert(patch.owner.photo)
+      t.assert(patch.owner.photo)
       t.assert(patch.linkCount)
       t.assert(patch.linkCount.from)
       t.assert(patch.linkCount.from.users)
@@ -1789,167 +1790,3 @@ exports.deleteUserEraseOwnedWorks = function(test) {
   })
 }
 
-
-exports.addLotsOfPatchesNearby = function(test) {
-  var patches = []
-  for (var i = 0; i < 50; i++) {
-    var nudge = distance * i
-    var patch = {
-      name: 'testPatch_' + seed + '_' + i,
-      location: {
-        lat: lat + nudge,
-        lng: lng + nudge,
-      },
-      photo: photo,
-    }
-    patches.push(patch)
-  }
-  async.eachSeries(patches, postPatch, function(err) {
-    t.assert(!err)
-    test.done()
-  })
-  function postPatch(patch, next) {
-    t.post({
-      uri: '/data/patches?' + jane.cred,
-      body: {data: patch},
-    }, 201, function(err, res, body) {
-      t.assert(body.data && body.data._id)
-      next()
-    })
-  }
-}
-
-
-exports.addLotsOfMessagesToAPatch = function(test) {
-  var messages = []
-  for (var i = 0; i < 100; i++) {
-    var message = {
-      description: 'Test message ' + seed + '_' + i,
-      links: [{_to: treehouse._id, type: 'content'}],
-    }
-    messages.push(message)
-  }
-  t.assert(messages.length === 100)
-  async.eachSeries(messages, postMessage, function(err) {
-    t.assert(!err)
-    test.done()
-  })
-  function postMessage(msg, next) {
-    var poster
-    switch (i % 2) {
-      case 0: poster = tarzan; break;
-      case 1: poster = jane; break;
-    }
-    t.post({
-      uri: '/data/messages?' + poster.cred,
-      body: {data: msg},
-    }, 201, function(err, res, body) {
-      t.assert(body.data)
-      t.assert(body.data._id)
-      t.assert(body.data._owner === poster._id)
-      t.assert(body.data.links)
-      t.assert(body.data.links.length === 1)
-      next()
-    })
-  }
-}
-
-
-exports.iosPatchesNearbyQuery = function(test) {
-  t.post({
-    uri: '/patches/near?' + jane.cred,
-    body: {
-      location: { lat: treehouse.location.lat, lng: treehouse.location.lng },
-      skip: 0,
-      radius: 10000,
-      linked:
-       [ { to: 'places',
-           fields: '_id,name,photo,schema,type',
-           type: 'proximity' },
-         { fields: '_id,name,photo,schema,type',
-           from: 'users',
-           type: 'create' } ],
-      more: false,
-      limit: 50,
-      links:
-       [ { from: 'users',
-           fields: '_id,type,schema',
-           filter: { _from: jane._id },
-           type: 'like' },
-         { from: 'users',
-           fields: '_id,type,enabled,mute,schema',
-           filter: { _from: jane._id},
-           type: 'watch' },
-         { limit: 1,
-           from: 'messages',
-           fields: '_id,type,schema',
-           filter: { _creator: jane._id},
-           type: 'content' } ],
-      rest: true,
-      linkCount:
-       [ { from: 'messages', type: 'content' },
-         { from: 'users', type: 'like' },
-         { enabled: true, from: 'users', type: 'watch' } ],
-    },
-  }, function(err, res, body) {
-    t.assert(body.data && body.data.length === 50)
-    test.done()
-  })
-}
-
-
-exports.iosPatchDetailQuery = function(test) {
-  t.post({
-    uri: '/find/patches/' + treehouse._id + '?' + jane.cred,
-    body: {
-      promote: 'linked',
-      linked: {
-         limit: 50,
-         from: 'messages',
-         links: [{
-           from: 'users',
-           fields: '_id,type,schema',
-           filter: {_from: jane._id},
-           type: 'like'
-         }],
-         skip: 0,
-         linkCount: [{from: 'users', type: 'like'}],
-         linked: [{
-            limit: 1,
-            to: 'patches',
-            fields: '_id,name,photo,schema,type',
-            type: 'content',
-          },{
-            fields: '_id,name,photo,schema,type',
-            from: 'users',
-            type: 'create'
-          },{
-            limit: 1,
-            to: 'messages',
-            linked: [{
-              fields: '_id,name,photo,schema,type',
-              from: 'users',
-              type: 'create'
-            }],
-            type: 'share',
-          }, {
-            linkCount: [
-              {enabled: true, from: 'users', type: 'watch'},
-              {from: 'messages', type: 'content' }
-            ],
-            limit: 1,
-            to: 'patches',
-            type: 'share'
-          }, {
-            to: 'users', limit: 5, type: 'share'
-          }],
-         more: true,
-         type: 'content'
-      },
-    }
-  }, function(err, res, body) {
-    t.assert(body.data)
-    t.assert(body.data.length === 50)
-    test.done()
-  })
-}

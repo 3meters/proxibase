@@ -13,7 +13,7 @@ var userOldCred
 var session = {}
 var adminSession = {}
 var _exports = {}                    // for commenting out tests
-var qs = require('qs')
+var qs = require('querystring')
 var seed = String(Math.floor(Math.random() * 1000000))
 var testUser = {
   name: 'AuthTestUser',
