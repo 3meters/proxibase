@@ -1,7 +1,7 @@
 {
 
   "name": "proxibase",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "private": true,
   "description": "Proxibase Service",
   "author": {
@@ -26,6 +26,7 @@
     "body-parser": "*",
     "mongodb": "<2",
     "lodash": "*",
+    "knox": "*",
     "commander": "*",
     "nodeunit": "*",
     "async": "*",
