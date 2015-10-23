@@ -96,19 +96,20 @@ function ensureDb(ops, cb) {
 
   var host = config.db.host
   var port = config.db.port
-  var dbOps = {safe: true}
+  var connectOps = {db: {w: 1}}
 
   var dbName = ops.database
   var templateName = dbName + 'Template'
 
-  db = new mongo.Db(dbName, new mongo.Server(host, port), dbOps)
-  db.open(function(err) {
+  var url = 'mongodb://' + host + ':' + port + '/' + dbName
+  mongo.MongoClient.connect(url, connectOps, function(err, testDb) {
     if (err) throw err
+    db = testDb    // module global
 
-    // Drop template database if directed to by command line flag then run again
     if (cli.generate) {
-      var templateDb = new mongo.Db(templateName, new mongo.Server(host, port), dbOps)
-      templateDb.open(function(err) {
+      var templateUrl = 'mongodb://' + host + ':' + port + '/' + templateName
+      mongo.MongoClient.connect(templateUrl, connectOps, function(err, templateDb) {
+      // Drop template database if directed to by command line flag then run again
         if (err) throw err
         templateDb.dropDatabase(function(err) {
           if (err) throw err
@@ -123,11 +124,11 @@ function ensureDb(ops, cb) {
     }
 
     else {
+      adminDb = db.admin()
       db.dropDatabase(function(err) {
         if (err) throw err
 
         // See if template database exists
-        adminDb = new mongo.Admin(db)
         adminDb.listDatabases(function(err, results) {
           if (err) throw err
           if (!(results && results.databases)) {

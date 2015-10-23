@@ -103,7 +103,7 @@ exports.addSomeTestData = function(test) {
     assert(!err, err)
     db.collection('links').insert(links, function(err, result) {
       assert(!err, err)
-      assert(result && result.length === 5, result)
+      assert(result && result.ops && result.ops.length === 5, result)
       db.collection('messages').insert(orphanMessage1, function(err, result) {
         assert(!err, err)
         test.done()
@@ -176,9 +176,9 @@ exports.moveBadEntsToTrash = function(test) {
 
 
 exports.cleanup = function(test) {
-  db.collection('links').remove({_id: /^li.gctest/}, function(err, count) {
+  db.collection('links').remove({_id: /^li.gctest/}, function(err, r) {
     assert(!err, err)
-    assert(count == 1, count)
+    assert(r.result.n === 1, r.result)
     test.done()
   })
 }

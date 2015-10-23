@@ -24,7 +24,7 @@
     "robots.txt": "*",
     "compression": "*",
     "body-parser": "*",
-    "mongodb": "<2",
+    "mongodb": "*",
     "lodash": "*",
     "knox": "*",
     "commander": "*",
