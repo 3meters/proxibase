@@ -29,15 +29,6 @@ var
       bpp: 5,   // beacons per patch
       ppp: 1,   // places per patch
       mpp: 5,   // messages per patch
-      database: 'smokeData',
-    },
-    perfTest: {
-      users: 1000,
-      ppu: 5,
-      bpp: 5,
-      ppp: 1,
-      mpp: 5,
-      database: 'perf',
     },
   }
 

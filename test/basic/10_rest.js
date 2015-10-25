@@ -25,15 +25,6 @@ var testDoc2 = {
   data: { foo: 'bar', number: 2 }
 }
 
-var bigDoc = {
-  _id: 'do.restTestBigDoc',
-  name: 'Rest Test Big Doc',
-  data: { bigArray: [] },
-}
-for (var i = 0; i < 1000; i++) {
-  bigDoc.data.bigArray.push('I am a big document')
-}
-
 var linkId
 var testStartTime = util.getTimeUTC()
 var _exports = {}  // For commenting out tests
@@ -762,21 +753,10 @@ exports.formatDatesUtcWorks = function(test) {
   })
 }
 
+// Try a complicated query and set timeout to 1 milisecond
 exports.readTimeoutWorks = function(test) {
-  t.post({
-    uri: '/data/documents?' + userCred,
-    body: {data: bigDoc}
-  }, 201, function(err, res, body) {
-    t.get('/data/documents/' + bigDoc._id + '?timeout=1&' + userCred, 510,  // server error: timeout
-    function (err, res, body) {
-      t.assert(body.error)
-      t.assert(body.error.message && body.error.message.match(/timeout/i).length)
-      t.get('/data/documents/' + bigDoc._id + '?timeout=-1&' + userCred, // success
-      function (err, res, body) {
-        t.assert(body.count === 1)
-        t.assert(body.data && body.data._id)
-        test.done()
-      })
-    })
+  t.get('/find/links?limit=10000&skip=500&sort=-_modifier&refs=true&timeout=1&' + userCred,
+  510, function (err, res, body) { // server error: timeout
+    test.done()
   })
 }

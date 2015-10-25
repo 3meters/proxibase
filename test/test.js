@@ -20,17 +20,16 @@ var db
 var adminDb
 var genData = require(__dirname + '/../tools/pump/genData')
 var constants = require('./constants')
-var dbProfile = constants.dbProfile.smokeTest
 var testUtil = require('./util')
-var configFile = 'configtest.js'
 var tests = ['basic']
-var allTests = ['basic', 'stats', 'aruba']
+var allTests = ['basic', 'stats']
 var logFile = 'testServer.log'
 var logStream
 var cwd = process.cwd()
 var testServer = null
 var testServerStarted = false
 var serverUri
+var configFile
 var config
 
 
@@ -45,8 +44,10 @@ cli
   .option('-a, --all', 'Run all tests, not just basic')
   .option('-n, --none', 'Do not run any tests -- just ensure the test db')
   .option('-g, --generate', 'generate a fresh template test db from code')
+  .option('-e  --empty', 'start with an empty test database')
+  .option('-d  --database <database>', 'run with existing database')
   .option('-l, --log <file>', 'Test server log file [' + logFile + ']')
-  .option('-d, --disconnected', 'skip tests that require internet connectivity')
+  .option('-o, --offline', 'skip tests that require internet connectivity')
   .option('-m, --multi <instances>', 'Run mulitiple instances of the tests concurrently')
   .option('-i, --interval <interval>', 'Milliseconds to wait between starting multiple instances')
   .parse(process.argv)
@@ -56,23 +57,24 @@ cli
 if (cli.all) tests = allTests
 if (cli.test) tests = [cli.test]
 if (cli.log) logFile = cli.log
-if (cli.disconnected) testUtil.disconnected = true
+if (cli.offline) testUtil.disconnected = true
 
-testUtil.dbProfile = dbProfile
 
 // Load the config file
-util.setConfig(cli.config || configFile)
+configFile = cli.config || 'configtest.js'
+util.setConfig(configFile)
 config = util.config
 serverUri = testUtil.serverUri = config.service.uri
 
+config.db.profile = config.db.profile || constants.dbProfile.smokeTest
 
-// TODO: make it possible to reset dbs between
-// test runs of multiple directories
+testUtil.dbProfile = _.cloneDeep(config.db.profile)
+testUtil.dbProfile.database = config.db.database
 
 util.log('test config', config)
 
 // Make sure the right database exists
-ensureDb(dbProfile, function(err, safeDb) {
+ensureDb(config.db, function(err, safeDb) {
   if (err) throw err
   if (!safeDb) throw new Error('safeDb not initialized')
   testUtil.db = safeDb
@@ -97,6 +99,7 @@ function ensureDb(ops, cb) {
   var host = config.db.host
   var port = config.db.port
   var connectOps = {db: {w: 1}}
+  connectOps = {}  //  try defaults
 
   var dbName = ops.database
   var templateName = dbName + 'Template'
@@ -106,11 +109,31 @@ function ensureDb(ops, cb) {
     if (err) throw err
     db = testDb    // module global
 
-    if (cli.generate) {
+    // Start with the specified database unmodified
+    if (cli.database) {
+      config.db.database = cli.database
+      mongo.initDb(config.db, function(err, safeDb) {
+        if (err) throw err
+        return cb(null, safeDb)
+      })
+    }
+
+    // Start with an empty database
+    else if (cli.empty) {
+      db.dropDatabase(function(err) {
+        if (err) throw err
+        mongo.initDb(config.db, function(err, safeDb) {
+          if (err) throw err
+          return cb(null, safeDb)
+        })
+      })
+    }
+
+    else if (cli.generate) {
       var templateUrl = 'mongodb://' + host + ':' + port + '/' + templateName
       mongo.MongoClient.connect(templateUrl, connectOps, function(err, templateDb) {
-      // Drop template database if directed to by command line flag then run again
         if (err) throw err
+        // Drop template database if directed to by command line flag then run again
         templateDb.dropDatabase(function(err) {
           if (err) throw err
           // prepare for reentry
@@ -194,7 +217,14 @@ function ensureServer(cb) {
       log('Starting test server ' + serverUri + ' using config ' + configFile)
       log('Test server log: ' + logFile)
       log('Starting test server...')
-      testServer = child_process.spawn('node', [__dirname + '/../prox', '--config', configFile])
+
+      var args = [__dirname + '/../prox', '--config', configFile]
+      if (cli.database) {
+        args.push('--database')
+        args.push(cli.database)
+      }
+
+      testServer = child_process.spawn('node', args)
 
       // Fires immediately if the server does not compile
       testServer.on('close', function(code) {
@@ -287,7 +317,7 @@ function finish(err) {
   db.close()
   process.chdir(cwd)
   if (err) console.error(err.stack || err)
-  log('Tests finished in ' + timer.read() + ' seconds')
+  log('Tests finished in ' + Math.round(timer.read()/1000) + ' seconds')
   if (testServer) {
     setTimeout(function() {
       logStream.write('\n============\nTest server killed by test runner\n')
