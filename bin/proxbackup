@@ -7,6 +7,6 @@ mailto="backup@3meters.com"
 cmd="mongodump"
 
 today=`date`
-$cmd --db prox --out $backupdir/dump
+$cmd --db prox --host 127.0.0.1 --out $backupdir/dump
 tar czf $backupdir/proxdump.gz $backupdir/dump
 
