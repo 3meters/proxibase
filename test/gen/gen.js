@@ -254,8 +254,9 @@ exports.usersCreatePatches = function(test) {
 
     function postPatchToPlace(place, nextPlace) {
       var patch = {
-        name:   user.name + ' patch ' + seed + '.' + iPlace,
-        links:  [{_to: place._id, type: 'proximity'}],
+        name:     user.name + ' patch ' + seed + '.' + iPlace,
+        location: place.location,
+        links:    [{_to: place._id, type: 'proximity'}],
       }
       // Each place already has a number of becons linked to it by proximity
       // Create direct links between this patch and those beacons
@@ -271,7 +272,8 @@ exports.usersCreatePatches = function(test) {
         uri: '/data/patches?' + user.cred,
         body: {data: patch},
       }, 201, function(err, res, body) {
-        t.assert(body.data && body.data.links)
+        t.assert(body.data && body.data.location)
+        t.assert(body.data.links)
         t.assert(body.data.links.length === (nPlaceProxLinks + 2))
         nPatchesSaved++
         nLinksSaved += body.data.links.length
