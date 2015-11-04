@@ -311,7 +311,7 @@ exports.ownerAccessCollectionsWork = function(test) {
                 t.assert(body.canEdit === true)
                 t.assert(tipe.isUndefined(body.sort))
                 t.assert(tipe.isUndefined(body.skip))
-                // t.assert(body.limit === -1)  // Enforced by the mongodb driver
+                t.assert(tipe.isUndefined(body.limit))
                 test.done()
               })
             })

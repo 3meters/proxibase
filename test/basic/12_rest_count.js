@@ -29,7 +29,7 @@ exports.getUserSession = function(test) {
 }
 
 
-_exports.countBasicAndFiltered = function(test) {
+exports.countBasicAndFiltered = function(test) {
   t.get('/data/links/count',
   function(err, res, body) {
     t.assert(body.count)
