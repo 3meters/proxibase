@@ -16,6 +16,7 @@
 
 
 var async = require('async')
+var qs = require('qs')
 var util = require('proxutils')
 var seed
 var testUtil = require('../util')
@@ -110,16 +111,34 @@ exports.signInAsRandomUser = function(test) {
       }
     }, function(err, res, body) {
       t.assert(body.user)
-      t.assert(body.session)
       t.assert(body.credentials)
-      user.cred = 'user=' + body.credentials.user + '&session=' + body.credentials.session
+      user.cred = qs.stringify(body.credentials)
       test.done()
     })
   })
 }
 
 
-exports.iosPatchesNearbyQuery = function(test) {
+exports.patchesNearMinimum = function(test) {
+  t.post({
+    uri: '/patches/near?' + user.cred,
+    body: {
+      location: loc,
+      skip: 0,
+      radius: 10000,
+      more: false,
+      limit: 50,
+    },
+  }, function(err, res, body) {
+    //  t.assert(body.data && body.data.length === 50)
+    t.assert(body.data && body.data.length)
+    test.done()
+  })
+}
+
+
+
+exports.iosPatchesNear = function(test) {
   t.post({
     uri: '/patches/near?' + user.cred,
     body: {
@@ -170,7 +189,7 @@ exports.iosPatchesNearbyQuery = function(test) {
 }
 
 
-exports.iosPatchDetailQuery = function(test) {
+exports.iosPatchDetail = function(test) {
   t.post({
     uri: '/find/patches/' + patch._id + '?' + user.cred,
     body: {
@@ -221,11 +240,169 @@ exports.iosPatchDetailQuery = function(test) {
     }
   }, function(err, res, body) {
     t.assert(body.data)
+    t.assert(body.data.length)
     test.done()
   })
 }
 
-exports.getUserFeed = function (test) {
+
+exports.iosPatchesInteresting = function(test) {
+  t.post({
+    uri: '/patches/interesting?' + user.cred,
+    body: {
+      location: loc,
+      limit: 50,
+      skip: 0,
+      linked:
+       [ { to: 'places',
+           fields: '_id,name,photo,schema,type',
+           type: 'proximity' },
+         { fields: '_id,name,photo,schema,type',
+           from: 'users',
+           type: 'create' } ],
+      more: true,
+      links:
+       [ { from: 'users',
+           fields: '_id,type,schema',
+           filter: { _from: user._id },
+           type: 'like' },
+         { from: 'users',
+           fields: '_id,type,enabled,mute,schema',
+           filter: { _from: user._id },
+           type: 'watch' },
+         { limit: 1,
+           from: 'messages',
+           fields: '_id,type,schema',
+           filter: { _creator: user._id },
+           type: 'content' } ],
+      linkCount:
+       [ { from: 'messages', type: 'content' },
+         { from: 'users', type: 'like' },
+         { enabled: true, from: 'users', type: 'watch' } ],
+    }
+  }, function(err, res, body) {
+    t.assert(body.data && body.data.length === 50)
+    test.done()
+  })
+}
+
+
+exports.iosUserDetail = function(test) {
+  t.post({
+    uri: '/find/users/' + user._id + '?' + user.cred,
+    body: {
+      promote: 'linked',
+      linked: {
+        limit: 50,
+        links:
+        [ { from: 'users',
+            fields: '_id,type,schema',
+            filter: { _from: user._id},
+            type: 'like' } ],
+        skip: 0,
+        linkCount: [ { from: 'users', type: 'like' } ],
+        to: 'messages',
+        linked:
+        [ { limit: 1,
+            to: 'patches',
+            fields: '_id,name,photo,schema,type',
+            type: 'content' },
+          { fields: '_id,name,photo,schema,type',
+            from: 'users',
+            type: 'create' },
+          { limit: 1,
+            to: 'messages',
+            linked: 
+             [ { fields: '_id,name,photo,schema,type',
+                 from: 'users',
+                 type: 'create' } ],
+            type: 'share' },
+          { linkCount:
+             [ { enabled: true, from: 'users', type: 'watch' },
+               { from: 'messages', type: 'content' } ],
+            limit: 1,
+            to: 'patches',
+            type: 'share' },
+          { to: 'users', limit: 5, type: 'share' } ],
+        more: true,
+        type: 'create',
+      }
+    }
+  }, function(err, res, body) {
+    t.assert(body.count === 50)
+    test.done()
+  })
+}
+
+
+exports.androidPatchesNear = function(test) {
+  t.post({
+    uri: '/patches/near?' + user.cred,
+    body: {
+      radius: 10000,
+      rest: false,
+      limit: 50,
+      location: loc,
+      links: {
+        shortcuts: true,
+        active:
+        [ { links: true,
+            count: true,
+            schema: 'beacon',
+            type: 'proximity',
+            limit: 10,
+            direction: 'out' },
+          { links: true,
+            count: true,
+            schema: 'place',
+            type: 'proximity',
+            limit: 1,
+            direction: 'out' },
+          { links: true,
+            count: true,
+            schema: 'message',
+            type: 'content',
+            limit: 2,
+            direction: 'both' },
+          { where: { _from: user._id },
+            links: true,
+            count: true,
+            schema: 'user',
+            type: 'watch',
+            limit: 1,
+            direction: 'in' },
+          { where: { _from: user._id },
+            links: true,
+            count: true,
+            schema: 'user',
+            type: 'like',
+            limit: 1,
+            direction: 'in' },
+          { where: { _creator: user._id },
+            links: true,
+            count: true,
+            schema: 'message',
+            type: 'content',
+            limit: 1,
+            direction: 'in' }]
+      },
+    }
+  }, function(err, res, body) {
+    t.assert(body.data && body.data.length === 50)
+    body.data.forEach(function(p) {
+      // find a private patch owned by someone else
+      if ((p._owner !== user._id) && (p.visibility === 'private')) {
+        patch = p  // module global
+        return
+      }
+    })
+    t.assert(patch)
+    test.done()
+  })
+}
+
+
+_exports.getUserFeed = function (test) {
   t.get('/user/getNotifications?limit=50&' + user.cred,
   function(err, res, body) {
     t.assert(body.data)
@@ -234,10 +411,11 @@ exports.getUserFeed = function (test) {
   })
 }
 
-exports.iosNearAgain = function(test) {
-  exports.iosPatchesNearbyQuery(test)
+
+_exports.iosPatchesNearAgain = function(test) {
+  exports.iosPatchesNear(test)
 }
 
-exports.iosPatchDetailAgain = function(test) {
-  exports.iosPatchDetailQuery(test)
+_exports.iosPatchDetailAgain = function(test) {
+  exports.iosPatchDetail(test)
 }

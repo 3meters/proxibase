@@ -28,22 +28,78 @@ exports.getUserSession = function(test) {
   })
 }
 
+
+_exports.countBasicAndFiltered = function(test) {
+  t.get('/data/links/count',
+  function(err, res, body) {
+    t.assert(body.count)
+    t.assert(body.count > 100)
+    var countUnfiltered = body.count
+
+    t.get('/data/links/count?q[fromSchema]=user',
+    function(err, res, body) {
+      t.assert(body.count)
+      t.assert(body.count < countUnfiltered)
+      test.done()
+    })
+  })
+}
+
+exports.countFiltersPrivateCollectionsByOwner = function(test) {
+  t.get('/data/messages/count',
+  function(err, res, body) {
+    t.assert(body.count === 0)
+    test.done()
+  })
+}
+
+
+exports.countFailsForSystemCollections = function(test) {
+  t.get('/data/sessions/count',
+  401, function(err, res, body) {
+    test.done()
+  })
+}
+
+
 exports.countByDeliversSomeResults = function(test) {
   t.get({
     uri: '/data/links/count/_owner'
   }, function(err, res, body) {
+    var unfilteredMap = {}
     // These are based on data in template test database
-    t.assert(body.count >= profile.users)
+    t.assert(body.count >= profile.users + 1)  // admin
     t.assert(body.data)
+    var nAggs = 0
     body.data.forEach(function(agg) {
       t.assert(agg._owner)
       if (0 === agg._owner.indexOf(testUserIdPrefix)) {
         t.assert(agg.count)  // Testing the expected value is hard
+        nAggs++
+        unfilteredMap[agg._owner] = agg
       }
     })
-    test.done()
+    t.assert(nAggs)
+
+    t.get({
+      uri: '/data/links/count/_owner?q[toSchema]=patch'
+    }, function(err, res, body) {
+      nAggsFiltered = 0
+      t.assert(body.count >= profile.users + 1)  // admin
+      t.assert(body.data)
+      body.data.forEach(function(agg, i) {
+        if (0 === agg._owner.indexOf(testUserIdPrefix)) {
+          t.assert(agg.count)
+          t.assert(agg.count < unfilteredMap[agg._owner].count)
+          nAggsFiltered++
+        }
+      })
+      t.assert(nAggsFiltered)
+      test.done()
+    })
   })
 }
+
 
 exports.countByMultipleFieldsReturnsResults = function(test) {
   t.get({
@@ -68,3 +124,5 @@ exports.countByMultipleFieldsReturnsResults = function(test) {
     test.done()
   })
 }
+
+

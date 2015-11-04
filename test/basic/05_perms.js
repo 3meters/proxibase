@@ -143,6 +143,7 @@ exports.user1CanCreateARecord = function(test) {
     body: {data: doc1}
   }, 201, function(err, res, body) {
     t.assert(body.data._id)
+    t.assert(body.data._owner === user1._id)
     doc1._id = body.data._id
     test.done()
   })
@@ -310,7 +311,7 @@ exports.ownerAccessCollectionsWork = function(test) {
                 t.assert(body.canEdit === true)
                 t.assert(tipe.isUndefined(body.sort))
                 t.assert(tipe.isUndefined(body.skip))
-                t.assert(tipe.isUndefined(body.limit))
+                // t.assert(body.limit === -1)  // Enforced by the mongodb driver
                 test.done()
               })
             })

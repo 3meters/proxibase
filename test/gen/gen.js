@@ -35,11 +35,11 @@ var photo = {
 var _exports = {}  // For commenting out tests
 
 
-// These decide who big the db will be
+// These decide how big the db will be
 var nUsers = 10
 var nBeaconsPerPlace = 10
-var nPatchesPerUser = 50
-var nMessagesPerPatchPerUser = 20
+var nPatchesPerUser = 100
+var nMessagesPerPatchPerUser = 10
 
 
 // We chunk some bulk inserts to stay under the post body limit of the server
@@ -380,7 +380,7 @@ exports.usersCreateMessages = function(test) {
 
   function addMessagesForUser(user, nextUser) {
 
-    t.get('/data/patches?qry[_owner]=' + user._id + '&' + user.cred,
+    t.get('/data/patches?limit=1000',
     function(err, res, body) {
       var patches = body.data
       t.assert(patches && patches.length)
@@ -389,6 +389,9 @@ exports.usersCreateMessages = function(test) {
       async.eachSeries(patches, addMessagesForPatch, nextUser)
 
       function addMessagesForPatch(patch, nextPatch) {
+
+        // Don't send messages to the tips-and tricks patch
+        if (patch._id === util.statics.welcomePatch._id) return nextPatch()
 
         // Build the messages for this user to send to this patch
         var messages = []
@@ -413,7 +416,11 @@ exports.usersCreateMessages = function(test) {
 
   function finish(err) {
     t.assert(!err)
-    test.done()
+    t.get('/data/messages/count?' + admin.cred,
+    function(err, res, body) {
+      t.assert(body.count === nUsers * nPatchesPerUser * nMessagesPerPatchPerUser * nMessagesPerPatchPerUser)
+      test.done()
+    })
   }
 }
 
