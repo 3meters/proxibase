@@ -15,9 +15,10 @@
 var util = require('proxutils')
 var log = util.log
 var testUtil = require('../util')
+var db = testUtil.db
+var assert = require('assert')
 var skip = testUtil.skip
 var t = testUtil.treq
-var db = testUtil.db
 var testUser
 var userCred
 var testUser2
@@ -204,6 +205,7 @@ exports.addSomeTestData = function(test) {
     user: testUser,
     tag: 'statsTest',
   }
+
   db.patches.safeInsert(newPatches, dbOps, function(err, savedPatches) {
     assert(!err, err)
     assert(savedPatches.length, savedPatches)

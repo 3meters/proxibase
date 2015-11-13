@@ -741,8 +741,7 @@ exports.janeCanCountWatchRequests = function(test) {
     var patch = body.data
     t.assert(patch._id === janehouse._id)
     t.assert(patch.linkCount.from.users.like === 0)
-    t.assert(patch.linkCount.from.users.watch.enabled === 1)
-    t.assert(patch.linkCount.from.users.watch.disabled === 1)
+    t.assert(patch.linkCount.from.users.watch === 1)
     test.done()
   })
 }
@@ -990,10 +989,10 @@ exports.maryCanSendMessageToPublicPatch = function(test) {
 
 
 exports.getTarzanNotifications = function (test) {
-  t.get('/user/getNotifications?limit=20&' + tarzan.cred,
+  t.get('/user/getNotifications?limit=20&log=true&' + tarzan.cred,
   function(err, res, body) {
     t.assert(body.data)
-    t.assert(body.count === 5)
+    t.assert(body.count === 4)
     test.done()
   })
 }
@@ -1270,8 +1269,10 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
     uri: '/find/users/' + tarzan._id + '?' + tarzan.cred,
     body: {
       promote: 'linked',
-      linked: {to: 'patches', type: 'watch', limit: 2, sort: '_id', more: true, fields: 'name,visibility,photo,schema', linkFields: 'enabled', refs: {},
-        linked: {from: 'messages', type: 'content', limit: 1, more: true, fields: 'schema,description,photo,_owner', refs: 'name,schema', linkFields: false},
+      linked: {to: 'patches', type: 'watch', limit: 2, sort: '_id', more: true,
+        fields: 'name,visibility,photo,schema', linkFields: 'enabled', refs: {_owner: 'name,schema,photo'},
+        linked: {from: 'messages', type: 'content', limit: 1, more: true,
+            fields: 'schema,description,photo,_owner', refs: 'name,schema', linkFields: false},
         linkCount: [
           {from: 'users', type: 'watch'},
           {from: 'users', type: 'like'},
@@ -1289,6 +1290,7 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
     t.assert(body.parentEntity.schema === 'user')
     t.assert(body.parentEntity.photo)
 
+    var cMessages = 0
     body.data.forEach(function(patch) {
       t.assert(patch.schema === 'patch')
       t.assert(patch.name)
@@ -1310,8 +1312,10 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
         t.assert(message.owner)
         t.assert(message.owner.name)
         t.assert(!message.owner.photo)  // refs param for messages overrides outer refs def
+        cMessages++
       })
     })
+    t.assert(cMessages)
     t.assert(cMoreMessages)
     t.assert(body.count === body.data.length)
     test.done()
@@ -1409,18 +1413,18 @@ exports.findMyPatchesCompareGetEntities = function(test) {
     // Supported syntax
     uri: '/find/users/' + tarzan._id + '?' + tarzan.cred,
     body: {
-      refs: 'name,photo,schema',
+      refs: {_owner: '_id,name,photo,schema'},
       linked: [
         {to: 'patches', type: 'watch', limit: 30, fields: 'name,schema,visibility',
           linked: [
             {to: 'beacons', type: 'proximity', limit: 10},
-            {to: 'places', type: 'proximity', fields: 'name,schema,category,photo', limit: 1},
-            {from: 'messages', type: 'content', fields: 'schema,description', limit: 2},
+            {to: 'places', type: 'proximity', limit: 1, fields: 'name,schema,category,photo', limit: 1},
+            {from: 'messages', type: 'content', limit: 2, fields: 'schema,description'},
           ],
           linkCount: [
             {from: 'messages', type: 'content'},
             {from: 'users', type: 'like'},
-            {from: 'users', type: 'watch', filter: {enabled: true}},
+            {from: 'users', type: 'watch', enabled: true},
           ]
         }
       ]
@@ -1489,6 +1493,7 @@ exports.findMyPatchesCompareGetEntities = function(test) {
         t.assert(patch.linksInCounts)
         t.assert(patch.linksInCounts.some(function(count) { return count.type === 'watch' }))
         t.assert(patch.linksIn)
+        t.assert(patch.linksIn.length)
         patch.linksIn.forEach(function(link) {
           t.assert(link._id.match(/^li\./))
           t.assert(link.shortcut)

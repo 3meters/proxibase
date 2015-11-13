@@ -1,10 +1,10 @@
 /**
- *  Patchr gendata test
+ *  Patchr perfgen test
  *
  *  This tests aims to generate a lot of data that closely
  *  simulates real world data.
  *
- *  To run stand-alone:  cd test, node test -t gen
+ *  To run stand-alone:  cd test, node test -t perfgen
  *  The database can then be used to run the perf tests
  *
  *  Not safe to run concurrently.
@@ -25,7 +25,7 @@ var testUtil = require('../util')
 var skip = testUtil.skip
 var t = testUtil.treq
 var testUserId
-var db = testUtil.safeDb   // raw mongodb connection object without mongoSafe wrapper
+var db = testUtil.safeDb   // raw mongoSafe connection object
 var assert = require('assert')
 var admin = {}
 var photo = {
@@ -37,9 +37,15 @@ var _exports = {}  // For commenting out tests
 
 // These decide how big the db will be
 var nUsers = 10
+var nUsersToInvite = 2
 var nBeaconsPerPlace = 10
 var nPatchesPerUser = 100
 var nMessagesPerPatchPerUser = 10
+var nMessagesPerPatchPerUserLiked = 2
+
+// Expected number of messages by type
+var nShareMessages = nUsers * nUsersToInvite * nPatchesPerUser
+var nRegularMessages = nUsers * nUsers * nPatchesPerUser * nMessagesPerPatchPerUser
 
 
 // We chunk some bulk inserts to stay under the post body limit of the server
@@ -98,7 +104,7 @@ for (var i = 0; i < nPatchesPerUser; i++) {
 // on the machine running the test,
 // So it won't handle huge amounts like a stream, but it will allow posting
 // much larger arrays than are allowed in our default post max size
-function postChunked(uri, docs, cb) {
+function postChunked(uri, docs, user, cb) {
 
   var results = []
   var chunks = [[]]  // array of arrays with first array initialized
@@ -122,7 +128,9 @@ function postChunked(uri, docs, cb) {
   // post the chunk of docs then append the saved docs to the results
   function postChunk(chunk, nextChunk) {
     var timer = util.timer()
-    t.post({uri: uri, body: {data: chunk}}, 201, function(err, res, body) {
+    var body = {data: chunk}
+    if (user && user.credentials) _.assign(body, user.credentials)
+    t.post({uri: uri, body: body}, 201, function(err, res, body) {
       t.assert(body.data && body.data.length === chunk.length)
       log(chunk.length + ' docs posted in ' + Math.round(timer.read() / chunk.length) + 'ms per doc')
       body.data.forEach(function(doc) { results.push(doc) })
@@ -138,12 +146,16 @@ function postChunked(uri, docs, cb) {
 exports.getAdminSession = function(test) {
   testUtil.getAdminSession(function(session) {
     admin._id = session._owner
+    admin.credentials = {
+      user: admin._id,
+      session: session.key,
+      install: seed,
+    }
     admin.cred = 'user=' + session._owner +
         '&session=' + session.key + '&install=' + seed
     test.done()
   })
 }
-
 
 
 exports.createUsers = function(test) {
@@ -218,8 +230,7 @@ exports.registerInstalls = function(test) {
 
 
 exports.postBeacons = function(test) {
-  var uri = '/data/beacons?' + _users[0].cred
-  postChunked(uri, _beacons, function (err, saved) {
+  postChunked('/data/beacons', _beacons, _users[0], function (err, saved) {
     if (err) throw err
     if (!saved.length) throw 'Save failed'
     test.done()
@@ -229,8 +240,7 @@ exports.postBeacons = function(test) {
 
 exports.postPlaces = function(test) {
   var nLinks = 0
-  var uri = '/data/places?' + admin.cred
-  postChunked(uri, _places, function(err, saved) {
+  postChunked('/data/places', _places, admin, function(err, saved) {
     if (err) throw err
     if (!saved.length) throw 'Save failed'
     saved.forEach(function(place) {
@@ -289,6 +299,76 @@ exports.usersCreatePatches = function(test) {
   }
 }
 
+
+exports.usersSendInvites = function(test) {
+
+  var nShareMessages = 0
+  var nShareLinks = 0
+  async.eachSeries(_users, sendInvites, finish)
+
+  function sendInvites(user, nextUser) {
+
+    // Build up an array of others to invite
+    var others = []
+    var iOther = 0
+    _users.forEach(function(other) {
+      if (iOther >= nUsersToInvite) return
+      if ((other._id !== user._id)) {
+        others.push(other)
+        iOther++
+      }
+    })
+
+    async.eachSeries(others, inviteOthers, nextUser)
+
+    function inviteOthers(other, nextOther) {
+      var timer = util.timer()
+      var uri = '/find/patches?qry[_owner]=' + user._id + '&limit=1000&' + user.cred
+      t.get(uri, function(err, res, body) {
+        var myPatches = body.data
+        t.assert(myPatches && myPatches.length)
+        t.assert(myPatches.length === nPatchesPerUser)
+
+        async.eachSeries(myPatches, invite, function(err) {
+          t.assert(!err)
+          log('Sent ' + body.data.length + ' invites in ' + Math.round(timer.read()/body.data.length) + 'ms per patch')
+          nextOther()
+        })
+
+        function invite(patch, nextPatch) {
+          t.post({
+            uri: '/data/messages?' + user.cred,
+            body: {data: {
+              description: 'You\'re invited to the ' + patch.name + ' patch!',
+              links: [
+                {_to: patch._id, type: 'share' },
+                {_to: other._id, type: 'share' } ],
+              type: 'share',
+            }},
+          }, 201, function(err, res, body) {
+            t.assert(body.data)
+            t.assert(body.data.links)
+            t.assert(body.data.links.length === 2)
+            nShareMessages++
+            nShareLinks += 2
+            nextPatch()
+          })
+        }
+      })
+    }
+  }
+
+  function finish(err) {
+    if (err) throw err
+    t.get('/data/messages/count?q[type]=share&' + admin.cred,
+    function(err, res, body) {
+      t.assert(body.count === nShareMessages, util.inspect({e: nShareMessages, r: body.count}))
+      test.done()
+    })
+  }
+}
+
+
 exports.usersWatchPatches = function(test) {
   var nWatchLinks = 0
   async.eachSeries(_users, watchAllPatches, finish)
@@ -327,7 +407,8 @@ exports.usersWatchPatches = function(test) {
 
   function finish (err) {
     t.assert(!err)
-    if (!nWatchLinks) throw 'Save failed'
+    var nExpected = nUsers * (nUsers - 1) * nPatchesPerUser
+    t.assert(nWatchLinks === nExpected, util.inspect({expected: nExpected, watchLinks: nWatchLinks}))
     test.done()
   }
 }
@@ -401,11 +482,13 @@ exports.usersCreateMessages = function(test) {
             photo: photo,
             links: [{_to: patch._id, type: 'content'}]
           }
+          if (i < nMessagesPerPatchPerUserLiked) {
+            msg.links.push({_from: user._id, type: 'like'})
+          }
           messages.push(msg)
         }
 
-        var uri = '/data/messages?' + user.cred
-        postChunked(uri, messages, function(err, saved) {
+        postChunked('/data/messages', messages, user, function(err, saved) {
           if (err) return finish(err)
           iPatch++
           nextPatch()
@@ -416,13 +499,21 @@ exports.usersCreateMessages = function(test) {
 
   function finish(err) {
     t.assert(!err)
-    t.get('/data/messages/count?' + admin.cred,
+    t.get('/data/messages/count/type?' + admin.cred,
     function(err, res, body) {
-      t.assert(body.count === nUsers * nPatchesPerUser * nMessagesPerPatchPerUser * nMessagesPerPatchPerUser)
+      t.assert(body.data && body.data.length == 2)
+      t.assert(body.data.some(function(count) {return count.type === 'share'}))
+      t.assert(body.data.some(function(count) {return count.type === null}))   // regular content messages
+      body.data.forEach(function(count) {
+        if (count.type === 'null') {
+          t.assert(count.count === nRegularMessages, {exp: nRegularMessages, res: count.count})
+        }
+      })
       test.done()
     })
   }
 }
+
 
 exports.buildLinkStats = function(test) {
   t.get('/stats/rebuild?' + admin.cred,

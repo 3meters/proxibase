@@ -19,12 +19,12 @@ var adminCred
 var _exports = {} // for commenting out tests
 var testLatitude = 46.1
 var testLongitude = -121.1
-var installId1 = '5905d547-8321-4612-abe1-00001'
-var installId2 = '5905d547-8321-4612-abe1-00002'
-var installId3 = '5905d547-8321-4612-abe1-00003'
-var installId4 = '5905d547-8321-4612-abe1-00004'
-var installId5 = '5905d547-8321-4612-abe1-00005'
-var installId6 = '5905d547-8321-4612-abe1-00006'
+var installId1 = '5905d547-8321-4613-abe1-00001'
+var installId2 = '5905d547-8321-4613-abe1-00002'
+var installId3 = '5905d547-8321-4613-abe1-00003'
+var installId4 = '5905d547-8321-4613-abe1-00004'
+var installId5 = '5905d547-8321-4613-abe1-00005'
+var installId6 = '5905d547-8321-4613-abe1-00006'
 var expirationDate
 var activityDate
 var beckyWatchLinkId
@@ -42,9 +42,9 @@ var messagesPerPatch = dbProfile.mpp
 
 
 var testUserTom = {
-  _id :  "us.111111.11111.000.111111",
+  _id :  "us.111111.11111.001.111111",
   name : "Tom",
-  email : "tomtest@3meters.com",
+  email : "tomtest25@3meters.com",
   password : "12345678",
   photo: {
     prefix:"resource:patchholder_user",
@@ -54,42 +54,42 @@ var testUserTom = {
 }
 
 var testUserBob = {
-  _id : "us.111111.11111.000.222222",
+  _id : "us.111111.11111.001.222222",
   name : "Bob",
-  email : "bobtest@3meters.com",
+  email : "bobtest25@3meters.com",
   password : "12345678",
 }
 
 var testUserAlice = {
-  _id : "us.111111.11111.000.333333",
+  _id : "us.111111.11111.001.333333",
   name : "Alice",
-  email : "alicetest@3meters.com",
+  email : "alicetest25@3meters.com",
   password : "12345678",
 }
 
 var testUserBecky = {
-  _id : "us.111111.11111.000.444444",
+  _id : "us.111111.11111.001.444444",
   name : "Becky",
-  email : "beckytest@3meters.com",
+  email : "beckytest25@3meters.com",
   password : "12345678",
 }
 
 var testUserMax = {
-  _id : "us.111111.11111.000.555555",
+  _id : "us.111111.11111.001.555555",
   name : "Max",
-  email : "maxtest@3meters.com",
+  email : "maxtest25@3meters.com",
   password : "12345678",
 }
 
 var testUserStan = {
-  _id : "us.111111.11111.000.666666",
+  _id : "us.111111.11111.001.666666",
   name : "Stan",
-  email : "stantest@3meters.com",
+  email : "stantest25@3meters.com",
   password : "12345678",
 }
 
 var testPatchPublic = {
-  _id : "pa.111111.11111.111.311114",
+  _id : "pa.111111.11111.112.311114",
   schema : util.statics.schemaPatch,
   name : "Hawks Nest",
   photo: {
@@ -135,7 +135,7 @@ var locationUserMaxPoorAccuracy = {
 }
 
 var testPatchPrivate = {
-  _id : "pa.111111.11111.111.211112",
+  _id : "pa.111111.11111.112.211112",
   schema : util.statics.schemaPatch,
   name : "Seahawks Private VIP Club",
   photo: {
@@ -157,7 +157,7 @@ var testPatchPrivate = {
 }
 
 var testMessage = {
-  _id : "me.111111.11111.111.222222",
+  _id : "me.111111.11111.112.222222",
   schema : util.statics.schemaMessage,
   type : "root",
   description : "Go seahawks!",
@@ -169,7 +169,7 @@ var testMessage = {
 }
 
 var testResponseMessage = {
-  _id : "me.111111.11111.111.111112",
+  _id : "me.111111.11111.112.111112",
   schema : util.statics.schemaMessage,
   type : "root",
   description : "Repeat! Repeat!",
@@ -177,7 +177,7 @@ var testResponseMessage = {
 }
 
 var testMessageToPrivate = {
-  _id : "me.111111.11111.111.222223",
+  _id : "me.111111.11111.112.222223",
   schema : util.statics.schemaMessage,
   type : "root",
   description : "How do I switch views on the suite flat panel screen?",
@@ -189,7 +189,7 @@ var testMessageToPrivate = {
 }
 
 var testResponseToPrivate = {
-  _id : "me.111111.11111.111.111113",
+  _id : "me.111111.11111.112.111113",
   schema : util.statics.schemaMessage,
   type : "root",
   description : "Use the little touch control next to the mini bar",
@@ -197,11 +197,11 @@ var testResponseToPrivate = {
 }
 
 var testBeacon = {
-  _id : 'be.44:44:44:44:44:44',
+  _id : 'be.44:44:44:44:44:45',
   schema : util.statics.schemaBeacon,
   name: 'Test Beacon Label',
   ssid: 'Test Beacon',
-  bssid: '44:44:44:44:44:44',
+  bssid: '44:44:44:44:44:45',
   signal: -80,
   location: {
     lat:testLatitude,
@@ -213,11 +213,11 @@ var testBeacon = {
 }
 
 var testBeacon2 = {
-  _id : 'be.55:55:55:55:55:55',
+  _id : 'be.55:55:55:55:55:56',
   schema : util.statics.schemaBeacon,
   name: 'Test Beacon Label 2',
   ssid: 'Test Beacon 2',
-  bssid: '55:55:55:55:55:55',
+  bssid: '55:55:55:55:55:56',
   signal: -85,
   location: {
     lat:testLatitude,
@@ -1978,7 +1978,21 @@ exports.tomCanGetNotificationsForSelf = function (test) {
     // Note: this test file does not stand on it's own because
     // an earlier test file is creating another watch.
     t.assert(body.data)
-    t.assert(body.count === 4 || body.count === 5)
+    t.assert(body.data.length)
+    var cBob = 0
+    var cBecky = 0
+    var cAlice = 0
+    var cTom = 0
+    body.data.forEach(function(msg) {
+      if (msg.name === 'Tom') cTom++
+      if (msg.name === 'Bob') cBob++
+      if (msg.name === 'Becky') cBecky++
+      if (msg.name === 'Alice') cAlice++
+    })
+    t.assert(cBob)
+    t.assert(cAlice)
+    t.assert(cBecky)
+    t.assert(!cTom)
     test.done()
   })
 }

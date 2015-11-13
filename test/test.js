@@ -16,7 +16,6 @@ var cli = require('commander')
 var reporter = require('nodeunit').reporters.default
 var req = require('request')
 var async = require('async')
-var db
 var adminDb
 var genData = require(__dirname + '/../tools/pump/genData')
 var constants = require('./constants')
@@ -44,6 +43,7 @@ cli
   .option('-a, --all', 'Run all tests, not just basic')
   .option('-n, --none', 'Do not run any tests -- just ensure the test db')
   .option('-g, --generate', 'generate a fresh template test db from code')
+  .option('-k, --keep', 'keep the existing test database without overwriting')
   .option('-e  --empty', 'start with an empty test database')
   .option('-d  --database <database>', 'run with existing database')
   .option('-l, --log <file>', 'Test server log file [' + logFile + ']')
@@ -105,13 +105,12 @@ function ensureDb(ops, cb) {
   var templateName = dbName + 'Template'
 
   var url = 'mongodb://' + host + ':' + port + '/' + dbName
-  mongo.MongoClient.connect(url, connectOps, function(err, testDb) {
+  mongo.MongoClient.connect(url, connectOps, function(err, db) {
     if (err) throw err
-    db = testDb    // module global
 
     // Start with the specified database unmodified
-    if (cli.database) {
-      config.db.database = cli.database
+    if (cli.database || cli.keep || config.db.keepTestDb) {
+      if (cli.database) config.db.database = cli.database
       mongo.initDb(config.db, function(err, safeDb) {
         if (err) throw err
         return cb(null, safeDb)
@@ -314,9 +313,9 @@ process.on('uncaughtException', function(err) {
 
 
 function finish(err) {
-  db.close()
-  process.chdir(cwd)
   if (err) console.error(err.stack || err)
+  testUtil.db.close()
+  process.chdir(cwd)
   log('Tests finished in ' + Math.round(timer.read()/1000) + ' seconds')
   if (testServer) {
     setTimeout(function() {
