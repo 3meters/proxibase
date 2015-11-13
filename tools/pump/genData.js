@@ -9,8 +9,6 @@ var mongo = require('proxdb')       // Proxdb lib, inits schemas
 var constants = require('../../test/constants')
 var testUtil = require('../../test/util')
 var startTime         // Elapsed time counter
-var db
-
 
 var users = []
 var docs = {}
@@ -28,13 +26,13 @@ module.exports = function(ops, cb) {
     host:     {type: 'string', default: 'localhost'},
     port:     {type: 'number', default: 27017},
     database: {type: 'string', required: true},
-    profile:  {type: 'object', required: true, value: {
+    profile:  { type: 'object', default: constants.dbProfile.smokeTest, value: {
       users:  {type: 'number', required: true},
       ppu:    {type: 'number', required: true},
       bpp:    {type: 'number', required: true},
       ppp:    {type: 'number', required: true},
       mpp:    {type: 'number', required: true},
-    }},
+    }}
   }
 
   var err = scrub(ops, spec)
@@ -54,13 +52,14 @@ module.exports = function(ops, cb) {
         if (err) throw err
         oldDb.close()
         db = proxdb    // module global
-        run(ops, cb)
+        if (!(db.links && db.users)) throw new Error('mongo.initDb failed')
+        run(db, ops, cb)
       })
     })
   })
 }
 
-function run(ops, cb) {
+function run(db, ops, cb) {
 
   var profile = ops.profile
   genUsers()

@@ -2,35 +2,35 @@
  * Provide shared data constants for tests and tools
  */
 
-var
-  util = require('proxutils')
-  assert = require('assert'),
-  timeStamp = '010101.00000.555',                             // Jan 1 2000 + 555 miliseconds
-  timeStampMs = new Date(2001, 0, 1, 0, 0, 0, 555).getTime()  // Same but in milliseconds
-  _schemas = util.statics.schemas
-  uid1 = _schemas.user.id + '.' + timeStamp + '.000001',                     // Standard user
-  uid2 = _schemas.user.id + '.' + timeStamp + '.000002',                     // Dev user
-  bssid = '00:00:00:00:00:01',
-  beaconId = _schemas.beacon.id + '.' + bssid,
-  patchId = _schemas.patch.id + '.' + timeStamp + '.000001',
-  placeId = _schemas.place.id + '.' + timeStamp + '.000001',
-  messageId = _schemas.message.id + '.' + timeStamp + '.000001',
-  documentId = _schemas.document.id + '.' + timeStamp + '.000001',
-  linkId = _schemas.link.id + '.'  + timeStamp + '.000001',
-  latitude = 40.761449,                                              // Manhatten
-  longitude = -73.977341
-  password = 'password',
-  limit = 1000,
-  defaultDoc = {},
-  dbProfile = {
-    smokeTest: {
-      users: 10,
-      ppu: 5,   // patches per user
-      bpp: 5,   // beacons per patch
-      ppp: 1,   // places per patch
-      mpp: 5,   // messages per patch
-    },
-  }
+
+var util = require('proxutils')
+var assert = require('assert')
+var timeStamp = '010101.00000.555'                             // Jan 1 2000 + 555 miliseconds
+var timeStampMs = new Date(2001, 0, 1, 0, 0, 0, 555).getTime()  // Same but in milliseconds
+var _schemas = util.statics.schemas
+var uid1 = _schemas.user.id + '.' + timeStamp + '.000001'                     // Standard user
+var uid2 = _schemas.user.id + '.' + timeStamp + '.000002'                     // Dev user
+var bssid = '00:00:00:00:00:01'
+var beaconId = _schemas.beacon.id + '.' + bssid
+var patchId = _schemas.patch.id + '.' + timeStamp + '.000001'
+var placeId = _schemas.place.id + '.' + timeStamp + '.000001'
+var messageId = _schemas.message.id + '.' + timeStamp + '.000001'
+var documentId = _schemas.document.id + '.' + timeStamp + '.000001'
+var linkId = _schemas.link.id + '.'  + timeStamp + '.000001'
+var latitude = 40.761449                                              // Manhatten
+var longitude = -73.977341
+var password = 'password'
+var limit = 1000
+var defaultDoc = {}
+var dbProfile = {
+  smokeTest: {
+    users: 10,
+    ppu: 5,   // patches per user
+    bpp: 5,   // beacons per patch
+    ppp: 1,   // places per patch
+    mpp: 5,   // messages per patch
+  },
+}
 
 
 defaultDoc.user = defaultDoc.users1 = {

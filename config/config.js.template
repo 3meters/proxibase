@@ -33,11 +33,12 @@ module.exports = {
     limits: {
       default: 50,
       max: 1000,
-      join: 1000,
+      join: 100,
     },
     timeout: 60000,
     deoptimize: false,                  // Turn off code that preprocesses certain slow mongodb queries
     logSlow: 100,                       // write individual queries greater than n milliseconds to stderr.
+    keepTestDb: false,                  // If true do not overwrite the test database when testing
     serverOps: {},                      // Override Mongodb.Server options
     dbOps: {},                          // Override Mongodb.Db options
   },

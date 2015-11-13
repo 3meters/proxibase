@@ -6,6 +6,7 @@ var util = require('proxutils')
 var log = util.log
 var testUtil = require('../util')
 var qs = require('querystring')
+var assert = require('assert')
 var db = testUtil.db
 var t = testUtil.treq
 var userSession
