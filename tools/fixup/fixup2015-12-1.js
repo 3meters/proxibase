@@ -84,18 +84,6 @@ dblib.initDb(util.config.db, function(err, db) {
         db.links.safeUpdate(link, dbOps, nextLink)
       })
     }
-<<<<<<< HEAD
-
-    function finish(err) {
-      db.close()
-      log()
-      log('Users found: ' + nUsersFound)
-      log('Users fixed: ' + nUsersFixed)
-      log('Links found: ' + nLinksFound)
-      log('Links fixed: ' + nLinksFixed)
-      if (err) throw err
-    }
-=======
   }
 
 
@@ -107,6 +95,5 @@ dblib.initDb(util.config.db, function(err, db) {
     log('Links found: ' + nLinksFound)
     log('Links fixed: ' + nLinksFixed)
     if (err) throw err
->>>>>>> gdev
   }
 })
