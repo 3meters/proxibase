@@ -88,12 +88,18 @@ dblib.initDb(util.config.db, function(err, db) {
 
 
   function finish(err) {
+
     db.close()
+
+    if (err) {
+      logErr(err)
+      process.exit(1)
+    }
+
     log()
     log('Users found: ' + nUsersFound)
     log('Users fixed: ' + nUsersFixed)
     log('Links found: ' + nLinksFound)
     log('Links fixed: ' + nLinksFixed)
-    if (err) throw err
   }
 })
