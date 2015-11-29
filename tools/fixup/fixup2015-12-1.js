@@ -1,11 +1,13 @@
 /*
- * This script aims to fix data left behind by a design change made 
- * Nov-2015.  Before then users records were created by the admin user. 
- * Then the admin user was set as the creator of links from all users
- * from the users collection.  The script first corrects the first mistake, 
- * then the second.  If all is working properly, it should be run once
- * and either do or not do any work.  Subseqent run should say there is 
- * no work to do.
+ * User records used to have their _creator field set to the
+ * adminId, instead of the _id of the user herself.  This bug
+ * propogated into the links collection.
+ *
+ * This script aims to find and fix users records with
+ * the problem, then fix infected links.
+ *
+ * 2015-11-30
+ * -George
  */
 
 
@@ -89,6 +91,7 @@ dblib.initDb(util.config.db, function(err, db) {
 
   function finish(err) {
 
+    // If we don't close the db the node process will hang
     db.close()
 
     if (err) {
