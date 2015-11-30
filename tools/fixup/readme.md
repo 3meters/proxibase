@@ -11,6 +11,9 @@ hotswapped.
 
 To run them, from the command line:
 
-    node my_fixup_script.js
+    node fixup.js
+
+after finished, copy fixup.js to the archive with the date
+in the name, or a meaningful description.
 
 
