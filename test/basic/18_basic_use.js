@@ -913,6 +913,41 @@ exports.janeCanEditHerMessageToTreehouse = function(test) {
 }
 
 
+exports.tarzanCanReadJanesMessageToTreehouse = function(test) {
+  t.post({
+    uri: '/find/messages/me.janeToTreehouse' + seed + '?' + tarzan.cred,
+    body: {
+      links: [
+       {from: 'users', type: 'like', fields: '_id,type,schema', filter: { _from: tarzan._id }}
+      ],
+      linkCount: [{from: 'users', type: 'like'}],
+      linked: [
+        {limit: 1, to: 'patches', fields: '_id,name,photo,schema,type', type: 'content' },
+        {fields: '_id,name,photo,schema,type', from: 'users', type: 'create' },
+        {to: 'messages', type: 'share', limit: 1, linked: [
+          {from: 'users', type: 'create', fields: '_id,name,photo,schema,type'},
+        ]},
+        {linkCount: [
+          {from: 'users', type: 'watch', enabled: true},
+          {from: 'messages', type: 'content'},
+        ], limit: 1, to: 'patches', type: 'share'},
+        {to: 'users', type: 'share', to: 'patches'},
+      ],
+      query: {'$or': [
+        { activityDate: { '$gt': 0 }},
+        { modifiedDate: { '$gt': 0 }},
+      ]},
+    },
+  }, function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.data._id)
+    t.assert(body.data.linked)
+    t.assert(body.data.linked.length)
+    test.done()
+  })
+}
+
+
 exports.janeCanDeleteHerMessageToTreehouse = function(test) {
   t.del({
     uri: '/data/messages/me.janeToTreehouse' + seed + '?' + jane.cred,
