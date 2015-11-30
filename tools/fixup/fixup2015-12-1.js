@@ -30,6 +30,9 @@ dblib.initDb(util.config.db, function(err, db) {
   var nLinksFound = 0
   var nLinksFixed = 0
 
+  var userFields = db.safeSchema('user').fields
+  var linkFields = db.safeSchema('link').fields
+
   log('Start patching users...')
   // Find all users other than the admin user itself who
   // have their _creator field set to the admin._id.
@@ -39,12 +42,29 @@ dblib.initDb(util.config.db, function(err, db) {
   }
   db.users.safeEach(qryUser, dbOps, fixUser, checkUsers)
 
+  // Set the user's _creator field to her own _id,
+  // Prune fields with old data that no longer fits the current user schema
   function fixUser(user, nextUser) {
+
+    var fixedUser = {}
     nUsersFound++
-    user._creator = user._id
+
+    for (var field in userFields) {
+      if (user[field]) fixedUser[field] = user[field]
+    }
+
+    // Basic sanity check
+    if (!(fixedUser._id && fixedUser.role && fixedUser.email)) {
+      logErr('Could not fix user:', user)
+      return nextUser()
+    }
+
+    fixedUser._creator = fixedUser._id    //  the rub
     nUsersFixed++
-    db.users.safeUpdate(user, dbOps, nextUser)
+
+    db.users.safeUpdate(fixedUser, dbOps, nextUser)
   }
+
 
   function checkUsers(err) {
     if (err) return finish(err)
@@ -81,9 +101,21 @@ dblib.initDb(util.config.db, function(err, db) {
           logErr('linked from', doc)
           return nextLink()
         }
-        link._creator = doc._creator
+
+        var fixedLink = {}
+        for (var field in linkFields) {
+          if (link[field]) fixedLink[field] = link[field]
+        }
+
+        if (Object.keys(fixedLink).length < 5) {
+          logErr('Could not fix link', link)
+          return nextLink()
+        }
+
+        fixedLink._creator = doc._creator    // the rub
         nLinksFixed++
-        db.links.safeUpdate(link, dbOps, nextLink)
+        db.links.safeUpdate(fixedLink, dbOps, nextLink)
+
       })
     }
   }
