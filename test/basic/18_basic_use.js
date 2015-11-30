@@ -1271,11 +1271,12 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
       promote: 'linked',
       linked: {to: 'patches', type: 'watch', limit: 2, sort: '_id', more: true,
         fields: 'name,visibility,photo,schema', linkFields: 'enabled', refs: {_owner: 'name,schema,photo'},
-        linked: {from: 'messages', type: 'content', limit: 1, more: true,
+        linked: {from: 'messages', type: 'content', limit: 2, more: true,
             fields: 'schema,description,photo,_owner', refs: 'name,schema', linkFields: false},
         linkCount: [
           {from: 'users', type: 'watch'},
           {from: 'users', type: 'like'},
+          {from: 'messages', type: 'content'},
         ],
       }
     },
@@ -1307,7 +1308,6 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
       if (patch.moreLinked) {
         cMoreMessages++
       }
-      t.assert(patch.linked && patch.linked.length)
       patch.linked.forEach(function(message) {
         t.assert(message.schema === 'message')
         t.assert(message.owner)
