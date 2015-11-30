@@ -1307,6 +1307,7 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
       if (patch.moreLinked) {
         cMoreMessages++
       }
+      t.assert(patch.linked && patch.linked.length)
       patch.linked.forEach(function(message) {
         t.assert(message.schema === 'message')
         t.assert(message.owner)
