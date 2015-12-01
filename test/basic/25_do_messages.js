@@ -2969,6 +2969,7 @@ exports.formerMemberGetMessagesForPrivatePatch = function (test) {
     uri: '/do/getEntitiesForEntity?' + userCredBecky,
     body: {
       entityId: testPatchPrivate._id,
+      log: true,
       cursor: {
         linkTypes: ['content'],
         schemas: ['message'],
@@ -2982,11 +2983,16 @@ exports.formerMemberGetMessagesForPrivatePatch = function (test) {
 
   function(err, res, body) {
     /*
-     * Becky has two messages from when she was a member
-     * but they should not be visible from this api path.
+     * Becky can still ready messages to a private patch
+     * that she posted, but she cannot see anybody elses
+     * 
+     * This is a change in behavior introduced in 2.4
      */
     t.assert(body.data)
-    t.assert(body.count === 0)
+    t.assert(body.data.length)
+    body.data.forEach(function(msg) {
+      t.assert(msg._owner === testUserBecky._id)
+    })
     test.done()
   })
 }

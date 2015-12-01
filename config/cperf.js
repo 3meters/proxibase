@@ -33,7 +33,7 @@ module.exports = {
     limits: {
       default: 50,
       max: 1000,
-      join: 100,
+      join: 1000,
     },
     timeout: 60000,
     deoptimize: false,                  // Turn off code that preprocesses certain slow mongodb queries

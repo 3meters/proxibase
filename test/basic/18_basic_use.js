@@ -1383,7 +1383,8 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
       })
     })
     t.assert(cMessages)
-    t.assert(cMoreMessages)
+    log('My patches will not show messages that i do not own')
+    // t.assert(cMoreMessages)
     t.assert(body.count === body.data.length)
     test.done()
   })
@@ -1499,8 +1500,34 @@ exports.findMyPatchesCompareGetEntities = function(test) {
   }, function(err, res, body) {
     var rfind = body.data
     t.assert(rfind._id === tarzan._id)
+
+    // find returns tarzan on top with an array of linked patches.
+    // Under each patch is an array of linked entities, of type beacon, place, or message,
+    // and a linkCount object that counts messages, watches, and likes to the patch
+    var cMessagesTot = 0
+    rfind.linked.forEach(function(patch) {
+      var cMessagesPerPatch = 0
+      t.assert(patch.schema === 'patch')
+      t.assert(patch.linkCount)
+      t.assert(tipe.isNumber(patch.linkCount.from.messages.content))
+      t.assert(tipe.isNumber(patch.linkCount.from.users.watch))
+      t.assert(tipe.isNumber(patch.linkCount.from.users.like))
+      t.assert(patch.linked)
+      patch.linked.forEach(function(ent) {
+        t.assert(ent.schema)
+        t.assert(ent.schema.match(/message|place|beacon/))
+        if (ent.schema === 'message') {
+          cMessagesPerPatch++
+          cMessagesTot++
+        }
+      })
+      t.assert(cMessagesPerPatch <= 2)  // proves link limit works
+    })
+    debug('Nested messages under patch lists filter to those owned by me')
+    // t.assert(cMessagesTot > 2)
+
+    // Deprecated syntax sent by Android client 1.5* and earlier
     t.post({
-      // Deprecated syntax sent by Android client 1.5* and earlier
       uri: '/do/getEntitiesForEntity?' + tarzan.cred,
       body: {
         entityId: tarzan._id,
@@ -1527,30 +1554,7 @@ exports.findMyPatchesCompareGetEntities = function(test) {
     }, function(err, res, body) {
       var rge = body.data
 
-      // find returns tarzan on top with an array of linked patches.
-      // Under each patch is an array of linked entities, of type beacon, place, or message,
-      // and a linkCount object that counts messages, watches, and likes to the patch
       t.assert(rfind.linked.length === rge.length)
-      var cMessagesTot = 0
-      rfind.linked.forEach(function(patch) {
-        var cMessagesPerPatch = 0
-        t.assert(patch.schema === 'patch')
-        t.assert(patch.linkCount)
-        t.assert(tipe.isNumber(patch.linkCount.from.messages.content))
-        t.assert(tipe.isNumber(patch.linkCount.from.users.watch))
-        t.assert(tipe.isNumber(patch.linkCount.from.users.like))
-        t.assert(patch.linked)
-        patch.linked.forEach(function(ent) {
-          t.assert(ent.schema)
-          t.assert(ent.schema.match(/message|place|beacon/))
-          if (ent.schema === 'message') {
-            cMessagesPerPatch++
-            cMessagesTot++
-          }
-        })
-        t.assert(cMessagesPerPatch <= 2)  // proves link limit works
-      })
-      t.assert(cMessagesTot > 2)
 
       // getEntities returns an array of patches, each with two nested arrays,
       // linksIn and linksInCounts.  The linksIn array contains an array of links
@@ -1600,7 +1604,7 @@ exports.patchesNear = function(test) {
         install: 'in.' + tarzan._id,  // either install or installId will work
         limit: 50,
         linked: [
-          {to: 'places', type: 'proxmity', sort: 'modifiedDate', limit: 1},
+          {to: 'places', type: 'proximity', sort: 'modifiedDate', limit: 1},
           {from: 'messages', type: 'content', sort: '-modifiedDate', limit: 2},
         ],
         linkCount: [
@@ -1625,8 +1629,9 @@ exports.patchesNear = function(test) {
 
       var cBeaconLinks = 0
       var cPlaceLinks = 0
-      var cLinks = 0
       var cLinked = 0
+      var cLinkedPlaces = 0
+      var cLinkedMessages = 0
 
       patches.forEach(function(patch) {
         t.assert(patch.linkCount)
@@ -1648,18 +1653,20 @@ exports.patchesNear = function(test) {
 
         t.assert(patch.linked)
         t.assert(tipe.isNumber(patch.linked.length))
-        cLinked += patch.linked.length
+        patch.linked.forEach(function(linked) {
+          if (linked.schema === 'message') cLinkedMessages++
+          if (linked.schema === 'place') cLinkedPlaces++
+        })
 
         t.assert(patch.links)
         t.assert(tipe.isNumber(patch.links.length))
-        cLinks += patch.links.length
 
       })
 
       t.assert(cBeaconLinks)
       t.assert(cPlaceLinks)
-      t.assert(cLinks)
-      t.assert(cLinked)
+      t.assert(cLinkedMessages)
+      t.assert(cLinkedPlaces)
 
       // Check to see that running a near query updated Tarzan's install
       // record to a new location
