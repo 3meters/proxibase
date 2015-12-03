@@ -913,6 +913,7 @@ exports.janeCanEditHerMessageToTreehouse = function(test) {
 }
 
 
+
 exports.tarzanCanReadJanesMessageToTreehouse = function(test) {
   t.post({
     uri: '/find/messages/me.janeToTreehouse' + seed + '?' + tarzan.cred,
@@ -943,6 +944,36 @@ exports.tarzanCanReadJanesMessageToTreehouse = function(test) {
     t.assert(body.data._id)
     t.assert(body.data.linked)
     t.assert(body.data.linked.length)
+    test.done()
+  })
+}
+
+
+// Current ios Builds <= 97 send two queries to the service for each patch detail
+// One to paint the patch, and a separate one to paint the messages.  This isn't
+// necessary but it still should work.
+exports.tarzanReadsTreeHousePatchIos = function(test) {
+  t.post({
+    uri: '/find/patches/' + treehouse._id + '?' + tarzan.cred,
+    body: {
+      links: [
+        // {from: "users", type: "watch", fields: "_id,type,enabled,mute,schema", filter: {_creator: tarzan._id}},
+        {from: "users", type: "watch", filter: {_from: tarzan._id}},
+        {from: "messages", type: "content", limit: 1, filter: {_creator: tarzan._id}},
+      ],
+      linkCount: [
+        {from: "messages", type: "content"},
+        {from: "users", type: "watch", enabled: true},
+      ],
+      refs: '_id,name,photo,schema',
+    }
+  }, function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.data.links)
+    body.data.links.forEach(function(link) {
+      if (link.type === 'watch') t.assert(link._from === tarzan._id)
+      if (link.type === 'content') t.assert(link._creator === tarzan._id)
+    })
     test.done()
   })
 }
