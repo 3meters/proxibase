@@ -252,7 +252,55 @@ exports.iosPatchesNearAlt = function(test) {
 }
 
 
-exports.iosPatchDetail = function(test) {
+exports.iosPatchDetailFreshPatchData = function(test) {
+  t.post({
+    uri: '/find/patches/' + patch._id + '?' + user.cred,
+    body: {
+      query: {'$or': [
+        {activityDate: {'$gt': 0}},
+        {modifiedDate: {'$gt': 0}},
+      ]},
+      links: [
+        {from: 'users', type: 'watch', filter: {_from: user._id}, fields: '_id,type,enabled,mute,schema'},
+        {from: 'messages', type: 'content', filter: {_creator: user._id}, fields: '_id,type,schema'},
+      ],
+      linkCount: [
+        {from: 'messages', type: 'content'},
+        {from: 'users', type: 'watch', enabled: true},
+      ],
+    }
+  }, function(err, res, body) {
+    t.assert(body.data)
+    test.done()
+  })
+}
+
+
+exports.iosPatchDetailUnfreshPatchData = function(test) {
+  t.post({
+    uri: '/find/patches/' + patch._id + '?' + user.cred,
+    body: {
+      query: {'$or': [
+        {activityDate: {'$gt': 9999999999999}},
+        {modifiedDate: {'$gt': 9999999999999}},
+      ]},
+      links: [
+        {from: 'users', type: 'watch', filter: {_from: user._id}, fields: '_id,type,enabled,mute,schema'},
+        {from: 'messages', type: 'content', filter: {_creator: user._id}, fields: '_id,type,schema'},
+      ],
+      linkCount: [
+        {from: 'messages', type: 'content'},
+        {from: 'users', type: 'watch', enabled: true},
+      ],
+    }
+  }, function(err, res, body) {
+    t.assert(body.data === null)
+    test.done()
+  })
+}
+
+
+exports.iosPatchMessages = function(test) {
   t.post({
     uri: '/find/patches/' + patch._id + '?' + user.cred,
     body: {
@@ -281,7 +329,7 @@ exports.iosPatchDetail = function(test) {
 }
 
 
-exports.iosPatchDetailAlt = function(test) {
+exports.iosPatchDetailAndMessagesAlt = function(test) {
   t.post({
     uri: '/find/patches/' + patch._id + '?' + user.cred,
     body: {
@@ -682,19 +730,19 @@ exports.andoidGetUserFeed = function(test) {
 }
 
 
-exports.iosPatchesNearAgain = function(test) {
+_exports.iosPatchesNearAgain = function(test) {
   exports.iosPatchesNear(test)
 }
 
-exports.iosPatchesNearAltAgain = function(test) {
+_exports.iosPatchesNearAltAgain = function(test) {
   exports.iosPatchesNearAlt(test)
 }
 
-exports.iosPatchDetailAgain = function(test) {
+_exports.iosPatchDetailAgain = function(test) {
   exports.iosPatchDetail(test)
 }
 
-exports.iosPatchDetailAltAgain = function(test) {
+_exports.iosPatchDetailAltAgain = function(test) {
   exports.iosPatchDetailAlt(test)
 }
 
