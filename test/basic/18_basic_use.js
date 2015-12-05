@@ -934,9 +934,10 @@ exports.tarzanCanReadJanesMessageToTreehouse = function(test) {
         ], limit: 1, to: 'patches', type: 'share'},
         {to: 'users', type: 'share', to: 'patches'},
       ],
+      // get the patch record even if it isn't really stale
       query: {'$or': [
-        { activityDate: { '$gt': 0 }},
-        { modifiedDate: { '$gt': 0 }},
+        {activityDate: {'$gt': 0}},
+        {modifiedDate: {'$gt': 0}},
       ]},
     },
   }, function(err, res, body) {
@@ -952,12 +953,11 @@ exports.tarzanCanReadJanesMessageToTreehouse = function(test) {
 // Current ios Builds <= 97 send two queries to the service for each patch detail
 // One to paint the patch, and a separate one to paint the messages.  This isn't
 // necessary but it still should work.
-exports.tarzanReadsTreeHousePatchIos = function(test) {
+exports.tarzanReadsTreehousePatchCached = function(test) {
   t.post({
     uri: '/find/patches/' + treehouse._id + '?' + tarzan.cred,
     body: {
       links: [
-        // {from: "users", type: "watch", fields: "_id,type,enabled,mute,schema", filter: {_creator: tarzan._id}},
         {from: "users", type: "watch", filter: {_from: tarzan._id}},
         {from: "messages", type: "content", limit: 1, filter: {_creator: tarzan._id}},
       ],
@@ -965,6 +965,39 @@ exports.tarzanReadsTreeHousePatchIos = function(test) {
         {from: "messages", type: "content"},
         {from: "users", type: "watch", enabled: true},
       ],
+      // Simulate the patch record being unchanged since the client last cached it
+      query: {'$or': [
+        {activityDate: {'$gt': 9999999999999}},
+        {modifiedDate: {'$gt': 9999999999999}},
+      ]},
+      refs: '_id,name,photo,schema',
+    }
+  }, function(err, res, body) {
+    t.assert(body.data === null)
+    test.done()
+  })
+}
+
+
+// Same as previous test except in this case test what happens if the
+// patch has been updated later than the version in the clients cache
+exports.tarzanReadsTreehousePatchIosNotCached = function(test) {
+  t.post({
+    uri: '/find/patches/' + treehouse._id + '?' + tarzan.cred,
+    body: {
+      links: [
+        {from: "users", type: "watch", filter: {_from: tarzan._id}},
+        {from: "messages", type: "content", limit: 1, filter: {_creator: tarzan._id}},
+      ],
+      linkCount: [
+        {from: "messages", type: "content"},
+        {from: "users", type: "watch", enabled: true},
+      ],
+      // Simulate the patch being changed since the client last cached it
+      query: {'$or': [
+        {activityDate: {'$gt': 0}},
+        {modifiedDate: {'$gt': 0}},
+      ]},
       refs: '_id,name,photo,schema',
     }
   }, function(err, res, body) {
