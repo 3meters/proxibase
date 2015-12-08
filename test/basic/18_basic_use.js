@@ -1416,7 +1416,7 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
       })
     })
     t.assert(cMessages)
-    log('My patches will not show messages that i do not own')
+    debug('Update test: My patches will no longer show messages that i do not own')
     // t.assert(cMoreMessages)
     t.assert(body.count === body.data.length)
     test.done()
@@ -1556,7 +1556,7 @@ exports.findMyPatchesCompareGetEntities = function(test) {
       })
       t.assert(cMessagesPerPatch <= 2)  // proves link limit works
     })
-    debug('Nested messages under patch lists filter to those owned by me')
+    debug('Update test: Nested messages under patch lists show only those owned by me')
     // t.assert(cMessagesTot > 2)
 
     // Deprecated syntax sent by Android client 1.5* and earlier

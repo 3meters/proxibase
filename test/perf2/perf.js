@@ -158,7 +158,7 @@ exports.patchesNearMinimum = function(test) {
 }
 
 
-exports.iosPatchesNear = function(test) {
+_exports.iosPatchesNear = function(test) {
   t.post({
     uri: '/patches/near?' + user.cred,
     body: {
@@ -211,7 +211,7 @@ exports.iosPatchesNear = function(test) {
 }
 
 
-exports.iosPatchesNearAlt = function(test) {
+_exports.iosPatchesNearAlt = function(test) {
   t.post({
     uri: '/patches/near?' + user.cred,
     body: {
@@ -252,7 +252,7 @@ exports.iosPatchesNearAlt = function(test) {
 }
 
 
-exports.iosPatchDetailFreshPatchData = function(test) {
+_exports.iosPatchDetailFreshPatchData = function(test) {
   t.post({
     uri: '/find/patches/' + patch._id + '?' + user.cred,
     body: {
@@ -276,7 +276,7 @@ exports.iosPatchDetailFreshPatchData = function(test) {
 }
 
 
-exports.iosPatchDetailUnfreshPatchData = function(test) {
+_exports.iosPatchDetailUnfreshPatchData = function(test) {
   t.post({
     uri: '/find/patches/' + patch._id + '?' + user.cred,
     body: {
@@ -300,7 +300,7 @@ exports.iosPatchDetailUnfreshPatchData = function(test) {
 }
 
 
-exports.iosPatchMessages = function(test) {
+_exports.iosPatchMessages = function(test) {
   t.post({
     uri: '/find/patches/' + patch._id + '?' + user.cred,
     body: {
@@ -329,7 +329,7 @@ exports.iosPatchMessages = function(test) {
 }
 
 
-exports.iosPatchDetailAndMessagesAlt = function(test) {
+_exports.iosPatchDetailAndMessagesAlt = function(test) {
   t.post({
     uri: '/find/patches/' + patch._id + '?' + user.cred,
     body: {
@@ -386,7 +386,7 @@ exports.iosPatchDetailAndMessagesAlt = function(test) {
 }
 
 
-exports.iosPatchesInteresting = function(test) {
+_exports.iosPatchesInteresting = function(test) {
   t.post({
     uri: '/patches/interesting?' + user.cred,
     body: {
@@ -413,7 +413,7 @@ exports.iosPatchesInteresting = function(test) {
 }
 
 
-exports.iosPatchesInterestingAlt = function(test) {
+_exports.iosPatchesInterestingAlt = function(test) {
   t.post({
     uri: '/patches/interesting?' + user.cred,
     body: {
@@ -438,7 +438,7 @@ exports.iosPatchesInterestingAlt = function(test) {
 }
 
 
-exports.iosUserDetail = function(test) {
+_exports.iosUserDetail = function(test) {
   t.post({
     uri: '/find/users/' + user._id + '?' + user.cred,
     body: {
@@ -476,7 +476,7 @@ exports.iosUserDetail = function(test) {
 
 
 
-exports.iosUserDetailAlt = function(test) {
+_exports.iosUserDetailAlt = function(test) {
   t.post({
     uri: '/find/users/' + user._id + '?' + user.cred,
     body: {
@@ -522,8 +522,7 @@ exports.androidPatchesNear = function(test) {
           { where: { _from: user._id },
             links: true, count: true, schema: 'user', type: 'like', limit: 1, direction: 'in' },
           { where: { _creator: user._id },
-            links: true, count: true, schema: 'message', type: 'content', limit: 1, direction: 'in' },
-        ]
+            links: true, count: true, schema: 'message', type: 'content', limit: 1, direction: 'in' }]
       },
     }
   }, function(err, res, body) {
@@ -554,25 +553,23 @@ exports.androidPatchesNearAlt = function(test) {
       links: {
         shortcuts: false,
         active: [
-          {count: true, schema: 'message', type: 'content', direction: 'in'},
-          {count: true, schema: 'user', type: 'watch', direction: 'in'},
+          { count: true, schema: 'message', type: 'content', direction: 'in' },
+          { count: true, schema: 'user', type: 'watch', direction: 'in' },
         ],
       },
     }
   }, function(err, res, body) {
     t.assert(body.data && body.data.length === 50)
-    body.data.forEach(function(patch) {
-      t.assert(patch.linksInCounts && patch.linksInCounts.length)
-      patch.linksInCounts.forEach(function(count) {
-        t.assert(count.count)
-      })
+    body.data.forEach(function(p) {
+      t.assert(p)
     })
+    log('android patch', body.data[0])
     test.done()
   })
 }
 
 
-exports.androidPatchDetail = function(test) {
+_exports.androidPatchDetail = function(test) {
   t.post({
     uri: '/do/getEntitiesForEntity?' + user.cred,
     body: {
@@ -609,7 +606,7 @@ exports.androidPatchDetail = function(test) {
 }
 
 
-exports.androidPatchDetailAlt = function(test) {
+_exports.androidPatchDetailAlt = function(test) {
   t.post({
     uri: '/do/getEntitiesForEntity?' + user.cred,
     body: {
@@ -647,7 +644,7 @@ exports.androidPatchDetailAlt = function(test) {
 }
 
 
-exports.androidPatchesInteresting = function(test) {
+_exports.androidPatchesInteresting = function(test) {
   t.get('/stats/to/patches/from/messages?type=content',
   function(err, res, body) {
     t.assert(body.data && body.data.length === 20)
@@ -656,7 +653,7 @@ exports.androidPatchesInteresting = function(test) {
 }
 
 
-exports.androidUserDetail = function(test) {
+_exports.androidUserDetail = function(test) {
   t.post({
     uri: '/do/getEntitiesForEntity?' + user.cred,
     body: {
@@ -691,7 +688,7 @@ exports.androidUserDetail = function(test) {
 }
 
 
-exports.iosGetUserFeed = function (test) {
+_exports.iosGetUserFeed = function (test) {
   t.post({
     uri: '/user/getNotifications?limit=50&' + user.cred,
     body: {
@@ -707,12 +704,13 @@ exports.iosGetUserFeed = function (test) {
 }
 
 
-exports.andoidGetUserFeed = function(test) {
+_exports.andoidGetUserFeed = function(test) {
   t.post({
-    uri: '/user/getNotifications?' + user.cred,
+    uri: '/user/getNotifications?limit=20&' + user.cred,
     body: {
       entityId: user._id,
       cursor: {
+        sort: { modifiedDate: -1 },
         limit: 20,
         skip: 0,
       }

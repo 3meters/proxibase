@@ -540,22 +540,6 @@ exports.reqValidateWorksForAdmins = function(test) {
   })
 }
 
-exports.userCanInviteNewUser = function(test) {
-  t.post({
-    uri: '/user/invite?' + userCred,
-    body: {
-      emails: ['test@3meters.com'],
-      name: 'Test Invite User From t1_auth',
-      message: 'This is soooo cool',
-      appName: 'aruba',
-    }
-  }, function(err, res, body) {
-    t.assert(body.errors && !body.errors.length)
-    t.assert(body.results && body.results.length)
-    test.done()
-  })
-}
-
 exports.autoWatchWorks = function(test) {
   var seed = String(Math.floor(Math.random() * 1000000))
   t.post({
