@@ -727,9 +727,17 @@ exports.bobInsertsPrivatePatch = function (test) {
 
     var stanNotification
 
+    var previousModifiedDate = Infinity
+
     body.notifications.forEach(function(message) {
       var notification = message.notification
       t.assert(notification._target === testPatchPrivate._id || notification.targetId === testPatchPrivate._id)
+
+      // Check sort order, issue #376
+      t.assert(notification.modifiedDate)
+      t.assert(notification.modifiedDate <= previousModifiedDate)
+      previousModifiedDate = notification.modifiedDate
+
       message.parseInstallIds.forEach(function(parseInstallId){
         if (parseInstallId.indexOf('tom') > 0) tomHit++
         if (parseInstallId.indexOf('alice') > 0) aliceHit++
