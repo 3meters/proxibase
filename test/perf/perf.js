@@ -702,6 +702,12 @@ exports.iosGetUserFeed = function (test) {
   }, function(err, res, body) {
     t.assert(body.data)
     t.assert(body.count === 50)
+    var prev = Infinity
+    body.data.forEach(function(item) {
+      t.assert(item.modifiedDate)
+      t.assert(item.modifiedDate <= prev)
+      prev = item.modifiedDate
+    })
     test.done()
   })
 }

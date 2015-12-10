@@ -1092,13 +1092,19 @@ exports.getTarzanNotifications = function (test) {
   function(err, res, body) {
     t.assert(body.data)
     t.assert(body.count === 4)
+    var prev = Infinity
+    body.data.forEach(function(feedItem) {
+      t.assert(feedItem.modifiedDate)
+      t.assert(feedItem.modifiedDate <= prev)
+      prev = feedItem.modifiedDate
+    })
     test.done()
   })
 }
 
 
 exports.getTarzanNotificationsPaging = function (test) {
-  t.get('/user/getNotifications?limit=2&more=true&' + tarzan.cred,
+  t.get('/user/feed?limit=2&more=true&' + tarzan.cred,
   function(err, res, body) {
     t.assert(body.data)
     t.assert(body.count === 2)

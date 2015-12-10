@@ -1974,7 +1974,6 @@ exports.tomCanGetNotificationsForSelf = function (test) {
     body: {
       entityId: testUserTom._id,
       cursor: {
-        sort: { modifiedDate: -1 },
         skip: 0,
         limit: 50,
       },
@@ -1991,7 +1990,12 @@ exports.tomCanGetNotificationsForSelf = function (test) {
     var cBecky = 0
     var cAlice = 0
     var cTom = 0
+    var prev = Infinity
     body.data.forEach(function(msg) {
+      // Issue #376
+      t.assert(msg.modifiedDate)
+      t.assert(msg.modifiedDate <= prev)
+      prev = msg.modifiedDate
       if (msg.name === 'Tom') cTom++
       if (msg.name === 'Bob') cBob++
       if (msg.name === 'Becky') cBecky++
@@ -2007,7 +2011,7 @@ exports.tomCanGetNotificationsForSelf = function (test) {
 
 exports.tomCanGetNotificationsForSelfUserApiPost = function (test) {
   t.post({
-    uri: '/user/getNotifications?' + userCredTom,
+    uri: '/user/feed?' + userCredTom,
     body: {
       sort: { modifiedDate: -1 },
       limit: 2,
@@ -2021,7 +2025,7 @@ exports.tomCanGetNotificationsForSelfUserApiPost = function (test) {
 }
 
 exports.tomCanGetNotificationsForSelfUserApiGet = function (test) {
-  t.get('/user/getNotifications?' + userCredTom + '&sort[modifiedDate]=-1&limit=3',
+  t.get('/user/feed?' + userCredTom + '&limit=3',
   function(err, res, body) {
     t.assert(body.data)
     t.assert(body.count === 3)
