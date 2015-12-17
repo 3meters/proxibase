@@ -180,7 +180,6 @@ function skip(test, msg) {
 function getSession(user, asAdmin, cb) {
 
   var body = util.clone(user)
-  body.installId = '123456'
   var req = makeReq({
     method: 'post',
     uri: '/auth/signin',
@@ -199,7 +198,7 @@ function getSession(user, asAdmin, cb) {
       var req = makeReq({
         method: 'post',
         uri: '/user/create',
-        body: {data: user, secret: 'larissa', installId: '123456'},
+        body: {data: user, secret: 'larissa'},
       })
       request(req, function(err, res) {
         if (err) throw err

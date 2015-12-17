@@ -40,7 +40,7 @@ var _exports = {}                    // for commenting out tests
 exports.signInAsAdmin = function(test) {
   t.post({
     uri: '/auth/signin',
-    body: {email: 'admin', password: 'admin', installId: '1'}
+    body: {email: 'admin', password: 'admin'}
   }, function(err, res, body) {
     t.assert(body.user)
     t.assert(body.session)
@@ -54,7 +54,7 @@ exports.signInAsAdmin = function(test) {
 exports.addUser1 = function(test) {
   t.post({
     uri: '/user/create?' + adminCred,
-    body: {data: user1, secret: 'larissa', installId: '1'},
+    body: {data: user1, secret: 'larissa'}
   }, function(err, res, body) {
     t.assert(body.session)
     t.assert(body.user && body.user._id)
@@ -67,7 +67,7 @@ exports.addUser1 = function(test) {
 exports.addUser2 = function(test) {
   t.post({
     uri: '/user/create?' + adminCred,
-    body: {data: user2, secret: 'larissa', installId: '1'}
+    body: {data: user2, secret: 'larissa'}
   }, function(err, res, body) {
     t.assert(body.session)
     t.assert(body.user && body.user._id)
@@ -80,7 +80,7 @@ exports.addUser2 = function(test) {
 exports.signinUser1 = function(test) {
   t.post({
     uri: '/auth/signin',
-    body: {email: user1.email, password: user1.password, installId: '1'}
+    body: {email: user1.email, password: user1.password}
   }, function(err, res, body) {
     t.assert(body.user)
     t.assert(body.session)
@@ -94,7 +94,7 @@ exports.signinUser1 = function(test) {
 exports.signinUser2 = function(test) {
   t.post({
     uri: '/auth/signin',
-    body: {email: user2.email, password: user2.password, installId: '1'}
+    body: {email: user2.email, password: user2.password}
   }, function(err, res, body) {
     t.assert(body.user)
     t.assert(body.session)

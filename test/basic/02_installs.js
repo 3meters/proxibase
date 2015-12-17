@@ -233,9 +233,30 @@ exports.signinOutClearsInstallRecordUser = function(test) {
 }
 
 
+exports.signinResetsInstallRecordUser = function(test) {
+  t.post({
+    uri: '/auth/signin',
+    body: {
+      email: user.email,
+      password: 'newpass',
+      installId: installId,
+    }
+  }, function(err, res, body) {
+    t.assert(body.session)
+    t.assert(body.user)
+    // Confirm install record has the _user field reset
+    t.get('/data/installs?q[_user]=' + user._id + '&' + adminCred,
+    function(err, res, body) {
+      t.assert(body.count === 0)  // gone
+      test.done()
+    })
+  })
+}
+
+
 exports.cleanup = function(test) {
   t.delete({
-    uri: '/data/users/' + user._id + '?' + adminCred,
+    uri: '/data/users/' + user._id + '?erase=1&' + adminCred,
   }, function(err, res, body) {
     test.done()
   })

@@ -152,8 +152,7 @@ var beacons = [
 exports.getAdminSession = function(test) {
   testUtil.getAdminSession(function(session) {
     admin._id = session._owner
-    admin.cred = 'user=' + session._owner +
-        '&session=' + session.key + '&install=' + seed
+    admin.cred = 'user=' + session._owner + '&session=' + session.key
     test.done()
   })
 }
@@ -165,7 +164,6 @@ exports.createUsers = function(test) {
     body: {
       data: tarzan,
       secret: 'larissa',
-      installId: 'in.' + tarzan._id,
     }
   }, function(err, res, body) {
     t.assert(body.user && body.user._id)
@@ -177,7 +175,6 @@ exports.createUsers = function(test) {
       body: {
         data: jane,
         secret: 'larissa',
-        installId: 'in.' + jane._id,
       }
     }, function(err, res, body) {
       t.assert(body.user && body.user._id)
@@ -189,7 +186,6 @@ exports.createUsers = function(test) {
         body: {
           data: mary,
           secret: 'larissa',
-          installId: 'in.' + mary._id,
         }
       }, function(err, res, body) {
         t.assert(body.user && body.user._id)

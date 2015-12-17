@@ -33,7 +33,6 @@ var seed = util.seed(5)
 var testUser1 = {
   email: 'testuser1@3meters.com',
   password: 'password1',
-  installId: seed,
 }
 
 var _exports = {} // for commenting out tests
