@@ -195,10 +195,17 @@ exports.userWithResetRoleCanExecuteResetPassword = function(test) {
         installId: installId,
       }
     }, function(err, res, body) {
-      test.done()
+
+      // Confirm install record is tied to user
+      t.get('/data/installs?q[_user]=' + user._id + '&' + adminCred,
+      function(err, res, body) {
+        t.assert(body.count === 1)
+        test.done()
+      })
     })
   })
 }
+
 
 exports.resetPasswordDoesntLeakSessions = function(test) {
   t.get('/data/sessions?query[_owner]=' + user._id + '&query[_install]=in.' + installId + '&' + adminCred,
@@ -207,6 +214,24 @@ exports.resetPasswordDoesntLeakSessions = function(test) {
     test.done()
   })
 }
+
+
+exports.signinOutClearsInstallRecordUser = function(test) {
+  t.get('/auth/signout?' + newUserCred,
+  function(err, res, body) {
+    t.get('/data/users?' + newUserCred, 401,
+    function(err, res, body) {
+
+      // Confirm install record no longer has _user field set
+      t.get('/data/installs?q[_user]=' + user._id + '&' + adminCred,
+      function(err, res, body) {
+        t.assert(body.count === 0)  // gone
+        test.done()
+      })
+    })
+  })
+}
+
 
 exports.cleanup = function(test) {
   t.delete({

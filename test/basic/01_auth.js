@@ -9,6 +9,7 @@ var testUtil = require('../util')
 var t = testUtil.treq
 var adminCred
 var userCred
+var _user
 var userOldCred
 var session = {}
 var adminSession = {}
@@ -159,6 +160,7 @@ exports.userCanSignIn = function(test) {
     session = body.session
     userCred = 'user=' + body.session._owner + '&session=' + body.session.key
     userCred = qs.stringify(body.credentials)
+    _user = body.session._owner
     test.done()
   })
 }
@@ -605,7 +607,13 @@ exports.userCanSignOut = function(test) {
   function(err, res, body) {
     t.get('/data/users?' + userCred, 401,
     function(err, res, body) {
-      test.done()
+
+      // Confirm session deleted
+      t.get('/data/sessions?q[_owner]=' + _user + '&' + adminCred,
+      function(err, res, body) {
+        t.assert(body.count === 0)
+        test.done()
+      })
     })
   })
 }

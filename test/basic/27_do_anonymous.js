@@ -89,6 +89,7 @@ exports.getPatchesUsingLocation = function (test) {
   })
 }
 
+// We decided to cut this feature on 12/15/15, so now it returns a 401
 exports.updateProximity = function (test) {
   t.post({
     uri: '/do/updateProximity',
@@ -96,22 +97,7 @@ exports.updateProximity = function (test) {
       beaconIds: [ beaconId3 ],
       installId: installId1,
     }
-  }, function(err, res, body) {
-    t.assert(body.info && body.info.toLowerCase().indexOf('install updated') >= 0)
-
-    /* Check install beacons */
-    t.post({
-      uri: '/find/installs?' + adminCred,
-      body: {
-        query:{ installId: installId1 }
-      }
-    }, function(err, res, body) {
-      t.assert(body.count === 1)
-      t.assert(body.data && body.data[0])
-      t.assert(body.data[0].beacons.length === 1)
-      t.assert(body.data[0].beacons[0] === beaconId3)
-      t.assert(body.data[0].beaconsDate)
-      test.done()
-    })
+  }, 401, function(err, res, body) {
+    test.done()
   })
 }
