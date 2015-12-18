@@ -573,7 +573,7 @@ exports.insertPatchCustomPublic = function (test) {
             }
           }, function(err, res, body) {
             t.assert(body.count === 1)
-            setTimeout(function() { test.done() }, 1000) // Sleep past the default activityDateUpdate window
+            test.done()
           })
         })
       })
@@ -770,24 +770,29 @@ exports.adminCanDeleteBeaconEntityUserCreated = function (test) {
 
 // Liking a patch will update its activityDate only if the current
 // time is past the default activity date window of 1000ms
-exports.findsPatchWithFreshTimestamp = function (test) {
+exports.checkPatchActivityDate = function (test) {
   t.post({
     uri: '/data/links?' + userCredTom,
-    body: {data: {
-      _from: testUserTom._id,
-      _to: testPatchCustomPublic._id,
-      type: 'like',
-    }},
+    body: {
+      data: {
+        _from: testUserTom._id,
+        _to: testPatchCustomPublic._id,
+        type: 'like',
+      },
+      test: true,    // sets the activityDateWindow to 0
+    }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.post({
      uri: '/do/getEntities',
      body: {
        entityIds: [testPatchCustomPublic._id],
-       where: { activityDate: { $gt: activityDatePatch }}
      }
     }, function(err, res, body) {
      t.assert(body.count === 1)
+     t.assert(body.data[0].activityDate > activityDatePatch, activityDatePatch)
+     // Update the module var
+     activityDatePatch = body.data[0].activityDate
      test.done()
     })
   })
@@ -802,7 +807,8 @@ exports.insertMessage = function (test) {
         _to: testPatchCustomPublic._id,
         type: util.statics.typeContent,
       }],
-    }
+      test: true,   // sets activityDate window to 0
+    },
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
@@ -851,20 +857,17 @@ exports.insertMessage = function (test) {
   })
 }
 
+// Verify that the patch's activityDate has been updated
 exports.getPatchWithStaleTimestamp = function (test) {
-   /*
-    * Verify that the patch DOES come back because the where parameter
-    * did pass.
-    */
    t.post({
      uri: '/do/getEntities',
      body: {
        entityIds: [testPatchCustomPublic._id],
-       where: { activityDate: { $gt: activityDatePatch }}
      }
    }, function(err, res, body) {
      t.assert(body.count === 1)
-     activityDatePatchRefreshed = body.data[0].activityDate
+     t.assert(body.data[0].activityDate > activityDatePatch, activityDatePatch)
+     activityDatePatch = body.data[0].activityDate
      test.done()
    })
 }
@@ -874,7 +877,7 @@ exports.getMessagesWithStaleTimestamp = function (test) {
     uri: '/do/getEntitiesForEntity?',
     body: {
       entityId: testPatchCustomPublic._id,
-      where: { activityDate: { '$gt': activityDatePatch }},
+      where: { activityDate: { '$gte': activityDatePatch }},
       cursor: {
         linkTypes: ['content'],
         schemas: ['message'],

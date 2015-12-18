@@ -149,10 +149,8 @@ exports.getAdminSession = function(test) {
     admin.credentials = {
       user: admin._id,
       session: session.key,
-      install: seed,
     }
-    admin.cred = 'user=' + session._owner +
-        '&session=' + session.key + '&install=' + seed
+    admin.cred = 'user=' + session._owner + '&session=' + session.key
     test.done()
   })
 }
@@ -168,7 +166,6 @@ exports.createUsers = function(test) {
       body: {
         data: user,
         secret: 'larissa',
-        installId: util.seed(8),  // Random 8-digit number as a string
       },
     }, function(err, res, body) {
       if (!(body.user && body.credentials)) throw new Error(util.inspect(body))
@@ -209,8 +206,8 @@ exports.registerInstalls = function(test) {
 
     var install = _.extend({
       _user: user._id,
-      installId: user.credentials.install,
-      parseInstallId: user._id + '.' + user.credentials.install,
+      installId: user._id,
+      parseInstallId: 'parse.' + user._id,
       location: midpoint,
     }, _install)
 

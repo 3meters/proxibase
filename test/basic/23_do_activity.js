@@ -99,7 +99,6 @@ var testPatchCustomTwo = {
 
 var testMessage = {
   _id : "me.111111.11111.111.111111",
-  _acl: testPatchCustom._id,
   schema : util.statics.schemaMessage,
   name : "Testing message entity",
   photo: {
@@ -110,7 +109,6 @@ var testMessage = {
 
 var testMessage2 = {
   _id : "me.111111.11111.111.111112",
-  _acl: testPatchCustom._id,
   schema : util.statics.schemaMessage,
   name : "Testing message entity 2",
 }
@@ -415,7 +413,6 @@ exports.insertCustomPatchTwo = function (test) {
     t.assert(body.notifications && body.notifications.length == 1)
     t.assert(body.notifications[0].notification.trigger === 'nearby')
     t.assert(body.notifications[0].parseInstallIds[0].indexOf('alice') > 0)
-
     test.done()
   })
 }
@@ -430,9 +427,7 @@ exports.insertMessage = function (test) {
         _to: testPatchCustom._id,          // Tom's patch
         type: util.statics.typeContent
       }],
-      test: true,
-      log: true,
-      activityDateWindow: 0,
+      test: true,  // test sets activity date window to 0
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
@@ -458,7 +453,7 @@ exports.insertMessage = function (test) {
     t.assert(savedEnt._owner === testUserBob._id)
     t.assert(savedEnt._creator === testUserBob._id)
     t.assert(savedEnt._modifier === testUserBob._id)
-    var activityDate = body.date
+    var activityDate = savedEnt.activityDate
 
     /* Check insert */
     t.post({
@@ -495,7 +490,7 @@ exports.insertMessage = function (test) {
 // This inserts a message to a message and checks that the activity date
 // on the top-level patch is ticked.  The client doesn't exersise this feature,
 // but the service supports it.
-exports.insertMessage2 = function (test) {
+exports.insertNestedMessage = function (test) {
   t.post({
     uri: '/do/insertEntity?' + userCredTom,
     body: {
@@ -505,34 +500,27 @@ exports.insertMessage2 = function (test) {
         type: util.statics.typeContent,
       }],
       activityDateWindow: 0,
+      test: true,
     }
   }, 201, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data)
+    t.assert(body.data.modifiedDate)
+    t.assert(body.data.modifiedDate === body.data.activityDate)
+    var activityDate = body.data.activityDate
 
-    var activityDate = body.date
+    // Check activityDate for parent message
+    t.get('/find/messages/' + testMessage._id + '?' + userCredTom,
+    function(err, res, body) {
+      t.assert(body.data)
+      t.assert(body.data.activityDate >= activityDate, activityDate)
 
-    /* Check insert */
-    t.post({
-      uri: '/find/messages?' + userCredTom,
-      body: {
-        query: { _id: testMessage2._id }
-      }
-    }, function(err, res, body) {
-      t.assert(body.count === 1)
-      t.assert(body.data && body.data[0])
-      //t.assert(!body.data[0].activityDate)
-
-      /* Check activityDate for patch */
-      t.post({
-        uri: '/find/patches',
-        body: {
-          query:{ _id:testPatchCustom._id }
-        }
-      }, function(err, res, body) {
+      // Check activityDate for grandparent patch
+      t.get('/find/patches/' + testPatchCustom._id,
+      function(err, res, body) {
         t.assert(body.count === 1)
-        t.assert(body.data && body.data[0])
-        t.assert(body.data[0].activityDate >= activityDate)
+        t.assert(body.data)
+        t.assert(body.data.activityDate >= activityDate, activityDate)
         test.done()
       })
     })
@@ -549,76 +537,53 @@ exports.updateNestedMessage = function (test) {
   }, function(err, res, body) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data._id)
-    var activityDate = body.date
+    t.assert(body.data.activityDate = body.data.modifiedDate)
+    var activityDate = body.data.activityDate
 
-    /* Check update */
-    t.post({
-      uri: '/find/messages?' + userCredTom,
-      body: {
-        query: { _id: testMessage2._id }
-      }
-    }, function(err, res, body) {
+    // Check parent msg
+    t.get('/find/messages/' + testMessage._id + '?' + userCredTom,
+    function(err, res, body) {
       t.assert(body.count === 1)
-      t.assert(body.data && body.data[0])
-      t.assert(body.data[0].activityDate != activityDate)
+      t.assert(body.data)
+      t.assert(body.data.activityDate >= activityDate)
 
-      /* Check activityDate for patch */
-      t.post({
-        uri: '/find/patches?' + userCredTom,
-        body: {
-          query:{ _id:testPatchCustom._id }
-        }
+      // Check activityDate for grandparent patch
+      t.get({
+        uri: '/find/patches/' + testPatchCustom._id + '?' + userCredTom,
       }, function(err, res, body) {
         t.assert(body.count === 1)
-        t.assert(body.data && body.data[0])
-        t.assert(body.data[0].activityDate >= activityDate)
-
-        /* Check activityDate for message */
-        t.post({
-          uri: '/find/messages?' + adminCred,
-          body: {
-            query:{ _id: testMessage._id }
-          }
-        }, function(err, res, body) {
-          t.assert(body.count === 1)
-          t.assert(body.data && body.data[0])
-          t.assert(body.data[0].activityDate >= activityDate)
-          test.done()
-        })
+        t.assert(body.data)
+        t.assert(body.data.activityDate >= activityDate)
+        test.done()
       })
     })
   })
 }
 
+
 exports.deleteNestedMessage = function (test) {
-  t.post({
-    uri: '/do/deleteEntity?' + adminCred,
-    body: {
-      entityId:testMessage2._id,
-    }
-  }, function(err, res, body) {
-    t.assert(body.count === 1)
-    t.assert(body.data && body.data._id)
-    var activityDate = body.date
-    /* Check delete */
+  t.get('/find/patches/' + testPatchCustom._id,
+  function(err, res, body) {
+    t.assert(body.data)
+    var activityDate = body.data.activityDate
+    t.assert(activityDate)
     t.post({
-      uri: '/find/messages?' + adminCred,
+      uri: '/do/deleteEntity?' + adminCred,
       body: {
-        query: { _id: testMessage2._id }
+        entityId:testMessage2._id,
       }
     }, function(err, res, body) {
-      t.assert(body.count === 0)
+      t.assert(body.count === 1)
+      t.assert(body.data && body.data._id)
 
-      /* Check activityDate for patch */
+      // Check delete
       t.post({
-        uri: '/find/patches',
+        uri: '/find/messages?' + adminCred,
         body: {
-          query:{ _id:testPatchCustom._id }
+          query: { _id: testMessage2._id }
         }
       }, function(err, res, body) {
-        t.assert(body.count === 1)
-        t.assert(body.data && body.data[0])
-        t.assert(body.data[0].activityDate >= activityDate)
+        t.assert(body.count === 0)
 
         /* Check activityDate for message */
         t.post({
@@ -629,8 +594,20 @@ exports.deleteNestedMessage = function (test) {
         }, function(err, res, body) {
           t.assert(body.count === 1)
           t.assert(body.data && body.data[0])
-          t.assert(body.data[0].activityDate >= activityDate)
-          test.done()
+          t.assert(body.data[0].activityDate >= activityDate, activityDate)
+
+          // Check activityDate for patch
+          t.post({
+            uri: '/find/patches',
+            body: {
+              query:{ _id:testPatchCustom._id }
+            }
+          }, function(err, res, body) {
+            t.assert(body.count === 1)
+            t.assert(body.data && body.data[0])
+            t.assert(body.data[0].activityDate >= activityDate, activityDate)
+            test.done()
+          })
         })
       })
     })

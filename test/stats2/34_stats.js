@@ -60,43 +60,12 @@ exports.getUserSession = function(test) {
 }
 
 
-exports.cannotCreateStatsAsUser = function(test) {
+exports.adminCanRebuild = function(test) {
   t.get({
-    uri: '/stats/refresh?' + userCred
-  }, 403, function(err, res, body){
-    test.done()
-  })
-}
-
-exports.cannotCreateStatsAsUser = function(test) {
-  t.get({
-    uri: '/stats/rebuild?' + userCred
-  }, 403, function(err, res, body){
-    test.done()
-  })
-}
-
-exports.welcome = function(test) {
-  t.get({
-    uri: '/stats',
-  }, function(err, res, body){
-    t.assert(body.info)
-    test.done()
-  })
-}
-
-
-exports.adminCanRefresh = function(test) {
-  t.get({
-    uri: '/stats/refresh?' + adminCred
+    uri: '/stats/rebuild?' + adminCred
   }, function(err, res, body){
     t.assert(body)
-    t.assert(body.to)
-    t.assert(body.to.cmd)
-    t.assert(body.to.results)
-    t.assert(body.from)
-    t.assert(body.from.cmd)
-    t.assert(body.from.results)
+    t.assert(body.results)
     test.done()
   })
 }
@@ -582,7 +551,7 @@ exports.getInterestingPatches = function(test) {
     body: {
       limit: 1000,
       more: true,
-      linkCounts: [
+      linkCount: [
         {from: 'messages', type: 'content'},
         {from: 'users', type: 'like'},
         {from: 'users', type: 'watch'},
@@ -591,13 +560,22 @@ exports.getInterestingPatches = function(test) {
     }
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)
-    var prevCount = Infinity
+    var cMessages = Infinity
     body.data.forEach(function(patch) {
-      var msgCount = patch.linkCounts[0].count
-      t.assert(tipe.isNumber(msgCount))
-      t.assert(msgCount <= prevCount, patch)
-      prevCount = msgCount
+      t.assert(patch.count <= cMessages)
+      cMessages = patch.count
     })
+    test.done()
+  })
+}
+
+exports.interestingDoesNotSupportExcludeIds = function(test) {
+  t.post({
+    uri: '/patches/interesting',
+    body: {
+      excludeIds: ['pa.foo', 'pa.bar']
+    },
+  }, 400, function(err, res, body) {
     test.done()
   })
 }
@@ -703,19 +681,5 @@ exports.statsRemovePatchDropsFromStats= function(test) {
         })
       })
     })
-  })
-}
-
-exports.adminCanRebuild = function(test) {
-  t.get('/stats/rebuild?' + adminCred,
-  function(err, res, body) {
-    t.assert(body)
-    t.assert(body.to)
-    t.assert(body.to.cmd)
-    t.assert(body.to.results)
-    t.assert(body.from)
-    t.assert(body.from.cmd)
-    t.assert(body.from.results)
-    test.done()
   })
 }

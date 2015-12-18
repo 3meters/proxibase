@@ -932,10 +932,12 @@ exports.beckyRequestsToWatchBobsPrivatePatch = function(test) {
 
   /* Stash activityDates */
   t.get('/data/users/' + testUserBecky._id, function(err, res, body) {
-    activityDateUser = (body.data.activityDate) ? body.data.activityDate : body.data.createdDate
+    activityDateUser = body.data.activityDate
+    t.assert(activityDateUser)
     t.get('/data/patches/' + testPatchPrivate._id, function(err, res, body) {
-      activityDatePatch = (body.data.activityDate) ? body.data.activityDate : body.data.createdDate
-      setTimeout(execute, 1200)  // activity date window is 1000
+      activityDatePatch = body.data.activityDate
+      t.assert(activityDatePatch)
+      execute()
     })
   })
 
@@ -948,7 +950,6 @@ exports.beckyRequestsToWatchBobsPrivatePatch = function(test) {
         fromId: testUserBecky._id,
         type: util.statics.typeWatch,
         enabled: false,
-        // actionEvent: 'request_watch_entity',
         test: true,
         log: true,
       }
@@ -1005,10 +1006,10 @@ exports.beckyRequestsToWatchBobsPrivatePatch = function(test) {
 
         /* Check activityDate updated for patch and user */
         t.get('/data/users/' + testUserBecky._id, function(err, res, body) {
-          t.assert(body.data.activityDate > activityDateUser)
+          t.assert(body.data.activityDate >= activityDateUser, activityDateUser)
 
           t.get('/data/patches/' + testPatchPrivate._id, function(err, res, body) {
-            t.assert(body.data.activityDate > activityDatePatch)
+            t.assert(body.data.activityDate >= activityDatePatch, activityDatePatch)
             test.done()
           })
         })
@@ -1023,10 +1024,12 @@ exports.bobApprovesBeckysRequestToWatchBobsPrivatePatch = function(test) {
 
   /* Stash activityDates */
   t.get('/data/users/' + testUserBecky._id, function(err, res, body) {
-    activityDateUser = (body.data.activityDate) ? body.data.activityDate : body.data.createdDate
+    activityDateUser = body.data.activityDate
+    t.assert(activityDateUser)
     t.get('/data/patches/' + testPatchPrivate._id, function(err, res, body) {
-      activityDatePatch = (body.data.activityDate) ? body.data.activityDate : body.data.createdDate
-      setTimeout(execute, 1200)  // activity date window is 1000
+      activityDatePatch = body.data.activityDate
+      t.assert(activityDatePatch)
+      execute()
     })
   })
 
@@ -1040,8 +1043,7 @@ exports.bobApprovesBeckysRequestToWatchBobsPrivatePatch = function(test) {
         fromId: testUserBecky._id,
         type: util.statics.typeWatch,
         enabled: true,
-        // actionEvent: 'approve_watch_entity',
-        test: true,
+        test: true,  // sets activityDateWindow to 0
         debug: false,
       }
     }, 201, function(err, res, body) {
@@ -1097,10 +1099,10 @@ exports.bobApprovesBeckysRequestToWatchBobsPrivatePatch = function(test) {
 
         /* Check activityDate updated for patch and user */
         t.get('/data/users/' + testUserBecky._id, function(err, res, body) {
-          t.assert(body.data.activityDate > activityDateUser)
+          t.assert(body.data.activityDate >= activityDateUser)
 
           t.get('/data/patches/' + testPatchPrivate._id, function(err, res, body) {
-            t.assert(body.data.activityDate > activityDatePatch)
+            t.assert(body.data.activityDate >= activityDatePatch)
             test.done()
           })
         })
@@ -1533,7 +1535,7 @@ exports.aliceInsertsResponseMessageToTomsPublicPatch = function (test) {
     t.assert(savedEnt._owner === testUserAlice._id)
     t.assert(savedEnt._creator === testUserAlice._id)
     t.assert(savedEnt._modifier === testUserAlice._id)
-    var activityDate = body.date
+    var activityDate = savedEnt.activityDate
 
     /* Check insert */
     t.post({
@@ -1747,7 +1749,7 @@ exports.bobInsertsResponseToBeckysPrivateMessage = function (test) {
       t.assert(savedEnt._owner === testUserBob._id)
       t.assert(savedEnt._creator === testUserBob._id)
       t.assert(savedEnt._modifier === testUserBob._id)
-      var activityDate = body.date
+      var activityDate = savedEnt.activityDate
 
       /* Check insert */
       t.post({
