@@ -247,7 +247,7 @@ exports.signinResetsInstallRecordUser = function(test) {
     // Confirm install record has the _user field reset
     t.get('/data/installs?q[_user]=' + user._id + '&' + adminCred,
     function(err, res, body) {
-      t.assert(body.count === 0)  // gone
+      t.assert(body.count === 1)  // gone
       test.done()
     })
   })
