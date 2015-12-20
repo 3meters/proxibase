@@ -390,28 +390,42 @@ exports.tarzanAutoWatchedAndAutoCreatedRiver = function(test) {
 
 
 exports.tarzanSendsMessageToRiver = function(test) {
-  t.post({
-    uri: '/data/messages?' + tarzan.cred,
-    body: {
-      data: {
-        _id: 'me.tarzanToRiver' + seed,
-        description: 'Good water, bad crocs',
+
+  t.get('/data/users/' + tarzan._id + '?' + tarzan.cred,
+  function(err, res, body) {
+    t.assert(body.data && body.data._id === tarzan._id)
+    var prevActivityDate = body.data.activityDate
+    t.assert(prevActivityDate)
+
+    t.post({
+      uri: '/data/messages?' + tarzan.cred,
+      body: {
+        data: {
+          _id: 'me.tarzanToRiver' + seed,
+          description: 'Good water, bad crocs',
+        },
+        links: [{_to: river._id, type: 'content'}],
+        test: true,
       },
-      links: [{_to: river._id, type: 'content'}],
-      test: true,
-    },
-  }, 201, function(err, res, body) {
-    var msg = body.data
-    t.assert(msg)
-    t.assert(msg._owner === tarzan._id)
-    t.assert(msg._acl === river._id)      // gets its permissions from river
-    t.assert(msg.links)
-    t.assert(msg.links.length === 1)
-    t.assert(msg.links[0].type === 'content')
-    t.assert(msg.modifiedDate)
-    t.assert(msg.modifiedDate === msg.activityDate)
-    t.assert(body.notifications.length === 0)   // Tarzan is the only watcher
-    test.done()
+    }, 201, function(err, res, body) {
+      var msg = body.data
+      t.assert(msg)
+      t.assert(msg._owner === tarzan._id)
+      t.assert(msg._acl === river._id)      // gets its permissions from river
+      t.assert(msg.links)
+      t.assert(msg.links.length === 1)
+      t.assert(msg.links[0].type === 'content')
+      t.assert(msg.modifiedDate)
+      t.assert(msg.modifiedDate === msg.activityDate)
+      t.assert(body.notifications.length === 0)   // Tarzan is the only watcher
+
+      t.get('/data/users/' + tarzan._id + '?' + tarzan.cred,
+      function(err, res, body) {
+        t.assert(body.data && body.data._id === tarzan._id)
+        t.assert(body.data.activityDate > prevActivityDate)
+        test.done()
+      })
+    })
   })
 }
 
@@ -679,8 +693,6 @@ exports.tarzanRequestsToWatchJanehouse = function(test) {
         var nowJane = body.data
         t.assert(nowJane)
         t.assert(nowJane.notifiedDate > recentJane.notifiedDate)  // Proves we know we notified Jane
-        debug('wtf')
-        // t.assert(nowJane.notifiedDate > nowJane.activityDate)
         t.assert(nowJane.notifiedDate > nowJane.modifiedDate)
         test.done()
       })
@@ -909,7 +921,7 @@ exports.janeCanNestAMessageOnTarzansTreehouseMessage = function(test) {
       t.get('/find/patches/' + treehouse._id + '?' + jane.cred,
       function(err, res, body) {
         t.assert(body.data)
-        t.assert(body.data.activityDate > lastTreehouse.activityDate)
+        t.assert(body.data.activityDate > lastTreehouse.activityDate, lastTreehouse)
         test.done()
       })
     })
