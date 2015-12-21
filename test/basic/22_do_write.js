@@ -768,8 +768,8 @@ exports.adminCanDeleteBeaconEntityUserCreated = function (test) {
  * ----------------------------------------------------------------------------
  */
 
-// Liking a patch will update its activityDate only if the current
-// time is past the default activity date window of 1000ms
+// Liking a patch will not update its activityDate.  Changed 12/20/15.
+// Before then liking would tickle activityDate.
 exports.checkPatchActivityDate = function (test) {
   t.post({
     uri: '/data/links?' + userCredTom,
@@ -790,9 +790,7 @@ exports.checkPatchActivityDate = function (test) {
      }
     }, function(err, res, body) {
      t.assert(body.count === 1)
-     t.assert(body.data[0].activityDate > activityDatePatch, activityDatePatch)
-     // Update the module var
-     activityDatePatch = body.data[0].activityDate
+     t.assert(body.data[0].activityDate === activityDatePatch, activityDatePatch)  // Changed liking to not tickle on 12/20/15
      test.done()
     })
   })

@@ -389,41 +389,201 @@ exports.tarzanAutoWatchedAndAutoCreatedRiver = function(test) {
 }
 
 
-exports.tarzanSendsMessageToRiver = function(test) {
+// The big enchelada test
+exports.tarzanSendsMessagesToRiver = function(test) {
 
+  var tarzanActivityDate
+  var riverActivityDate
+  var createModifiedDate
+  var watchModifiedDate
+
+  // Record Tarzan's Activity Date
   t.get('/data/users/' + tarzan._id + '?' + tarzan.cred,
   function(err, res, body) {
     t.assert(body.data && body.data._id === tarzan._id)
-    var prevActivityDate = body.data.activityDate
-    t.assert(prevActivityDate)
+    tarzanActivityDate = body.data.activityDate
+    t.assert(tarzanActivityDate)
 
-    t.post({
-      uri: '/data/messages?' + tarzan.cred,
-      body: {
-        data: {
-          _id: 'me.tarzanToRiver' + seed,
-          description: 'Good water, bad crocs',
-        },
-        links: [{_to: river._id, type: 'content'}],
-        test: true,
-      },
-    }, 201, function(err, res, body) {
-      var msg = body.data
-      t.assert(msg)
-      t.assert(msg._owner === tarzan._id)
-      t.assert(msg._acl === river._id)      // gets its permissions from river
-      t.assert(msg.links)
-      t.assert(msg.links.length === 1)
-      t.assert(msg.links[0].type === 'content')
-      t.assert(msg.modifiedDate)
-      t.assert(msg.modifiedDate === msg.activityDate)
-      t.assert(body.notifications.length === 0)   // Tarzan is the only watcher
+    // Record Rivers's activity date
+    t.get('/data/patches/' + river._id + '?' + tarzan.cred,
+    function(err, res, body) {
+      t.assert(body.data && body.data._id === river._id)
+      riverActivityDate = body.data.activityDate
+      t.assert(riverActivityDate)
 
-      t.get('/data/users/' + tarzan._id + '?' + tarzan.cred,
-      function(err, res, body) {
-        t.assert(body.data && body.data._id === tarzan._id)
-        t.assert(body.data.activityDate > prevActivityDate)
-        test.done()
+      // Record the modified dates of tarzan's create and watch links to River
+      t.post({
+        uri: '/find/links/?' + tarzan.cred,
+        body: {
+          query: {
+            _to: river._id,
+            _from: tarzan._id,
+            type: {$in: ['watch', 'create']},
+          }
+        }
+      }, function(err, res, body) {
+        t.assert(body.data && body.data.length === 2)
+        body.data.forEach(function(link) {
+          if (link.type === 'create') createModifiedDate = link.modifiedDate
+          if (link.type === 'watch') watchModifiedDate = link.modifiedDate
+        })
+        t.assert(createModifiedDate)
+        t.assert(watchModifiedDate)
+
+        // Tarzan posts a message to the river
+        t.post({
+          uri: '/data/messages?' + tarzan.cred,
+          body: {
+            data: {_id: 'me.tarzanToRiver' + seed, description: 'Good water, bad crocs'},
+            links: [{_to: river._id, type: 'content'}],
+            test: true,
+          },
+        }, 201, function(err, res, body) {
+          var msg = body.data
+          t.assert(msg)
+          t.assert(msg._owner === tarzan._id)
+          t.assert(msg._acl === river._id)      // gets its permissions from river
+          t.assert(msg.links)
+          t.assert(msg.links.length === 1)
+          t.assert(msg.links[0].type === 'content')
+          t.assert(msg.modifiedDate)
+          t.assert(msg.modifiedDate === msg.activityDate)
+          t.assert(body.notifications.length === 0)   // Tarzan is the only watcher
+
+          // Check that tarzan's activity date was updated
+          t.get('/data/users/' + tarzan._id + '?' + tarzan.cred,
+          function(err, res, body) {
+            t.assert(body.data && body.data._id === tarzan._id)
+            t.assert(body.data.activityDate > tarzanActivityDate)
+            tarzanActivityDate = body.data.activityDate
+
+            // Check that rivers's activity date was updated
+            t.get('/data/patches/' + river._id + '?' + tarzan.cred,
+              function(err, res, body) {
+              t.assert(body.data && body.data._id === river._id)
+              t.assert(body.data.activityDate > riverActivityDate)
+              riverActivityDate = body.data.activityDate
+
+              // Requery tarzan's create and watch links
+              t.post({
+                uri: '/find/links/?' + tarzan.cred,
+                body: {query: {
+                  _to: river._id,
+                  _from: tarzan._id,
+                  type: {$in: ['watch', 'create']},
+                }}
+              }, function(err, res, body) {
+                t.assert(body.data && body.data.length === 2)
+                // Not updated because update occured with the acctivity date window and
+                // option test was false
+                body.data.forEach(function(link) {
+                  if (link.type === 'create') {
+                    t.assert(createModifiedDate < link.modifiedDate)
+                    createModifiedDate = link.modifiedDate
+                  }
+                  if (link.type === 'watch') {
+                    t.assert(watchModifiedDate < link.modifiedDate)
+                    watchModifiedDate = link.modifiedDate
+                  }
+                })
+
+                // Tarzan posts second message to the river within the activiity date
+                // window with test = false
+                t.post({
+                  uri: '/data/messages?' + tarzan.cred,
+                  body: {
+                    data: {_id: 'me.tarzanToRiver2' + seed, description: 'Grumpy hippos'},
+                    links: [{_to: river._id, type: 'content'}],
+                    test: false,
+                  },
+                }, 201, function(err, res, body) {
+                  t.assert(body.data)
+                  t.assert(body.data.activityDate > riverActivityDate)  // chnaged
+                  // within activity date window
+                  t.assert(riverActivityDate + util.statics.activityDateWindow > body.data.activityDate)
+
+                  // Re-query the rivers's activity date
+                  t.get('/data/patches/' + river._id + '?' + tarzan.cred,
+                  function(err, res, body) {
+                    t.assert(body.data && body.data._id === river._id)
+                    // unchanged because mgs 2 sent within the activity window and test was false
+                    t.assert(body.data.activityDate === riverActivityDate, riverActivityDate)
+
+                    // Requery the links
+                    t.post({
+                      uri: '/find/links/?' + tarzan.cred,
+                      body: { query: {
+                        _to: river._id,
+                        _from: tarzan._id,
+                        type: {$in: ['watch', 'create']},
+                      }}
+                    }, function(err, res, body) {
+                      t.assert(body.data && body.data.length === 2)
+                      // Not updated because update occured with the acctivity date window and
+                      // option test was false
+                      body.data.forEach(function(link) {
+                        if (link.type === 'create') t.assert(createModifiedDate === link.modifiedDate)
+                        if (link.type === 'watch') t.assert(watchModifiedDate === link.modifiedDate)
+                      })
+
+                      // return test.done()
+
+                      log('Testing activityDateWindow ' + statics.activityDateWindow + '...')
+                      setTimeout(resume, statics.activityDateWindow + 1)
+
+                      function resume() {
+                        // This is paranoid and can be skipped to speed up test times if the
+                        // system is behaving well.
+                        // Tarzan posts thrid message to the river after the activiity date
+                        // window with test = false.  Activity dates and link dates should be 
+                        // tickled.
+                        t.post({
+                          uri: '/data/messages?' + tarzan.cred,
+                          body: {
+                            data: {_id: 'me.tarzanToRiver3' + seed, description: 'Occasional pythons'},
+                            links: [{_to: river._id, type: 'content'}],
+                          },
+                        }, 201, function(err, res, body) {
+                          t.assert(body.data)
+                          t.assert(body.data.activityDate > riverActivityDate)
+                          // Outside activity date window
+                          t.assert(riverActivityDate + util.statics.activityDateWindow < body.data.activityDate)
+
+                          // Re-query the rivers's activity date
+                          t.get('/data/patches/' + river._id + '?' + tarzan.cred,
+                          function(err, res, body) {
+                            t.assert(body.data && body.data._id === river._id)
+                            // Changed because msg 3 sent after the activity window and test was false
+                            t.assert(body.data.activityDate > riverActivityDate, riverActivityDate)
+
+                            // Requery the links
+                            t.post({
+                              uri: '/find/links/?' + tarzan.cred,
+                              body: { query: {
+                                _to: river._id,
+                                _from: tarzan._id,
+                                type: {$in: ['watch', 'create']},
+                              }}
+                            }, function(err, res, body) {
+                              t.assert(body.data && body.data.length === 2)
+                              // Updated because update occured with the acctivity date window and
+                              // option test was false
+                              body.data.forEach(function(link) {
+                                if (link.type === 'create') t.assert(createModifiedDate < link.modifiedDate)
+                                if (link.type === 'watch') t.assert(watchModifiedDate < link.modifiedDate)
+                              })
+                              test.done()
+                            })
+                          })
+                        })
+                      }  // resume
+                    })
+                  })
+                })
+              })
+            })
+          })
+        })
       })
     })
   })
@@ -460,7 +620,8 @@ exports.messagesToPublicRiverAreVisibleToAnonUser = function(test) {
     t.assert(body.data)
     t.assert(body.data._id)
     t.assert(body.data.linked)
-    t.assert(body.data.linked.length === 2)
+    t.assert(body.data.linked.length === 4)
+    // proves sorted by most recent
     t.assert(body.data.linked[0]._owner = jane._id)
     t.assert(body.data.linked[1]._owner = tarzan._id)
     test.done()
@@ -614,9 +775,9 @@ exports.getEntitiesForEntsReadsMessagesToPublicPatches = function(test) {
       test: true,
     },
   }, function(err, res, body) {
-    t.assert(body.count === 2)
+    t.assert(body.count === 4)
     t.assert(body.data[0].description === 'I love swimming')
-    t.assert(body.data[1].description === 'Good water, bad crocs')
+    t.assert(body.data[1].description === 'Occasional pythons')
     test.done()
   })
 }
@@ -633,9 +794,9 @@ exports.findLinkedReadsMessagesToPublicPatches = function(test) {
     t.assert(body.count === 1)
     t.assert(body.data._id === river._id)
     t.assert(body.data.linked)
-    t.assert(body.data.linked.length === 2)
+    t.assert(body.data.linked.length === 4)
     t.assert(body.data.linked[0].description === 'I love swimming')
-    t.assert(body.data.linked[1].description === 'Good water, bad crocs')
+    t.assert(body.data.linked[1].description === 'Occasional pythons')
     test.done()
   })
 }
@@ -664,6 +825,7 @@ var linkTarzanWatchesJanehouse = {
   _to: janehouse._id,
   type: 'watch',
 }
+
 
 exports.tarzanRequestsToWatchJanehouse = function(test) {
   t.get('/find/users/' + jane._id + '?' + tarzan._id,
@@ -1816,6 +1978,7 @@ exports.patchesNear = function(test) {
   })
 }
 
+
 exports.patchesInteresting = function(test) {
   t.post({
     uri: '/patches/interesting',
@@ -1841,6 +2004,49 @@ exports.patchesInteresting = function(test) {
       prevCount = msgCount
     })
     test.done()
+  })
+}
+
+
+exports.patchesInterestingGetEntities = function(test) {
+  t.get('/stats/rebuild?' + admin.cred,
+  function(err, res, body) {
+
+    t.get('/stats/to/patches/from/messages?type=content',
+    function(err, res, body) {
+      t.assert(body.data && body.data.length)
+
+      // Android syntax to include counts of messages and watchers
+      t.post({
+        uri: '/patches/interesting?',
+        body: {
+          getEntities: true,
+          installId: 'in.' + tarzan._id,
+          limit: 50,
+          links: {shortcuts: false, active: [
+            {count: true, schema: 'message', type: 'content', direction: 'in' },
+            {count: true, schema: 'user', type: 'watch', direction: 'in' },
+          ]},
+        },
+      }, function(err, res, body) {
+        t.assert(body.data && body.data.length)
+
+        // Test that results are sorted by count of messages
+        var prevCount = Infinity
+        body.data.forEach(function(patch) {
+          t.assert(patch.creator)  // proves getEntites was called, since no refs were included in query
+          t.assert(patch.linksInCounts && patch.linksInCounts.length === 2)
+          patch.linksInCounts.forEach(function(count) {
+            t.assert(tipe.isNumber(count.count))
+            if (count.type === 'content') {
+              t.assert(prevCount >= count.count, {prevCount: prevCount, patch: patch})
+              prevCount = count.count
+            }
+          })
+        })
+        test.done()
+      })
+    })
   })
 }
 
@@ -1873,7 +2079,7 @@ exports.tarzanCanLikeAndUnlikeQuickly = function(test) {
 }
 
 
-exports.likingAPatchUpdatesActivityDateOfPatchButNotUser = function(test) {
+exports.likingAPatchDoesNotUpdatesActivityDateOfPatchOrUser = function(test) {
   t.get('/data/users/' + jane._id,
   function(err, res, body) {
     t.assert(body.data)
@@ -1900,11 +2106,10 @@ exports.likingAPatchUpdatesActivityDateOfPatchButNotUser = function(test) {
         function(err, res, body) {
           t.assert(body.data.activityDate === janeOldActivityDate)
 
-          // Test that treehouse's activity date was updated
+          // Test that treehouse's activity date was not updated
           t.get('/data/patches/' + treehouse._id,
           function(err, res, body) {
-            t.assert(body.data.activityDate > treehouseOldActivityDate)
-            treehouseNewActivityDate = body.data.activityDate
+            t.assert(body.data.activityDate === treehouseOldActivityDate)
 
             // Test that updating a patch does update its activity date
             return test.done()
@@ -1991,4 +2196,3 @@ exports.deleteUserEraseOwnedWorks = function(test) {
     })
   })
 }
-

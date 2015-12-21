@@ -357,7 +357,7 @@ exports.findWithRefsNestedObjectFieldList = function(test) {
 
 exports.refOnLinksDontShowDataYouCannotSee = function(test) {
   t.get({
-    uri: '/find/links?refs=name,email,role&sort[modifiedDate]=1&limit=5&' + userCred
+    uri: '/find/links?refs=name,email,role&sort[modifiedDate]=1&limit=5&q[toSchema]=patch&q[fromSchema]=user&' + userCred
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)
     body.data.forEach(function(link) {
