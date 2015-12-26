@@ -2151,9 +2151,12 @@ exports.deleteUserEraseOwnedWorks = function(test) {
         t.assert(body.count === 1)
         var cSessions = body.count  // Mary has an active session
 
-        t.get('/data/installs/count?q[_user]=' + mary._id + '&' + admin.cred,
+        t.get('/data/installs?q[_user]=' + mary._id + '&' + admin.cred,
         function(err, res, body) {
           t.assert(body.count === 1)
+          t.assert(body.data && body.data.length === 1)
+          var install = body.data[0]
+          t.assert(install && install._id)
           var cInstalls = body.count  // Mary has an active session
 
           // Custom app api that erases owned patches and messages
@@ -2166,25 +2169,40 @@ exports.deleteUserEraseOwnedWorks = function(test) {
             t.assert(body.erased.patches === cPatches)
             t.assert(body.erased.messages === cMessages)
             t.assert(body.erased.sessions === cSessions)
-            t.assert(body.erased.installs === cInstalls)
+            t.assert(body.erased.installs !== cInstalls)  // Do not erase the install record
 
             // Now confirm that Mary and all her patches and messages are gone
             t.get('/data/users/' + mary._id + '?' + admin.cred,
             function(err, res, body) {
               t.assert(body.count === 0)  // mary is gone
+
               t.get('/data/patches?query[_owner]=' + mary._id + '&' + admin.cred,
               function(err, res, body) {
                 t.assert(body.count === 0)  // mary's patches are gone
+
                 t.get('/data/messages?q[_owner]=' + mary._id + '&' + admin.cred,
                 function(err, res, body) {
                   t.assert(body.count === 0) // mary's messages are gone
+
                   t.get('/data/installs?q[_user]=' + mary._id + '&' + admin.cred,
                   function(err, res, body) {
                     t.assert(body.count === 0) // mary's installs are gone
-                    t.get('/data/sessions?q[_owner]=' + mary._id + '&' + admin.cred,
+
+                    // Issue 388: Mary's install record still exists,
+                    // but she is not the user or in the users list
+                    t.get('/data/installs/' + install._id + '?' + admin.cred,
                     function(err, res, body) {
-                      t.assert(body.count === 0) // mary's installs are gone
-                      test.done()
+                      t.assert(body.count === 1)
+                      t.assert(body.data)
+                      t.assert(body.data._user !== mary._id)
+                      t.assert(body.data.users.indexOf(mary._id) < 0)
+
+                      // mary's sessions are gone
+                      t.get('/data/sessions?q[_owner]=' + mary._id + '&' + admin.cred,
+                      function(err, res, body) {
+                        t.assert(body.count === 0)
+                        test.done()
+                      })
                     })
                   })
                 })

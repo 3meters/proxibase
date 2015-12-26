@@ -4,6 +4,7 @@
  */
 
 var util = require('proxutils')
+var qs = require('querystring')
 var log = util.log
 var testUtil = require('../util')
 var t = testUtil.treq
@@ -61,9 +62,19 @@ exports.canRegisterDevice = function(test) {
   }, function(err, res, body) {
     t.assert(body.info)
     t.assert(body.count)
-    test.done()
+
+    // Confirm that install doc looks ok
+    t.get('/find/installs/in.' + installId + '?' + adminCred,
+    function(err, res, body) {
+      t.assert(body.data)
+      t.assert(body.data._user === user._id)
+      t.assert(body.data.users && body.data.users.length === 1)
+      t.assert(body.data.users[0] === user._id)
+      test.done()
+    })
   })
 }
+
 
 exports.updateInstall = function(test) {
   t.get('/?' + userCred + '&install=' + installId + '&ll=47.534,-122.17' +
@@ -217,16 +228,25 @@ exports.resetPasswordDoesntLeakSessions = function(test) {
 
 
 exports.signinOutClearsInstallRecordUser = function(test) {
-  t.get('/auth/signout?' + newUserCred,
+  t.get('/data/installs/in.' + installId + '?' + adminCred,
   function(err, res, body) {
-    t.get('/data/users?' + newUserCred, 401,
-    function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.data._user === user._id)
+    t.assert(body.data.users && body.data.users.length && body.data.users.indexOf(user._id >= 0))
 
-      // Confirm install record no longer has _user field set
-      t.get('/data/installs?q[_user]=' + user._id + '&' + adminCred,
+    t.get('/auth/signout?' + newUserCred,
+    function(err, res, body) {
+      t.get('/data/users?' + newUserCred, 401,
       function(err, res, body) {
-        t.assert(body.count === 0)  // gone
-        test.done()
+
+        // Confirm install record no longer has _user field set, but user._id is still in users array
+        t.get('/data/installs/in.' + installId + '?' + adminCred,
+        function(err, res, body) {
+          t.assert(body.data)
+          t.assert(body.data._user !== user._id)
+          t.assert(body.data.users && body.data.users.length && body.data.users.indexOf(user._id >= 0))
+          test.done()
+        })
       })
     })
   })
@@ -244,11 +264,52 @@ exports.signinResetsInstallRecordUser = function(test) {
   }, function(err, res, body) {
     t.assert(body.session)
     t.assert(body.user)
+
     // Confirm install record has the _user field reset
-    t.get('/data/installs?q[_user]=' + user._id + '&' + adminCred,
+    t.get('/data/installs/in.' +  installId + '?' + adminCred,
     function(err, res, body) {
-      t.assert(body.count === 1)  // gone
+      t.assert(body.data)
+      t.assert(body.data._user === user._id)
+      t.assert(body.data.users && body.data.users.length)
+      t.assert(body.data.users.some(function(userId) { return userId === user._id }))
       test.done()
+    })
+  })
+}
+
+
+exports.createUserUpdatesInstall = function(test) {
+  var user2 = {
+    email: 'user2install@3meters.com',
+    name: 'User2 Install',
+    photo: {prefix: 'authTestUser.jpg', source:"aircandi.images"},
+    password: 'foobar',
+  }
+
+  t.post({
+    uri: '/user/create',
+    body: {
+      data: user2,
+      secret: 'larissa',
+      installId: installId,
+    }
+  }, function(err, res, body) {
+    t.assert(body.user && body.session && body.credentials && body.install)
+    user2 = body.user
+    user2.cred = qs.stringify(body.credentials)
+
+    t.get('/data/installs/in.' + installId + '?' + adminCred,
+    function(err, res, body) {
+      t.assert(body.data)
+      t.assert(body.data._user === user2._id)
+      t.assert(body.data.users && body.data.users.indexOf(user2._id) >= 0)
+
+      // Delete user 2
+      t.del({
+        uri: '/user/' + user2._id + '?' + user2.cred,
+      }, function(err, res, body) {
+        test.done()
+      })
     })
   })
 }
