@@ -262,7 +262,7 @@ exports.iosPatchDetailFreshPatchData = function(test) {
       ]},
       links: [
         {from: 'users', type: 'watch', filter: {_from: user._id}, fields: '_id,type,enabled,mute,schema'},
-        {from: 'messages', type: 'content', filter: {_creator: user._id}, fields: '_id,type,schema'},
+        {from: 'messages', type: 'content', filter: {_creator: user._id}, fields: '_id,type,schema', limit: 1},
       ],
       linkCount: [
         {from: 'messages', type: 'content'},

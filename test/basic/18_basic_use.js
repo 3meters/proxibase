@@ -1185,7 +1185,7 @@ exports.tarzanReadsTreehousePatchCached = function(test) {
         {activityDate: {'$gt': 9999999999999}},
         {modifiedDate: {'$gt': 9999999999999}},
       ]},
-      refs: '_id,name,photo,schema',
+      refs: {_creator: '_id,name,photo,schema,type'},
     }
   }, function(err, res, body) {
     t.assert(body.data === null)
@@ -1213,15 +1213,25 @@ exports.tarzanReadsTreehousePatchIosNotCached = function(test) {
         {activityDate: {'$gt': 0}},
         {modifiedDate: {'$gt': 0}},
       ]},
-      refs: '_id,name,photo,schema',
+      refs: {_creator: '_id,name,photo,schema,type'},
     }
   }, function(err, res, body) {
     t.assert(body.data)
     t.assert(body.data.links)
+    var cWatch = 0
+    var cContent = 0
     body.data.links.forEach(function(link) {
-      if (link.type === 'watch') t.assert(link._from === tarzan._id)
-      if (link.type === 'content') t.assert(link._creator === tarzan._id)
+      if (link.type === 'watch') {
+        cWatch++
+        t.assert(link._from === tarzan._id)
+      }
+      if (link.type === 'content') {
+        cContent++
+        t.assert(link._creator === tarzan._id)
+      }
     })
+    t.assert(cWatch)
+    t.assert(cContent === 1)
     test.done()
   })
 }
