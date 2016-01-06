@@ -1490,12 +1490,28 @@ exports.marySendsMessageToMutedRiver = function(test) {
 
 
 exports.janeUnmutesRiver = function(test) {
-  t.post({
-    uri: '/data/links/' + linkJaneWatchesRiver._id + '?' + jane.cred,
-    body: {data: {mute: false}, test: true},
-  }, function(err, res, body) {
-    t.assert(body.data && body.data.mute === false)
-    test.done()
+
+  // Check activity date of river
+  t.get('/find/patches/' + river._id,
+  function(err, res, body) {
+    t.assert(body.data)
+    var oldAdate = body.data.activityDate
+
+    // Jane unmutes her watch link
+    t.post({
+      uri: '/data/links/' + linkJaneWatchesRiver._id + '?' + jane.cred,
+      body: {data: {mute: false}, test: true},
+    }, function(err, res, body) {
+      t.assert(body.data && body.data.mute === false)
+
+      // Confirm that unmuting tickles the river's activity date
+      t.get('/find/patches/' + river._id,
+      function(err, res, body) {
+        t.assert(body.data)
+        t.assert(body.data.activityDate > oldAdate)
+        test.done()
+      })
+    })
   })
 }
 
@@ -1520,10 +1536,26 @@ exports.likingAPrivatePatchNotifiesPatchOwner = function(test) {
 
 
 exports.tarzanUnwatchesTreehouse = function(test) {
-  t.del({uri: '/data/links/' + linkTarzanWatchesTreehouse._id + '?' + tarzan.cred},
+
+  // Check activity date of treehouse
+  t.get('/find/patches/' + treehouse._id,
   function(err, res, body) {
-    t.assert(body.count === 1)
-    test.done()
+    t.assert(body.data)
+    var oldAdate = body.data.activityDate
+
+    // Unwatch the treehouse
+    t.del({uri: '/data/links/' + linkTarzanWatchesTreehouse._id + '?test=1&' + tarzan.cred},
+    function(err, res, body) {
+      t.assert(body.count === 1)
+
+      // Confirm that unwatching tickles the treehouse's activity date
+      t.get('/find/patches/' + treehouse._id,
+      function(err, res, body) {
+        t.assert(body.data)
+        t.assert(body.data.activityDate > oldAdate)
+        test.done()
+      })
+    })
   })
 }
 
