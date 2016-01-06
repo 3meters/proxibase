@@ -394,8 +394,8 @@ exports.tarzanSendsMessagesToRiver = function(test) {
 
   var tarzanActivityDate
   var riverActivityDate
-  var createModifiedDate
-  var watchModifiedDate
+  var createActivityDate
+  var watchActivityDate
 
   // Record Tarzan's Activity Date
   t.get('/data/users/' + tarzan._id + '?' + tarzan.cred,
@@ -424,11 +424,11 @@ exports.tarzanSendsMessagesToRiver = function(test) {
       }, function(err, res, body) {
         t.assert(body.data && body.data.length === 2)
         body.data.forEach(function(link) {
-          if (link.type === 'create') createModifiedDate = link.modifiedDate
-          if (link.type === 'watch') watchModifiedDate = link.modifiedDate
+          if (link.type === 'create') createActivityDate = link.activityDate
+          if (link.type === 'watch') watchActivityDate = link.activityDate
         })
-        t.assert(createModifiedDate)
-        t.assert(watchModifiedDate)
+        t.assert(createActivityDate)
+        t.assert(watchActivityDate)
 
         // Tarzan posts a message to the river
         t.post({
@@ -478,12 +478,12 @@ exports.tarzanSendsMessagesToRiver = function(test) {
                 // option test was false
                 body.data.forEach(function(link) {
                   if (link.type === 'create') {
-                    t.assert(createModifiedDate < link.modifiedDate)
-                    createModifiedDate = link.modifiedDate
+                    t.assert(createActivityDate < link.activityDate)
+                    createActivityDate = link.activityDate
                   }
                   if (link.type === 'watch') {
-                    t.assert(watchModifiedDate < link.modifiedDate)
-                    watchModifiedDate = link.modifiedDate
+                    t.assert(watchActivityDate < link.activityDate)
+                    watchActivityDate = link.activityDate
                   }
                 })
 
@@ -522,8 +522,8 @@ exports.tarzanSendsMessagesToRiver = function(test) {
                       // Not updated because update occured with the acctivity date window and
                       // option test was false
                       body.data.forEach(function(link) {
-                        if (link.type === 'create') t.assert(createModifiedDate === link.modifiedDate)
-                        if (link.type === 'watch') t.assert(watchModifiedDate === link.modifiedDate)
+                        if (link.type === 'create') t.assert(createActivityDate === link.activityDate)
+                        if (link.type === 'watch') t.assert(watchActivityDate === link.activityDate)
                       })
 
                       // return test.done()
@@ -569,8 +569,8 @@ exports.tarzanSendsMessagesToRiver = function(test) {
                               // Updated because update occured with the acctivity date window and
                               // option test was false
                               body.data.forEach(function(link) {
-                                if (link.type === 'create') t.assert(createModifiedDate < link.modifiedDate)
-                                if (link.type === 'watch') t.assert(watchModifiedDate < link.modifiedDate)
+                                if (link.type === 'create') t.assert(createActivityDate < link.activityDate)
+                                if (link.type === 'watch') t.assert(watchActivityDate < link.activityDate)
                               })
                               test.done()
                             })
@@ -957,7 +957,7 @@ exports.tarzanCanNowReadAndPostMessagesToJanehouse = function(test) {
       t.assert(msgLink.enabled === true)
       t.assert(msgLink._owner === jane._id)
       t.assert(msgLink._creator === tarzan._id)
-      t.assert(msgLink.modifiedDate > lastPatchActivityDate)
+      t.assert(msgLink.activityDate > lastPatchActivityDate)
 
       // Confirm that adding a the message bumped the activity date on janes patch
       t.get('/find/patches/' + janehouse._id + '?linked[from]=messages&linked[type]=content&' + tarzan.cred,
@@ -965,7 +965,7 @@ exports.tarzanCanNowReadAndPostMessagesToJanehouse = function(test) {
         var patch = body.data
         t.assert(patch && patch.linked && patch.linked.length)
         t.assert(patch.activityDate > lastPatchActivityDate, lastPatchActivityDate)
-        t.assert(patch.activityDate === msgLink.modifiedDate)
+        t.assert(patch.activityDate === msgLink.activityDate)
         patch.linked.forEach(function(msg) {
           t.assert(patch.activityDate >= msg.activityDate)
         })
