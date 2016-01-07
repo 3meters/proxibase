@@ -1,7 +1,7 @@
 {
 
   "name": "proxibase",
-  "version": "3.5.0",
+  "version": "3.5.1",
   "private": true,
   "description": "Proxibase Service",
   "author": {
@@ -23,8 +23,8 @@
     "robots.txt": "*",
     "compression": "*",
     "body-parser": "*",
-    "mongodb": "<2",
     "mongodb": "*",
+    "kerberos": "*",
     "lodash": "*",
     "knox": "*",
     "commander": "*",

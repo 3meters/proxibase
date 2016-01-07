@@ -171,16 +171,16 @@ function run(db, ops, cb) {
 
     async.forEachSeries(clNames, save, finish)
 
-    function save(clName, cb) {
+    function save(clName, next) {
       var collection = db.collection(clName)
 
       async.forEachSeries(docs[clName], saveRow, function(err) {
-        if (err) return cb(err)
+        if (err) return next(err)
         log(docs[clName].length + ' ' + clName)
-        return cb()
+        next()
       })
 
-      function saveRow(row, cb) {
+      function saveRow(row, nextRow) {
         var user = (row._creator)
           ? {_id: row._creator, role: 'user'}
           : util.adminUser
@@ -188,14 +188,16 @@ function run(db, ops, cb) {
           row._creator = row._id
           row._modifier = row._id
         }
-        collection.safeInsert(row, {user: user, ip: '127.0.0.1', tag: 'genData'}, cb)
+        collection.safeInsert(row, {user: user, ip: '127.0.0.1', tag: 'genData'}, nextRow)
       }
     }
 
     function finish(err) {
-      db.close(function(dbCloseErr) {
-        cb(err||dbCloseErr)
-      })
+      setTimeout(function() {
+        db.close(function(closeErr) {
+          cb(err||closeErr)
+        })
+      }, 500)
     }
   }
 }

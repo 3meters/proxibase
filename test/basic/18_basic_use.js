@@ -1313,7 +1313,7 @@ exports.maryCanSendMessageToPublicPatch = function(test) {
 
 
 exports.getTarzanNotifications = function (test) {
-  t.get('/user/getNotifications?limit=20&log=true&' + tarzan.cred,
+  t.get('/user/feed?limit=20&log=true&' + tarzan.cred,
   function(err, res, body) {
     t.assert(body.data)
     t.assert(body.count === 4)
@@ -1329,7 +1329,7 @@ exports.getTarzanNotifications = function (test) {
 
 
 exports.getTarzanNotificationsPaging = function (test) {
-  t.get('/user/feed?limit=2&more=true&' + tarzan.cred,
+  t.get('/user/getNotifications?limit=2&more=true&' + tarzan.cred,
   function(err, res, body) {
     t.assert(body.data)
     t.assert(body.count === 2)
