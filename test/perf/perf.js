@@ -164,34 +164,26 @@ exports.iosPatchesNear = function(test) {
       location: loc,
       skip: 0,
       radius: 10000,
-      linked:
-       [ { to: 'places',
-           fields: '_id,name,photo,schema,type',
-           type: 'proximity' },
-         { fields: '_id,name,photo,schema,type',
-           from: 'users',
-           type: 'create' } ],
       more: false,
       limit: 50,
-      links:
-       [ { from: 'users',
-           fields: '_id,type,schema',
-           filter: { _from: user._id },
-           type: 'like' },
-         { from: 'users',
-           fields: '_id,type,enabled,mute,schema',
-           filter: { _from: user._id},
-           type: 'watch' },
-         { limit: 1,
-           from: 'messages',
-           fields: '_id,type,schema',
-           filter: { _creator: user._id},
-           type: 'content' } ],
       rest: true,
-      linkCount:
-       [ { from: 'messages', type: 'content' },
-         { from: 'users', type: 'like' },
-         { enabled: true, from: 'users', type: 'watch' } ],
+      refs: { _creator: '_id,name,photo,schema,type' },
+      links: [
+        { from: 'users',
+          type: 'watch',
+          filter: { _from: user._id},
+          fields: '_id,type,enabled,mute,schema', },
+        { limit: 1,
+          from: 'messages',
+          type: 'content',
+          filter: { _creator: user._id},
+          fields: '_id,type,schema', },
+      ],
+      linkCount: [
+        {from: 'messages', type: 'content'},
+        {from: 'users', type: 'watch', enabled: false,},
+        {from: 'users', type: 'watch', enabled: true,},
+      ],
     },
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)
@@ -211,6 +203,9 @@ exports.iosPatchesNear = function(test) {
 }
 
 
+// This query skips all info not required to diplay the near list itself
+// When a user drills in on a patch, a second query must be fired to
+// display the details of the patch.
 exports.iosPatchesNearAlt = function(test) {
   t.post({
     uri: '/patches/near?' + user.cred,
@@ -221,12 +216,9 @@ exports.iosPatchesNearAlt = function(test) {
       radius: 10000,
       more: true,
       limit: 50,
-      // other syntax: refs: {_owner: '_id,name,photo,schema'},
-      refs: {_owner: {_id:1, name:1, photo:1, schema:1}},
-      linked: [
-        {to: 'places', type: 'proximity', limit: 1, fields: '_id,name,photo,schema,type'},
-      ],
-      linkCount: [
+      refs: {_creator: '_id,name,photo,schema,type'},
+      // Alt syntax: refs: {_creator: {_id:1,name:1,photo:1,schema:1}},
+      linkCounts: [
         { from: 'messages', type: 'content' },
         { from: 'users', type: 'watch', enabled: true },
       ],
@@ -235,17 +227,9 @@ exports.iosPatchesNearAlt = function(test) {
     var patches = body.data
     t.assert(patches && patches.length)
     patches.forEach(function(patch) {
-      t.assert(patch.linkCount)
-      t.assert(patch.linkCount.from)
-      t.assert(patch.linkCount.from.messages)
-      t.assert(patch.linkCount.from.messages.content)
-      t.assert(tipe.isNumber(patch.linkCount.from.messages.content))
-      t.assert(patch.linkCount.from.users)
-      t.assert(patch.linkCount.from.users.watch)
-      t.assert(tipe.isNumber(patch.linkCount.from.users.watch))
-      t.assert(patch.linked)
-      t.assert(patch.linked.length === 1)
-      t.assert(patch.linked[0].schema === 'place')
+      t.assert(patch.linkCounts && patch.linkCounts.length)
+      t.assert(patch.linkCounts[0].count)
+      t.assert(patch.linkCounts[1].count)
     })
     test.done()
   })

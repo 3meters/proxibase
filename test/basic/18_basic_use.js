@@ -2040,7 +2040,7 @@ exports.patchesInteresting = function(test) {
     uri: '/patches/interesting',
     body: {
       location: river.location,
-      refs: { _creator: '_id,name,photo,schema,type' },
+      refs: {_creator: '_id,name,photo,schema,type'},
       linkCounts: [
         {from: 'messages', type: 'content'},
         {from: 'users', type: 'watch', enabled: true},
