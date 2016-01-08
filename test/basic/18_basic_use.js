@@ -1340,22 +1340,36 @@ exports.getTarzanNotificationsPaging = function (test) {
 
 
 exports.janeWatchesPublicPatchRiver = function(test) {
-  t.post({
-    uri: '/data/links/?' + jane.cred,
-    body: {
-      data: {
-        _to: river._id,
-        _from: jane._id,
-        type: 'watch',
+  t.get('/data/users/' + jane._id,
+  function(err, res, body) {
+    t.assert(body.data)
+    var janeAd = body.data.activityDate
+    t.assert(janeAd)
+
+    t.post({
+      uri: '/data/links/?' + jane.cred,
+      body: {
+        data: {
+          _to: river._id,
+          _from: jane._id,
+          type: 'watch',
+        },
+        test: true,  // sets activityDateWindow to zero
       },
-      test: true,
-    },
-  }, 201, function(err, res, body) {
-    t.assert(body.data && body.data.enabled === true)   // becuase river is public
-    linkJaneWatchesRiver = body.data                    // module global
-    t.assert(body.notifications && body.notifications.length === 1)
-    t.assert(body.notifications[0].parseInstallIds[0] === 'tarzanParseId')  // Tarzan is watching his own patch river
-    test.done()
+    }, 201, function(err, res, body) {
+      t.assert(body.data && body.data.enabled === true)   // becuase river is public
+      linkJaneWatchesRiver = body.data                    // module global
+      t.assert(body.notifications && body.notifications.length === 1)
+      t.assert(body.notifications[0].parseInstallIds[0] === 'tarzanParseId')  // Tarzan is watching his own patch river
+
+      // Check that Jane's activity Date was tickled
+      t.get('/data/users/' + jane._id,
+      function(err, res, body) {
+        t.assert(body.data)
+        t.assert(body.data.activityDate > janeAd) // Jane's activity activity date tickled
+        test.done()
+      })
+    })
   })
 }
 
