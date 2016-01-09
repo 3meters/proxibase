@@ -692,3 +692,18 @@ exports.annonCanCreateUserWithGetEntities = function(test) {
     test.done()
   })
 }
+
+
+// Send circular JSON
+exports.circularJsonFailsProperly = function(test) {
+  var obj = {
+    name: 'foo',
+  }
+  obj.data = obj  // create circular reference
+  t.post({
+    uri: '/data/documents?' + adminCred,
+    body: {data: obj}
+  }, 400, function(err, res, body) {
+    test.done()
+  })
+}
