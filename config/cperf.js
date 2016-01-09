@@ -38,7 +38,7 @@ module.exports = {
     timeout: 60000,
     deoptimize: false,                  // Turn off code that preprocesses certain slow mongodb queries
     logSlow: 100,                       // write individual queries greater than n milliseconds to stderr.
-    keepTestDb: true,                   // If true do not overwrite when testing
+    keepTestDb: true,                  // If true do not overwrite when testing
     serverOps: {},                      // Override Mongodb.Server options
     dbOps: {},                          // Override Mongodb.Db options
   },
