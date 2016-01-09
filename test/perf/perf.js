@@ -502,12 +502,8 @@ exports.androidPatchesNear = function(test) {
         active:
         [
           { links: true, count: true, schema: 'beacon', type: 'proximity', limit: 10, direction: 'out' },
-          { links: true, count: true, schema: 'place', type: 'proximity', limit: 1, direction: 'out' },
-          { links: true, count: true, schema: 'message', type: 'content', limit: 2, direction: 'both' },
           { where: { _from: user._id },
             links: true, count: true, schema: 'user', type: 'watch', limit: 1, direction: 'in' },
-          { where: { _from: user._id },
-            links: true, count: true, schema: 'user', type: 'like', limit: 1, direction: 'in' },
           { where: { _creator: user._id },
             links: true, count: true, schema: 'message', type: 'content', limit: 1, direction: 'in' },
         ]
