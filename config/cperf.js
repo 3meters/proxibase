@@ -42,6 +42,13 @@ module.exports = {
     serverOps: {},                      // Override Mongodb.Server options
     dbOps: {},                          // Override Mongodb.Db options
   },
+  state: {                              // Bootstrap state vars. Overrides those stored in db.
+    clientMinVersions: {
+      com_aircandi_catalina: 1,
+      com_patchr_android: 1,
+      com_3meters_patchr_ios: 108,
+    },
+  },
   maxWorkers: 1,                        // default 1. Values > 1 exercise clustering. -1 means one worker per cpu core.
   ignoreTasks: true,                    // default true, if false autostart of recurring tasks on startup
   doNotRestart: false,                  // default false, if true do not restart dead workers, necessay for most tests.

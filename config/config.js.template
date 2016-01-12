@@ -42,19 +42,11 @@ module.exports = {
     serverOps: {},                      // Override Mongodb.Server options
     dbOps: {},                          // Override Mongodb.Db options
   },
-  state: {                              // Bootstrap state vars.  If vars already exist in the db no-op.
+  state: {                              // Bootstrap state vars. Overrides those stored in db.
     clientMinVersions: {
-      'com_aircandi_aruba': 1,
-      'com_aircandi_catalina': 1,
-    },
-    'task.calcStats': {
-      key: "task.calcStats",
-      name: "calcStats",
-      schedule: {schedules: [{s: [38]}]},
-      module: "utils",
-      method: "calcStats",
-      args: [],
-      enabled: true,
+      com_aircandi_catalina: 1,
+      com_patchr_android: 1,
+      com_3meters_patchr_ios: 108,
     },
   },
   maxWorkers: 1,                        // default 1. Values > 1 exercise clustering. -1 means one worker per cpu core.
