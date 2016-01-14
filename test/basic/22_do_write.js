@@ -63,15 +63,9 @@ var testPatchOne = {
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
-  category:{
-    id:"4bf58dd8d48988d18c941735",
-    name : "Baseball Stadium",
-    photo:{
-      prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
-      source : "assets.categories",
-    },
-  }
+  type: 'place',
 }
+
 var testPatchTwo = {
   _id : "pa.111111.11111.111.111112",
   schema : util.statics.schemaPatch,
@@ -83,14 +77,7 @@ var testPatchTwo = {
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
-  category:{
-    id:"4bf58dd8d48988d18c941735",
-    name : "Baseball Stadium",
-    photo:{
-      prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
-      source : "assets.categories",
-    },
-  },
+  type: 'place',
 }
 var testPatchCustomPublic = {
   _id : "pa.111111.11111.111.211111",
@@ -103,16 +90,10 @@ var testPatchCustomPublic = {
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
-  category:{
-    id:"4bf58dd8d48988d18c941735",
-    name : "Baseball Stadium",
-    photo:{
-      prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
-      source : "assets.categories",
-    },
-  },
+  type: "place",
   visibility: "public",
 }
+
 var testPatchCustomLocked = {
   _id : "pa.111111.11111.111.211113",
   schema : util.statics.schemaPatch,
@@ -124,17 +105,11 @@ var testPatchCustomLocked = {
   location: {
     lat:testLatitude, lng:testLongitude, altitude:12, accuracy:30, geometry:[testLongitude, testLatitude]
   },
-  category:{
-    id:"4bf58dd8d48988d18c941735",
-    name : "Baseball Stadium",
-    photo:{
-      prefix : "/img/categories/foursquare/4bf58dd8d48988d18c941735_88.png",
-      source : "assets.categories",
-    },
-  },
+  type: 'place',
   visibility: "public",
   locked: true,
 }
+
 var testMessage = {
   _id : "me.111111.11111.111.111111",
   schema : util.statics.schemaMessage,

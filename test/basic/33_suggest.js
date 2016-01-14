@@ -113,6 +113,41 @@ exports.suggestPlaceGoogleAgain = function(test) {
 }
 
 
+exports.suggestIncludesType = function(test) {
+  t.get('/find/patches?sort=_id&skip=10&limit=1',
+  function(err, res, body) {
+    t.assert(body.data && body.data.length === 1)
+    var patch = body.data[0]
+    patch.type = 'project'
+
+    t.post({
+      uri: '/data/patches/' + patch._id + '?' + adminCred,
+      body: {data: patch},
+    }, function(err, res, body) {
+      t.assert(body.data && body.data._id === patch._id && body.data.type === 'project')
+
+      t.get('/suggest/patches?input=project',
+      function(err, res, body) {
+        t.assert(body.data && body.data.length === 1)
+        t.assert(body.data[0]._id === patch._id)
+        test.done()
+      })
+    })
+  })
+}
+
+
+exports.rawSuggestWithNoEntityParamsReturnsUsersAndPatches = function(test) {
+  t.get('/suggest?input=test&limit=100',
+  function(err, res, body) {
+    t.assert(body.data && body.data.length === 50)
+    t.assert(body.data.some(function(result) {return result.schema === 'user'}))
+    t.assert(body.data.some(function(result) {return result.schema === 'patch'}))
+    test.done()
+  })
+}
+
+
 exports.suggestPatchesFts = function(test) {
 
   if (disconnected) return skip(test)

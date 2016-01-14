@@ -79,10 +79,7 @@ defaultDoc.beacon = {
 defaultDoc.patch = {
   _id: patchId,
   name: 'Test Patch',
-  category: {
-    id: 'testCategory',
-    name: 'Test Categegory'
-  }
+  type: 'place',
 }
 
 defaultDoc.place = {
