@@ -1,7 +1,7 @@
 {
 
   "name": "proxibase",
-  "version": "3.7.1",
+  "version": "3.7.2",
   "private": true,
   "description": "Proxibase Service",
   "author": {
@@ -33,7 +33,7 @@
     "nodemailer": "<0.8",
     "superagent": "*",
     "request": "*",
-    "parse": "<1.6"
+    "parse": "*"
   },
 
   "repository": "git://github.com:3meters/proxibase",
