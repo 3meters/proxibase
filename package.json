@@ -1,7 +1,7 @@
 {
 
   "name": "proxibase",
-  "version": "3.6.0",
+  "version": "3.7.0",
   "private": true,
   "description": "Proxibase Service",
   "author": {
@@ -33,7 +33,6 @@
     "nodemailer": "<0.8",
     "superagent": "*",
     "request": "*",
-    "later": "*",
     "parse": "<1.6"
   },
 
