@@ -1028,7 +1028,6 @@ exports.maryCannotWatchTreehouseUsingJanesShareLink = function(test) {
 }
 
 
-
 exports.janeAcceptsTarzanInviteByCreatingAWatchLink = function(test) {
   t.post({
     uri: '/data/links?' + jane.cred,
@@ -2085,43 +2084,40 @@ exports.patchesInteresting = function(test) {
 
 
 exports.patchesInterestingGetEntities = function(test) {
-  t.get('/stats/rebuild?' + admin.cred,
-  function(err, res, body) {
 
-    t.get('/stats/to/patches/from/messages?type=content',
-    function(err, res, body) {
+  t.get('/stats/to/patches/from/messages?type=content',
+  function(err, res, body) {
+    t.assert(body.data && body.data.length)
+
+    // Android syntax to include counts of messages and watchers
+    t.post({
+      uri: '/patches/interesting?',
+      body: {
+        getEntities: true,
+        installId: 'in.' + tarzan._id,
+        limit: 50,
+        links: {shortcuts: false, active: [
+          {count: true, schema: 'message', type: 'content', direction: 'in' },
+          {count: true, schema: 'user', type: 'watch', direction: 'in' },
+        ]},
+      },
+    }, function(err, res, body) {
       t.assert(body.data && body.data.length)
 
-      // Android syntax to include counts of messages and watchers
-      t.post({
-        uri: '/patches/interesting?',
-        body: {
-          getEntities: true,
-          installId: 'in.' + tarzan._id,
-          limit: 50,
-          links: {shortcuts: false, active: [
-            {count: true, schema: 'message', type: 'content', direction: 'in' },
-            {count: true, schema: 'user', type: 'watch', direction: 'in' },
-          ]},
-        },
-      }, function(err, res, body) {
-        t.assert(body.data && body.data.length)
-
-        // Test that results are sorted by count of messages
-        var prevCount = Infinity
-        body.data.forEach(function(patch) {
-          t.assert(patch.creator)  // proves getEntites was called, since no refs were included in query
-          t.assert(patch.linksInCounts && patch.linksInCounts.length === 2)
-          patch.linksInCounts.forEach(function(count) {
-            t.assert(tipe.isNumber(count.count))
-            if (count.type === 'content') {
-              t.assert(prevCount >= count.count, {prevCount: prevCount, patch: patch})
-              prevCount = count.count
-            }
-          })
+      // Test that results are sorted by count of messages
+      var prevCount = Infinity
+      body.data.forEach(function(patch) {
+        t.assert(patch.creator)  // proves getEntites was called, since no refs were included in query
+        t.assert(patch.linksInCounts && patch.linksInCounts.length === 2)
+        patch.linksInCounts.forEach(function(count) {
+          t.assert(tipe.isNumber(count.count))
+          if (count.type === 'content') {
+            t.assert(prevCount >= count.count, {prevCount: prevCount, patch: patch})
+            prevCount = count.count
+          }
         })
-        test.done()
       })
+      test.done()
     })
   })
 }
