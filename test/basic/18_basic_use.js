@@ -1009,6 +1009,26 @@ exports.tarzanInvitesJaneToTreehouse = function(test) {
 }
 
 
+exports.maryCannotWatchTreehouseUsingJanesShareLink = function(test) {
+  t.post({
+    uri: '/data/links?' + mary.cred,
+    body: {
+      data: {
+        _to: treehouse._id,
+        _from: mary._id,
+        type: 'watch',
+      },
+      test: true,
+    }
+  }, 201, function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.data.enabled === false)
+    test.done()
+  })
+}
+
+
+
 exports.janeAcceptsTarzanInviteByCreatingAWatchLink = function(test) {
   t.post({
     uri: '/data/links?' + jane.cred,
@@ -1316,7 +1336,7 @@ exports.getTarzanNotifications = function (test) {
   t.get('/user/feed?limit=20&log=true&' + tarzan.cred,
   function(err, res, body) {
     t.assert(body.data)
-    t.assert(body.count === 4)
+    t.assert(body.count === 5)
     var prev = Infinity
     body.data.forEach(function(feedItem) {
       t.assert(feedItem.modifiedDate)
