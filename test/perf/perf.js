@@ -490,6 +490,7 @@ exports.iosUserDetailAlt = function(test) {
 
 
 exports.androidPatchesNear = function(test) {
+  // Confirmed with Android build 101
   t.post({
     uri: '/patches/near?' + user.cred,
     body: {
