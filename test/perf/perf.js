@@ -26,7 +26,7 @@ var testUserId
 var db = testUtil.safeDb   // raw mongodb connection object without mongoSafe wrapper
 var admin = {}
 var _exports = {}          // For commenting out tests
-var checkLengths = false    // When using a small test database, set to false skip length checks
+var checkLengths = true    // When using a small test database, set to false skip length checks
 
 
 // Generate a random location on earth based on seeds 1 and 2
@@ -236,7 +236,7 @@ exports.iosPatchesNearAlt = function(test) {
 }
 
 
-exports.iosPatchDetailFreshPatchData = function(test) {
+exports.iosPatchDetailRefreshPatchData = function(test) {
   t.post({
     uri: '/find/patches/' + patch._id + '?' + user.cred,
     body: {
@@ -260,7 +260,7 @@ exports.iosPatchDetailFreshPatchData = function(test) {
 }
 
 
-exports.iosPatchDetailUnfreshPatchData = function(test) {
+exports.iosPatchDetailCachedPatchData = function(test) {
   t.post({
     uri: '/find/patches/' + patch._id + '?' + user.cred,
     body: {
@@ -559,9 +559,14 @@ exports.androidPatchesNearAlt = function(test) {
 
 
 exports.androidPatchDetail = function(test) {
+  var nTime = 0
+  var nBytes = 0
+
+  // Android build 101 measured 1/14/16
   t.post({
     uri: '/do/getEntitiesForEntity?' + user.cred,
     body: {
+      tag: 'andriodDetailCall1',
       entityId: patch2._id,
       cursor: {
         where: { enabled: true },
@@ -590,62 +595,60 @@ exports.androidPatchDetail = function(test) {
     if (checkLengths) t.assert(body.data.length === 50) // messages
     var m = body.data[0]   // message
     t.assert(m.linksOut && m.linksOut.length)
-    // log('android patch detail', body)
-    test.done()
-  })
-}
+    nBytes += JSON.stringify(body.data).length * 2
+    nTime += body.time
+    t.assert(nBytes)
+    t.assert(nTime)
 
-
-exports.androidPatchDetailAlt = function(test) {
-  t.post({
-    uri: '/do/getEntitiesForEntity?' + user.cred,
-    body: {
-      alt: true,
-      entityId: patch2._id,
-      cursor: {
-        where: { enabled: true },
-        schemas: [ 'message' ],
-        linkTypes: [ 'content' ],
-        direction: 'in',
-        limit: 50,
-        skip: 0,
-        sort: { modifiedDate: -1 },
-        refs: {_owner: '_id,name,photo,schema'},
-      },
-      links: {
-        shortcuts: true,
-        active: [
-          { schema: 'user', type: 'like', direction: 'in', count: true,  },  // how many likes
-          { schema: 'user', type: 'like', direction: 'in', where: {_from: user._id}, limit: 1,},  // has this user liked
-        ],
+    // Second call android client sends to paint patch detail, build 101, 1/14/16
+    t.post({
+      uri: '/do/getEntities?' + user.cred,
+      body: {
+        tag: 'androidDetailCall2',
+        entityIds: [patch2._id],
+        links: {
+          shortcuts: true,
+          active: [
+            {links: true, count: true, schema: 'beacon', type: 'proximity', limit: 10, direction: 'out'},
+            {where: {_from: user._id}, links: true, count: true, schema: 'user', type: 'watch', limit: 1, direction: 'in'},
+            {where: {_creator: user._id}, links: true, count: true, schema: 'message', type: 'content', limit: 1, direction: 'in'}
+          ],
+        },
       }
-    }
-  }, function(err, res, body) {
-    t.assert(body.entity)  // patch
-    t.assert(body && body.data && body.data.length)
-    if (checkLengths) t.assert(body.data.length === 50) // messages
-    var m = body.data[0]   // message
-    t.assert(m.owner)
-    t.assert(m.owner.name)
-    t.assert(m.owner.photo)
-    t.assert(m.owner.schema === 'user')
-    // log('android patch detail alt', body)
-    test.done()
+    }, function(err, res, body) {
+      nBytes += JSON.stringify(body.data).length * 2
+      nTime += body.time
+      test.done()
+    })
   })
 }
 
 
 exports.androidPatchesInteresting = function(test) {
-  t.get('/stats/to/patches/from/messages?type=content',
-  function(err, res, body) {
+  t.post({
+    uri: '/patches/interesting?' + user.cred,
+    body: {
+      tag: 'androidPatchesInteresting',
+      getEntities: true,
+      limit: 50,
+      links: {
+        shortcuts: false,
+        active: [
+          {where: {_from: user._id}, links: true, count: true, schema: 'user', type: 'watch', limit: 1, direction: 'in'},
+          {where: {_creator: user._id}, links: true, count: true, schema: 'message', type: 'content', limit: 1, direction: 'in'}
+        ]
+      },
+    }
+  }, function(err, res, body) {
     t.assert(body.data && body.data.length)
-    if (checkLengths) t.assert(body.data.length === 20)
+    if (checkLengths) t.assert(body.data.length === 50)
     test.done()
   })
 }
 
 
-exports.androidUserDetail = function(test) {
+_exports.androidUserDetail = function(test) {
+  // Not verified yet after build 101, I think this always takes 4 queries
   t.post({
     uri: '/do/getEntitiesForEntity?' + user.cred,
     body: {
@@ -685,6 +688,7 @@ exports.iosGetUserFeed = function (test) {
   t.post({
     uri: '/user/getNotifications?limit=50&' + user.cred,
     body: {
+      tag: 'iosGetUserFeed',
       limit: 50,
       more: true,
       skip: 0,
@@ -704,7 +708,8 @@ exports.iosGetUserFeed = function (test) {
 }
 
 
-exports.andoidGetUserFeed = function(test) {
+_exports.andoidGetUserFeed = function(test) {
+  // Not verified
   t.post({
     uri: '/user/getNotifications?' + user.cred,
     body: {
