@@ -40,18 +40,10 @@ var patches
 var user
 var seed
 
-user = {
-  _id: 'us.151116.32833.114.625031',
-  credentials: {
-    user: 'us.151116.32833.114.625031',
-    session: '963c4eb6e986123a8c0c5fc614b6cbc9a360563a',
-  },
-  cred: 'user=us.151116.32833.114.625031&session=963c4eb6e986123a8c0c5fc614b6cbc9a360563a',
-}
-
-loc = {
-  lat: -88.89793416,
-  lng: 92.60602406,
+// Helper
+function logPerf(body) {
+  var nBytes = JSON.stringify(body.data).length * 2
+  log('bytes: ' + nBytes + ' time: ' + body.time)
 }
 
 exports.getAdminSession = function(test) {
@@ -161,6 +153,7 @@ exports.iosPatchesNear = function(test) {
   t.post({
     uri: '/patches/near?' + user.cred,
     body: {
+      tag: 'iosPatchesNear',
       location: loc,
       skip: 0,
       radius: 10000,
@@ -197,7 +190,7 @@ exports.iosPatchesNear = function(test) {
       if (patch && patch2) return
     })
     t.assert(patch)
-    // log('ios patch', patch)
+    logPerf(body)
     test.done()
   })
 }
@@ -210,7 +203,7 @@ exports.iosPatchesNearAlt = function(test) {
   t.post({
     uri: '/patches/near?' + user.cred,
     body: {
-      alt: true,
+      tag: 'iosPatchesNearAlt',
       location: loc,
       skip: 0,
       radius: 10000,
@@ -231,93 +224,77 @@ exports.iosPatchesNearAlt = function(test) {
       t.assert(patch.linkCounts[0].count)
       t.assert(patch.linkCounts[1].count)
     })
+    logPerf(body)
     test.done()
   })
 }
 
 
-exports.iosPatchDetailRefreshPatchData = function(test) {
+exports.iosPatchDetail = function(test) {
   t.post({
     uri: '/find/patches/' + patch._id + '?' + user.cred,
     body: {
-      query: {'$or': [
-        {activityDate: {'$gt': 0}},
-        {modifiedDate: {'$gt': 0}},
-      ]},
       links: [
-        {from: 'users', type: 'watch', filter: {_from: user._id}, fields: '_id,type,enabled,mute,schema'},
-        {from: 'messages', type: 'content', filter: {_creator: user._id}, fields: '_id,type,schema', limit: 1},
+        {
+          from: 'users',
+          type: 'watch',
+          filter: {_from: user._id},
+          fields: '_id,type,enabled,mute,schema',
+        },
+        {
+          from: 'messages',
+          type: 'content',
+          filter: { _creator: user._id},
+          limit: 1,
+          fields: '_id,type,schema',
+        }
       ],
       linkCount: [
-        {from: 'messages', type: 'content'},
-        {from: 'users', type: 'watch', enabled: true},
+        {from: 'messages', type: 'content' },
+        {enabled: true, from: 'users', type: 'watch' },
+        {enabled: false, from: 'users', type: 'watch' },
       ],
+      refs: {_creator: '_id,name,photo,schema,type'},
     }
   }, function(err, res, body) {
-    t.assert(body.data)
-    test.done()
+    t.assert(body && body.data && body.data.links && body.data.links.length)
+    logPerf(body)
+
+    t.post({
+      uri: '/find/patches/' + patch._id + '?' + user.cred,
+      body: {
+        promote: 'linked',
+        linked: {from: 'messages', type: 'content', limit: 50, skip: 0, more: true,
+          links: [{from: 'users', type: 'like', filter: {_from: user._id}, fields: '_id,type,schema' }],
+          linkCount: [{from: 'users', type: 'like'}],
+          linked: [
+            { to: 'users', type: 'share', limit: 5 },
+            { to: 'patches', type: 'content', limit: 1,  fields: '_id,name,photo,schema,type',  },
+            { from: 'users', type: 'create', fields: '_id,name,photo,schema,type', },
+            { to: 'messages', type: 'share', limit: 1, linked:
+              [{ from: 'users', type: 'create', fields: '_id,name,photo,schema,type', }], },
+            { to: 'patches', type: 'share', limit: 1, linkCount: [  // WTF?
+                {from: 'users', type: 'watch', enabled: true },
+                {from: 'messages', type: 'content' },
+              ],},
+          ],
+        },
+      }
+    }, function(err, res, body) {
+      t.assert(body.data)
+      t.assert(body.data.length)
+      logPerf(body)
+      test.done()
+    })
   })
 }
 
 
-exports.iosPatchDetailCachedPatchData = function(test) {
+exports.iosPatchDetailAlt = function(test) {
   t.post({
     uri: '/find/patches/' + patch._id + '?' + user.cred,
     body: {
-      query: {'$or': [
-        {activityDate: {'$gt': 9999999999999}},
-        {modifiedDate: {'$gt': 9999999999999}},
-      ]},
-      links: [
-        {from: 'users', type: 'watch', filter: {_from: user._id}, fields: '_id,type,enabled,mute,schema'},
-        {from: 'messages', type: 'content', filter: {_creator: user._id}, fields: '_id,type,schema'},
-      ],
-      linkCount: [
-        {from: 'messages', type: 'content'},
-        {from: 'users', type: 'watch', enabled: true},
-      ],
-    }
-  }, function(err, res, body) {
-    t.assert(body.data === null)
-    test.done()
-  })
-}
-
-
-exports.iosPatchMessages = function(test) {
-  t.post({
-    uri: '/find/patches/' + patch._id + '?' + user.cred,
-    body: {
-      promote: 'linked',
-      linked: {from: 'messages', type: 'content', limit: 50, skip: 0, more: true,
-        links: [{from: 'users', type: 'like', filter: {_from: user._id}, fields: '_id,type,schema' }],
-        linkCount: [{from: 'users', type: 'like'}],
-        linked: [
-          { to: 'users', type: 'share', limit: 5 },
-          { to: 'patches', type: 'content', limit: 1,  fields: '_id,name,photo,schema,type',  },
-          { from: 'users', type: 'create', fields: '_id,name,photo,schema,type', },
-          { to: 'messages', type: 'share', limit: 1, linked:
-            [{ from: 'users', type: 'create', fields: '_id,name,photo,schema,type', }], },
-          { to: 'patches', type: 'share', limit: 1, linkCount: [  // WTF?
-              {from: 'users', type: 'watch', enabled: true },
-              {from: 'messages', type: 'content' },
-            ],},
-        ],
-      },
-    }
-  }, function(err, res, body) {
-    t.assert(body.data)
-    t.assert(body.data.length)
-    test.done()
-  })
-}
-
-
-exports.iosPatchDetailAndMessagesAlt = function(test) {
-  t.post({
-    uri: '/find/patches/' + patch._id + '?' + user.cred,
-    body: {
-      alt: true,
+      tag: 'iosPatchDetailAlt',
       promote: 'linked',
       linkCount: [{from: 'users', type: 'watch', enabled: true}],
       links: [{from: 'users', type: 'watch', filter: {_from: user._id}, limit: 1, fields: '_id,type,schema,enabled,mute' }],
@@ -364,6 +341,7 @@ exports.iosPatchDetailAndMessagesAlt = function(test) {
     t.assert(cMessageLikes)
     t.assert(cMessageLikes === cMessageLikesOld)
     t.assert(cMessageLikesByUser)
+    logPerf(body)
     test.done()
   })
 }
