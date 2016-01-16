@@ -130,8 +130,9 @@ exports.signInAsRandomUser = function(test) {
 }
 
 
-exports.patchesNearMinimum = function(test) {
+exports.patchesNearBaseLine = function(test) {
   t.post({
+    tag: 'patchesNearBaseLine',
     uri: '/patches/near?' + user.cred,
     body: {
       location: loc,
@@ -150,6 +151,7 @@ exports.patchesNearMinimum = function(test) {
 
 
 exports.iosPatchesNear = function(test) {
+  // Last checked ios build 108
   t.post({
     uri: '/patches/near?' + user.cred,
     body: {
@@ -199,11 +201,11 @@ exports.iosPatchesNear = function(test) {
 // This query skips all info not required to diplay the near list itself
 // When a user drills in on a patch, a second query must be fired to
 // display the details of the patch.
-exports.iosPatchesNearAlt = function(test) {
+exports.iosPatchesNearFast = function(test) {
   t.post({
     uri: '/patches/near?' + user.cred,
     body: {
-      tag: 'iosPatchesNearAlt',
+      tag: 'iosPatchesNearFast',
       location: loc,
       skip: 0,
       radius: 10000,
@@ -231,6 +233,7 @@ exports.iosPatchesNearAlt = function(test) {
 
 
 exports.iosPatchDetail = function(test) {
+  // Manually inspected calls from ios build 108
   t.post({
     uri: '/find/patches/' + patch._id + '?' + user.cred,
     body: {
@@ -268,15 +271,19 @@ exports.iosPatchDetail = function(test) {
           links: [{from: 'users', type: 'like', filter: {_from: user._id}, fields: '_id,type,schema' }],
           linkCount: [{from: 'users', type: 'like'}],
           linked: [
-            { to: 'users', type: 'share', limit: 5 },
-            { to: 'patches', type: 'content', limit: 1,  fields: '_id,name,photo,schema,type',  },
-            { from: 'users', type: 'create', fields: '_id,name,photo,schema,type', },
-            { to: 'messages', type: 'share', limit: 1, linked:
-              [{ from: 'users', type: 'create', fields: '_id,name,photo,schema,type', }], },
-            { to: 'patches', type: 'share', limit: 1, linkCount: [  // WTF?
-                {from: 'users', type: 'watch', enabled: true },
-                {from: 'messages', type: 'content' },
-              ],},
+            {to: 'patches', type: 'content', limit: 1,  fields: '_id,name,photo,schema,type'},
+            {to: 'messages', type: 'share', limit: 1, refs: {_creator: '_id,name,photo,schema,type'}},
+            {to: 'users', limit: 5, type: 'share' },
+            {
+              linkCount: [
+                {from: 'users', type: 'watch', enabled: true},
+                {from: 'messages', type: 'content'}
+              ],
+              // wtf?
+              limit: 1,
+              to: 'patches',
+              type: 'share',
+            }
           ],
         },
       }
@@ -290,11 +297,11 @@ exports.iosPatchDetail = function(test) {
 }
 
 
-exports.iosPatchDetailAlt = function(test) {
+exports.iosPatchDetailFast= function(test) {
   t.post({
     uri: '/find/patches/' + patch._id + '?' + user.cred,
     body: {
-      tag: 'iosPatchDetailAlt',
+      tag: 'iosPatchDetailFast',
       promote: 'linked',
       linkCount: [{from: 'users', type: 'watch', enabled: true}],
       links: [{from: 'users', type: 'watch', filter: {_from: user._id}, limit: 1, fields: '_id,type,schema,enabled,mute' }],
