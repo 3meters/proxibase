@@ -103,7 +103,7 @@ exports.patchesNearBaseLine = function(test) {
 
 
 exports.androidPatchesNearFast = function(test) {
-  var tag = 'patchesNearFast'
+  var tag = 'patchesNearIdeal'
   t.post({
     uri: '/patches/near?' + user.cred,
     body: {
@@ -138,7 +138,7 @@ exports.androidPatchesNearFast = function(test) {
 
 exports.androidPatchesNear = function(test) {
   // Confirmed with Android build 101
-  var tag = 'patchesNear'
+  var tag = 'patchesNearBuild101'
   t.post({
     uri: '/patches/near?' + user.cred,
     body: {
@@ -179,7 +179,7 @@ exports.androidPatchesNear = function(test) {
 
 exports.androidPatchDetail = function(test) {
 
-  var tag = 'patchDetail'
+  var tag = 'patchDetailBuild101'
   // Android build 101 measured 1/14/16
   t.post({
     uri: '/do/getEntitiesForEntity?' + user.cred,
