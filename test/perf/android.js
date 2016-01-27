@@ -38,6 +38,8 @@ var loc
 var patches
 var user
 
+var perf = {}
+
 exports.getAdminSession = function(test) {
   testUtil.getAdminSession(function(session) {
     admin._id = session._owner
@@ -78,10 +80,11 @@ exports.signInAsRandomUser = function(test) {
 
 
 exports.patchesNearBaseLine = function(test) {
+  var tag = 'patchesNearBaseline'
   t.post({
-    tag: 'patchesNearBaseLine',
     uri: '/patches/near?' + user.cred,
     body: {
+      tag: tag,
       location: loc,
       getEntities: true,
       skip: 0,
@@ -93,17 +96,53 @@ exports.patchesNearBaseLine = function(test) {
     t.assert(body.data && body.data.length)
     if (checkLengths) t.assert(body.data.length === 50)
     patch = body.data[0]
+    logPerf(perf, tag, body)
     test.done()
   })
 }
 
 
-
-exports.androidPatchesNear = function(test) {
-  // Confirmed with Android build 101
+exports.androidPatchesNearFast = function(test) {
+  var tag = 'patchesNearFast'
   t.post({
     uri: '/patches/near?' + user.cred,
     body: {
+      tag: tag,
+      alt: true,
+      radius: 10000,
+      rest: false,
+      limit: 50,
+      location: loc,
+      links: {
+        shortcuts: false,
+        active: [
+          {count: true, schema: 'message', type: 'content', direction: 'in'},
+          {count: true, schema: 'user', type: 'watch', direction: 'in'},
+        ],
+      },
+    }
+  }, function(err, res, body) {
+    t.assert(body.data && body.data.length)
+    if (checkLengths) t.assert(body.data.length === 50)
+    body.data.forEach(function(patch) {
+      t.assert(patch.linksInCounts && patch.linksInCounts.length)
+      patch.linksInCounts.forEach(function(count) {
+        t.assert(count.count)
+      })
+    })
+    logPerf(perf, tag, body)
+    test.done()
+  })
+}
+
+
+exports.androidPatchesNear = function(test) {
+  // Confirmed with Android build 101
+  var tag = 'patchesNear'
+  t.post({
+    uri: '/patches/near?' + user.cred,
+    body: {
+      tag: tag,
       radius: 10000,
       rest: false,
       limit: 50,
@@ -132,51 +171,20 @@ exports.androidPatchesNear = function(test) {
     })
     t.assert(patch)
     // log('android patch', patch)
-    test.done()
-  })
-}
-
-
-exports.androidPatchesNearAlt = function(test) {
-  t.post({
-    uri: '/patches/near?' + user.cred,
-    body: {
-      alt: true,
-      radius: 10000,
-      rest: false,
-      limit: 50,
-      location: loc,
-      links: {
-        shortcuts: false,
-        active: [
-          {count: true, schema: 'message', type: 'content', direction: 'in'},
-          {count: true, schema: 'user', type: 'watch', direction: 'in'},
-        ],
-      },
-    }
-  }, function(err, res, body) {
-    t.assert(body.data && body.data.length)
-    if (checkLengths) t.assert(body.data.length === 50)
-    body.data.forEach(function(patch) {
-      t.assert(patch.linksInCounts && patch.linksInCounts.length)
-      patch.linksInCounts.forEach(function(count) {
-        t.assert(count.count)
-      })
-    })
+    logPerf(perf, tag, body)
     test.done()
   })
 }
 
 
 exports.androidPatchDetail = function(test) {
-  var nTime = 0
-  var nBytes = 0
 
+  var tag = 'patchDetail'
   // Android build 101 measured 1/14/16
   t.post({
     uri: '/do/getEntitiesForEntity?' + user.cred,
     body: {
-      tag: 'andriodDetailCall1',
+      tag: tag,
       entityId: patch2._id,
       cursor: {
         where: { enabled: true },
@@ -205,16 +213,13 @@ exports.androidPatchDetail = function(test) {
     if (checkLengths) t.assert(body.data.length === 50) // messages
     var m = body.data[0]   // message
     t.assert(m.linksOut && m.linksOut.length)
-    nBytes += JSON.stringify(body.data).length * 2
-    nTime += body.time
-    t.assert(nBytes)
-    t.assert(nTime)
+    logPerf(perf, tag, body)
 
     // Second call android client sends to paint patch detail, build 101, 1/14/16
     t.post({
       uri: '/do/getEntities?' + user.cred,
       body: {
-        tag: 'androidDetailCall2',
+        tag: tag,
         entityIds: [patch2._id],
         links: {
           shortcuts: true,
@@ -226,8 +231,7 @@ exports.androidPatchDetail = function(test) {
         },
       }
     }, function(err, res, body) {
-      nBytes += JSON.stringify(body.data).length * 2
-      nTime += body.time
+      logPerf(perf, tag, body)
       test.done()
     })
   })
@@ -235,10 +239,11 @@ exports.androidPatchDetail = function(test) {
 
 
 exports.androidPatchesInteresting = function(test) {
+  var tag = 'patchesInteresting'
   t.post({
     uri: '/patches/interesting?' + user.cred,
     body: {
-      tag: 'androidPatchesInteresting',
+      tag: tag,
       getEntities: true,
       limit: 50,
       links: {
@@ -252,16 +257,18 @@ exports.androidPatchesInteresting = function(test) {
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)
     if (checkLengths) t.assert(body.data.length === 50)
+    logPerf(perf, tag, body)
     test.done()
   })
 }
 
 
-_exports.androidUserDetail = function(test) {
-  // Not verified yet after build 101, I think this always takes 4 queries
+exports.androidUserDetail = function(test) {
+  var tag = 'userDetail'
   t.post({
     uri: '/do/getEntitiesForEntity?' + user.cred,
     body: {
+      tag: tag,
       entityId: user._id,
       cursor: {
         where: { enabled: true },
@@ -289,25 +296,34 @@ _exports.androidUserDetail = function(test) {
     if (checkLengths) t.assert(body.data.length === 50)
     t.assert(body.entity)
     t.assert(body.more)
+    logPerf(perf, tag, body)
     test.done()
   })
 }
 
 
-_exports.andoidGetUserFeed = function(test) {
+exports.andoidUserFeed = function(test) {
+  var tag = 'userFeed'
   // Not verified
   t.post({
     uri: '/user/getNotifications?' + user.cred,
     body: {
+      tag: tag,
       entityId: user._id,
       cursor: {
-        limit: 20,
+        limit: 50,
         skip: 0,
       }
     }
   }, function(err, res, body) {
     t.assert(body.data)
-    t.assert(body.count === 20)
+    t.assert(body.count === 50)
+    logPerf(perf, tag, body)
     test.done()
   })
+}
+
+exports.printPerf = function(test) {
+  lib.printPerf('android', perf)
+  test.done()
 }

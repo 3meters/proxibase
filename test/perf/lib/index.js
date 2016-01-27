@@ -79,11 +79,30 @@ function setup(db, cb) {
 
 
 // Helper
-function logPerf(body) {
+function logPerf(results, tag, body) {
+  body.data = body.data || {}
   var nBytes = JSON.stringify(body.data).length * 2
-  log('bytes: ' + nBytes + ' time: ' + body.time)
+  results[tag] = results[tag] || []
+  results[tag].push({time: body.time, bytes: nBytes})
+  return results
 }
 
 
+function printPerf(platform, results) {
+  var out = {}
+  var tot = {calls: 0, time: 0, bytes: 0}
+  for (var tag in results) {
+    out[tag] = {calls: results[tag].length, time: 0, bytes: 0}
+    results[tag].forEach(function(log) {
+      out[tag].time += log.time
+      out[tag].bytes += log.bytes
+    })
+    for (var key in tot) { tot[key] += out[tag][key] }
+  }
+  log(platform + ' performance', out)
+  log('Totals: ', tot)
+}
+
 exports.setup = setup
 exports.logPerf = logPerf
+exports.printPerf = printPerf

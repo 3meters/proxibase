@@ -27,6 +27,7 @@ var checkLengths = true    // When using a small test database, set to false ski
 
 var lib = require('./lib')
 var logPerf = lib.logPerf
+var perf = {}
 
 
 // This is so that the test can be run concurrently and not
@@ -77,21 +78,56 @@ exports.signInAsRandomUser = function(test) {
 }
 
 
-exports.patchesNearBaseLine = function(test) {
+exports.patchesNearSimple = function(test) {
+  var tag = 'patchesNearSimple'
   t.post({
-    tag: 'patchesNearBaseLine',
+    tag: tag,
     uri: '/patches/near?' + user.cred,
     body: {
       location: loc,
-      skip: 0,
       radius: 10000,
-      more: false,
-      limit: 50,
+      more: true,
     },
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)
-    if (checkLengths) t.assert(body.data.length === 50)
+    if (checkLengths) t.assert(body.data.length === 20)
     patch = body.data[0]
+    logPerf(perf, tag, body)
+    test.done()
+  })
+}
+
+
+// This query skips all info not required to diplay the near list itself
+// When a user drills in on a patch, a second query must be fired to
+// display the details of the patch.
+exports.iosPatchesNearFast = function(test) {
+  var tag = 'iosPatchesNearFast'
+  t.post({
+    uri: '/patches/near?' + user.cred,
+    body: {
+      tag: tag,
+      location: loc,
+      skip: 0,
+      radius: 10000,
+      more: true,
+      limit: 50,
+      refs: {_creator: '_id,name,photo,schema,type'},
+      // Alt syntax: refs: {_creator: {_id:1,name:1,photo:1,schema:1}},
+      linkCounts: [
+        { from: 'messages', type: 'content' },
+        { from: 'users', type: 'watch', enabled: true },
+      ],
+    },
+  }, function(err, res, body) {
+    var patches = body.data
+    t.assert(patches && patches.length)
+    patches.forEach(function(patch) {
+      t.assert(patch.linkCounts && patch.linkCounts.length)
+      t.assert(patch.linkCounts[0].count)
+      t.assert(patch.linkCounts[1].count)
+    })
+    logPerf(perf, tag, body)
     test.done()
   })
 }
@@ -99,10 +135,11 @@ exports.patchesNearBaseLine = function(test) {
 
 exports.iosPatchesNear = function(test) {
   // Last checked ios build 108
+  var tag = 'iosPatchesNear'
   t.post({
     uri: '/patches/near?' + user.cred,
     body: {
-      tag: 'iosPatchesNear',
+      tag: 'tag',
       location: loc,
       skip: 0,
       radius: 10000,
@@ -139,116 +176,18 @@ exports.iosPatchesNear = function(test) {
       if (patch && patch2) return
     })
     t.assert(patch)
-    logPerf(body)
+    logPerf(perf, tag, body)
     test.done()
-  })
-}
-
-
-// This query skips all info not required to diplay the near list itself
-// When a user drills in on a patch, a second query must be fired to
-// display the details of the patch.
-exports.iosPatchesNearFast = function(test) {
-  t.post({
-    uri: '/patches/near?' + user.cred,
-    body: {
-      tag: 'iosPatchesNearFast',
-      location: loc,
-      skip: 0,
-      radius: 10000,
-      more: true,
-      limit: 50,
-      refs: {_creator: '_id,name,photo,schema,type'},
-      // Alt syntax: refs: {_creator: {_id:1,name:1,photo:1,schema:1}},
-      linkCounts: [
-        { from: 'messages', type: 'content' },
-        { from: 'users', type: 'watch', enabled: true },
-      ],
-    },
-  }, function(err, res, body) {
-    var patches = body.data
-    t.assert(patches && patches.length)
-    patches.forEach(function(patch) {
-      t.assert(patch.linkCounts && patch.linkCounts.length)
-      t.assert(patch.linkCounts[0].count)
-      t.assert(patch.linkCounts[1].count)
-    })
-    logPerf(body)
-    test.done()
-  })
-}
-
-
-exports.iosPatchDetail = function(test) {
-  // Manually inspected calls from ios build 108
-  t.post({
-    uri: '/find/patches/' + patch._id + '?' + user.cred,
-    body: {
-      links: [
-        {
-          from: 'users',
-          type: 'watch',
-          filter: {_from: user._id},
-          fields: '_id,type,enabled,mute,schema',
-        },
-        {
-          from: 'messages',
-          type: 'content',
-          filter: { _creator: user._id},
-          limit: 1,
-          fields: '_id,type,schema',
-        }
-      ],
-      linkCount: [
-        {from: 'messages', type: 'content' },
-        {enabled: true, from: 'users', type: 'watch' },
-        {enabled: false, from: 'users', type: 'watch' },
-      ],
-      refs: {_creator: '_id,name,photo,schema,type'},
-    }
-  }, function(err, res, body) {
-    t.assert(body && body.data && body.data.links && body.data.links.length)
-    logPerf(body)
-
-    t.post({
-      uri: '/find/patches/' + patch._id + '?' + user.cred,
-      body: {
-        promote: 'linked',
-        linked: {from: 'messages', type: 'content', limit: 50, skip: 0, more: true,
-          links: [{from: 'users', type: 'like', filter: {_from: user._id}, fields: '_id,type,schema' }],
-          linkCount: [{from: 'users', type: 'like'}],
-          linked: [
-            {to: 'patches', type: 'content', limit: 1,  fields: '_id,name,photo,schema,type'},
-            {to: 'messages', type: 'share', limit: 1, refs: {_creator: '_id,name,photo,schema,type'}},
-            {to: 'users', limit: 5, type: 'share' },
-            {
-              linkCount: [
-                {from: 'users', type: 'watch', enabled: true},
-                {from: 'messages', type: 'content'}
-              ],
-              // wtf?
-              limit: 1,
-              to: 'patches',
-              type: 'share',
-            }
-          ],
-        },
-      }
-    }, function(err, res, body) {
-      t.assert(body.data)
-      t.assert(body.data.length)
-      logPerf(body)
-      test.done()
-    })
   })
 }
 
 
 exports.iosPatchDetailFast= function(test) {
+  var tag = 'iosPatchDetailFast'
   t.post({
     uri: '/find/patches/' + patch._id + '?' + user.cred,
     body: {
-      tag: 'iosPatchDetailFast',
+      tag: tag,
       promote: 'linked',
       linkCount: [{from: 'users', type: 'watch', enabled: true}],
       links: [{from: 'users', type: 'watch', filter: {_from: user._id}, limit: 1, fields: '_id,type,schema,enabled,mute' }],
@@ -295,16 +234,115 @@ exports.iosPatchDetailFast= function(test) {
     t.assert(cMessageLikes)
     t.assert(cMessageLikes === cMessageLikesOld)
     t.assert(cMessageLikesByUser)
-    logPerf(body)
+    logPerf(perf, tag, body)
     test.done()
   })
 }
 
 
-exports.iosPatchesInteresting = function(test) {
+exports.iosPatchDetail = function(test) {
+  // Manually inspected calls from ios build 108
+  var tag = 'iosPatchDetail'
+  t.post({
+    uri: '/find/patches/' + patch._id + '?' + user.cred,
+    body: {
+      tag: tag,
+      links: [
+        {
+          from: 'users',
+          type: 'watch',
+          filter: {_from: user._id},
+          fields: '_id,type,enabled,mute,schema',
+        },
+        {
+          from: 'messages',
+          type: 'content',
+          filter: { _creator: user._id},
+          limit: 1,
+          fields: '_id,type,schema',
+        }
+      ],
+      linkCount: [
+        {from: 'messages', type: 'content' },
+        {enabled: true, from: 'users', type: 'watch' },
+        {enabled: false, from: 'users', type: 'watch' },
+      ],
+      refs: {_creator: '_id,name,photo,schema,type'},
+    }
+  }, function(err, res, body) {
+    t.assert(body && body.data && body.data.links && body.data.links.length)
+    logPerf(perf, tag, body)
+
+    t.post({
+      uri: '/find/patches/' + patch._id + '?' + user.cred,
+      body: {
+        tag: 'iosPatchDetail',
+        promote: 'linked',
+        linked: {from: 'messages', type: 'content', limit: 50, skip: 0, more: true,
+          links: [{from: 'users', type: 'like', filter: {_from: user._id}, fields: '_id,type,schema' }],
+          linkCount: [{from: 'users', type: 'like'}],
+          linked: [
+            {to: 'patches', type: 'content', limit: 1,  fields: '_id,name,photo,schema,type'},
+            {to: 'messages', type: 'share', limit: 1, refs: {_creator: '_id,name,photo,schema,type'}},
+            {to: 'users', limit: 5, type: 'share' },
+            {
+              linkCount: [
+                {from: 'users', type: 'watch', enabled: true},
+                {from: 'messages', type: 'content'}
+              ],
+              // wtf?
+              limit: 1,
+              to: 'patches',
+              type: 'share',
+            }
+          ],
+        },
+      }
+    }, function(err, res, body) {
+      t.assert(body.data)
+      t.assert(body.data.length)
+      logPerf(perf, tag, body)
+      test.done()
+    })
+  })
+}
+
+
+exports.iosPatchesInterestingFast = function(test) {
+  var tag = 'iosPatchesInterestingFast'
   t.post({
     uri: '/patches/interesting?' + user.cred,
     body: {
+      tag: tag,
+      location: loc,
+      limit: 50,
+      skip: 0,
+      more: true,
+      linked: [
+       {to: 'places', fields: '_id,name,photo,schema,type', type: 'proximity', limit: 1 },
+      ],
+      linkCount: [
+        {from: 'messages', type: 'content' },
+        {from: 'users', type: 'like' },
+        {from: 'users', type: 'watch', enabled: true }
+      ],
+    }
+  }, function(err, res, body) {
+    t.assert(body.data && body.data.length)
+    if (checkLengths) t.assert(body.data.length === 50)
+    logPerf(perf, tag, body)
+    test.done()
+  })
+}
+
+
+
+exports.iosPatchesInteresting = function(test) {
+  var tag = 'iosPatchesInteresting'
+  t.post({
+    uri: '/patches/interesting?' + user.cred,
+    body: {
+      tag: tag,
       location: loc,
       limit: 50,
       skip: 0,
@@ -324,41 +362,47 @@ exports.iosPatchesInteresting = function(test) {
   }, function(err, res, body) {
     t.assert(body.data && body.data.length)
     if (checkLengths) t.assert(body.data.length === 50)
+    logPerf(perf, tag, body)
     test.done()
   })
 }
 
 
-exports.iosPatchesInterestingAlt = function(test) {
+exports.iosUserDetailFast = function(test) {
+  var tag = 'iosUserDetailFast'
   t.post({
-    uri: '/patches/interesting?' + user.cred,
+    uri: '/find/users/' + user._id + '?' + user.cred,
     body: {
-      alt: true,
-      location: loc,
-      limit: 50,
-      skip: 0,
-      more: true,
-      linked: [
-       {to: 'places', fields: '_id,name,photo,schema,type', type: 'proximity', limit: 1 },
-      ],
-      linkCount: [
-        {from: 'messages', type: 'content' },
-        {from: 'users', type: 'like' },
-        {from: 'users', type: 'watch', enabled: true }
-      ],
-    }
+      tag: tag,
+      promote: 'linked',
+      linked: {
+        to: 'messages',
+        type: 'create',
+        limit: 50,
+        skip: 0,
+        more: true,
+        linkCount: [
+          { from: 'users', type: 'like'},
+          { from: 'users', type: 'watch', enabled: true},
+          { from: 'messages', type: 'content'},
+        ],
+      },
+    },
   }, function(err, res, body) {
-    t.assert(body.data && body.data.length)
-    if (checkLengths) t.assert(body.data.length === 50)
+    t.assert(body.count)
+    if (checkLengths) t.assert(body.count === 50)
+    logPerf(perf, tag, body)
     test.done()
   })
 }
 
 
 exports.iosUserDetail = function(test) {
+  var tag = 'iosUserDetail'
   t.post({
     uri: '/find/users/' + user._id + '?' + user.cred,
     body: {
+      tag: tag,
       promote: 'linked',
       linked: {
         to: 'messages',
@@ -388,44 +432,18 @@ exports.iosUserDetail = function(test) {
   }, function(err, res, body) {
     t.assert(body.count)
     if (checkLengths) t.assert(body.count === 50)
+    logPerf(perf, tag, body)
     test.done()
   })
 }
 
 
-
-exports.iosUserDetailAlt = function(test) {
+exports.iosUserFeed = function (test) {
+  var tag = 'iosUserFeed'
   t.post({
-    uri: '/find/users/' + user._id + '?' + user.cred,
-    body: {
-      alt: true,
-      promote: 'linked',
-      linked: {
-        to: 'messages',
-        type: 'create',
-        limit: 50,
-        skip: 0,
-        more: true,
-        linkCount: [
-          { from: 'users', type: 'like'},
-          { from: 'users', type: 'watch', enabled: true},
-          { from: 'messages', type: 'content'},
-        ],
-      },
-    },
-  }, function(err, res, body) {
-    t.assert(body.count)
-    if (checkLengths) t.assert(body.count === 50)
-    test.done()
-  })
-}
-
-
-exports.iosGetUserFeed = function (test) {
-  t.post({
+    tag: tag,
     uri: '/user/getNotifications?limit=50&' + user.cred,
     body: {
-      tag: 'iosGetUserFeed',
       limit: 50,
       more: true,
       skip: 0,
@@ -440,6 +458,13 @@ exports.iosGetUserFeed = function (test) {
       t.assert(item.modifiedDate <= prev)
       prev = item.modifiedDate
     })
+    logPerf(perf, tag, body)
     test.done()
   })
+}
+
+
+exports.printPerf = function(test) {
+  lib.printPerf('ios', perf)
+  test.done()
 }
