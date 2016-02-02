@@ -1,0 +1,1 @@
+./configure --with-pcre='/usr/local/src/pcre-8.38' --with-openssl='/usr/bin/openssl' --with-http_ssl_module
