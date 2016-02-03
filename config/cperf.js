@@ -22,7 +22,7 @@ module.exports = {
     },
   },
   log: 1,                               // 0-3 higher numbers mean more log output
-  logSlow: 300,                        // err log request that take longer than ms to fulfull
+  logSlow: 500,                        // err log request that take longer than ms to fulfull
   logDir: '/var/log/prox',              // Directory containing log files
   fullStackTrace: 0,                    // Set to 1 to include full stack traces
   requestLog: 0,                        // create a json-formated log of all requests, accepts file name
@@ -37,7 +37,7 @@ module.exports = {
     },
     timeout: 60000,
     deoptimize: false,                  // Turn off code that preprocesses certain slow mongodb queries
-    logSlow: 100,                       // write individual queries greater than n milliseconds to stderr.
+    logSlow: 250,                       // write individual queries greater than n milliseconds to stderr.
     keepTestDb: true,                  // If true do not overwrite when testing
     serverOps: {},                      // Override Mongodb.Server options
     dbOps: {},                          // Override Mongodb.Db options
