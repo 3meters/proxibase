@@ -64,7 +64,7 @@ if (cli.offline) testUtil.disconnected = true
 configFile = cli.config || 'configtest.js'
 util.setConfig(configFile)
 config = util.config
-serverUri = testUtil.serverUri = config.service.uri
+serverUri = testUtil.serverUri = config.proxy.uri
 
 config.db.profile = config.db.profile || constants.dbProfile.smokeTest
 
