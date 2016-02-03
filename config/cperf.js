@@ -6,10 +6,10 @@ module.exports = {
   service: {
     name: 'Proxibase',
     mode: 'development',                // development | test | production
-    protocol: 'https',                  // https | http  (security tests require https)
+    protocol: 'http',                   // https | http  (security tests require https)
     host: 'localhost',
     host_external: 'api.aircandi.com',
-    port: 8443,                         // dev:8443, test:8443, stage:8443, production: 443
+    port: 31201,                         // dev:8443, test:8443, stage:8443, production: 443
     ssl: {
       keyFilePath: './keys/dev/dev.pem',
       certFilePath: './keys/dev/dev.crt',
@@ -20,6 +20,12 @@ module.exports = {
       keyFilePath: null,
       keySelector: null,
     },
+  },
+  proxy: {
+    enabled: true,
+    protocol: 'https',
+    host: '127.0.0.1',
+    port: 8443,
   },
   log: 1,                               // 0-3 higher numbers mean more log output
   logSlow: 500,                        // err log request that take longer than ms to fulfull
@@ -49,8 +55,7 @@ module.exports = {
       com_3meters_patchr_ios: 108,
     },
   },
-  maxWorkers: 1,                        // default 1. Values > 1 exercise clustering. -1 means one worker per cpu core.
-  ignoreTasks: true,                    // default true, if false autostart of recurring tasks on startup
+  maxWorkers: 2,                        // default 1. Values > 1 exercise clustering. -1 means one worker per cpu core.
   doNotRestart: false,                  // default false, if true do not restart dead workers, necessay for most tests.
   sendNotifications: false,             // default false, enable push notifications to android and iPhone clients
   sendMail: false,                      // default false, true to send emails or filename for logging
