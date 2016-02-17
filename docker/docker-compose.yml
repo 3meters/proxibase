@@ -1,0 +1,10 @@
+mongo:
+  image: mongo:3.0
+  volumes_from:
+    - data
+  ports:
+    - "27017:27017"
+data:
+  image: data
+node:
+  image: node

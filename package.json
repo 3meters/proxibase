@@ -1,7 +1,7 @@
 {
 
   "name": "proxibase",
-  "version": "3.7.3",
+  "version": "3.7.4",
   "private": true,
   "description": "Proxibase Service",
   "author": {
@@ -30,13 +30,17 @@
     "commander": "*",
     "nodeunit": "*",
     "async": "*",
-    "nodemailer": "<0.8",
+    "nodemailer": "*",
+    "nodemailer-sendgrid-transport": "*",
     "superagent": "*",
     "request": "*",
     "parse": "*"
   },
 
   "repository": "git://github.com:3meters/proxibase",
-  "main": "prox.js"
+  "main": "prox.js",
 
+  "scripts": {
+    "start": "node prox.js"
+  }
 }
