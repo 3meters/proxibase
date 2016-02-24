@@ -9,20 +9,15 @@ module.exports = {
     protocol: 'http',                   // https | http  (security tests require https)
     host: 'localhost',
     host_external: 'api.aircandi.com',
-    port: 31201,                         // dev:8443, test:8443, stage:8443, production: 443
+    port: 8443,                         // dev,test,stage: 8443, behind proxy: 31201
     ssl: {
       keyFilePath: './keys/dev/dev.pem',
       certFilePath: './keys/dev/dev.crt',
       caFilePath: null,
     },
-    dkim: {                             // for digitally signing mail, see http://dkimcore.org/
-      domainName: 'aircandi.com',       // default aircandi.com, matches our dkim public key at godadday
-      keyFilePath: null,
-      keySelector: null,
-    },
   },
   proxy: {
-    enabled: true,
+    enabled: false,
     protocol: 'https',
     host: '127.0.0.1',
     port: 8443,

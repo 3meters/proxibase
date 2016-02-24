@@ -4,15 +4,17 @@
 FROM node
 
 ENV dest /usr/local/prox/
+ENV port 31201
+
+WORKDIR $dest
 
 ADD package.json $dest
+RUN npm install
+
 ADD prox.js $dest
 ADD lib $dest/lib
 ADD config/config.js.docker $dest/config/config.js
 
-WORKDIR $dest
-
-# Todo: figure out how to docker-cache the modules
-RUN npm install
+EXPOSE $port
 
 ENTRYPOINT node prox

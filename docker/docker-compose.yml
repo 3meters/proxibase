@@ -4,7 +4,18 @@ mongo:
     - data
   ports:
     - "27017:27017"
+
 data:
   image: data
-node:
-  image: node
+
+proxiapp:
+  image: proxiapp
+  ports:
+    - "31201:31201"
+  links:
+    - mongo
+
+nginx:
+  image: nginx
+  links:
+    - proxiapp

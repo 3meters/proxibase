@@ -4,12 +4,12 @@
 
 module.exports = {
   service: {
-    name: 'Proxibase',
+    name: 'Patchr',
     mode: 'development',                // development | test | production
     protocol: 'https',                  // https standalone, http behind proxy
     host: 'localhost',
     host_external: 'api.aircandi.com',  // for testing devices on a lan
-    port: 8443,                         // dev,test,stage:8443, production: 443, behind proxy: 32101
+    port: 8443,                         // dev,test,stage:8443, production: 443, behind proxy: 31201
     ssl: {
       keyFilePath: './keys/dev/dev.pem',
       certFilePath: './keys/dev/dev.crt',

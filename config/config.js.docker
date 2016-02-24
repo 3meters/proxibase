@@ -9,17 +9,7 @@ module.exports = {
     protocol: 'http',                  // https standalone, http behind proxy
     host: 'localhost',
     host_external: 'api.aircandi.com',  // for testing devices on a lan
-    port: 32101,                         // dev,test,stage:8443, production: 443, behind proxy: 32101
-    ssl: {
-      keyFilePath: './keys/dev/dev.pem',
-      certFilePath: './keys/dev/dev.crt',
-      caFilePath: null,
-    },
-    dkim: {                             // for digitally signing mail, see http://dkimcore.org/
-      domainName: 'aircandi.com',       // default aircandi.com, matches our dkim public key at godadday
-      keyFilePath: null,
-      keySelector: null,
-    },
+    port: 31201,                         // dev,test,stage:8443, production: 443, behind proxy: 31201
   },
   proxy: {
     enabled: true,
@@ -33,7 +23,7 @@ module.exports = {
   fullStackTrace: 0,                    // Set to 1 to include full stack traces
   requestLog: 0,                        // create a json-formated log of all requests, accepts file name
   db: {
-    host: 'localhost',
+    host: 'mongo',
     port: 27017,
     database: 'prox',
     limits: {
