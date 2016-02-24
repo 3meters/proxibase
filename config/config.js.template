@@ -15,11 +15,6 @@ module.exports = {
       certFilePath: './keys/dev/dev.crt',
       caFilePath: null,
     },
-    dkim: {                             // for digitally signing mail, see http://dkimcore.org/
-      domainName: 'aircandi.com',       // default aircandi.com, matches our dkim public key at godadday
-      keyFilePath: null,
-      keySelector: null,
-    },
   },
   proxy: {
     enabled: false,
