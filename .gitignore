@@ -12,8 +12,12 @@ package.json
 .vscode
 
 *.crt
+*.pem
 *.db
 *.csv
 ~*
 
 keys/prod
+!keys/dev/*
+!docker/nginx/keys/*
+
