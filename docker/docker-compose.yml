@@ -19,3 +19,5 @@ nginx:
   image: nginx
   links:
     - proxiapp
+  ports:
+    - "8443:8443"

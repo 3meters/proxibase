@@ -5,4 +5,4 @@ FROM mongo:3.0
 MAINTAINER George Snelling
 
 # Copy custom configuration file from the current directory
-# COPY mongod.conf /etc/mongod.conf
+# Add mongod.conf /etc/mongod.conf

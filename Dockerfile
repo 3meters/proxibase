@@ -13,6 +13,7 @@ RUN npm install
 
 ADD prox.js $dest
 ADD lib $dest/lib
+Add assets $dest/assets
 ADD config/config.js.docker $dest/config/config.js
 
 EXPOSE $port
