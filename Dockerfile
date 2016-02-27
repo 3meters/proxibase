@@ -4,7 +4,6 @@
 FROM node
 
 ENV dest /usr/local/prox/
-ENV port 31201
 
 WORKDIR $dest
 
@@ -15,7 +14,5 @@ ADD prox.js $dest
 ADD lib $dest/lib
 Add assets $dest/assets
 ADD config/config.js.docker $dest/config/config.js
-
-EXPOSE $port
 
 ENTRYPOINT node prox

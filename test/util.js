@@ -14,7 +14,7 @@ assert(tipe.isTruthy, 'The proxibase utils are not loaded properly, bailing')
 util.setConfig('configtest.js')
 
 // Base Uri all test requests call, can be overridden by callers
-exports.serverUri = util.config.service.uri
+exports.serverUri = util.config.service.urlExternal
 
 
 // set some default test request options

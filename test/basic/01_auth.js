@@ -461,27 +461,7 @@ exports.newUserCanSignIn = function(test) {
 }
 
 
-
-_exports.newUserEmailValidateUrlWorksSlowly = function(test) {
-  t.get('/data/users/' + newUserId, function(err, res, body) {
-    t.assert(body.data.validationNotifyDate)
-    t.assert(!body.data.validationDate)
-    t.get({
-      uri: newUserEmailValidateUrl.slice(testUtil.serverUri.length),
-      json: false  // call is redirected to an html page
-    }, function(err, res, body) {
-      t.get('/data/users/' + newUserId, function(err, res, body) {
-        t.assert(body.data)
-        t.assert(body.data.validationDate)
-        t.assert(body.data.validationDate > body.data.validationNotifyDate)
-        test.done()
-      })
-    })
-  })
-}
-
-
-exports.newUserEmailValidateUrlWorksFaster = function(test) {
+exports.newUserEmailValidateUrlWorks = function(test) {
   if (testUtil.disconnected) return testUtil.skip(test)
   t.get('/data/users/' + newUserId + '?' + newUserCred, function(err, res, body) {
     t.assert(body.data)
@@ -489,7 +469,7 @@ exports.newUserEmailValidateUrlWorksFaster = function(test) {
     t.assert(!body.data.validationDate)
 
     // Fire without waiting for the callback
-    t.get(newUserEmailValidateUrl.slice(testUtil.serverUri.length + 3)) //  for /v1 path prefix
+    t.get(newUserEmailValidateUrl.slice(testUtil.serverUri.length + 3)) // slice off the /v1 as well
 
     // Give time for the update to finish, but don't wait for the
     // call to redirect the user to http://patchr.com
@@ -502,6 +482,7 @@ exports.newUserEmailValidateUrlWorksFaster = function(test) {
     }, 300)
   })
 }
+
 
 exports.changingEmailResetsValidationAndNotifyDates = function(test) {
   var start = util.now()

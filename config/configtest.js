@@ -5,11 +5,20 @@
 module.exports = {
   service: {
     name: 'Proxibase',
-    mode: 'development',                 // development | test | production
-    protocol: 'http',                    // https standalone, http behind proxy
+    mode: 'test',                // development | test | production
+    protocol: 'https',                  // https | http  (security tests require https)
     host: 'localhost',
-    port: 31201,                         // dev,test,stage:8443, production: 443, behind proxy: 31201
-    urlExternal: 'https://192.168.99.100:8443',
+    port: 8443,                         // dev:8443, test:8443, stage:8443, production: 443
+    ssl: {
+      keyFilePath: './keys/dev/dev.pem',
+      certFilePath: './keys/dev/dev.crt',
+      caFilePath: null,
+    },
+    dkim: {                             // for digitally signing mail, see http://dkimcore.org/
+      domainName: 'aircandi.com',       // default aircandi.com, matches our dkim public key at godadday
+      keyFilePath: null,
+      keySelector: null,
+    },
   },
   log: 1,                               // 0-3 higher numbers mean more log output
   logSlow: 1000,                        // err log request that take longer than ms to fulfull
@@ -17,9 +26,9 @@ module.exports = {
   fullStackTrace: 0,                    // Set to 1 to include full stack traces
   requestLog: 0,                        // create a json-formated log of all requests, accepts file name
   db: {
-    host: 'mongo',
+    host: 'localhost',
     port: 27017,
-    database: 'prox',
+    database: 'smokeData',
     limits: {
       default: 50,
       max: 1000,
