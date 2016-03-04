@@ -39,6 +39,7 @@ exports.getUserSession = function(test) {
   })
 }
 
+
 exports.oneUserSession = function(test) {
   t.get('/data/sessions?query[_owner]=' + user._id + '&' + adminCred,
   function(err, res, body) {
@@ -314,6 +315,46 @@ exports.createUserUpdatesInstall = function(test) {
   })
 }
 
+
+exports.resetPasswordByEmail = function(test) {
+  t.post({
+    uri: '/user/pw/reqreset',
+    body: {email: user.email, test: true, secret: 'adaandherman'}   // public unsecured api, security hole
+  }, function(err, res, body) {
+    t.assert(body && body.sent)
+    t.assert(body.user && body.user._id && body.user.name)
+    t.assert(body.token)
+    t.assert(body.url)
+    t.assert(body.branchUrl)
+    t.assert(body.email)
+
+    // Now reset the password using the token
+    var token = body.token
+    var savedUser = body.user
+    t.post({
+      uri: '/user/pw/reset',
+      body: {
+        password: 'doodah',
+        token: token,
+        test: true,
+      }
+    }, function(err, res, body) {
+      t.assert(body && body.data)
+      t.assert(body.data._id === savedUser._id)
+
+      // Confirm the password was reset
+      t.post({
+        uri: '/auth/signin',
+        body: {
+          email: user.email,
+          password: 'doodah',
+        }
+      }, function(err, res, body) {
+        test.done()
+      })
+    })
+  })
+}
 
 exports.cleanup = function(test) {
   t.delete({
