@@ -324,8 +324,8 @@ exports.resetPasswordByEmail = function(test) {
     t.assert(body && body.sent)
     t.assert(body.user && body.user._id && body.user.name)
     t.assert(body.token)
-    t.assert(body.url)
     t.assert(body.branchUrl)
+    util.log('branchUrl', body.branchUrl)
     t.assert(body.email)
 
     // Now reset the password using the token
@@ -339,8 +339,7 @@ exports.resetPasswordByEmail = function(test) {
         test: true,
       }
     }, function(err, res, body) {
-      t.assert(body && body.data)
-      t.assert(body.data._id === savedUser._id)
+      t.assert(body && body.reset === 1)
 
       // Confirm the password was reset
       t.post({

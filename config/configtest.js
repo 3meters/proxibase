@@ -9,15 +9,11 @@ module.exports = {
     protocol: 'https',                  // https | http  (security tests require https)
     host: 'localhost',
     port: 8443,                         // dev:8443, test:8443, stage:8443, production: 443
+    urlInfo: 'https://patchr.com',      // Public information base url
     ssl: {
       keyFilePath: './keys/dev/dev.pem',
       certFilePath: './keys/dev/dev.crt',
       caFilePath: null,
-    },
-    dkim: {                             // for digitally signing mail, see http://dkimcore.org/
-      domainName: 'aircandi.com',       // default aircandi.com, matches our dkim public key at godadday
-      keyFilePath: null,
-      keySelector: null,
     },
   },
   log: 1,                               // 0-3 higher numbers mean more log output
@@ -56,6 +52,6 @@ module.exports = {
     onStart: false,
     onCrash: true,
     onFeedback: false,
-    to: 'pager2010@3meters.com',
+    to: 'george@3meters.com',
   },
 }

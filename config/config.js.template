@@ -10,11 +10,13 @@ module.exports = {
     host: 'localhost',                  // internal host name, possibly behind proxy
     port: 8443,                         // dev,test,stage:8443, production: 443, behind proxy: 31201
     urlExternal: '',                    // Fully qualified external if different from server uri, aka proxied
+    urlInfo: 'https://patchr.com',      // Public information base url
     ssl: {
       keyFilePath: './keys/dev/dev.pem',
       certFilePath: './keys/dev/dev.crt',
       caFilePath: null,
     },
+    supportEmail: 'support@patchr.com',
   },
   log: 1,                               // 0-3 higher numbers mean more log output
   logSlow: 1000,                        // err log request that take longer than ms to fulfull
