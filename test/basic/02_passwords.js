@@ -5,9 +5,12 @@
 
 var util = require('proxutils')
 var qs = require('querystring')
+var request = require('request')
+var assert = require('assert')
 var log = util.log
 var testUtil = require('../util')
 var t = testUtil.treq
+var disconnected = testUtil.disconnected
 var adminCred
 var adminId
 var userCred
@@ -317,6 +320,9 @@ exports.createUserUpdatesInstall = function(test) {
 
 
 exports.resetPasswordByEmail = function(test) {
+
+  var branchUrl
+
   t.post({
     uri: '/user/pw/reqreset',
     body: {email: user.email, test: true, secret: 'adaandherman'}   // public unsecured api, security hole
@@ -325,8 +331,9 @@ exports.resetPasswordByEmail = function(test) {
     t.assert(body.user && body.user._id && body.user.name)
     t.assert(body.token)
     t.assert(body.branchUrl)
-    util.log('branchUrl', body.branchUrl)
     t.assert(body.email)
+
+    branchUrl = body.branchUrl
 
     // Now reset the password using the token
     var token = body.token
@@ -349,7 +356,22 @@ exports.resetPasswordByEmail = function(test) {
           password: 'doodah',
         }
       }, function(err, res, body) {
-        test.done()
+
+        if (disconnected) return skip(test)
+
+        var branchKey = util.statics.apiKeys.branch.test
+        var testUrl = 'https://api.branch.io/v1/url?url=' + branchUrl +
+            '&branch_key=' + branchKey
+        request.get(testUrl, function(err, res, body) {
+          assert(!err)
+          assert(util.tipe.isString(body), body)
+          var branchBody = JSON.parse(body)
+          assert(branchBody.data, body)
+          assert(branchBody.data.token, body)
+          assert(branchBody.data.userName, body)
+          assert(branchBody.data.userPhoto, body)
+          test.done()
+        })
       })
     })
   })
