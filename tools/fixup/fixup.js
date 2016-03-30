@@ -1,5 +1,6 @@
 /*
- * This script sets the activityDate of all links to their modifiedDate
+ * This script sets the owner of all watch links to the owner
+ * of the watched patch
  */
 
 
@@ -8,8 +9,12 @@ var log = util.log
 var logErr = util.logErr
 var tipe = util.tipe
 var dblib = require('proxdb')
+var found = []
+var fix = false
 
 log('Starting...')
+util.setConfig()
+
 dblib.initDb(util.config.db, function(err, db) {
 
   if (err) {
@@ -24,33 +29,46 @@ dblib.initDb(util.config.db, function(err, db) {
 
   var linkFields = db.safeSchema('link').fields
 
-  var linkq = {}
+  var linkq = {type: 'watch'}
 
   log('Start patching links...')
-  db.links.safeEach(linkq, dbOps, fixLink, finish)
+  db.links.safeEach(linkq, dbOps, findBadLinks, fixBadLinks)
 
-  function fixLink(link, nextLink) {
-    nLinksFound++
+  function findBadLinks(link, nextLink) {
 
-    var fixedLink = {}
-    for (var field in linkFields) {
-      if (tipe.isDefined(link[field])) fixedLink[field] = link[field]
-    }
-
-    if (Object.keys(fixedLink).length < 5) {
-      logErr('Link missing required properties', link)
+    if (link.toSchema !== 'patch' || link.fromSchema !== 'user') {
+      logErr('invalid watch link', link)
       return nextLink()
     }
 
-    if (!fixedLink.createdDate) {
-      logErr('link missing createdDate', link)
-      return nextLink()
-    }
+    var patchOps = _.cloneDeep(dbOps)
+    patchOps.fields = '_id,name,_owner'
+    db.patches.safeFindOne({_id: link._to}, patchOps, function(err, patch) {
+      if (err) return finish(err)
+      if (!patch) return finish(new Error('watch link missing patch' + link._id))
 
-    fixedLink.modifiedDate = fixedLink.createdDate    // the rub
-    fixedLink.activityDate = fixedLink.createdDate    // the rub
-    nLinksFixed++
-    db.links.safeUpdate(fixedLink, dbOps, nextLink)
+      // We found one that needs fixing
+      if (link._owner !== patch._owner) {
+        found.push({link: link, patch: patch})
+      }
+
+      return nextLink()
+    })
+  }
+
+  function fixBadLinks(err) {
+    if (err) return finish(err)
+
+    if (!fix) return finish()
+    if (!found.length) return finish()
+
+    async.eachSeries(found, fixLink, finish)
+
+    function fixLink(badLink, nextLink) {
+      nLinksFixed++
+      badLink.link._owner = badLink.patch._owner  // the rub
+      db.links.safeUpdate(badLink.link, dbOps, nextLink)
+    }
   }
 
 
@@ -65,7 +83,8 @@ dblib.initDb(util.config.db, function(err, db) {
     }
 
     log()
-    log('Links found: ' + nLinksFound)
+    log('Links found: ' + found.length)
     log('Links fixed: ' + nLinksFixed)
+    log('found', found)
   }
 })
