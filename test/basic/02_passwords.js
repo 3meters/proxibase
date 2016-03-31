@@ -323,59 +323,85 @@ exports.resetPasswordByEmail = function(test) {
 
   var branchUrl
 
+  // Test passing in bogus email
   t.post({
     uri: '/user/pw/reqreset',
-    body: {email: user.email, test: true, secret: 'adaandherman'}   // public unsecured api, security hole
-  }, function(err, res, body) {
-    t.assert(body && body.sent)
-    t.assert(body.user && body.user._id && body.user.name)
-    t.assert(body.token)
-    t.assert(body.branchUrl)
-    t.assert(body.email)
-
-    branchUrl = body.branchUrl
-
-    // Now reset the password using the token
-    var token = body.token
-    var savedUser = body.user
+    // the test and secret params are for tests only of a public unsecured api
+    // Do not copy those into client code:  it is gaping security hole
+    body: {email: 'bogus', test: true, secret: 'adaandherman'}
+  }, 401, function(err, res, body) {
+    t.assert(body.error && body.error.code === 401.4)  // email not found
     t.post({
-      uri: '/user/pw/reset',
-      body: {
-        password: 'doodah',
-        token: token,
-        test: true,
-      }
+      uri: '/user/pw/reqreset',
+      // the test and secret params are for tests only of a public unsecured api
+      // Do not copy those into client code:  it is gaping security hole
+      body: {email: user.email, test: true, secret: 'adaandherman'}
     }, function(err, res, body) {
-      t.assert(body && body.reset === 1)
+      t.assert(body && body.sent)
+      t.assert(body.user && body.user._id && body.user.name)
+      t.assert(body.token)
+      t.assert(body.branchUrl)
+      t.assert(body.email)
 
-      // Confirm the password was reset
+      branchUrl = body.branchUrl
+
+      // Now reset the password, but pass in a bogus token, this will generate
+      // a badAuth error, which is the same result the caller will get if passing
+      // in a valid but expired token.  Expiration window is statics.passwordResetWindow.
+      var token = body.token
+      var savedUser = body.user
       t.post({
-        uri: '/auth/signin',
+        uri: '/user/pw/reset',
         body: {
-          email: user.email,
           password: 'doodah',
+          token: 'bogus',
+          test: true,
         }
-      }, function(err, res, body) {
+      }, 401, function(err, res, body) {
+        t.assert(body.error && body.error.code === 401.1)  // bad credentials, same as invalid password
 
-        if (disconnected) return skip(test)
+        // Reset the password with a valid token
+        t.post({
+          uri: '/user/pw/reset',
+          body: {
+            password: 'doodah',
+            token: token,
+            test: true,
+          }
+        }, function(err, res, body) {
+          t.assert(body && body.reset === 1)
 
-        var branchKey = util.statics.apiKeys.branch.test
-        var testUrl = 'https://api.branch.io/v1/url?url=' + branchUrl +
-            '&branch_key=' + branchKey
-        request.get(testUrl, function(err, res, body) {
-          assert(!err)
-          assert(util.tipe.isString(body), body)
-          var branchBody = JSON.parse(body)
-          assert(branchBody.data, body)
-          assert(branchBody.data.token, body)
-          assert(branchBody.data.userName, body)
-          assert(branchBody.data.userPhoto, body)
-          test.done()
+          // Confirm the password was reset
+          t.post({
+            uri: '/auth/signin',
+            body: {
+              email: user.email,
+              password: 'doodah',
+            }
+          }, function(err, res, body) {
+
+            if (disconnected) return skip(test)
+
+            var branchKey = util.statics.apiKeys.branch.test
+            var testUrl = 'https://api.branch.io/v1/url?url=' + branchUrl +
+                '&branch_key=' + branchKey
+            request.get(testUrl, function(err, res, body) {
+              assert(!err)
+              assert(util.tipe.isString(body), body)
+              var branchBody = JSON.parse(body)
+              assert(branchBody.data, body)
+              assert(branchBody.data.token, body)
+              assert(branchBody.data.userName, body)
+              assert(branchBody.data.userPhoto, body)
+              test.done()
+            })
+          })
         })
       })
     })
   })
 }
+
 
 exports.cleanup = function(test) {
   t.delete({
