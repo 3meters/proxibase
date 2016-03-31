@@ -369,45 +369,36 @@ exports.resetPasswordByEmail = function(test) {
             test: true,
           }
         }, function(err, res, body) {
-          t.assert(body && body.reset === 1)
+          // confirm that user is signed in
+          t.assert(body && body.user && body.session && body.credentials)
 
-          // Confirm the password was reset
-          t.post({
-            uri: '/auth/signin',
-            body: {
-              email: user.email,
-              password: 'doodah',
-            }
-          }, function(err, res, body) {
+          if (disconnected) return skip(test)
 
-            if (disconnected) return skip(test)
+          var branchKey = util.statics.apiKeys.branch.test
+          var testUrl = 'https://api.branch.io/v1/url?url=' + branchUrl +
+              '&branch_key=' + branchKey
+          request.get(testUrl, function(err, res, body) {
+            assert(!err)
+            assert(util.tipe.isString(body), body)
+            var branchBody = JSON.parse(body)
+            assert(branchBody.data, body)
+            assert(branchBody.data.token, body)
+            assert(branchBody.data.userName, body)
+            assert(branchBody.data.userPhoto, body)
 
-            var branchKey = util.statics.apiKeys.branch.test
-            var testUrl = 'https://api.branch.io/v1/url?url=' + branchUrl +
-                '&branch_key=' + branchKey
-            request.get(testUrl, function(err, res, body) {
-              assert(!err)
-              assert(util.tipe.isString(body), body)
-              var branchBody = JSON.parse(body)
-              assert(branchBody.data, body)
-              assert(branchBody.data.token, body)
-              assert(branchBody.data.userName, body)
-              assert(branchBody.data.userPhoto, body)
-
-              // Try to reset the password again with the same token
-              // Tokens are one-time use only so it should fail with 
-              // a bad auth error
-              t.post({
-                uri: '/user/pw/reset',
-                body: {
-                  password: 'doodah2',
-                  token: token,
-                  test: true,
-                }
-              }, 401, function(err, res, body) {
-                t.assert(body.error && body.error.code === 401.1)
-                test.done()
-              })
+            // Try to reset the password again with the same token
+            // Tokens are one-time use only so it should fail with 
+            // a bad auth error
+            t.post({
+              uri: '/user/pw/reset',
+              body: {
+                password: 'doodah2',
+                token: token,
+                test: true,
+              }
+            }, 401, function(err, res, body) {
+              t.assert(body.error && body.error.code === 401.1)
+              test.done()
             })
           })
         })
