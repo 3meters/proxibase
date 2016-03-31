@@ -393,7 +393,21 @@ exports.resetPasswordByEmail = function(test) {
               assert(branchBody.data.token, body)
               assert(branchBody.data.userName, body)
               assert(branchBody.data.userPhoto, body)
-              test.done()
+
+              // Try to reset the password again with the same token
+              // Tokens are one-time use only so it should fail with 
+              // a bad auth error
+              t.post({
+                uri: '/user/pw/reset',
+                body: {
+                  password: 'doodah2',
+                  token: token,
+                  test: true,
+                }
+              }, 401, function(err, res, body) {
+                t.assert(body.error && body.error.code === 401.1)
+                test.done()
+              })
             })
           })
         })
