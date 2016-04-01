@@ -16,8 +16,8 @@ var _exports = {} // for commenting out tests
 
 var LuckyStrikeId = ''
 var luckyStrikeLoc = {
-  lat: 47.616658,
-  lng: -122.201373,
+  lat: 47.616653,
+  lng: -122.2028862
 }
 
 var savedPlace = null
@@ -38,7 +38,7 @@ exports.getSessions = function(test) {
 var luckyPlaceQuery = {
   provider: 'google',
   location: luckyStrikeLoc,
-  input: 'lucky',
+  input: 'lucky strike',
   sensor: true,
   limit: 10,
   log: true,
@@ -107,7 +107,7 @@ exports.suggestPlaceGoogleAgain = function(test) {
     })
     // Since we cached the place in our db on the last query
     // subsequent calls should return our cached copy, not googles copy
-    t.assert(foundPlace._id === savedPlace._id)
+    t.assert(foundPlace._id === savedPlace._id, savedPlace)
     test.done()
   })
 }
