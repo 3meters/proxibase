@@ -23,7 +23,7 @@ module.exports = {
     port: 8443,
   },
   log: 1,                               // 0-3 higher numbers mean more log output
-  logSlow: 500,                        // err log request that take longer than ms to fulfull
+  logSlow: 500,                         // err log request that take longer than ms to fulfull
   logDir: '/var/log/prox',              // Directory containing log files
   fullStackTrace: 0,                    // Set to 1 to include full stack traces
   requestLog: 0,                        // create a json-formated log of all requests, accepts file name
@@ -36,10 +36,10 @@ module.exports = {
       max: 1000,
       join: 1000,
     },
+    keepTestDb: true,                   // If true do not overwrite when testing
     timeout: 60000,
     deoptimize: false,                  // Turn off code that preprocesses certain slow mongodb queries
     logSlow: 250,                       // write individual queries greater than n milliseconds to stderr.
-    keepTestDb: true,                  // If true do not overwrite when testing
     serverOps: {},                      // Override Mongodb.Server options
     dbOps: {},                          // Override Mongodb.Db options
   },
@@ -50,7 +50,7 @@ module.exports = {
       com_3meters_patchr_ios: 108,
     },
   },
-  maxWorkers: 2,                        // default 1. Values > 1 exercise clustering. -1 means one worker per cpu core.
+  maxWorkers: 1,                        // default 1. Values > 1 exercise clustering. -1 means one worker per cpu core.
   doNotRestart: false,                  // default false, if true do not restart dead workers, necessay for most tests.
   sendNotifications: false,             // default false, enable push notifications to android and iPhone clients
   sendMail: false,                      // default false, true to send emails or filename for logging

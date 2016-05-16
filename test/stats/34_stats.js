@@ -10,6 +10,14 @@
  *     for tests to leave random data around, this one needs to be
  *     run stand-alone.  Clearly this is not ideal.
  *
+ *
+ * Update:  May 2016.
+ *   This tests the old map-reduce-based stats code that has been
+ *   removed and supplanted with linkstats and clinks.  While linkstats
+ *   has tests, clinks, which is just route-base sugar for easy
+ *   querying the link stats, is not currently tested.  Many of these
+ *   tests here might be repurposed to test clinks.  Once that is done
+ *   this file can be deleted.
  */
 
 var util = require('proxutils')

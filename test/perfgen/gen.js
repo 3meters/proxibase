@@ -4,7 +4,7 @@
  *  This tests aims to generate a lot of data that closely
  *  simulates real world data.
  *
- *  To run stand-alone:  cd test, node test -t perfgen
+ *  To run stand-alone:  cd test, node test -t perfgen -d perf
  *  The database can then be used to run the perf tests
  *
  *  Not safe to run concurrently.
@@ -513,7 +513,7 @@ exports.usersCreateMessages = function(test) {
 
 
 exports.buildLinkStats = function(test) {
-  t.get('/stats/rebuild?' + admin.cred,
+  t.get('/admin/linkstats/rebuild?' + admin.cred,
   function(err, res, body) {
     t.assert(body)
     t.assert(body.to)
