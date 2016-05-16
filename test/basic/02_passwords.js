@@ -10,6 +10,7 @@ var assert = require('assert')
 var log = util.log
 var testUtil = require('../util')
 var t = testUtil.treq
+var skip = testUtil.skip
 var disconnected = testUtil.disconnected
 var adminCred
 var adminId
@@ -321,6 +322,8 @@ exports.createUserUpdatesInstall = function(test) {
 
 exports.resetPasswordByEmail = function(test) {
 
+  if (disconnected) return skip(test)
+
   var branchUrl
 
   // Test passing in bogus email
@@ -371,8 +374,6 @@ exports.resetPasswordByEmail = function(test) {
         }, function(err, res, body) {
           // confirm that user is signed in
           t.assert(body && body.user && body.session && body.credentials)
-
-          if (disconnected) return skip(test)
 
           var branchKey = util.statics.apiKeys.branch.test
           var testUrl = 'https://api.branch.io/v1/url?url=' + branchUrl +

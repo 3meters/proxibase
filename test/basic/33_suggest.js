@@ -58,7 +58,7 @@ exports.suggestPlacesGoogle = function(test) {
     t.assert(places.length <= 5) // 4 if lucky is in db and 5 otherwise
     var hitCount = 0
     places.forEach(function(place) {
-      if (0 === place.name.indexOf('Lucky Strike')) {
+      if (0 === place.name.indexOf('Lucky Strike Lanes')) {
         foundPlace = place
         return
       }
@@ -100,7 +100,7 @@ exports.suggestPlaceGoogleAgain = function(test) {
     t.assert(places.length >= 5) // 4 if lucky is in db and 5 otherwise
     var hitCount = 0
     places.forEach(function(place) {
-      if (0 === place.name.indexOf('Lucky Strike')) {
+      if (0 === place.name.indexOf('Lucky Strike Lanes')) {
         foundPlace = place
         return
       }

@@ -668,7 +668,7 @@ exports.janeSendsMessageToJanehouse = function(test) {
 }
 
 
-exports.tarzanSendsMessageToJanehouseAndPartiallyFails = function(test) {
+exports.tarzanSendsMessageToJanehouseAndFails = function(test) {
   t.post({
     uri: '/data/messages?' + tarzan.cred,
     body: {
@@ -679,7 +679,7 @@ exports.tarzanSendsMessageToJanehouseAndPartiallyFails = function(test) {
       links: [{_to: janehouse._id, type: 'content'}],
       test: true,
     },
-  }, 202, function(err, res, body) {
+  }, 401, function(err, res, body) {
     t.assert(body.data && body.data._id)          // the message was created and saved
     t.assert(body.data.links.length === 0)        // but it was not linked to Janehouse
     t.assert(body.errors)
@@ -1285,7 +1285,7 @@ exports.maryCanCreatePatchAndLinksToAndFromItInOneRestCall = function(test) {
   t.post({
     uri: '/data/patches?' + mary.cred,
     body: {data: patch, links: links, test: true},
-  }, 202, function(err, res, body) {  // 202 means partial success, look at errors
+  }, 400, function(err, res, body) {   // 400 for the last bad type on the bogus link
     t.assert(body.data)
     t.assert(body.data.links)
     t.assert(body.data.links.length === 4)
@@ -1543,6 +1543,83 @@ exports.janeUnmutesRiver = function(test) {
         t.assert(body.data)
         t.assert(body.data.activityDate > oldAdate)
         test.done()
+      })
+    })
+  })
+}
+
+
+exports.tarzanLocksRiver = function(test) {
+
+  t.post({
+    uri: '/data/patches/' + river._id + '?' + tarzan.cred,
+    body: {data: {locked: true}},
+  }, function (err, res, body) {
+    t.assert(body.data && body.data.locked)
+
+    // Jane can no longer post to river
+    t.post({
+      uri: '/data/messages?' + jane.cred,
+      body: {
+        data: {
+          _id: 'me.janeToRiverLocked' + seed,
+          description: 'Can I swim now?',
+          links: [{_to: river._id, type: 'content'}],
+        },
+        test: true,
+      }
+    }, 401, function(err, res, body) {
+
+      // Now try to post a message on Jane's own message to the
+      // now locked river patch.
+      t.post({
+        uri: '/data/messages?' + jane.cred,
+        body: {
+          data: {
+            _id: 'me.janeToNestedJaneMsgOnRiverLocked' + seed,
+            description: 'Can I swim now?',
+            links: [{_to: 'me.janeToRiver' + seed, type: 'content'}],
+          },
+          test: true,
+        }
+      }, 401, function(err, res, body) {
+
+        // Tarzan can still post to the locked river
+        t.post({
+          uri: '/data/messages?' + tarzan.cred,
+          body: {
+            data: {
+              _id: 'me.tarzanToRiverLocked' + seed,
+              description: 'The river is locked. Too many crocs',
+              links: [{_to: river._id, type: 'content'}],
+            },
+            test: true,
+          }
+        }, 201, function(err, res, body) {
+
+          // Now unlock the river
+          t.post({
+            uri: '/data/patches/' + river._id + '?' + tarzan.cred,
+            body: {data: {locked: false}},
+          }, function (err, res, body) {
+            t.assert(body.data && !body.data.locked)
+
+            // Finally Jane can swim
+            t.post({
+              uri: '/data/messages?' + jane.cred,
+              body: {
+                data: {
+                  _id: 'me.janeToRiverUnLocked' + seed,
+                  description: 'Tarzan says the crocs are gone. I am swimming!',
+                  links: [{_to: river._id, type: 'content'}],
+                },
+                test: true,
+              }
+            }, 201, function(err, res, body) {
+              test.done()
+            })
+          })
+        })
       })
     })
   })
