@@ -239,3 +239,64 @@ exports.rebuildStatsRuns = function(test) {
 exports.afterRebuildBasicProducesTheSameResults = function(test) {
   exports.linkStatsBasicWorks(test)
 }
+
+exports.clinksWelcome = function(test) {
+  t.get({
+    uri: '/clinks',
+  }, function(err, res, body){
+    t.assert(body.info)
+    test.done()
+  })
+}
+
+
+exports.clinksCountContentMessagesToPatches = function(test) {
+  t.get('/clinks/to/patches/from/messages?type=content&limit=20&fields=name,photo',
+  function(err, res, body) {
+    var count = (body.data && body.data.length)
+    t.assert(count === 20, count)
+    var cPrevious = Infinity
+    body.data.forEach(function(doc) {
+      t.assert(cPrevious >= doc.count)
+      cPrevious = doc.count
+      t.assert(doc.name)
+    })
+    test.done()
+  })
+}
+
+
+exports.clinksCountCreateLinksFromUsers = function(test) {
+  t.get('/clinks/from/users/to/patches?type=create&limit=20&fields=name,photo,email',
+  function(err, res, body) {
+    var count = (body.data && body.data.length)
+    t.assert(count > 5, count)
+    var cPrevious = Infinity
+    var hasPhoto = false
+    body.data.forEach(function(doc) {
+      t.assert(cPrevious >= doc.count)
+      cPrevious = doc.count
+      t.assert(doc.name)
+      if (doc.photo) hasPhoto = true
+      t.assert(!doc.email)   // email is not one of the whitelisted fields
+    })
+    t.assert(hasPhoto)
+    test.done()
+  })
+}
+
+
+exports.clinksCountEnabledWatchLinks = function(test) {
+  t.get('/clinks/to/patches/from/users?type=watch&enabled=1&limit=20',
+  function(err, res, body) {
+    var count = (body.data && body.data.length)
+    t.assert(count > 15, count)
+    var cPrevious = Infinity
+    body.data.forEach(function(doc) {
+      t.assert(cPrevious >= doc.count)
+      cPrevious = doc.count
+      t.assert(doc.name)  // included by default
+    })
+    test.done()
+  })
+}
