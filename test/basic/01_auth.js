@@ -500,7 +500,7 @@ exports.changingEmailResetsValidationAndNotifyDates = function(test) {
 
 exports.reqValidateFailsForUsers = function(test) {
   t.post({
-    uri: '/user/reqvalidate?' + userCred,
+    uri: '/user/email/reqvalidate?' + userCred,
     body: {user: {_id: newUserId}}
   }, 401, function(err, res, body) {
     test.done()
@@ -509,7 +509,7 @@ exports.reqValidateFailsForUsers = function(test) {
 
 exports.reqValidateWorksForAdmins = function(test) {
   t.post({
-    uri: '/user/reqvalidate?' + adminCred,
+    uri: '/user/email/reqvalidate?' + adminCred,
     body: {user: {_id: newUserId}}
   }, function(err, res, body) {
     t.assert(body.info)
@@ -674,8 +674,7 @@ exports.annonCanCreateUserWithGetEntities = function(test) {
   })
 }
 
-
-// Send circular JSON
+// Circular JSON fails properly
 exports.circularJsonFailsProperly = function(test) {
   var obj = {
     name: 'foo',

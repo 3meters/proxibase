@@ -23,7 +23,7 @@ exports.getUserSession = function(test) {
     testUtil.getAdminSession(function(session) {
       adminSession = session
       adminCred = 'user=' + session._owner + '&session=' + session.key
-    test.done()
+      test.done()
     })
   })
 }

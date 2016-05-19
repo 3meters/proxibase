@@ -137,7 +137,7 @@ var adminUser = {
 }
 
 function makeTestUser() {
-  var seed = String(Math.floor(Math.random() * 1000000))
+  var seed = util.seed()
   return {
     name: 'Test User ' + seed,
     email: 'test' + seed + '@3meters.com',
@@ -145,16 +145,33 @@ function makeTestUser() {
     photo: {
       prefix:"default_user.jpg",
       source:"aircandi",
-    }
+    },
+    installId: 'test_install_' + seed,
   }
 }
+
+
+function skip(test, msg) {
+  var out = '      WARNING! The following test did not pass, it was skipped: '
+  out += msg ? msg : ''
+  log(out)
+  test.done()
+}
+
 
 function getUserSession(user, cb) {
   if (!cb) {
     cb = user
     user = makeTestUser()
   }
-  getSession(user, false, cb)
+
+  // Register install
+  if (user.install || user.installId) {
+    regInstall(user, function() {
+      getSession(user, false, cb)
+    })  
+  }
+  else getSession(user, false, cb)
 }
 
 function getAdminSession(user, cb) {
@@ -165,12 +182,28 @@ function getAdminSession(user, cb) {
   getSession(user, true, cb)
 }
 
-function skip(test, msg) {
-  var out = '      WARNING! The following test did not pass, it was skipped: '
-  out += msg ? msg : ''
-  log(out)
-  test.done()
+
+// This matches our real work flow.  We register
+// the install before singing up the user.
+function regInstall(user, cb) {
+
+  var req = makeReq({
+    method: 'post',
+    uri: '/do/registerInstall',
+    body: {
+      install: {
+        installId: user.installId || user.install
+      }
+    },
+  })
+  
+  request(req, function(err, res) {
+    if (err) throw err
+    check(req, res)
+    cb()
+  })
 }
+
 
 /*
  * Get a new session for a user, optionally as admin
@@ -194,11 +227,16 @@ function getSession(user, asAdmin, cb) {
         util.logErr('res.body', body)
         throw new Error('Cannot sign in with default admin credentials')
       }
-      // create user
+
+      // Promote installId to outer param
+      var installId = user.installId || user.install
+      delete user.installId
+      delete user.install
+
       var req = makeReq({
         method: 'post',
         uri: '/user/create',
-        body: {data: user, secret: 'larissa'},
+        body: {data: user, secret: 'larissa', installId: installId},
       })
       request(req, function(err, res) {
         if (err) throw err

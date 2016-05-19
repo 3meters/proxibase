@@ -19,32 +19,28 @@ var user
 var _exports = {}                    // for commenting out tests
 
 var validationDate
-var installId = '567'
-var parseInstallId = '890'
-var newUserCred
+var seed = util.seed(5)
+var parseInstallId = 'parse_install_' + seed
+var installId
 
 
 exports.getUserSession = function(test) {
-  testUtil.getUserSession(function(session, savedUser) {
+  testUtil.getUserSession(function(session, savedUser, cred) {
     userSession = session
-    userCred = 'user=' + session._owner + '&session=' + session.key
+    userCred = qs.stringify(cred)
     user = savedUser
-    testUtil.getAdminSession(function(session) {
+    installId = cred.install
+    testUtil.getAdminSession(function(session, admin, cred) {
       adminSession = session
-      adminCred = 'user=' + session._owner + '&session=' + session.key
+      adminCred = qs.stringify(cred)
       adminId = session._owner
-      t.get('/data/users/' + user._id + '?' + userCred,
-      function(err, res, body) {
-        t.assert(body.data)
-        user = body.data
-        test.done()
-      })
+      test.done()
     })
   })
 }
 
 
-exports.oneUserSession = function(test) {
+exports.confirmOnlyOneUserSession = function(test) {
   t.get('/data/sessions?query[_owner]=' + user._id + '&' + adminCred,
   function(err, res, body) {
     t.assert(1 === body.count)
@@ -73,6 +69,8 @@ exports.canRegisterDevice = function(test) {
     function(err, res, body) {
       t.assert(body.data)
       t.assert(body.data._user === user._id)
+      t.assert(body.data.installId === installId)
+      t.assert(body.data.parseInstallId === parseInstallId)
       t.assert(body.data.users && body.data.users.length === 1)
       t.assert(body.data.users[0] === user._id)
       test.done()
@@ -82,7 +80,7 @@ exports.canRegisterDevice = function(test) {
 
 
 exports.updateInstall = function(test) {
-  t.get('/?' + userCred + '&install=' + installId + '&ll=47.534,-122.17' +
+  t.get('/?' + userCred + '&ll=47.534,-122.17' +
       '&beacons[0]=be.01:02:03:04:05:06&beacons[1]=be.02:02:03:04:05:06',
   function(err, res, body) {
     t.assert(body.install)
@@ -94,154 +92,30 @@ exports.updateInstall = function(test) {
     t.assert(body.install.beacons)
     t.assert(body.install.beacons.length === 2)
     t.assert(body.install.beacons[0] === 'be.01:02:03:04:05:06')
-    t.get('/?' + userCred + '&install=bogusInstallId&ll=50,-124',
-    function(err, res, body) {
-      t.assert(!body.install)   // not an error, res.installId is undefined
-      test.done()
-    })
-  })
-}
-
-exports.requestPasswordResetFailsWithWrongId = function(test) {
-  t.post({
-    uri: '/user/reqresetpw',
-    body: {
-      email: user.email,
-      installId: 'wrongId',
-    }
-  }, 401, function(err, res, body) {
-    t.assert(401 === body.error.code)
     test.done()
   })
 }
 
-exports.requestPasswordReset = function(test) {
-  t.post({
-    uri: '/user/reqresetpw',
-    body: {
-      email: user.email,
-      installId: installId,
-    }
-  }, function(err, res, body) {
-    t.assert(body.session)
-    newUserCred = 'user=' + user._id + '&session=' + body.session.key
-    t.assert(util.now() + (30*60*1000) >= body.session.expirationDate)
-    test.done()
-  })
-}
 
-exports.requestPasswordResetDoesntLeakSessions = function(test) {
-  t.get('/data/sessions?query[_owner]=' + user._id + '&query[_install]=in.' + installId + '&' + adminCred,
+exports.bogusInstallIdOnCredentialsDoesNotError = function(test) {
+  t.get('/?' + userCred + '&install=bogusInstallId&ll=50,-124',
   function(err, res, body) {
-    t.assert(1 === body.count)
-    test.done()
-  })
-}
-
-exports.userRoleIsSetToReset = function(test) {
-  t.get('/data/users/' + user._id + '?' + adminCred,
-  function(err, res, body) {
-    t.assert(body.data)
-    t.assert('reset' === body.data.role)
-    test.done()
-  })
-}
-
-exports.oldSessionKilledAfterResetRequest = function(test) {
-  t.get('/data/users/' + user._id + '?' + userCred,
-  401, function(err, res, body) {
-    t.assert(401 === body.error.code)
-    test.done()
-  })
-}
-
-exports.usersWithResetRoleCannotExecuteRegularCalls = function(test) {
-  t.get('/data/users/' + user._id + '?' + newUserCred,
-  401, function(err, res, body) {
-    test.done()
-  })
-}
-
-exports.signingInAfterResetPasswordRequestRestoresRoleToUser = function(test) {
-  t.post({
-    uri: '/auth/signin',
-    body: {
-      email: user.email,
-      password: 'foobar',
-      installId: installId,
-    }
-  }, function(err, res, body) {
-    t.assert(body.session)
-    t.assert(body.user)
-    t.assert(body.user.role === 'user')
-    // request password reset again
-    t.post({
-      uri: '/user/reqresetpw',
-      body: {
-        email: user.email,
-        installId: installId,
-      },
-    }, function(err, res, body) {
-      t.assert(body.session)
-      t.assert(body.user)
-      t.assert(body.user.role === 'reset')
-      newUserCred = 'user=' + user._id + '&session=' + body.session.key
-      test.done()
-    })
-  })
-}
-
-exports.userWithResetRoleCanExecuteResetPassword = function(test) {
-  t.post({
-    uri: '/user/resetpw?' + newUserCred,
-    body: {
-      password: 'newpass',
-      installId: installId,
-    }
-  }, function(err, res, body) {
-    t.assert(body.user)
-    t.assert('user' === body.user.role)
-    t.assert(body.session)
-    t.assert(body.session.expirationDate >= (util.now() + (24*60*60*1000)))
-    t.post({
-      uri: '/auth/signin',
-      body: {
-        email: user.email,
-        password: 'newpass',
-        installId: installId,
-      }
-    }, function(err, res, body) {
-
-      // Confirm install record is tied to user
-      t.get('/data/installs?q[_user]=' + user._id + '&' + adminCred,
-      function(err, res, body) {
-        t.assert(body.count === 1)
-        test.done()
-      })
-    })
-  })
-}
-
-
-exports.resetPasswordDoesntLeakSessions = function(test) {
-  t.get('/data/sessions?query[_owner]=' + user._id + '&query[_install]=in.' + installId + '&' + adminCred,
-  function(err, res, body) {
-    t.assert(1 === body.count)
+    t.assert(!body.install)   // not an error, res.installId is undefined
     test.done()
   })
 }
 
 
-exports.signinOutClearsInstallRecordUser = function(test) {
+exports.signoutClearsInstallRecordUser = function(test) {
   t.get('/data/installs/in.' + installId + '?' + adminCred,
   function(err, res, body) {
     t.assert(body.data)
     t.assert(body.data._user === user._id)
     t.assert(body.data.users && body.data.users.length && body.data.users.indexOf(user._id >= 0))
 
-    t.get('/auth/signout?' + newUserCred,
+    t.get('/auth/signout?' + userCred,
     function(err, res, body) {
-      t.get('/data/users?' + newUserCred, 401,
+      t.get('/data/users?' + userCred, 401,
       function(err, res, body) {
 
         // Confirm install record no longer has _user field set, but user._id is still in users array
@@ -263,7 +137,7 @@ exports.signinResetsInstallRecordUser = function(test) {
     uri: '/auth/signin',
     body: {
       email: user.email,
-      password: 'newpass',
+      password: 'foobar',
       installId: installId,
     }
   }, function(err, res, body) {
