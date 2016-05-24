@@ -14,10 +14,9 @@ var userCred
 var adminCred
 var _exports = {} // for commenting out tests
 
-var LuckyStrikeId = ''
-var luckyStrikeLoc = {
-  lat: 47.616653,
-  lng: -122.2028862
+var redDoorLoc = {
+  lat: 47.6500171,
+  lng: 122.3516556,
 }
 
 var savedPlace = null
@@ -35,11 +34,11 @@ exports.getSessions = function(test) {
 }
 
 // Place suggest query
-var luckyPlaceQuery = {
+var redDoorPlaceQuery = {
   provider: 'google',
-  location: luckyStrikeLoc,
-  input: 'lucky strike',
-  sensor: true,
+  location: redDoorLoc,
+  input: 'ballroom',
+  radius: 1000,
   limit: 10,
   log: true,
 }
@@ -50,15 +49,15 @@ exports.suggestPlacesGoogle = function(test) {
 
   t.post({
     uri: '/suggest/places?' + userCred,
-    body: luckyPlaceQuery,
+    body: redDoorPlaceQuery,
   }, function(err, res, body) {
     var foundPlace = null
     var places = body.data
     t.assert(places && places.length)
-    t.assert(places.length <= 5) // 4 if lucky is in db and 5 otherwise
+    t.assert(places.length <= 5)
     var hitCount = 0
     places.forEach(function(place) {
-      if (0 === place.name.indexOf('Lucky Strike Lanes')) {
+      if (place.name === 'Ballroom') {
         foundPlace = place
         return
       }
@@ -92,15 +91,15 @@ exports.suggestPlaceGoogleAgain = function(test) {
 
   t.post({
     uri: '/suggest/places?' + userCred,
-    body: luckyPlaceQuery,
+    body: redDoorPlaceQuery,
   }, function(err, res, body) {
     var foundPlace = null
     var places = body.data
     t.assert(places && places.length)
-    t.assert(places.length >= 5) // 4 if lucky is in db and 5 otherwise
+    t.assert(places.length >= 5)
     var hitCount = 0
     places.forEach(function(place) {
-      if (0 === place.name.indexOf('Lucky Strike Lanes')) {
+      if (place.name === 'Ballroom') {
         foundPlace = place
         return
       }
