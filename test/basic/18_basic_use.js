@@ -1626,6 +1626,21 @@ exports.tarzanLocksRiver = function(test) {
 }
 
 
+exports.janeCreatesLockedPatchFromScratch = function(test) {
+  t.post({
+    uri: '/data/patches?' + jane.cred,
+    body: {data: {
+      name: 'Janes Locked Patch',
+      locked: 1,
+    }, test: true},
+  }, 201, function(err, res, body) {
+    t.assert(body.data && body.data.locked)
+    t.assert(!body.errors)
+    test.done()
+  })
+}
+
+
 exports.likingAPrivatePatchNotifiesPatchOwner = function(test) {
   t.post({
     uri: '/data/links?' + jane.cred,
