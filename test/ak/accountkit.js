@@ -21,6 +21,9 @@ var _exports = {}     // for commenting out tests
 // phone that has the Facebook Account Kit sdk running.  Awesome!
 var akAuthCode = 'AQAURFZwTY821qQUOpwfmpKM5b4bWWaj_IeJSGHTYz3EZcGinI3yT9HNDxuOAsxNcKs_wiRPYUKIgTbW4Tn4mvMNtyXoERMMIEbvpSlepmgsZ-qLFydIGvyXzqL9s-8i2JzLsQb6BsahuBqRoiqUjFCtz8HeLWJajPXzVWj-uaOjz2uOhVbAh3d5F9QVik8dIR2oZrKOYpO1NGSypV8Pniw4zCfzUYTKUgi9RHwAt1vkCyU50uxDJqbC8koSPIzFvtjHHiGXWiGuXWlaMXFSVxGh'
 
+// Long lived access token which matches 3meters phone number, (425) 780-7885
+var akAccessToken = 'EMAWf4pZAV81diNU7KzxllFJa5rVNZCQ7gTR4c8Ec1lxUqIJrOZBDMTPZBm3x6KKnIZB1XpCQ6RLWD7JGW95m9fklvO0NZBEhzt56KFufSk4V8eNdMDRpZCu8bAS4HcSbGLrK1tcCOERJsgco2ll4XddErmolFqschC8ZD'
+
 var akUser
 var installId = 'testAccountKitInstall'
 
@@ -38,8 +41,8 @@ exports.canRegisterDevice = function(test) {
     uri: '/do/registerInstall',
     body: {
       install: {
-        installId: installIdAk,
-        parseInstallId: installIdAk + 'Parse',
+        installId: installId,
+        parseInstallId: installId + 'Parse',
         deviceType: 'android',
         deviceVersionName: '5.0.0',
       }
@@ -49,18 +52,19 @@ exports.canRegisterDevice = function(test) {
     t.assert(body.count)
 
     // Confirm that install doc looks ok
-    t.get('/find/installs/in.' + installIdAk + '?' + adminCred,
+    t.get('/find/installs/in.' + installId + '?' + adminCred,
     function(err, res, body) {
       t.assert(body.data)
       t.assert(body.data._user === util.anonId)
-      t.assert(body.data.installId === installIdAk)
-      t.assert(body.data.parseInstallId === installIdAk + 'Parse')
+      t.assert(body.data.installId === installId)
+      t.assert(body.data.parseInstallId === installId + 'Parse')
       test.done()
     })
   })
 }
 
-exports.userCanSignInWithAccountKit = function(test) {
+exports.userCanGetAccountKitAuthCode = function(test) {
+  return skip(test)
   t.post({
     uri: '/auth/ak',
     body: {
@@ -80,6 +84,28 @@ exports.userCanSignInWithAccountKit = function(test) {
     test.done()
   })
 }
+
+exports.userCanSignInWithAccountKit = function(test) {
+  t.post({
+    uri: '/auth/ak/test',
+    body: {
+      access_token: akAccessToken,
+      install: installId,
+      log: true,
+    },
+  }, function(err, res, body) {
+    t.assert(body.user)
+    akUser = body.user
+    t.assert(akUser._id)
+    t.assert(akUser.akid)
+    t.assert(akUser.role && akUser.role === 'provisional')
+    t.assert(!akUser.name)
+    akUser.cred = qs.stringify(body.credentials)
+    t.assert(akUser.cred)
+    test.done()
+  })
+}
+
 
 
 exports.canReadPublicSignedIn = function(test) {
