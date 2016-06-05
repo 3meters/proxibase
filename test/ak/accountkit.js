@@ -9,6 +9,7 @@ var testUtil = require('../util')
 var qs = require('querystring')
 var t = testUtil.treq
 var skip = testUtil.skip
+var seed = util.seed()
 var adminCred
 var userCred
 var adminId
@@ -18,7 +19,7 @@ var _exports = {}     // for commenting out tests
 // This is a run-once test. Get a new value for this variable for each test run
 // from the server logs after executing the first step of this process from a
 // phone that has the Facebook Account Kit sdk running.  Awesome!
-var akAuthCode = 'AQBD7GGwoy6YcVawK3l4xDtZS5wjHFLHV5C9egIfr6d7__EQOkRAMfp6Ksa5dWDVL8ahB93f3C4JfN3at_mrvR_Cac_0eEvX13nNyCbZAAktlwQBKXaRargj5J4RyZWNZ2VsWQwtQyv5zJCnylF61nXsBOo6ZIoauMRHJHKt23-YjoXgESU6zSWwFj0ZtXlORaLiNeLsVdbJiqPCCKuMcX0FXYkSjlzjdDYh1BCL_Bd-YeSIDE2xxVDM5JG8VV0OSaltd7G0taM6wGosIWqBKL1o'
+var akAuthCode = 'AQAURFZwTY821qQUOpwfmpKM5b4bWWaj_IeJSGHTYz3EZcGinI3yT9HNDxuOAsxNcKs_wiRPYUKIgTbW4Tn4mvMNtyXoERMMIEbvpSlepmgsZ-qLFydIGvyXzqL9s-8i2JzLsQb6BsahuBqRoiqUjFCtz8HeLWJajPXzVWj-uaOjz2uOhVbAh3d5F9QVik8dIR2oZrKOYpO1NGSypV8Pniw4zCfzUYTKUgi9RHwAt1vkCyU50uxDJqbC8koSPIzFvtjHHiGXWiGuXWlaMXFSVxGh'
 
 var akUser
 var installId = 'testAccountKitInstall'
@@ -37,8 +38,8 @@ exports.canRegisterDevice = function(test) {
     uri: '/do/registerInstall',
     body: {
       install: {
-        installId: installId,
-        parseInstallId: installId + 'Parse',
+        installId: installIdAk,
+        parseInstallId: installIdAk + 'Parse',
         deviceType: 'android',
         deviceVersionName: '5.0.0',
       }
@@ -48,12 +49,12 @@ exports.canRegisterDevice = function(test) {
     t.assert(body.count)
 
     // Confirm that install doc looks ok
-    t.get('/find/installs/in.' + installId + '?' + adminCred,
+    t.get('/find/installs/in.' + installIdAk + '?' + adminCred,
     function(err, res, body) {
       t.assert(body.data)
       t.assert(body.data._user === util.anonId)
-      t.assert(body.data.installId === installId)
-      t.assert(body.data.parseInstallId === installId + 'Parse')
+      t.assert(body.data.installId === installIdAk)
+      t.assert(body.data.parseInstallId === installIdAk + 'Parse')
       test.done()
     })
   })
