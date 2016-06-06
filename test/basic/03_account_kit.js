@@ -100,7 +100,7 @@ exports.userCanSignInWithAccountKitPhone = function(test) {
     t.assert(akUser._id)
     t.assert(akUser.akid)
     t.assert(!akUser.email)
-    t.assert(akUser.phone)
+    t.assert(akUser.phone && akUser.phone.number && akUser.phone.countryCode)
     t.assert(!akUser.name)
     t.assert(!akUser.validationNotifyDate)  // Issue #418: ak has validated the user so we don't have to
     t.assert(akUser.role && akUser.role === 'provisional')
