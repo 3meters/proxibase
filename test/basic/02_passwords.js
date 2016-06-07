@@ -181,7 +181,9 @@ exports.createUserUpdatesInstall = function(test) {
     function(err, res, body) {
       t.assert(body.data)
       t.assert(body.data._user === user2._id)
-      t.assert(body.data.users && body.data.users.indexOf(user2._id) >= 0)
+
+      // Deprecated 2016.06.08
+      // t.assert(body.data.users && body.data.users.indexOf(user2._id) >= 0)
 
       // Delete user 2
       t.del({

@@ -113,6 +113,7 @@ exports.suggestPlaceGoogleAgain = function(test) {
 
 
 exports.suggestIncludesType = function(test) {
+  if (disconnected) return skip(test)
   t.get('/find/patches?sort=_id&skip=10&limit=1',
   function(err, res, body) {
     t.assert(body.data && body.data.length === 1)
@@ -137,6 +138,7 @@ exports.suggestIncludesType = function(test) {
 
 
 exports.rawSuggestWithNoEntityParamsReturnsUsersAndPatches = function(test) {
+  if (disconnected) return skip(test)
   t.get('/suggest?input=test&limit=100',
   function(err, res, body) {
     t.assert(body.data && body.data.length === 50)
@@ -162,6 +164,7 @@ exports.suggestPatchesFts = function(test) {
 
 exports.suggestUsersRegex = function(test) {
 
+  if (disconnected) return skip(test)
   t.get('/suggest/users?input=use&fts=0&ll=47,-122',  // match beginning of second word in name
   function(err, res, body) {
     t.assert(body.data.length >= dbProfile.users)
@@ -176,6 +179,7 @@ exports.suggestUsersRegex = function(test) {
 
 exports.suggestUsersFts = function(test) {
 
+  if (disconnected) return skip(test)
   t.get('/suggest/users?input=testville&regex=0',  // testville is in user.area of default users
   function(err, res, body) {
     t.assert(body.data.length >= dbProfile.users)
@@ -218,6 +222,7 @@ exports.suggestCombined = function(test) {
 
 
 exports.suggestWatchedEntitiesSortFirst = function(test) {
+  if (disconnected) return skip(test)
   // Find default test user 3 and watch him
   t.get('/data/users?query[name]=Test User 3',
   function(err, res, body) {

@@ -5,8 +5,9 @@
 
 var util = require('proxutils')
 var log = util.log
-var testUtil = require('../util')
 var qs = require('querystring')
+var testUtil = require('../util')
+var disconnected = testUtil.disconnected
 var t = testUtil.treq
 var skip = testUtil.skip
 var seed = util.seed()
@@ -63,8 +64,20 @@ exports.canRegisterDevice = function(test) {
   })
 }
 
+
+// This is our production api that is called by the clients.
+// However, it is impossible to test this from the server, because
+// it relies on calling a private account kit api that is only
+// accessed by the client sdks, and relies on a human workflow
+// to validate ownership of the phone number or email address.
+// So the test is skipped.  We continue on the next test with an
+// api that is only exposed on dev and test servers that picks
+// up at step 2 of the production workflow.
 exports.userCanGetAccountKitAuthCode = function(test) {
+
   return skip(test)
+
+  if (disconnected) return skip(test)
   t.post({
     uri: '/auth/ak',
     body: {
@@ -86,7 +99,9 @@ exports.userCanGetAccountKitAuthCode = function(test) {
 }
 
 
+// This is a test-mode only API.  See the comment in the prior skipped test
 exports.userCanSignInWithAccountKitPhone = function(test) {
+  if (disconnected) return skip(test)
   t.post({
     uri: '/auth/ak/test',
     body: {
@@ -104,6 +119,7 @@ exports.userCanSignInWithAccountKitPhone = function(test) {
     t.assert(!akUser.name)
     t.assert(!akUser.validationNotifyDate)  // Issue #418: ak has validated the user so we don't have to
     t.assert(akUser.role && akUser.role === 'provisional')
+    t.assert(akUser.akValidationDatePhone)
     akUser.cred = qs.stringify(body.credentials)
     t.assert(akUser.cred)
     test.done()
@@ -112,6 +128,7 @@ exports.userCanSignInWithAccountKitPhone = function(test) {
 
 
 exports.canReadPublicSignedIn = function(test) {
+  if (disconnected) return skip(test)
   t.get({
     uri: '/data/patches?' + akUser.cred
   }, function(err, res, body) {
@@ -124,6 +141,7 @@ exports.canReadPublicSignedIn = function(test) {
 
 
 exports.provisionalUserCannotCreateContent = function(test) {
+  if (disconnected) return skip(test)
   t.post({
     uri: '/data/patches?' + akUser.cred,
     body: {data: {name: 'Test patch from provisional user should fail'}}
@@ -134,22 +152,30 @@ exports.provisionalUserCannotCreateContent = function(test) {
 
 
 exports.upgradeProvisionalUser = function(test) {
+  if (disconnected) return skip(test)
+
+  // Cannot upgrade to admin
   t.post({
     uri: '/data/users/' + akUser._id + '?' + akUser.cred,
     body: {data: {role: 'admin'}},
   }, 401, function() {
+
+    // Cannot upgrade to user without name
     t.post({
       uri: '/data/users/' + akUser._id + '?' + akUser.cred,
       body: {data: {role: 'user'}},
     }, 400, function() {
+
+      // Can upgrade to user if setting name, can set other properties in same call
       t.post({
         uri: '/data/users/' + akUser._id + '?' + akUser.cred,
-        body: {data: {role: 'user', name: 'Willy Nelson'}},
+        body: {data: {role: 'user', name: 'Willy Nelson', photo: {source: 'local', prefix: 'willy.jpeg'}}},
       }, function(err, res, body) {
         var user = body.data
         t.assert(user && user._id)
         t.assert(user.role === 'user')
         t.assert(user.name === 'Willy Nelson')
+        t.assert(user.photo)
         test.done()
       })
     })
@@ -158,6 +184,7 @@ exports.upgradeProvisionalUser = function(test) {
 
 
 exports.userCanSignOut = function(test) {
+  if (disconnected) return skip(test)
   t.get('/auth/signout?' + akUser.cred,
   function(err, res, body) {
     t.get('/data/users?' + akUser.cred, 401,
@@ -175,6 +202,7 @@ exports.userCanSignOut = function(test) {
 
 
 exports.usersCanTransitionFromLocalAuthToAKAuth = function(test) {
+  if (disconnected) return skip(test)
   var user = {
     email: 'testak@3meters.com',
     name: 'testAccountKitEmailUser',
@@ -190,35 +218,47 @@ exports.usersCanTransitionFromLocalAuthToAKAuth = function(test) {
       installId: installId,
     }
   }, function(err, res, body) {
-    akUser = body.user
-    t.assert(akUser._id)
-    t.assert(akUser.email === 'testak@3meters.com')
-    t.assert(akUser.role === 'user')
-    test.done()
+    var localUser = body.user
+    t.assert(localUser._id)
+    t.assert(localUser.email === 'testak@3meters.com')
+    t.assert(localUser.role === 'user')
+    t.assert(!localUser.akid)
+
+
+    // Now sign in with an ak access token that matches that email address
+    t.post({
+      uri: '/auth/ak/test',
+      body: {
+        access_token: akAccessTokenEmail,  // maps to testak@3meters.com
+        install: installId,
+        log: true,
+      },
+    }, function(err, res, body) {
+      t.assert(body.user)
+      akUser = body.user
+      t.assert(akUser._id === localUser._id)  // Found and updated the local user
+      t.assert(akUser.akid)
+      t.assert(akUser.email === 'testak@3meters.com')
+      t.assert(!akUser.phone)
+      t.assert(akUser.name)
+      t.assert(akUser.role && akUser.role === 'user') // not provisional becuase user has a name
+      akUser.cred = qs.stringify(body.credentials)
+      t.assert(akUser.cred)
+      t.assert(body.priorUsers && body.priorUsers.length === 1)
+
+      // Willy Nelson previously authenticated on this phone.
+      // Pass that info on the client
+      var priorUser = body.priorUsers[0]
+      t.assert(priorUser._id)
+      t.assert(priorUser.name === 'Willy Nelson')
+      t.assert(priorUser.photo)
+      test.done()
+    })
   })
 }
 
 
 // The access token in this test shares the email address from the previous test
-exports.userCanSignInWithAccountKitEmail = function(test) {
-  t.post({
-    uri: '/auth/ak/test',
-    body: {
-      access_token: akAccessTokenEmail,  // testak@3meters.com
-      install: installId,
-      log: true,
-    },
-  }, function(err, res, body) {
-    t.assert(body.user)
-    akUser = body.user
-    t.assert(akUser._id)
-    t.assert(akUser.akid)
-    t.assert(akUser.email === 'testak@3meters.com')
-    t.assert(!akUser.phone)
-    t.assert(akUser.name)
-    t.assert(akUser.role && akUser.role === 'user') // not provisional becuase user has a name
-    akUser.cred = qs.stringify(body.credentials)
-    t.assert(akUser.cred)
-    test.done()
-  })
+exports.newUserCanSignInWithAccountKitEmail = function(test) {
+  return skip(test)  // NYI
 }
