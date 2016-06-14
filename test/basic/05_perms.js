@@ -86,6 +86,7 @@ exports.signinUser1 = function(test) {
     t.assert(body.session)
     // These credentials will be useds in subsequent tests
     user1Cred = 'user=' + body.user._id + '&session=' + body.session.key
+    user1 = body.user
     test.done()
   })
 }
@@ -100,6 +101,7 @@ exports.signinUser2 = function(test) {
     t.assert(body.session)
     // These credentials will be useds in subsequent tests
     user2Cred = 'user=' + body.user._id + '&session=' + body.session.key
+    user2 = body.user
     test.done()
   })
 }
@@ -179,10 +181,22 @@ exports.user2CannotDeleteUser1sRecords = function(test) {
 
 
 exports.user1CanUpdateRecordsHeCreated = function(test) {
+  var bogusCreatedDate = util.now()
   t.post({
     uri: '/data/documents/' + doc1._id + '?' + user1Cred,
-    body: {data: {name: 'I updated my own document'}}
+    body: {data: {
+      name: 'I updated my own document',
+      _creator: util.adminId,
+      createdDate: bogusCreatedDate,
+      createdIp: '0.0.0.0',
+    }}
   }, function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.data.name === 'I updated my own document')
+    t.assert(body.data._creator === user1._id)
+    t.assert(body.data.createdDate < bogusCreatedDate)
+    t.assert(body.data.createdIp && body.data.createdIp !== bogusCreatedDate)
+    t.assert(body.data.modifiedDate > body.data.createdDate)
     test.done()
   })
 }
