@@ -285,6 +285,22 @@ exports.resetPasswordByEmail = function(test) {
 }
 
 
+exports.canKillBadInstalls = function(test) {
+  t.post({
+    uri: '/do/registerInstall?' + userCred,
+    body: {
+      install: {
+        clientVersionCode: 999,
+        installId: "22f382a81ae67917",
+      }
+    }
+  }, function(err, res, body) {
+    t.assert(util.tipe.isString(body.count))  // Should crash the client
+    test.done()
+  })
+}
+
+
 exports.cleanup = function(test) {
   t.delete({
     uri: '/data/users/' + user._id + '?erase=1&' + adminCred,
