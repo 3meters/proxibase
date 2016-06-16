@@ -290,13 +290,38 @@ exports.canKillBadInstalls = function(test) {
     uri: '/do/registerInstall?' + userCred,
     body: {
       install: {
-        clientVersionCode: 999,
-        installId: "22f382a81ae67917",
+        clientPackageName: "com.aircandi.catalina",
+        clientVersionCode: 120,
       }
     }
   }, function(err, res, body) {
     t.assert(util.tipe.isString(body.count))  // Should crash the client
-    test.done()
+
+    t.post({
+      uri: '/do/registerInstall?' + userCred,
+      body: {
+        install: {
+          clientPackageName: "com.patchr.android",
+          clientVersionCode: 214,
+        }
+      }
+    }, function(err, res, body) {
+      t.assert(util.tipe.isString(body.count))  // Should crash the client
+
+      t.post({
+        uri: '/do/registerInstall?' + userCred,
+        body: {
+          install: {
+            installId: 'testid',
+            clientPackageName: "com.patchr.android",
+            clientVersionCode: 215,
+          }
+        }
+      }, function(err, res, body) {
+        t.assert(util.tipe.isNumber(body.count))  // Should pass through the client
+        test.done()
+      })
+    })
   })
 }
 
