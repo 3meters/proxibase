@@ -291,7 +291,7 @@ exports.canKillBadInstalls = function(test) {
     body: {
       install: {
         clientPackageName: "com.aircandi.catalina",
-        clientVersionCode: 120,
+        clientVersionCode: 214,
       }
     }
   }, function(err, res, body) {
@@ -302,7 +302,7 @@ exports.canKillBadInstalls = function(test) {
       body: {
         install: {
           clientPackageName: "com.patchr.android",
-          clientVersionCode: 214,
+          clientVersionCode: 120,
         }
       }
     }, function(err, res, body) {
@@ -314,7 +314,7 @@ exports.canKillBadInstalls = function(test) {
           install: {
             installId: 'testid',
             clientPackageName: "com.patchr.android",
-            clientVersionCode: 215,
+            clientVersionCode: 121,
           }
         }
       }, function(err, res, body) {
