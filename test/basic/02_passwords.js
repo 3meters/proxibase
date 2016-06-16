@@ -290,23 +290,25 @@ exports.canKillBadInstalls = function(test) {
     uri: '/do/registerInstall?' + userCred,
     body: {
       install: {
+        installId: 'testid',
         clientPackageName: "com.aircandi.catalina",
         clientVersionCode: 214,
       }
     }
-  }, function(err, res, body) {
-    t.assert(util.tipe.isString(body.count))  // Should crash the client
+  }, 400, function(err, res, body) {
+    t.assert(body.error && body.error.message)  // Should crash the client
+    t.assert(body.error.message.indexOf('reinstall') > 0)
 
     t.post({
       uri: '/do/registerInstall?' + userCred,
       body: {
         install: {
+          installId: 'testid',
           clientPackageName: "com.patchr.android",
           clientVersionCode: 120,
         }
       }
-    }, function(err, res, body) {
-      t.assert(util.tipe.isString(body.count))  // Should crash the client
+    }, 400, function(err, res, body) {
 
       t.post({
         uri: '/do/registerInstall?' + userCred,
