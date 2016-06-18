@@ -14,8 +14,9 @@ var skip = testUtil.skip
 var disconnected = testUtil.disconnected
 var adminCred
 var adminId
-var userCred
 var user
+var userSession
+var userCred
 var _exports = {}                    // for commenting out tests
 
 var validationDate
@@ -98,7 +99,7 @@ exports.updateInstall = function(test) {
 
 
 exports.bogusInstallIdOnCredentialsDoesNotError = function(test) {
-  t.get('/?' + userCred + '&install=bogusInstallId&ll=50,-124',
+  t.get('/?' + user._id + '&session=' + userSession.key + '&install=bogusInstallId&ll=50,-124',
   function(err, res, body) {
     t.assert(!body.install)   // not an error, res.installId is undefined
     test.done()
@@ -286,6 +287,8 @@ exports.resetPasswordByEmail = function(test) {
 
 
 exports.canKillBadInstalls = function(test) {
+
+  // This request should not appear in testServer.log
   t.post({
     uri: '/do/registerInstall?' + userCred,
     body: {
@@ -299,6 +302,7 @@ exports.canKillBadInstalls = function(test) {
     t.assert(body.error && body.error.message)  // Should crash the client
     t.assert(body.error.message.indexOf('reinstall') > 0)
 
+    // This request should not appear in testServer.log
     t.post({
       uri: '/do/registerInstall?' + userCred,
       body: {
@@ -310,6 +314,7 @@ exports.canKillBadInstalls = function(test) {
       }
     }, 400, function(err, res, body) {
 
+      // This request is valid, and *should* appear in testServer.log
       t.post({
         uri: '/do/registerInstall?' + userCred,
         body: {
