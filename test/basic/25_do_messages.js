@@ -2141,6 +2141,7 @@ exports.beckySharesPrivatePatchWithStan = function(test) {
           t.assert(link._modifier === testUserBecky._id)
 
           /* Check activityDate for patch - should not have changed */
+          // Behavior changed 7/15/16.  Share links are now strong
           t.post({
             uri: '/find/patches',
             body: {
@@ -2149,7 +2150,7 @@ exports.beckySharesPrivatePatchWithStan = function(test) {
           }, function(err, res, body) {
             t.assert(body.count === 1)
             t.assert(body.data && body.data[0])
-            t.assert(body.data[0].activityDate < messageDate)
+            t.assert(body.data[0].activityDate > messageDate)
             test.done()
           })
         })

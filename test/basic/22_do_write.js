@@ -765,7 +765,7 @@ exports.checkPatchActivityDate = function (test) {
      }
     }, function(err, res, body) {
      t.assert(body.count === 1)
-     t.assert(body.data[0].activityDate === activityDatePatch, activityDatePatch)  // Changed liking to not tickle on 12/20/15
+     t.assert(body.data[0].activityDate > activityDatePatch, activityDatePatch)  // Changed liking to not tickle on 12/20/15, and back again to tickle on 7/15/15 :)
      test.done()
     })
   })

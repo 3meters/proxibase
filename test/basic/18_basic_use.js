@@ -2265,15 +2265,15 @@ exports.likingAPatchDoesNotUpdatesActivityDateOfPatchOrUser = function(test) {
         }
       }, 201, function(err, res, body) {
 
-        // Test that Jane's activity date was not updated
-        t.get('/data/users/' + jane._id,
+      // Test that Jane's activity date was not updated
+      t.get('/data/users/' + jane._id,
         function(err, res, body) {
           t.assert(body.data.activityDate === janeOldActivityDate)
 
-          // Test that treehouse's activity date was not updated
+          // Test that treehouse's activity date was updated (changed 7/16/16)
           t.get('/data/patches/' + treehouse._id,
           function(err, res, body) {
-            t.assert(body.data.activityDate === treehouseOldActivityDate)
+            t.assert(body.data.activityDate > treehouseOldActivityDate)
 
             // Test that updating a patch does update its activity date
             return test.done()
