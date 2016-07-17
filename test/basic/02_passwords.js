@@ -107,6 +107,20 @@ exports.bogusInstallIdOnCredentialsDoesNotError = function(test) {
 }
 
 
+exports.testSessionExpire = function(test) {
+  t.post({
+    uri: '/find/users?' + userCred,
+    body: {
+      limit: 1,
+      testExpire: 1,   // can go on query too
+    }
+  }, 401, function(err, res, body) {
+    t.assert(body.error.code === 401.2)  // session Expired
+    test.done()
+  })
+}
+
+
 exports.signoutClearsInstallRecordUser = function(test) {
   t.get('/data/installs/in.' + installId + '?' + adminCred,
   function(err, res, body) {
