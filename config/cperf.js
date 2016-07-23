@@ -34,7 +34,7 @@ module.exports = {
     limits: {
       default: 50,
       max: 1000,
-      join: 1000,
+      join: 100,
     },
     keepTestDb: true,                   // If true do not overwrite when testing
     timeout: 60000,

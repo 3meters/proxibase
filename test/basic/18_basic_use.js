@@ -629,6 +629,66 @@ exports.messagesToPublicRiverAreVisibleToAnonUser = function(test) {
 }
 
 
+exports.tarzanSendsShareMessagesToMary = function(test) {
+  t.post({
+    uri: '/data/messages?' + tarzan.cred,
+    body: {
+      data: {_id: 'me.tarzanShareMsg' + seed, type: 'share', description: 'Mind the crocs Mary'},
+      links: [
+        {_to: 'me.tarzanToRiver' + seed, type: 'share'},
+        {_to: mary._id, type: 'share'},
+      ],
+      test: true,
+    }
+  }, 201, function(err, res, body) {
+    t.assert(body.data)
+    t.assert(body.data.links && body.data.links.length === 2)
+
+    // test Tarzan's message list
+    t.post({
+      uri: '/find/users/' + tarzan._id + '?' + tarzan.cred,
+      body: {
+        linked: {
+          to: 'messages',
+          type: 'create',
+          linked: [
+            {to: 'messages', type: 'share'},
+            {to: 'users', type: 'share'},
+          ]
+        }
+      }
+    }, function(err, res, body) {
+      t.assert(body.data)
+      t.assert(body.data.linked && body.data.linked.length)
+      var shareMsg = body.data.linked.find(function(msg) {
+        return (msg._id === 'me.tarzanShareMsg' + seed)
+      })
+      t.assert(shareMsg && shareMsg.linked && shareMsg.linked.length === 2, shareMsg)
+      t.assert(shareMsg.linked.some(function(linked) {
+        return linked._id === mary._id
+      }), shareMsg)
+      t.assert(shareMsg.linked.some(function(linked) {
+        return linked._id === 'me.tarzanToRiver' + seed}
+      ), shareMsg)
+
+      // test that the message detail query returns the same results as the list, issue 428
+      t.post({
+        uri: '/find/messages/' + shareMsg._id + '?' + tarzan.cred,
+        body: {
+          linked: [
+            {to: 'messages', type: 'share', limit: 1},
+            {to: 'users', type: 'share', limit: 1},
+          ],
+        }
+      }, function(err, res, body) {
+        t.assert(body.data && body.data.linked && body.data.linked.length === 2)
+        test.done()
+      })
+    })
+  })
+}
+
+
 exports.tarzanSendsMessageToTreehouse = function(test) {
   t.post({
     uri: '/data/messages?' + tarzan.cred,
@@ -1124,6 +1184,20 @@ exports.janeCanSendMessageToTreehouse = function(test) {
   }, 201, function(err, res, body) {
     t.assert(body.notifications && body.notifications.length === 1)
     t.assert(body.notifications[0].parseInstallIds[0] === 'tarzanParseId')
+    test.done()
+  })
+}
+
+
+exports.tarzanCanReadJanesMessages = function(test) {
+  t.post({
+    uri: '/find/patches/' + treehouse._id + '?' + tarzan.cred,
+    body: {linked: {from: 'messages', type: 'content'}},
+  }, function(err, res, body) {
+    t.assert(body.data && body.data.linked && body.data.linked.length > 1)
+    t.assert(body.data.linked.some(function(msg) {
+      return msg._owner === jane._id
+    }))
     test.done()
   })
 }
@@ -1735,7 +1809,7 @@ exports.findWithNestedLinks = function(test) {
       t.assert(!patch.modifier)  // not specified in refs
       t.assert(patch.linked)
       patch.linked.forEach(function(message) {
-        t.assert(message.schema === 'message')
+        t.assert(message && message.schema === 'message')
         // A ref with a single field spec promotes the field value, not a nested obj
         t.assert(tipe.isString(message.owner))  // The name pointed to by the _owner
         t.assert(!message.link)  // excluded
@@ -1826,6 +1900,7 @@ exports.findPatchforMessage = function(test) {
     test.done()
   })
 }
+
 
 
 // Find messages for patches with new find syntax vs deprecated
