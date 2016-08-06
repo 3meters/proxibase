@@ -254,12 +254,13 @@ exports.resetPasswordByEmail = function(test) {
       }, 401, function(err, res, body) {
         t.assert(body.error && body.error.code === 401.1)  // bad credentials, same as invalid password
 
-        // Reset the password with a valid token
+        // Reset the password with a valid token, but invalid installId (Issue #432)
         t.post({
           uri: '/user/pw/reset',
           body: {
             password: 'doodah',
             token: token,
+            installId: 'bogus',
             test: true,
           }
         }, function(err, res, body) {

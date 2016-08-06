@@ -169,7 +169,7 @@ function getUserSession(user, cb) {
   if (user.install || user.installId) {
     regInstall(user, function() {
       getSession(user, false, cb)
-    })  
+    })
   }
   else getSession(user, false, cb)
 }
@@ -196,7 +196,7 @@ function regInstall(user, cb) {
       }
     },
   })
-  
+
   request(req, function(err, res) {
     if (err) throw err
     check(req, res)
