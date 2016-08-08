@@ -1323,7 +1323,7 @@ exports.tarzanReadsTreehousePatchIosNotCached = function(test) {
         t.assert(link._creator === tarzan._id)
       }
     })
-    t.assert(cWatch)
+    t.assert(cWatch === 1)
     t.assert(cContent === 1)
     test.done()
   })

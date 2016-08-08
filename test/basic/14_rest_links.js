@@ -390,7 +390,7 @@ var query = {
 
 exports.findLinksReturnsLinksNotDocuments = function(test) {
 var query = {
-    uri: '/find/patches?limit=20&links[to]=beacons&links[type]=proximity&links[limit]=1&links[more]=1&refs=name' + userCred,
+    uri: '/find/patches?limit=20&links[to]=beacons&links[type]=proximity&links[limit]=3&refs=name' + userCred,
   }
   t.get(query, function(err, res, body) {
     t.assert(body.data)
@@ -399,13 +399,14 @@ var query = {
     var cMoreLinks = 0
     body.data.forEach(function(patch) {
       if (patch.moreLinks) cMoreLinks++
-      patch.links.forEach(function(link) {
+      patch.links.forEach(function(link, i) {
         t.assert(link)
         t.assert(link._id)
         t.assert(link.schema === 'link')
         t.assert(link.type === 'proximity')
         t.assert(link.fromSchema === 'patch')
         t.assert(link.toSchema === 'beacon')
+        t.assert(i < 3)
         cLinks++
       })
     })
