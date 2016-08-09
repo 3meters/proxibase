@@ -654,7 +654,7 @@ exports.tarzanSendsShareMessagesToMary = function(test) {
           linked: [
             {to: 'messages', type: 'share'},
             {to: 'users', type: 'share'},
-            {to: 'patches', type: 'content', limit: 1, linkFields: '_to,_from,type'},
+            {to: 'patches', type: 'content', limit: 1, linkFields: 1},
           ]
         }
       }
