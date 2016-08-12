@@ -233,7 +233,7 @@ exports.findLinkedSortWorks = function(test) {
 exports.findLinkedPagingWorks = function(test) {
   var query = {
     uri: '/find/users/' + user1Id + '?' + userCred,
-    body: {linked: {to: 'patches', type: 'watch', limit: 2, sort: '-_id', more: true, linkFields:1}}
+    body: {linked: {to: 'patches', type: 'watch', limit: 2, sort: '-_id', linkFields:1}}
   }
   t.post(query, function(err, res, body) {
     var patchLinked = body.data.linked
@@ -248,7 +248,7 @@ exports.findLinkedPagingWorks = function(test) {
     t.post(query, function(err, res, body) {
       var patchLinked = body.data.linked
       t.assert(3 === patchLinked.length)
-      t.assert(!body.data.moreLinked)  // under data, not body
+      t.assert(!body.data.moreLinked)  // 5 total, limit 3, skip 2
       t.assert(lastLinkId > patchLinked[0].link._id)
       var query = {
         uri: '/find/users/' + user1Id + '?' + userCred,

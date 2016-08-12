@@ -654,6 +654,7 @@ exports.tarzanSendsShareMessagesToMary = function(test) {
           linked: [
             {to: 'messages', type: 'share'},
             {to: 'users', type: 'share'},
+            {to: 'patches', type: 'content', limit: 1, linkFields: 1},
           ]
         }
       }
@@ -670,6 +671,15 @@ exports.tarzanSendsShareMessagesToMary = function(test) {
       t.assert(shareMsg.linked.some(function(linked) {
         return linked._id === 'me.tarzanToRiver' + seed}
       ), shareMsg)
+
+      // https://github.com/3meters/proxibase/issues/431
+      body.data.linked.forEach(function(msg) {
+        if (msg.type === 'share') return
+        t.assert(msg.linked && msg.linked.length)
+        t.assert(msg.linked.some(function(linked) {
+          return linked.schema === 'patch'
+        }))
+      })
 
       // test that the message detail query returns the same results as the list, issue 428
       t.post({
