@@ -975,17 +975,19 @@ exports.janeCanCountWatchRequests = function(test) {
   t.post({
     uri: '/find/patches/' + janehouse._id + '?' + jane.cred,
     body: {
-      linkCount: [
+      linkCounts: [
         {from: 'users', type: 'like'},
-        {from: 'users', type: 'watch', enabled: true},
+        {from: 'users', type: 'watch', enabled: true},   // jane's watch
+        {from: 'users', type: 'watch', enabled: false},  // tarzan's disabled watch
       ],
     }
   }, function(err, res, body) {
     t.assert(body && body.data && !body.data.length)
     var patch = body.data
     t.assert(patch._id === janehouse._id)
-    t.assert(patch.linkCount.from.users.like === 0)
-    t.assert(patch.linkCount.from.users.watch === 1)
+    t.assert(patch.linkCounts[0].count === 0)
+    t.assert(patch.linkCounts[1].count === 1)
+    t.assert(patch.linkCounts[2].count === 1)
     test.done()
   })
 }
@@ -1239,18 +1241,18 @@ exports.tarzanCanReadJanesMessageToTreehouse = function(test) {
       links: [
        {from: 'users', type: 'like', fields: '_id,type,schema', filter: { _from: tarzan._id }}
       ],
-      linkCount: [{from: 'users', type: 'like'}],
+      linkCounts: [{from: 'users', type: 'like'}],
       linked: [
         {limit: 1, to: 'patches', fields: '_id,name,photo,schema,type', type: 'content' },
         {fields: '_id,name,photo,schema,type', from: 'users', type: 'create' },
         {to: 'messages', type: 'share', limit: 1, linked: [
           {from: 'users', type: 'create', fields: '_id,name,photo,schema,type'},
         ]},
-        {linkCount: [
+        // Not sure about this...
+        {linkCounts: [
           {from: 'users', type: 'watch', enabled: true},
           {from: 'messages', type: 'content'},
         ], limit: 1, to: 'patches', type: 'share'},
-        {to: 'users', type: 'share', to: 'patches'},
       ],
       // get the patch record even if it isn't really stale
       query: {'$or': [
@@ -1261,6 +1263,8 @@ exports.tarzanCanReadJanesMessageToTreehouse = function(test) {
   }, function(err, res, body) {
     t.assert(body.data)
     t.assert(body.data._id)
+    t.assert(body.data.linkCounts && body.data.linkCounts.length)
+    t.assert(body.data.linkCounts[0].count === 0)
     t.assert(body.data.linked)
     t.assert(body.data.linked.length)
     test.done()
@@ -1279,7 +1283,7 @@ exports.tarzanReadsTreehousePatchCached = function(test) {
         {from: "users", type: "watch", filter: {_from: tarzan._id}},
         {from: "messages", type: "content", limit: 1, filter: {_creator: tarzan._id}},
       ],
-      linkCount: [
+      linkCounts: [
         {from: "messages", type: "content"},
         {from: "users", type: "watch", enabled: true},
       ],
@@ -1307,7 +1311,7 @@ exports.tarzanReadsTreehousePatchIosNotCached = function(test) {
         {from: "users", type: "watch", filter: {_from: tarzan._id}},
         {from: "messages", type: "content", limit: 1, filter: {_creator: tarzan._id}},
       ],
-      linkCount: [
+      linkCounts: [
         {from: "messages", type: "content"},
         {from: "users", type: "watch", enabled: true},
       ],
@@ -1323,6 +1327,8 @@ exports.tarzanReadsTreehousePatchIosNotCached = function(test) {
     t.assert(body.data.links)
     var cWatch = 0
     var cContent = 0
+    t.assert(body.data.linkCounts[0].count === 2)  // messages
+    t.assert(body.data.linkCounts[1].count === 2)  // watch links
     body.data.links.forEach(function(link) {
       if (link.type === 'watch') {
         cWatch++
@@ -1793,7 +1799,7 @@ exports.findWithNestedLinks = function(test) {
       linked: {to: 'patches', type: 'watch', fields: 'name,visibility,photo,schema', linkFields: 'enabled',
         refs: {_owner: '_id,name,schema,photo'},
         linked: {from: 'messages', type: 'content', fields: 'description,photo,schema', linkFields: false, refs: {_owner: 'name'}},
-        linkCount: [
+        linkCounts: [
           {from: 'users', type: 'watch'},
           {from: 'users', type: 'like'},
         ],
@@ -1825,9 +1831,9 @@ exports.findWithNestedLinks = function(test) {
         t.assert(!message.link)  // excluded
         cMessages++
       })
-      t.assert(patch.linkCount)
-      t.assert(tipe.isDefined(patch.linkCount.from.users.watch))
-      t.assert(tipe.isDefined(patch.linkCount.from.users.like))
+      t.assert(patch.linkCounts)
+      t.assert(tipe.isNumber(patch.linkCounts[0].count))  // watch
+      t.assert(tipe.isNumber(patch.linkCounts[1].count))  // like
     })
     t.assert(cMessages)
     test.done()
@@ -1844,7 +1850,7 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
         fields: 'name,visibility,photo,schema', linkFields: 'enabled', refs: {_owner: 'name,schema,photo'},
         linked: {from: 'messages', type: 'content', limit: 2, more: true,
             fields: 'schema,description,photo,_owner', refs: 'name,schema', linkFields: false},
-        linkCount: [
+        linkCounts: [
           {from: 'users', type: 'watch'},
           {from: 'users', type: 'like'},
           {from: 'messages', type: 'content'},
@@ -1870,12 +1876,7 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
       t.assert(patch.owner)
       t.assert(patch.owner.name)
       t.assert(patch.owner.photo)
-      t.assert(patch.linkCount)
-      t.assert(patch.linkCount.from)
-      t.assert(patch.linkCount.from.users)
-      t.assert(tipe.isDefined(patch.linkCount.from.users.like))
-      t.assert(tipe.isDefined(patch.linkCount.from.users.watch))
-      t.assert(tipe.isDefined(patch.linked))
+      t.assert(patch.linkCounts && patch.linkCounts.length === 3)
       if (patch.moreLinked) {
         cMoreMessages++
       }
@@ -1888,8 +1889,7 @@ exports.findWithNestedLinksPromoteLinked = function(test) {
       })
     })
     t.assert(cMessages)
-    debug('Update test: My patches will no longer show messages that i do not own')
-    // t.assert(cMoreMessages)
+    t.assert(cMoreMessages)
     t.assert(body.count === body.data.length)
     test.done()
   })
@@ -1995,7 +1995,7 @@ exports.findMyPatchesCompareGetEntities = function(test) {
             {to: 'places', type: 'proximity', limit: 1, fields: 'name,schema,category,photo', limit: 1},
             {from: 'messages', type: 'content', limit: 2, fields: 'schema,description'},
           ],
-          linkCount: [
+          linkCounts: [
             {from: 'messages', type: 'content'},
             {from: 'users', type: 'like'},
             {from: 'users', type: 'watch', enabled: true},
@@ -2009,28 +2009,29 @@ exports.findMyPatchesCompareGetEntities = function(test) {
 
     // find returns tarzan on top with an array of linked patches.
     // Under each patch is an array of linked entities, of type beacon, place, or message,
-    // and a linkCount object that counts messages, watches, and likes to the patch
+    // and a linkCounts array that counts messages, watches, and likes to the patch
     var cMessagesTot = 0
     rfind.linked.forEach(function(patch) {
       var cMessagesPerPatch = 0
       t.assert(patch.schema === 'patch')
-      t.assert(patch.linkCount)
-      t.assert(tipe.isNumber(patch.linkCount.from.messages.content))
-      t.assert(tipe.isNumber(patch.linkCount.from.users.watch))
-      t.assert(tipe.isNumber(patch.linkCount.from.users.like))
+      t.assert(patch.linkCounts)
+      t.assert(tipe.isNumber(patch.linkCounts[0].count))
+      t.assert(tipe.isNumber(patch.linkCounts[1].count))
+      t.assert(tipe.isNumber(patch.linkCounts[2].count))
       t.assert(patch.linked)
       patch.linked.forEach(function(ent) {
         t.assert(ent.schema)
         t.assert(ent.schema.match(/message|place|beacon/))
         if (ent.schema === 'message') {
+          // In a nested query only messages owned by user will appear
+          t.assert(ent._owner === tarzan._id)
           cMessagesPerPatch++
           cMessagesTot++
         }
       })
       t.assert(cMessagesPerPatch <= 2)  // proves link limit works
     })
-    debug('Update test: Nested messages under patch lists show only those owned by me')
-    // t.assert(cMessagesTot > 2)
+    t.assert(cMessagesTot > 2)
 
     // Deprecated syntax sent by Android client 1.5* and earlier
     t.post({
@@ -2113,7 +2114,7 @@ exports.patchesNear = function(test) {
           {to: 'places', type: 'proximity', sort: 'modifiedDate', limit: 1},
           {from: 'messages', type: 'content', sort: '-modifiedDate', limit: 2},
         ],
-        linkCount: [
+        linkCounts: [
           {from: 'messages', type: 'content'},
           {from: 'users', type: 'like'},
           {from: 'users', type: 'watch'},
@@ -2140,22 +2141,13 @@ exports.patchesNear = function(test) {
       var cLinkedMessages = 0
 
       patches.forEach(function(patch) {
-        t.assert(patch.linkCount)
-        var lc = patch.linkCount
-        t.assert(lc.from)
-        t.assert(lc.from.messages)
-        t.assert(tipe.isNumber(lc.from.messages.content))
-        t.assert(lc.from.users)
-        t.assert(tipe.isNumber(lc.from.users.like))
-        t.assert(tipe.isNumber(lc.from.users.watch))
-
-        t.assert(lc.to)
-        t.assert(lc.to.places)
-        t.assert(lc.to.beacons)
-        t.assert(tipe.isNumber(lc.to.places.proximity))
-        t.assert(tipe.isNumber(lc.to.beacons.proximity))
-        cBeaconLinks += patch.linkCount.to.beacons.proximity
-        cPlaceLinks += patch.linkCount.to.places.proximity
+        var lc = patch.linkCounts
+        t.assert(lc && lc.length === 5)
+        lc.forEach(function(linkCount) {
+          t.assert(tipe.isNumber(linkCount.count))
+          if (linkCount.to === 'beacons') cBeaconLinks+= linkCount.count
+          if (linkCount.to === 'places') cPlaceLinks+= linkCount.count
+        })
 
         t.assert(patch.linked)
         t.assert(tipe.isNumber(patch.linked.length))

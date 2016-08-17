@@ -252,16 +252,18 @@ exports.findLinkedPagingWorks = function(test) {
       t.assert(lastLinkId > patchLinked[0].link._id)
       var query = {
         uri: '/find/users/' + user1Id + '?' + userCred,
-        body: {linkCount: [
+        body: {linkCounts: [
           {to: "patches", type: "watch"},
           {to: "patches", type: "create"},
         ]}
       }
       t.post(query, function(err, res, body) {
         t.assert(body.data)
-        t.assert(body.data.linkCount)
-        t.assert(body.data.linkCount.to.patches.create === 5)
-        t.assert(body.data.linkCount.to.patches.watch === 5)
+        t.assert(body.data.linkCounts && body.data.linkCounts.length)
+        t.assert(_.isEqual(body.data.linkCounts, [
+          {to: "patches", type: "watch", count: dbProfile.ppu},
+          {to: "patches", type: "create", count: dbProfile.ppu},
+        ]))
         test.done()
       })
     })
@@ -272,7 +274,7 @@ exports.findLinkedPagingWorks = function(test) {
 exports.findLinkedCountWorks = function(test) {
   var query = {
     uri: '/find/patches/' + patch1Id + '?' + userCred,
-    body: {linkCount: [
+    body: {linkCounts: [
       {to: 'places', type: 'proximity'},
       {to: 'beacons', type: 'proximity'},
       {to: 'documents', type: 'proximity'},
@@ -283,20 +285,13 @@ exports.findLinkedCountWorks = function(test) {
   }
   t.post(query, function(err, res, body) {
     t.assert(!body.data.linked)
-    var lc = body.data.linkCount
-    t.assert(lc && lc.to)
-    t.assert(tipe.isDefined(lc.to.places.proximity))
-    t.assert(tipe.isDefined(lc.to.beacons.proximity))
-    t.assert(tipe.isDefined(lc.to.documents.proximity))
-    t.assert(lc.from)
-    t.assert(tipe.isDefined(lc.from.users.watch))
-    t.assert(tipe.isDefined(lc.from.messages.content))
-    t.assert(lc.to.documents.proximity === 0)
-    t.assert(lc.to.places.proximity === dbProfile.ppp)
-    t.assert(lc.to.beacons.proximity === dbProfile.bpp)
-    t.assert(lc.from.users.watch === 1)
-    t.assert(lc.from.users.create === 1)
-    t.assert(lc.from.messages.content === dbProfile.mpp)
+    var lc = body.data.linkCounts
+    t.assert(_.isEqual(lc[0], {to: 'places', type: 'proximity', count: dbProfile.ppp}))
+    t.assert(_.isEqual(lc[1], {to: 'beacons', type: 'proximity', count: dbProfile.bpp}))
+    t.assert(_.isEqual(lc[2], {to: 'documents', type: 'proximity', count: 0}))
+    t.assert(_.isEqual(lc[3], {from: 'users', type: 'watch', count: 1}))
+    t.assert(_.isEqual(lc[4], {from: 'users', type: 'create', count: 1}))
+    t.assert(_.isEqual(lc[5], {from: 'messages', type: 'content', count: dbProfile.mpp}))
     test.done()
   })
 }
@@ -306,7 +301,7 @@ exports.findLinkedComplexWorks = function(test) {
   var query = {
     uri: '/find/patches/' + patch1Id + '?' + userCred,
     body: {
-      linkCount: [
+      linkCounts: [
         {to: 'places', type: 'proximity'},
         {to: 'beacons', type: 'proximity'},
         {from: 'users', type: 'watch'},
@@ -320,17 +315,14 @@ exports.findLinkedComplexWorks = function(test) {
     }
   }
   t.post(query, function(err, res, body) {
-    t.assert(body.data.linkCount)
-    var lc = body.data.linkCount
-    t.assert(tipe.isDefined(lc.to.places.proximity))
-    t.assert(tipe.isDefined(lc.to.beacons.proximity))
-    t.assert(tipe.isDefined(lc.from.users.watch))
-    t.assert(tipe.isDefined(lc.from.messages.content))
-    t.assert(lc.to.beacons.proximity === dbProfile.bpp)
-    t.assert(lc.to.places.proximity === dbProfile.ppp)
-    t.assert(lc.from.users.watch === 1)
-    t.assert(lc.from.users.create === 1)
-    t.assert(lc.from.messages.content === dbProfile.mpp)
+    t.assert(body.data.linkCounts)
+    var lc = body.data.linkCounts
+    t.assert(_.isEqual(lc[0], {to: 'places', type: 'proximity', count: dbProfile.ppp}))
+    t.assert(_.isEqual(lc[1], {to: 'beacons', type: 'proximity', count: dbProfile.bpp}))
+    t.assert(_.isEqual(lc[2], {from: 'users', type: 'watch', count: 1}))
+    t.assert(_.isEqual(lc[3], {from: 'users', type: 'create', count: 1}))
+    t.assert(_.isEqual(lc[4], {from: 'messages', type: 'content', count: dbProfile.mpp}))
+
     // Can mix and match count queries with data-fetching queries
     t.assert(body.data.linked)
     body.data.linked.forEach(function(doc) {
@@ -411,7 +403,7 @@ var query = {
       })
     })
     t.assert(cLinks > 10, cLinks)
-    // t.assert(cMoreLinks, cMoreLinks)  currently more does not work when limit is set to 1
+    t.assert(cMoreLinks, cMoreLinks)  // currently more does not work when limit is set to 1
     test.done()
   })
 }
