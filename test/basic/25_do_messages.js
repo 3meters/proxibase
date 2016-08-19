@@ -276,7 +276,6 @@ exports.registerInstallOne = function (test) {
       t.assert(body.data[0].installId)
       t.assert(body.data[0].parseInstallId)
       t.assert(body.data[0].parseInstallId === 'registration_id_testing_user_tom')
-      t.assert(body.data[0].users.length >= 1) // Can be left over users from previous tests
       test.done()
     })
   })
@@ -311,7 +310,6 @@ exports.registerInstallTwo = function (test) {
       t.assert(body.data[0].installId)
       t.assert(body.data[0].parseInstallId)
       t.assert(body.data[0].parseInstallId === 'registration_id_testing_user_bob')
-      t.assert(body.data[0].users && body.data[0].users.length === 1)
       t.assert(body.data[0].signinDate)
       test.done()
     })
@@ -347,7 +345,6 @@ exports.registerInstallThree = function (test) {
       t.assert(body.data[0].installId)
       t.assert(body.data[0].parseInstallId)
       t.assert(body.data[0].parseInstallId === 'registration_id_testing_user_alice')
-      t.assert(body.data[0].users && body.data[0].users.length === 1)
       t.assert(body.data[0].signinDate)
       test.done()
     })
@@ -383,7 +380,6 @@ exports.registerInstallFour = function (test) {
       t.assert(body.data[0].installId)
       t.assert(body.data[0].parseInstallId)
       t.assert(body.data[0].parseInstallId === 'registration_id_testing_user_becky')
-      t.assert(body.data[0].users && body.data[0].users.length === 1)
       t.assert(body.data[0].signinDate)
       test.done()
     })
@@ -419,7 +415,6 @@ exports.registerInstallFive = function (test) {
       t.assert(body.data[0].installId)
       t.assert(body.data[0].parseInstallId)
       t.assert(body.data[0].parseInstallId === 'registration_id_testing_user_max')
-      t.assert(body.data[0].users && body.data[0].users.length === 1)
       t.assert(body.data[0].signinDate)
       test.done()
     })
@@ -455,7 +450,6 @@ exports.registerInstallSix = function (test) {
       t.assert(body.data[0].installId)
       t.assert(body.data[0].parseInstallId)
       t.assert(body.data[0].parseInstallId === 'registration_id_testing_user_stan')
-      t.assert(body.data[0].users && body.data[0].users.length === 1)
       t.assert(body.data[0].signinDate)
       test.done()
     })
@@ -658,16 +652,16 @@ exports.tomInsertsPublicPatch = function (test) {
     body.notifications.forEach(function(message) {
       var notification = message.notification
       t.assert(notification._target === testPatchPublic._id || notification.targetId === testPatchPublic._id)
-      message.parseInstallIds.forEach(function(parseInstallId){
-        if (parseInstallId.indexOf('tom') > 0) tomHit++
-        if (parseInstallId.indexOf('alice') > 0 && notification.trigger == 'nearby') aliceHit++
-        if (parseInstallId.indexOf('max') > 0 && notification.trigger == 'nearby') {
+      message.pushIds.forEach(function(pushId){
+        if (pushId.indexOf('tom') > 0) tomHit++
+        if (pushId.indexOf('alice') > 0 && notification.trigger == 'nearby') aliceHit++
+        if (pushId.indexOf('max') > 0 && notification.trigger == 'nearby') {
           maxHit++
           maxNotification = notification
         }
-        if (parseInstallId.indexOf('bob') > 0) bobHit++
-        if (parseInstallId.indexOf('becky') > 0) beckyHit++
-        if (parseInstallId.indexOf('stan') > 0) stanHit++
+        if (pushId.indexOf('bob') > 0) bobHit++
+        if (pushId.indexOf('becky') > 0) beckyHit++
+        if (pushId.indexOf('stan') > 0) stanHit++
       })
     })
 
@@ -724,13 +718,13 @@ exports.bobInsertsPrivatePatch = function (test) {
       t.assert(notification.modifiedDate <= previousModifiedDate)
       previousModifiedDate = notification.modifiedDate
 
-      message.parseInstallIds.forEach(function(parseInstallId){
-        if (parseInstallId.indexOf('tom') > 0) tomHit++
-        if (parseInstallId.indexOf('alice') > 0) aliceHit++
-        if (parseInstallId.indexOf('max') > 0) maxHit++
-        if (parseInstallId.indexOf('bob') > 0) bobHit++
-        if (parseInstallId.indexOf('becky') > 0 && notification.trigger == 'nearby') beckyHit++
-        if (parseInstallId.indexOf('stan') > 0 && notification.trigger == 'nearby') {
+      message.pushIds.forEach(function(pushId){
+        if (pushId.indexOf('tom') > 0) tomHit++
+        if (pushId.indexOf('alice') > 0) aliceHit++
+        if (pushId.indexOf('max') > 0) maxHit++
+        if (pushId.indexOf('bob') > 0) bobHit++
+        if (pushId.indexOf('becky') > 0 && notification.trigger == 'nearby') beckyHit++
+        if (pushId.indexOf('stan') > 0 && notification.trigger == 'nearby') {
           stanHit++
           stanNotification = notification
         }
@@ -809,16 +803,16 @@ exports.bobWatchesTomsPublicPatch = function(test) {
     body.notifications.forEach(function(message) {
       var notification = message.notification
       t.assert(notification._target === testPatchPublic._id || notification.targetId === testPatchPublic._id)
-      message.parseInstallIds.forEach(function(parseInstallId){
-        if (parseInstallId.indexOf('tom') > 0
+      message.pushIds.forEach(function(pushId){
+        if (pushId.indexOf('tom') > 0
           && notification.type === 'watch'
           && notification.trigger == 'own_to'
           && notification.event === 'watch_entity_patch') tomHit++
-        if (parseInstallId.indexOf('alice') > 0) aliceHit++
-        if (parseInstallId.indexOf('max') > 0) maxHit++
-        if (parseInstallId.indexOf('bob') > 0) bobHit++
-        if (parseInstallId.indexOf('becky') > 0) beckyHit++
-        if (parseInstallId.indexOf('stan') > 0) stanHit++
+        if (pushId.indexOf('alice') > 0) aliceHit++
+        if (pushId.indexOf('max') > 0) maxHit++
+        if (pushId.indexOf('bob') > 0) bobHit++
+        if (pushId.indexOf('becky') > 0) beckyHit++
+        if (pushId.indexOf('stan') > 0) stanHit++
       })
     })
 
@@ -874,16 +868,16 @@ exports.bobLikesTomsPublicPatchViaRestAPI = function(test) {
     body.notifications.forEach(function(message) {
       var notification = message.notification
       t.assert(notification._target === testPatchPublic._id || notification.targetId === testPatchPublic._id)
-      message.parseInstallIds.forEach(function(parseInstallId){
-        if (parseInstallId.indexOf('tom') > 0
+      message.pushIds.forEach(function(pushId){
+        if (pushId.indexOf('tom') > 0
           && notification.type === 'like'
           && notification.trigger == 'own_to'
           && notification.event === 'like_entity_patch') tomHit++
-        if (parseInstallId.indexOf('alice') > 0) aliceHit++
-        if (parseInstallId.indexOf('max') > 0) maxHit++
-        if (parseInstallId.indexOf('bob') > 0) bobHit++
-        if (parseInstallId.indexOf('becky') > 0) beckyHit++
-        if (parseInstallId.indexOf('stan') > 0) stanHit++
+        if (pushId.indexOf('alice') > 0) aliceHit++
+        if (pushId.indexOf('max') > 0) maxHit++
+        if (pushId.indexOf('bob') > 0) bobHit++
+        if (pushId.indexOf('becky') > 0) beckyHit++
+        if (pushId.indexOf('stan') > 0) stanHit++
       })
     })
 
@@ -955,16 +949,16 @@ exports.beckyRequestsToWatchBobsPrivatePatch = function(test) {
       body.notifications.forEach(function(message) {
         var notification = message.notification
         t.assert(notification._target === testPatchPrivate._id || notification.targetId === testPatchPrivate._id)
-        message.parseInstallIds.forEach(function(parseInstallId){
-          if (parseInstallId.indexOf('tom') > 0) tomHit++
-          if (parseInstallId.indexOf('alice') > 0) aliceHit++
-          if (parseInstallId.indexOf('max') > 0) maxHit++
-          if (parseInstallId.indexOf('bob') > 0
+        message.pushIds.forEach(function(pushId){
+          if (pushId.indexOf('tom') > 0) tomHit++
+          if (pushId.indexOf('alice') > 0) aliceHit++
+          if (pushId.indexOf('max') > 0) maxHit++
+          if (pushId.indexOf('bob') > 0
             && notification.type === 'watch'
             && notification.trigger == 'own_to'
             && notification.event === 'request_watch_entity') bobHit++
-          if (parseInstallId.indexOf('becky') > 0) beckyHit++
-          if (parseInstallId.indexOf('stan') > 0) stanHit++
+          if (pushId.indexOf('becky') > 0) beckyHit++
+          if (pushId.indexOf('stan') > 0) stanHit++
         })
       })
 
@@ -1049,16 +1043,16 @@ exports.bobApprovesBeckysRequestToWatchBobsPrivatePatch = function(test) {
       body.notifications.forEach(function(message) {
         var notification = message.notification
         t.assert(notification._target == testPatchPrivate._id)
-        message.parseInstallIds.forEach(function(parseInstallId){
-          if (parseInstallId.indexOf('tom') > 0) tomHit++
-          if (parseInstallId.indexOf('alice') > 0) aliceHit++
-          if (parseInstallId.indexOf('max') > 0) maxHit++
-          if (parseInstallId.indexOf('bob') > 0) bobHit++
-          if (parseInstallId.indexOf('becky') > 0
+        message.pushIds.forEach(function(pushId){
+          if (pushId.indexOf('tom') > 0) tomHit++
+          if (pushId.indexOf('alice') > 0) aliceHit++
+          if (pushId.indexOf('max') > 0) maxHit++
+          if (pushId.indexOf('bob') > 0) bobHit++
+          if (pushId.indexOf('becky') > 0
             && notification.type === 'watch'
             && notification.trigger == 'own_from'
             && notification.event === 'approve_watch_entity') beckyHit++
-          if (parseInstallId.indexOf('stan') > 0) stanHit++
+          if (pushId.indexOf('stan') > 0) stanHit++
         })
       })
 
@@ -1222,13 +1216,13 @@ exports.beckyInsertsMessageToTomsPublicPatch = function (test) {
     body.notifications.forEach(function(message) {
       var notification = message.notification
       t.assert(notification._target === testMessage._id || notification.targetId === testMessage._id)
-      message.parseInstallIds.forEach(function(parseInstallId){
-        if (parseInstallId.indexOf('tom') > 0 && notification.trigger == 'watch_to') tomHit++
-        if (parseInstallId.indexOf('alice') > 0 && notification.trigger == 'nearby') aliceHit++
-        if (parseInstallId.indexOf('max') > 0 && notification.trigger == 'nearby') maxHit++
-        if (parseInstallId.indexOf('bob') > 0 && notification.trigger == 'watch_to') bobHit++
-        if (parseInstallId.indexOf('becky') > 0) beckyHit++
-        if (parseInstallId.indexOf('stan') > 0) stanHit++
+      message.pushIds.forEach(function(pushId){
+        if (pushId.indexOf('tom') > 0 && notification.trigger == 'watch_to') tomHit++
+        if (pushId.indexOf('alice') > 0 && notification.trigger == 'nearby') aliceHit++
+        if (pushId.indexOf('max') > 0 && notification.trigger == 'nearby') maxHit++
+        if (pushId.indexOf('bob') > 0 && notification.trigger == 'watch_to') bobHit++
+        if (pushId.indexOf('becky') > 0) beckyHit++
+        if (pushId.indexOf('stan') > 0) stanHit++
       })
     })
 
@@ -1347,13 +1341,13 @@ exports.beckyInsertsMessageToTomsPublicPatchMaxPoorAccuracy = function (test) {
     body.notifications.forEach(function(message) {
       var notification = message.notification
       t.assert(notification._target === testMessage._id)
-      message.parseInstallIds.forEach(function(parseInstallId){
-        if (parseInstallId.indexOf('tom') > 0 && notification.trigger == 'watch_to') tomHit++
-        if (parseInstallId.indexOf('alice') > 0 && notification.trigger == 'nearby') aliceHit++
-        if (parseInstallId.indexOf('max') > 0 ) maxHit++
-        if (parseInstallId.indexOf('bob') > 0 && notification.trigger == 'watch_to') bobHit++
-        if (parseInstallId.indexOf('becky') > 0) beckyHit++
-        if (parseInstallId.indexOf('stan') > 0) stanHit++
+      message.pushIds.forEach(function(pushId){
+        if (pushId.indexOf('tom') > 0 && notification.trigger == 'watch_to') tomHit++
+        if (pushId.indexOf('alice') > 0 && notification.trigger == 'nearby') aliceHit++
+        if (pushId.indexOf('max') > 0 ) maxHit++
+        if (pushId.indexOf('bob') > 0 && notification.trigger == 'watch_to') bobHit++
+        if (pushId.indexOf('becky') > 0) beckyHit++
+        if (pushId.indexOf('stan') > 0) stanHit++
       })
     })
 
@@ -1429,13 +1423,13 @@ exports.beckyInsertsMessageToTomsPublicPatchMaxNotNearby = function (test) {
     body.notifications.forEach(function(message) {
       var notification = message.notification
       t.assert(notification._target === testMessage._id)
-      message.parseInstallIds.forEach(function(parseInstallId){
-        if (parseInstallId.indexOf('tom') > 0 && notification.trigger == 'watch_to') tomHit++
-        if (parseInstallId.indexOf('alice') > 0 && notification.trigger == 'nearby') aliceHit++
-        if (parseInstallId.indexOf('max') > 0) maxHit++
-        if (parseInstallId.indexOf('bob') > 0 && notification.trigger == 'watch_to') bobHit++
-        if (parseInstallId.indexOf('becky') > 0) beckyHit++
-        if (parseInstallId.indexOf('stan') > 0) stanHit++
+      message.pushIds.forEach(function(pushId){
+        if (pushId.indexOf('tom') > 0 && notification.trigger == 'watch_to') tomHit++
+        if (pushId.indexOf('alice') > 0 && notification.trigger == 'nearby') aliceHit++
+        if (pushId.indexOf('max') > 0) maxHit++
+        if (pushId.indexOf('bob') > 0 && notification.trigger == 'watch_to') bobHit++
+        if (pushId.indexOf('becky') > 0) beckyHit++
+        if (pushId.indexOf('stan') > 0) stanHit++
       })
     })
 
@@ -1500,13 +1494,13 @@ exports.aliceInsertsResponseMessageToTomsPublicPatch = function (test) {
 
     body.notifications.forEach(function(message) {
       var notification = message.notification
-      message.parseInstallIds.forEach(function(parseInstallId){
-        if (parseInstallId.indexOf('tom') > 0 && notification.trigger == 'watch_to') tomHit++
-        if (parseInstallId.indexOf('alice') > 0) aliceHit++
-        if (parseInstallId.indexOf('max') > 0 && notification.trigger == 'nearby') maxHit++
-        if (parseInstallId.indexOf('bob') > 0 && notification.trigger == 'watch_to') bobHit++
-        if (parseInstallId.indexOf('becky') > 0) beckyHit++
-        if (parseInstallId.indexOf('stan') > 0) stanHit++
+      message.pushIds.forEach(function(pushId){
+        if (pushId.indexOf('tom') > 0 && notification.trigger == 'watch_to') tomHit++
+        if (pushId.indexOf('alice') > 0) aliceHit++
+        if (pushId.indexOf('max') > 0 && notification.trigger == 'nearby') maxHit++
+        if (pushId.indexOf('bob') > 0 && notification.trigger == 'watch_to') bobHit++
+        if (pushId.indexOf('becky') > 0) beckyHit++
+        if (pushId.indexOf('stan') > 0) stanHit++
       })
     })
 
@@ -1597,13 +1591,13 @@ exports.beckyInsertsMessageToBobsPrivatePatch = function (test) {
       var notification = message.notification
       t.assert(notification._target === testMessageToPrivate._id ||
           notification.targetId === testMessageToPrivate._id)
-      message.parseInstallIds.forEach(function(parseInstallId){
-        if (parseInstallId.indexOf('tom') > 0) tomHit++
-        if (parseInstallId.indexOf('alice') > 0 && notification.trigger == 'watch_to') aliceHit++
-        if (parseInstallId.indexOf('max') > 0) maxHit++
-        if (parseInstallId.indexOf('bob') > 0 && notification.trigger == 'watch_to') bobHit++
-        if (parseInstallId.indexOf('becky') > 0) beckyHit++
-        if (parseInstallId.indexOf('stan') > 0) stanHit++
+      message.pushIds.forEach(function(pushId){
+        if (pushId.indexOf('tom') > 0) tomHit++
+        if (pushId.indexOf('alice') > 0 && notification.trigger == 'watch_to') aliceHit++
+        if (pushId.indexOf('max') > 0) maxHit++
+        if (pushId.indexOf('bob') > 0 && notification.trigger == 'watch_to') bobHit++
+        if (pushId.indexOf('becky') > 0) beckyHit++
+        if (pushId.indexOf('stan') > 0) stanHit++
       })
     })
 
@@ -1705,9 +1699,9 @@ exports.bobInsertsResponseToBeckysPrivateMessage = function (test) {
 
       body.notifications.forEach(function(message) {
         var notification = message.notification
-        message.parseInstallIds.forEach(function(parseInstallId){
-          if (parseInstallId.indexOf('tom') > 0) tomHit++
-          if (parseInstallId.indexOf('alice') > 0 && notification.trigger == 'watch_to') {
+        message.pushIds.forEach(function(pushId){
+          if (pushId.indexOf('tom') > 0) tomHit++
+          if (pushId.indexOf('alice') > 0 && notification.trigger == 'watch_to') {
             aliceHit++
             // Alice muted her watch link earlier in the test.  She has an ios install.
             // See the mini spec here:  https://github.com/3meters/proxibase/issues/347
@@ -1717,10 +1711,10 @@ exports.bobInsertsResponseToBeckysPrivateMessage = function (test) {
             t.assert(!notification.sound)
             t.assert(!notification.notification)
           }
-          if (parseInstallId.indexOf('max') > 0) maxHit++
-          if (parseInstallId.indexOf('bob') > 0) bobHit++
-          if (parseInstallId.indexOf('becky') > 0 && notification.trigger == 'watch_to') beckyHit++
-          if (parseInstallId.indexOf('stan') > 0) stanHit++
+          if (pushId.indexOf('max') > 0) maxHit++
+          if (pushId.indexOf('bob') > 0) bobHit++
+          if (pushId.indexOf('becky') > 0 && notification.trigger == 'watch_to') beckyHit++
+          if (pushId.indexOf('stan') > 0) stanHit++
         })
       })
 
@@ -2074,13 +2068,13 @@ exports.beckySharesPrivatePatchWithStan = function(test) {
     body.notifications.forEach(function(message) {
       var notification = message.notification
       t.assert(notification._target === beckySharePatchWithStanId || notification.targetId === beckySharePatchWithStanId)
-      message.parseInstallIds.forEach(function(parseInstallId){
-        if (parseInstallId.indexOf('tom') > 0) tomHit++
-        if (parseInstallId.indexOf('alice') > 0) aliceHit++
-        if (parseInstallId.indexOf('max') > 0) maxHit++
-        if (parseInstallId.indexOf('bob') > 0) bobHit++
-        if (parseInstallId.indexOf('becky') > 0) beckyHit++
-        if (parseInstallId.indexOf('stan') > 0 && notification.trigger == 'share') stanHit++
+      message.pushIds.forEach(function(pushId){
+        if (pushId.indexOf('tom') > 0) tomHit++
+        if (pushId.indexOf('alice') > 0) aliceHit++
+        if (pushId.indexOf('max') > 0) maxHit++
+        if (pushId.indexOf('bob') > 0) bobHit++
+        if (pushId.indexOf('becky') > 0) beckyHit++
+        if (pushId.indexOf('stan') > 0 && notification.trigger == 'share') stanHit++
       })
     })
 
@@ -2198,13 +2192,13 @@ exports.beckySharesMemberMessageWithNonMemberStan = function(test) {
       var notification = message.notification
       if (!message.info) {
         t.assert(notification._target === beckyShareMessageWithStanId || notification.targetId === beckyShareMessageWithStanId)
-        message.parseInstallIds.forEach(function(parseInstallId){
-          if (parseInstallId.indexOf('tom') > 0) tomHit++
-          if (parseInstallId.indexOf('alice') > 0) aliceHit++
-          if (parseInstallId.indexOf('max') > 0) maxHit++
-          if (parseInstallId.indexOf('bob') > 0) bobHit++
-          if (parseInstallId.indexOf('becky') > 0) beckyHit++
-          if (parseInstallId.indexOf('stan') > 0 && notification.trigger == 'share') stanHit++
+        message.pushIds.forEach(function(pushId){
+          if (pushId.indexOf('tom') > 0) tomHit++
+          if (pushId.indexOf('alice') > 0) aliceHit++
+          if (pushId.indexOf('max') > 0) maxHit++
+          if (pushId.indexOf('bob') > 0) bobHit++
+          if (pushId.indexOf('becky') > 0) beckyHit++
+          if (pushId.indexOf('stan') > 0 && notification.trigger == 'share') stanHit++
         })
       }
     })
@@ -2272,7 +2266,6 @@ exports.beckySharesMemberMessageWithNonMemberStan = function(test) {
   })
 }
 
-
 exports.beckySharesMemberMessageWithMemberAlice = function(test) {
   t.post({
     uri: '/do/insertEntity?' + userCredBecky,
@@ -2314,13 +2307,13 @@ exports.beckySharesMemberMessageWithMemberAlice = function(test) {
       var notification = message.notification
       if (!notification.info) {
         t.assert(notification.targetId === beckyShareMessageWithAliceId)
-        message.parseInstallIds.forEach(function(parseInstallId){
-          if (parseInstallId.indexOf('tom') > 0) tomHit++
-          if (parseInstallId.indexOf('alice') > 0 && notification.trigger == 'share') aliceHit++
-          if (parseInstallId.indexOf('max') > 0) maxHit++
-          if (parseInstallId.indexOf('bob') > 0) bobHit++
-          if (parseInstallId.indexOf('becky') > 0) beckyHit++
-          if (parseInstallId.indexOf('stan') > 0) stanHit++
+        message.pushIds.forEach(function(pushId){
+          if (pushId.indexOf('tom') > 0) tomHit++
+          if (pushId.indexOf('alice') > 0 && notification.trigger == 'share') aliceHit++
+          if (pushId.indexOf('max') > 0) maxHit++
+          if (pushId.indexOf('bob') > 0) bobHit++
+          if (pushId.indexOf('becky') > 0) beckyHit++
+          if (pushId.indexOf('stan') > 0) stanHit++
         })
       }
     })
@@ -2428,13 +2421,13 @@ exports.beckySharesPhotoWithNonMemberStan = function(test) {
       var notification = message.notification
       if (!notification.info) {
         t.assert(notification._target === beckySharePhotoWithStanId || notification.targetId === beckySharePhotoWithStanId)
-        message.parseInstallIds.forEach(function(parseInstallId){
-          if (parseInstallId.indexOf('tom') > 0) tomHit++
-          if (parseInstallId.indexOf('alice') > 0) aliceHit++
-          if (parseInstallId.indexOf('max') > 0) maxHit++
-          if (parseInstallId.indexOf('bob') > 0) bobHit++
-          if (parseInstallId.indexOf('becky') > 0) beckyHit++
-          if (parseInstallId.indexOf('stan') > 0 && notification.trigger == 'share') stanHit++
+        message.pushIds.forEach(function(pushId){
+          if (pushId.indexOf('tom') > 0) tomHit++
+          if (pushId.indexOf('alice') > 0) aliceHit++
+          if (pushId.indexOf('max') > 0) maxHit++
+          if (pushId.indexOf('bob') > 0) bobHit++
+          if (pushId.indexOf('becky') > 0) beckyHit++
+          if (pushId.indexOf('stan') > 0 && notification.trigger == 'share') stanHit++
         })
       }
     })
@@ -2524,13 +2517,13 @@ exports.beckySharesPhotoWithMemberAlice = function(test) {
       var notification = message.notification
       if (!message.info) {
         t.assert(notification.targetId === beckySharePhotoWithAliceId)
-        message.parseInstallIds.forEach(function(parseInstallId){
-          if (parseInstallId.indexOf('tom') > 0) tomHit++
-          if (parseInstallId.indexOf('alice') > 0 && notification.trigger == 'share') aliceHit++
-          if (parseInstallId.indexOf('max') > 0) maxHit++
-          if (parseInstallId.indexOf('bob') > 0) bobHit++
-          if (parseInstallId.indexOf('becky') > 0) beckyHit++
-          if (parseInstallId.indexOf('stan') > 0) stanHit++
+        message.pushIds.forEach(function(pushId){
+          if (pushId.indexOf('tom') > 0) tomHit++
+          if (pushId.indexOf('alice') > 0 && notification.trigger == 'share') aliceHit++
+          if (pushId.indexOf('max') > 0) maxHit++
+          if (pushId.indexOf('bob') > 0) bobHit++
+          if (pushId.indexOf('becky') > 0) beckyHit++
+          if (pushId.indexOf('stan') > 0) stanHit++
         })
       }
     })
@@ -2761,7 +2754,6 @@ exports.stanGetsShareMessageFromBecky = function (test) {
   })
 }
 
-
 exports.aliceGetsShareMessageFromBecky = function (test) {
   t.post({
     uri: '/do/getEntities?' + userCredAlice,
@@ -2829,7 +2821,6 @@ exports.aliceGetsShareMessageFromBecky = function (test) {
     })
   })
 }
-
 
 /*
  * ----------------------------------------------------------------------------
