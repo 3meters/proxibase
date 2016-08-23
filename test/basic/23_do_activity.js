@@ -182,8 +182,6 @@ exports.registerInstallOne = function (test) {
       t.assert(body.data[0].installId)
       t.assert(body.data[0].parseInstallId)
       t.assert(body.data[0].parseInstallId === 'registration_id_testing_user_tom')
-      log('this next assert will fail if the test is run stand-alone')
-      t.assert(body.data[0].users.length === 2)
       test.done()
     })
   })
@@ -218,8 +216,6 @@ exports.registerInstallTwo = function (test) {
       t.assert(body.data[0].installId)
       t.assert(body.data[0].parseInstallId)
       t.assert(body.data[0].parseInstallId === 'registration_id_testing_user_bob')
-      t.assert(body.data[0].users && body.data[0].users.length === 1)
-      t.assert(body.data[0].signinDate)
       test.done()
     })
   })
@@ -254,8 +250,6 @@ exports.registerInstallThree = function (test) {
       t.assert(body.data[0].installId)
       t.assert(body.data[0].parseInstallId)
       t.assert(body.data[0].parseInstallId === 'registration_id_testing_user_alice')
-      t.assert(body.data[0].users && body.data[0].users.length === 1)
-      t.assert(body.data[0].signinDate)
       test.done()
     })
   })
@@ -366,9 +360,9 @@ exports.insertCustomPatch = function (test) {
       , bobHit = false
 
     body.notifications.forEach(function(message) {
-      message.parseInstallIds.forEach(function(parseInstallId){
-        if (parseInstallId.indexOf('tom') > 0) tomHit = true
-        if (parseInstallId.indexOf('bob') > 0 && message.notification.trigger == 'nearby') bobHit = true
+      message.pushIds.forEach(function(pushId){
+        if (pushId.indexOf('tom') > 0) tomHit = true
+        if (pushId.indexOf('bob') > 0 && message.notification.trigger == 'nearby') bobHit = true
       })
     })
     t.assert(!tomHit)
@@ -398,7 +392,7 @@ exports.insertCustomPatchTwo = function (test) {
      */
     t.assert(body.notifications && body.notifications.length == 1)
     t.assert(body.notifications[0].notification.trigger === 'nearby')
-    t.assert(body.notifications[0].parseInstallIds[0].indexOf('alice') > 0)
+    t.assert(body.notifications[0].pushIds[0].indexOf('alice') > 0)
     test.done()
   })
 }
@@ -426,10 +420,10 @@ exports.insertMessage = function (test) {
       , bobHit = false
 
     body.notifications.forEach(function(message) {
-      message.parseInstallIds.forEach(function(parseInstallId){
+      message.pushIds.forEach(function(pushId){
         t.assert(message.notification._target === testMessage._id)
-        if (parseInstallId.indexOf('tom') > 0) tomHit = true
-        if (parseInstallId.indexOf('bob') > 0) bobHit = true
+        if (pushId.indexOf('tom') > 0) tomHit = true
+        if (pushId.indexOf('bob') > 0) bobHit = true
       })
     })
     t.assert(tomHit)

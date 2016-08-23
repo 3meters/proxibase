@@ -202,16 +202,16 @@ exports.createUsers = function(test) {
 var _install = {
   clientVersionCode: 80,
   clientVersionName: '1.0.0',
-  deviceType: 'ios',
-  deviceVersionName: '8.0.0',
   locationDate: util.now(),
 }
 
 exports.registerInstalls = function(test) {
   var install = _.extend({
     _user: tarzan._id,
-    parseInstallId: 'tarzanParseId',
+    pushInstallId: 'tarzanParseId',
     installId: 'in.' + tarzan._id,
+    deviceType: 'android',
+    deviceVersionName: '6.0.0',
     location: treehouse.location,
   }, _install)
   t.post({
@@ -221,6 +221,8 @@ exports.registerInstalls = function(test) {
     install = _.extend({
       _user: jane._id,
       parseInstallId: 'janeParseId',
+      deviceType: 'ios',
+      deviceVersionName: '8.0.0',
       installId: 'in.' + jane._id,
       location: janehouse.location,
     }, _install)
@@ -231,6 +233,8 @@ exports.registerInstalls = function(test) {
       install = _.extend({
         _user: jane._id,
         parseInstallId: 'maryParseId',
+        deviceType: 'ios',
+        deviceVersionName: '8.0.0',
         installId: 'in.' + mary._id,
         location: maryhouse.location,
       }, _install)
@@ -312,11 +316,11 @@ exports.createPatches = function(test) {
 
     // Check nearby notifcations for patch creation
     t.assert(body.notifications && body.notifications.length === 1)
-    var parseInstallIds = body.notifications[0].parseInstallIds
-    t.assert(parseInstallIds)
-    t.assert(parseInstallIds.indexOf('janeParseId') >= 0)
-    t.assert(parseInstallIds.indexOf('maryParseId') >= 0)
-    t.assert(parseInstallIds.indexOf('tarzanParseId') < 0)  // Tarzan created, don't notifiy
+    var pushIds = body.notifications[0].pushIds
+    t.assert(pushIds)
+    t.assert(pushIds.indexOf('janeParseId') >= 0)
+    t.assert(pushIds.indexOf('maryParseId') >= 0)
+    t.assert(pushIds.indexOf('tarzanParseId') < 0)  // Tarzan created, don't notifiy
 
     // Confirm that the watch link was created automatically
     t.assert(body.data.links)
@@ -600,13 +604,14 @@ exports.janeSendsMessageToPublicRiver = function(test) {
       },
       links: [{_to: river._id, type: 'content'}],
       test: true,
+      log: true,
     },
   }, 201, function(err, res, body) {
     t.assert(body.data)
     t.assert(body.notifications)
     t.assert(body.notifications.length === 1)
-    t.assert(body.notifications[0].parseInstallIds)
-    t.assert(body.notifications[0].parseInstallIds.indexOf('tarzanParseId') >= 0)
+    t.assert(body.notifications[0].pushIds)
+    t.assert(body.notifications[0].pushIds.indexOf('tarzanParseId') >= 0)
     test.done()
   })
 }
@@ -916,7 +921,7 @@ exports.tarzanRequestsToWatchJanehouse = function(test) {
       t.assert(linkTarzanWatchesJanehouse.enabled === false)  // Because Janehouse is private
       t.assert(body.notifications)
       t.assert(body.notifications.length === 1)
-      t.assert(body.notifications[0].parseInstallIds[0].indexOf('jane' >= 0))
+      t.assert(body.notifications[0].pushIds[0].indexOf('jane' >= 0))
 
       // Test that Jane's notifiedDate was updated.  We can use this to
       // prevent shelling her with too many notifications at a time
@@ -999,7 +1004,7 @@ exports.janeAcceptsTarzansRequest = function(test) {
     body: {data: {enabled: true}, test: true},
   }, function(err, res, body) {
     t.assert(body.notifications && body.notifications.length === 1)
-    t.assert(body.notifications[0].parseInstallIds.indexOf('tarzanParseId') >= 0)
+    t.assert(body.notifications[0].pushIds.indexOf('tarzanParseId') >= 0)
     test.done()
   })
 }
@@ -1065,7 +1070,7 @@ exports.tarzanInvitesJaneToTreehouse = function(test) {
     },
   }, 201, function(err, res, body) {
     t.assert(body.notifications && body.notifications.length === 1)
-    t.assert(body.notifications[0].parseInstallIds[0] === 'janeParseId')
+    t.assert(body.notifications[0].pushIds[0] === 'janeParseId')
     t.get('/data/links/li.toJaneFromTarzanInvite' + seed,
     function(err, res, body) {
       t.assert(body.data)
@@ -1117,7 +1122,7 @@ exports.janeAcceptsTarzanInviteByCreatingAWatchLink = function(test) {
     // Because we recognized the existing share link, meaning she had a pending invitation
     t.assert(body.data.enabled === true)
     t.assert(body.notifications && body.notifications.length === 1)
-    t.assert(body.notifications[0].parseInstallIds[0] === 'tarzanParseId')
+    t.assert(body.notifications[0].pushIds[0] === 'tarzanParseId')
     test.done()
   })
 }
@@ -1195,7 +1200,7 @@ exports.janeCanSendMessageToTreehouse = function(test) {
     },
   }, 201, function(err, res, body) {
     t.assert(body.notifications && body.notifications.length === 1)
-    t.assert(body.notifications[0].parseInstallIds[0] === 'tarzanParseId')
+    t.assert(body.notifications[0].pushIds[0] === 'tarzanParseId')
     test.done()
   })
 }
@@ -1388,10 +1393,15 @@ exports.maryCanCreatePatchAndLinksToAndFromItInOneRestCall = function(test) {
     })
     t.assert(body.errors)
     t.assert(body.errors.length === 1)  // The link with the bogus type failed
-    t.assert(body.notifications && body.notifications.length === 1)
-    t.assert(body.notifications[0].parseInstallIds)
-    t.assert(body.notifications[0].parseInstallIds.length === 2)       // To tazan and jane
+    t.assert(body.notifications && body.notifications.length === 2)
+    t.assert(body.notifications[0].provider === 'parse')
+    t.assert(body.notifications[0].pushIds)
+    t.assert(body.notifications[0].pushIds.length === 1)       // To tazan and jane
     t.assert(body.notifications[0].notification.trigger === 'nearby')  // New patche created nearby
+    t.assert(body.notifications[1].provider === 'one_signal')
+    t.assert(body.notifications[1].pushIds)
+    t.assert(body.notifications[1].pushIds.length === 1)       // To tazan and jane
+    t.assert(body.notifications[1].notification.data.trigger === 'nearby')  // New patche created nearby
     test.done()
   })
 }
@@ -1415,7 +1425,7 @@ exports.maryCanSendMessageToPublicPatch = function(test) {
     t.assert(body.data && body.data.links && body.data.links.length)
     t.assert(body.data.links[0]._from === body.data._id)
     t.assert(body.notifications && body.notifications.length === 1)
-    t.assert(body.notifications[0].parseInstallIds[0].indexOf('tarzan') >= 0)
+    t.assert(body.notifications[0].pushIds[0].indexOf('tarzan') >= 0)
     test.done()
   })
 }
@@ -1469,7 +1479,7 @@ exports.janeWatchesPublicPatchRiver = function(test) {
       t.assert(body.data && body.data.enabled === true)   // becuase river is public
       linkJaneWatchesRiver = body.data                    // module global
       t.assert(body.notifications && body.notifications.length === 1)
-      t.assert(body.notifications[0].parseInstallIds[0] === 'tarzanParseId')  // Tarzan is watching his own patch river
+      t.assert(body.notifications[0].pushIds[0] === 'tarzanParseId')  // Tarzan is watching his own patch river
 
       // Check that Jane's activity Date was tickled
       t.get('/data/users/' + jane._id,
@@ -1500,14 +1510,15 @@ exports.marySlipsUp = function(test) {
     t.assert(body.count === 1)
     t.assert(body.data && body.data.links && body.data.links.length)
     t.assert(body.data.links[0]._from === body.data._id)
-    t.assert(body.notifications && body.notifications.length === 1)
-    var note = body.notifications[0]
-    t.assert(note.parseInstallIds.indexOf('janeParseId') >= 0)  // Busted!
-    t.assert(note.parseInstallIds.indexOf('tarzanParseId') >= 0)
-    t.assert(note.notification)
-    t.assert(note.notification.alert)
-    t.assert(note.notification.sound)
-    t.assert(note.notification.priority === 1)
+    t.assert(body.notifications && body.notifications.length === 2)
+    var janeNote = body.notifications[0]
+    t.assert(janeNote.pushIds.indexOf('janeParseId') >= 0)  // Busted!
+    var tarzanNote = body.notifications[1]
+    t.assert(tarzanNote.pushIds.indexOf('tarzanParseId') >= 0)
+    t.assert(janeNote.notification)
+    t.assert(janeNote.notification.alert)
+    t.assert(janeNote.notification.sound)
+    t.assert(janeNote.notification.priority === 1)
     test.done()
   })
 }
@@ -1531,8 +1542,8 @@ exports.maryWatchesTarzansMutedPublicRiver = function(test) {
   }, 201, function(err, res, body) {
     t.assert(body.data)
     t.assert(body.notifications.length === 1)  // Tarzan has muted his public patch river
-    t.assert(body.notifications[0].parseInstallIds[0] === 'tarzanParseId')
-    t.assert(body.notifications[0].notification.priority === 2)  // Tarzan receives muted notification
+    t.assert(body.notifications[0].pushIds[0] === 'tarzanParseId')
+    t.assert(body.notifications[0].notification.data.priority === 2)  // Tarzan receives muted notification
     t.del({uri: '/data/links/' + body.data._id + '?' + mary.cred},
     function(err, res, body) {
       t.assert(body.count === 1)
@@ -1549,8 +1560,8 @@ exports.maryLikesTarzansMutedPublicRiver = function(test) {
   }, 201, function(err, res, body) {
     t.assert(body.data)
     t.assert(body.notifications.length === 1)  // Tarzan has muted his public patch river
-    t.assert(body.notifications[0].parseInstallIds[0] === 'tarzanParseId')
-    t.assert(body.notifications[0].notification.priority === 2)  // Tarzan receives muted notification
+    t.assert(body.notifications[0].pushIds[0] === 'tarzanParseId')
+    t.assert(body.notifications[0].notification.data.priority === 2)  // Tarzan receives muted notification
     t.del({uri: '/data/links/' + body.data._id + '?' + mary.cred},
     function(err, res, body) {
       t.assert(body.count === 1)
@@ -1587,8 +1598,9 @@ exports.marySendsMessageToMutedRiver = function(test) {
   }, 201, function(err, res, body) {
     t.assert(body.data)
     maryMessage = body.data
-    t.assert(body.notifications && body.notifications.length === 1)
-    t.assert(body.notifications[0].parseInstallIds.length === 2)  // Tarzan and Jane
+    t.assert(body.notifications && body.notifications.length === 2)
+    t.assert(body.notifications[0].pushIds.length === 1)  // Jane
+    t.assert(body.notifications[1].pushIds.length === 1)  // Tarzan
     var notification = body.notifications[0].notification
     t.assert(notification)
     t.assert(notification.priority === 2)         // muted
@@ -1604,7 +1616,7 @@ exports.marySendsMessageToMutedRiver = function(test) {
     }, 201, function(err, res, body) {
       t.assert(body.data)
       t.assert(body.notifications.length === 1)
-      t.assert(body.notifications[0].parseInstallIds[0] === 'maryParseId')
+      t.assert(body.notifications[0].pushIds[0] === 'maryParseId')
       t.assert(body.notifications[0].notification.priority === 2)
       test.done()
     })
@@ -1739,8 +1751,8 @@ exports.likingAPrivatePatchNotifiesPatchOwner = function(test) {
     var likeLink = body.data
     t.assert(likeLink)
     t.assert(body.notifications.length === 1)
-    t.assert(body.notifications[0].parseInstallIds[0] === 'tarzanParseId')
-    t.assert(body.notifications[0].notification.priority === 2)     // likes are always pri 2
+    t.assert(body.notifications[0].pushIds[0] === 'tarzanParseId')
+    t.assert(body.notifications[0].notification.data.priority === 2)     // likes are always pri 2
     t.del({uri: '/data/links/' + likeLink._id + '?' + jane.cred},   // unlike
     function(err, res, body) {
       t.assert(body.count === 1)
@@ -2429,14 +2441,12 @@ exports.deleteUserEraseOwnedWorks = function(test) {
                   function(err, res, body) {
                     t.assert(body.count === 0) // mary's installs are gone
 
-                    // Issue 388: Mary's install record still exists,
-                    // but she is not the user or in the users list
+                    // Issue 388: Mary's install record still exists, but she is not the user
                     t.get('/data/installs/' + install._id + '?' + admin.cred,
                     function(err, res, body) {
                       t.assert(body.count === 1)
                       t.assert(body.data)
                       t.assert(body.data._user !== mary._id)
-                      t.assert(body.data.users.indexOf(mary._id) < 0)
 
                       // mary's sessions are gone
                       t.get('/data/sessions?q[_owner]=' + mary._id + '&' + admin.cred,

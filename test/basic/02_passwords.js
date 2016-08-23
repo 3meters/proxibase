@@ -72,8 +72,6 @@ exports.canRegisterDevice = function(test) {
       t.assert(body.data._user === user._id)
       t.assert(body.data.installId === installId)
       t.assert(body.data.parseInstallId === parseInstallId)
-      t.assert(body.data.users && body.data.users.length === 1)
-      t.assert(body.data.users[0] === user._id)
       test.done()
     })
   })
@@ -126,19 +124,17 @@ exports.signoutClearsInstallRecordUser = function(test) {
   function(err, res, body) {
     t.assert(body.data)
     t.assert(body.data._user === user._id)
-    t.assert(body.data.users && body.data.users.length && body.data.users.indexOf(user._id >= 0))
 
     t.get('/auth/signout?' + userCred,
     function(err, res, body) {
       t.get('/data/users?' + userCred, 401,
       function(err, res, body) {
 
-        // Confirm install record no longer has _user field set, but user._id is still in users array
+        // Confirm install record no longer has _user field set
         t.get('/data/installs/in.' + installId + '?' + adminCred,
         function(err, res, body) {
           t.assert(body.data)
           t.assert(body.data._user !== user._id)
-          t.assert(body.data.users && body.data.users.length && body.data.users.indexOf(user._id >= 0))
           test.done()
         })
       })
@@ -164,8 +160,6 @@ exports.signinResetsInstallRecordUser = function(test) {
     function(err, res, body) {
       t.assert(body.data)
       t.assert(body.data._user === user._id)
-      t.assert(body.data.users && body.data.users.length)
-      t.assert(body.data.users.some(function(userId) { return userId === user._id }))
       test.done()
     })
   })
@@ -196,9 +190,6 @@ exports.createUserUpdatesInstall = function(test) {
     function(err, res, body) {
       t.assert(body.data)
       t.assert(body.data._user === user2._id)
-
-      // Deprecated 2016.06.08
-      // t.assert(body.data.users && body.data.users.indexOf(user2._id) >= 0)
 
       // Delete user 2
       t.del({
