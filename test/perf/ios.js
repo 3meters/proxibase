@@ -158,7 +158,7 @@ exports.iosPatchesNear = function(test) {
           filter: { _creator: user._id},
           fields: '_id,type,schema', },
       ],
-      linkCount: [
+      linkCounts: [
         {from: 'messages', type: 'content'},
         {from: 'users', type: 'watch', enabled: false,},
         {from: 'users', type: 'watch', enabled: true,},
@@ -189,13 +189,13 @@ exports.iosPatchDetailFast= function(test) {
     body: {
       tag: tag,
       promote: 'linked',
-      linkCount: [{from: 'users', type: 'watch', enabled: true}],
+      linkCounts: [{from: 'users', type: 'watch', enabled: true}],
       links: [{from: 'users', type: 'watch', filter: {_from: user._id}, limit: 1, fields: '_id,type,schema,enabled,mute' }],
       linked: {from: 'messages', type: 'content', limit: 50, skip: 0, more: true, refs: {_owner: '_id,name,photo,schema'},
         // Has this user liked this message or not
         links: [{from: 'users', type: 'like', filter: {_from: user._id}, limit: 1, fields: '_id,type,schema' }],
         // How many users have liked this message
-        linkCount: [{from: 'users', type: 'like'}],
+        linkCounts: [{from: 'users', type: 'like'}],
       },
     },
   }, function(err, res, body) {
@@ -219,13 +219,7 @@ exports.iosPatchDetailFast= function(test) {
       t.assert(msg.owner.name)
       t.assert(msg.owner.photo)
       t.assert(msg.owner.schema === 'user')
-      t.assert(msg.linkCount)
-      t.assert(msg.linkCount.from)
-      t.assert(msg.linkCount.from.users)
-      t.assert(tipe.isNumber(msg.linkCount.from.users.like))
-      cMessageLikesOld += msg.linkCount.from.users.like
-      t.assert(msg.linkCounts)
-      t.assert(msg.linkCounts.length === 1)
+      t.assert(msg.linkCounts && msg.linkCounts.length === 1)
       cMessageLikes += msg.linkCounts[0].count
       t.assert(tipe.isArray(msg.links))  // true if I have liked this message
       cMessageLikesByUser += msg.links.length
@@ -262,7 +256,7 @@ exports.iosPatchDetail = function(test) {
           fields: '_id,type,schema',
         }
       ],
-      linkCount: [
+      linkCounts: [
         {from: 'messages', type: 'content' },
         {enabled: true, from: 'users', type: 'watch' },
         {enabled: false, from: 'users', type: 'watch' },
@@ -280,13 +274,13 @@ exports.iosPatchDetail = function(test) {
         promote: 'linked',
         linked: {from: 'messages', type: 'content', limit: 50, skip: 0, more: true,
           links: [{from: 'users', type: 'like', filter: {_from: user._id}, fields: '_id,type,schema' }],
-          linkCount: [{from: 'users', type: 'like'}],
+          linkCounts: [{from: 'users', type: 'like'}],
           linked: [
             {to: 'patches', type: 'content', limit: 1,  fields: '_id,name,photo,schema,type'},
             {to: 'messages', type: 'share', limit: 1, refs: {_creator: '_id,name,photo,schema,type'}},
             {to: 'users', limit: 5, type: 'share' },
             {
-              linkCount: [
+              linkCounts: [
                 {from: 'users', type: 'watch', enabled: true},
                 {from: 'messages', type: 'content'}
               ],

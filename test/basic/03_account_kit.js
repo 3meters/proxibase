@@ -56,7 +56,6 @@ exports.canRegisterDevice = function(test) {
     t.get('/find/installs/in.' + installId + '?' + adminCred,
     function(err, res, body) {
       t.assert(body.data)
-      t.assert(body.data._user === util.anonId)
       t.assert(body.data.installId === installId)
       t.assert(body.data.parseInstallId === installId + 'Parse')
       test.done()
