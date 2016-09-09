@@ -619,61 +619,6 @@ exports.userCanSignInWithLinked = function(test) {
 }
 
 
-// Deprecated, only for android client, do not use
-exports.userCanSignInWithGetEntitiesLinksQuery = function(test) {
-  t.post({
-    uri: '/auth/signin',
-    body: {
-      email: 'authtest4@3meters.com',
-      password: 'foobar',
-      getEntities: true,  // deprecated for legacy android client, do not use
-      links: {shortcuts: true, active: [
-        {links: true, count: true, schema: 'user', type: 'like', direction: 'in' },
-      ]}
-    }
-  }, function(err, res, body) {
-    t.assert(body.session)
-    t.assert(body.credentials)
-    t.assert(body.user)
-    var user = body.user
-    t.assert(user.linksIn)
-    t.assert(user.linksIn.length === 1)
-    var link = user.linksIn[0]
-    t.assert(link._from === newUser._id)
-    t.assert(link.type === 'like')
-    t.assert(link.shortcut)
-    t.assert(link.shortcut.id === newUser._id)
-    t.assert(link.shortcut.schema === 'user')
-    test.done()
-  })
-}
-
-// Note Rob:  This is deprecated, and is only for the android client
-// Note to Jay:  links are not supported here becuase I don't think we
-// need them, and it is work to do so. Let me know if that is not correct.
-exports.annonCanCreateUserWithGetEntities = function(test) {
-  t.post({
-    uri: '/user/create',
-    body: {
-      data: {
-        name: 'AuthTestUser5',
-        email: 'authtest5@3meters.com',
-        password: 'foobar',
-        photo: {prefix: 'authTestUser.jpg', source:"aircandi.images"},
-      },
-      secret: 'larissa',
-      getEntities: true,
-    }
-  }, function(err, res, body) {
-    t.assert(body.credentials)
-    t.assert(body.user)
-    t.assert(body.user.creator)
-    t.assert(body.user.creator._id)
-    t.assert(body.user.creator.name)
-    test.done()
-  })
-}
-
 // Circular JSON fails properly
 exports.circularJsonFailsProperly = function(test) {
   var obj = {
