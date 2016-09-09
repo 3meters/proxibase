@@ -219,14 +219,17 @@ exports.iosPatchDetailFast= function(test) {
       t.assert(msg.owner.name)
       t.assert(msg.owner.photo)
       t.assert(msg.owner.schema === 'user')
+<<<<<<< HEAD
       t.assert(msg.linkCounts && msg.linkCounts.length === 1)
+=======
+      t.assert(msg.linkCounts)
+      t.assert(msg.linkCounts.length === 1)
+>>>>>>> dev
       cMessageLikes += msg.linkCounts[0].count
       t.assert(tipe.isArray(msg.links))  // true if I have liked this message
       cMessageLikesByUser += msg.links.length
     })
-    t.assert(cMessageLikesOld)
     t.assert(cMessageLikes)
-    t.assert(cMessageLikes === cMessageLikesOld)
     t.assert(cMessageLikesByUser)
     logPerf(perf, tag, body)
     test.done()
@@ -315,7 +318,7 @@ exports.iosPatchesInterestingFast = function(test) {
       linked: [
        {to: 'places', fields: '_id,name,photo,schema,type', type: 'proximity', limit: 1 },
       ],
-      linkCount: [
+      linkCounts: [
         {from: 'messages', type: 'content' },
         {from: 'users', type: 'like' },
         {from: 'users', type: 'watch', enabled: true }
@@ -348,7 +351,7 @@ exports.iosPatchesInteresting = function(test) {
        [ { from: 'users', fields: '_id,type,schema', filter: { _from: user._id }, type: 'like' },
          { from: 'users', fields: '_id,type,enabled,mute,schema', filter: { _from: user._id }, type: 'watch' },
          { limit: 1, from: 'messages', fields: '_id,type,schema', filter: { _creator: user._id }, type: 'content' } ],
-      linkCount:
+      linkCounts:
        [ { from: 'messages', type: 'content' },
          { from: 'users', type: 'like' },
          { enabled: true, from: 'users', type: 'watch' } ],
@@ -375,7 +378,7 @@ exports.iosUserDetailFast = function(test) {
         limit: 50,
         skip: 0,
         more: true,
-        linkCount: [
+        linkCounts: [
           { from: 'users', type: 'like'},
           { from: 'users', type: 'watch', enabled: true},
           { from: 'messages', type: 'content'},
@@ -408,14 +411,14 @@ exports.iosUserDetail = function(test) {
             filter: { _from: user._id},
             type: 'like' } ],
         skip: 0,
-        linkCount: [ { from: 'users', type: 'like' } ],
+        linkCounts: [ { from: 'users', type: 'like' } ],
         linked:
         [ { to: 'patches', type: 'content', limit: 1,  fields: '_id,name,photo,schema,type', },
           { from: 'users', type: 'create', fields: '_id,name,photo,schema,type'  },
           { to: 'messages', type: 'share', limit: 1, linked:
              [ { from: 'users', type: 'create', fields: '_id,name,photo,schema,type', } ],
             },
-          { linkCount:
+          { linkCounts:
              [ { enabled: true, from: 'users', type: 'watch' },
                { from: 'messages', type: 'content' } ],
             limit: 1, to: 'patches', type: 'share' },
