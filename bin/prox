@@ -8,6 +8,7 @@
 #     /var/log/prox/proxerr.log
 #     /var/log/prox/old/
 #     /var/run/prox.pid
+#     /var/backups/prox
 #
 
 
@@ -17,6 +18,7 @@ LOGDIR="/var/log/prox"
 LOG="$LOGDIR/prox.log"
 ERRLOG="$LOGDIR/proxerr.log"
 OLD="$LOGDIR/old"
+BACKUPDIR="/var/backups/prox"
 DATE=`date +"%Y.%m.%d-%T"`
 
 
@@ -119,6 +121,12 @@ rotate() {
 }
 
 
+dump() {
+  mongodump --db prox --host 127.0.0.1 --out $BACKUPDIR/dump
+  tar czf $BACKUPDIR/proxdump.gz $backupdir/dump
+}
+
+
 log() {
   less $LOG
 }
@@ -151,11 +159,14 @@ case "$1" in
     rotate
     start
     ;;
+  dump)
+    dump
+    ;;
   log)
     log
     ;;
   errlog)
-    less $ERRLOG
+    errlog
     ;;
   version)
     version

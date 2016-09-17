@@ -3,8 +3,6 @@ config.js
 proxibase.sublime-project
 proxibase.sublime-workspace
 node_modules
-node_modules/proxutils.js
-node_modules/proxdb.js
 package.json
 
 .monitor
@@ -21,4 +19,3 @@ package.json
 keys/prod
 !keys/dev/*
 !docker/nginx/keys/*
-

@@ -1,7 +1,7 @@
 {
 
   "name": "proxibase",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "private": true,
   "description": "Proxibase Service",
   "author": {
@@ -34,7 +34,9 @@
     "nodemailer-sendgrid-transport": "*",
     "superagent": "*",
     "request": "*",
-    "parse": "*"
+    "parse": "*",
+    "proxdb": "3meters/proxdb",
+    "proxutils": "3meters/proxutils"
   },
 
   "repository": "git://github.com:3meters/proxibase",
