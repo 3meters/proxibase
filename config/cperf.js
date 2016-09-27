@@ -36,7 +36,6 @@ module.exports = {
       max: 1000,
       join: 100,
     },
-    keepTestDb: true,                   // If true do not overwrite when testing
     timeout: 60000,
     deoptimize: false,                  // Turn off code that preprocesses certain slow mongodb queries
     logSlow: 250,                       // write individual queries greater than n milliseconds to stderr.
@@ -47,8 +46,11 @@ module.exports = {
     clientMinVersions: {
       com_aircandi_catalina: 1,
       com_patchr_android: 1,
-      com_3meters_patchr_ios: 108,
+      com_3meters_patchr_ios: 1,
     },
+  },
+  test: {
+    keepDb: false,                      // If true do not overwrite the test database with a fresh clean copy
   },
   maxWorkers: 1,                        // default 1. Values > 1 exercise clustering. -1 means one worker per cpu core.
   doNotRestart: false,                  // default false, if true do not restart dead workers, necessay for most tests.

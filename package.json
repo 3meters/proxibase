@@ -35,6 +35,7 @@
     "superagent": "*",
     "request": "*",
     "parse": "*",
+    "proxdb": "3meters/proxdb",
     "proxutils": "3meters/proxutils"
   },
 

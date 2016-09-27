@@ -109,7 +109,7 @@ function ensureDb(ops, cb) {
     if (err) throw err
 
     // Start with the specified database unmodified
-    if (cli.database || cli.keep || config.db.keepTestDb) {
+    if (cli.database || cli.keep || (config.test && config.test.keepDb)) {
       if (cli.database) config.db.database = cli.database
       mongo.initDb(config.db, function(err, safeDb) {
         if (err) throw err
