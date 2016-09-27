@@ -34,7 +34,8 @@
     "nodemailer-sendgrid-transport": "*",
     "superagent": "*",
     "request": "*",
-    "parse": "*"
+    "parse": "*",
+    "proxutils": "3meters/proxutils"
   },
 
   "repository": "git://github.com:3meters/proxibase",
