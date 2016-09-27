@@ -41,7 +41,7 @@ module.exports = {
     clientMinVersions: {
       com_aircandi_catalina: 1,
       com_patchr_android: 1,
-      com_3meters_patchr_ios: 108,
+      com_3meters_patchr_ios: 1,
     },
   },
   test: {
