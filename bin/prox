@@ -123,7 +123,7 @@ rotate() {
 
 dump() {
   mongodump --db prox --host 127.0.0.1 --out $BACKUPDIR/dump
-  tar czf $BACKUPDIR/proxdump.gz $backupdir/dump
+  tar czf $BACKUPDIR/proxdump.gz $BACKUPDIR/dump
 }
 
 
